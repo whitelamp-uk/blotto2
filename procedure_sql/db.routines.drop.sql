@@ -1,0 +1,26 @@
+
+
+USE `{{BLOTTO_MAKE_DB}}`
+;
+
+
+
+DROP PROCEDURE IF EXISTS `anls`
+;
+
+DROP PROCEDURE IF EXISTS `cancellationsByRule`
+;
+
+DROP PROCEDURE IF EXISTS `draws`
+;
+
+DROP PROCEDURE IF EXISTS `drawsSummarise`
+;
+
+DROP PROCEDURE IF EXISTS `supporters`
+;
+
+DROP PROCEDURE IF EXISTS `winners`
+;
+
+

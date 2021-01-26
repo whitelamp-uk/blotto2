@@ -1,0 +1,40 @@
+{
+    "folders":
+    [
+        {
+            "path": ".",
+            "file_exclude_patterns": [".git*","*.sublime-*"]
+        },
+        {
+            "path": "../www",
+            "file_include_patterns": ["*config*","logo-org.png"],
+            "folder_exclude_patterns": ["www"]
+        },
+        {
+            "path": "../log",
+            "file_include_patterns": ["*"]
+        },
+        {
+            "path": "../config",
+            "file_include_patterns": ["*"]
+        },
+        {
+            "path": "../../../blotto/www",
+            "file_include_patterns": ["*config*","logo-org.png"],
+            "folder_exclude_patterns": ["www"]
+        },
+        {
+            "path": "../../../blotto/log",
+            "file_include_patterns": ["*"]
+        },
+        {
+            "path": "../../../blotto/config",
+            "file_include_patterns": ["*"]
+        },
+        {
+            "path": "../../../blotto",
+            "file_include_patterns": ["config.cron","config.global.php"],
+            "folder_exclude_patterns": ["*"]
+        }
+    ]
+}

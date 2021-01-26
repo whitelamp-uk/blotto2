@@ -1,0 +1,18 @@
+
+
+USE `{{BLOTTO_MAKE_DB}}`
+;
+
+
+
+DROP FUNCTION IF EXISTS `digitsOnly`
+;
+
+DROP FUNCTION IF EXISTS `sfRound`
+;
+
+
+
+DELIMITER ;
+
+

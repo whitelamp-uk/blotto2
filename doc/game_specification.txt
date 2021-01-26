@@ -1,0 +1,192 @@
+
+Blotto v2 Game Specification
+============================
+
+The Game Design
+---------------
+
+These are the parameters for setting up games. See glossary for definitions.
+
+Game type
+
+    Set by an appropriate flavour of configuration file.
+      * Normal (standard organisations only)
+      * Superdraw (RBE organisations only)
+
+Draw scheduling
+
+    Draw date is, by definition, always the day after the draw close date
+    Draw execution time should be early morning after all data is available:
+      * payment data up to and including the draw close date
+      * external number-match providers (for example lotto.de Spiel 77 Saturday
+        pm)
+    Draw schedule is defined by per-organisation bespoke functions
+
+Draw entrants
+
+    Normal games calculate player balances to identify draw entrants.
+    Superdraw games use bespoke rules to find draw entrants from multiple
+    standard games.
+
+Prize level
+
+    Prize definitions are in `blotto_prize`.
+    `level` is an integer that references and orders distinct prize
+    definitions.
+    Only one prize definition per level is currently active.
+    There is no limit to the number of prize levels.
+    Prize levels do not need to be contiguous.
+
+Prize name
+
+    A human-readable name for each prize definition, for example:
+      Level | Name
+      ------------
+        1   | Superduper Potty Lotto
+        3   | Deuxième prix
+        6   | The Wooden Spoon Award
+
+Prize type
+
+    Supported prize types:
+      * Raffle
+      * Number-match 
+    Different prize types may be mixed within any given game.
+
+    Each prize definition has a start date and an active switch.
+    The current definition for a given prize level is one that is:
+      * both active
+      * and:
+          - either has one or more rollovers currently in play
+          - or, if none are in play, has the latest start date on or before the
+            draw date.
+
+    Each prize definition has one of the following reward types:
+     * Fixed cash prize amount [blotto_prize.amount]
+     * Calculated cash prize using a prize amount function
+       [blotto_prize.amount_function] used to calculate the prize based on a 
+       bespoke calculation with parameters such as the number of tickets in the
+       draw, if there is an "r" in the month, etc etc. Prize amount functions
+       should not contain hard-wired numeric values; they should be abstracted
+       as constants such as:
+         define ('BLOTTO_PRIZE_1_PERCENT', 30);
+       This could mean something like "First prize is 30% of the draw revenue".
+     * Free ticket prizes [blotto_prize.ticket_quantity,
+       blotto_prize.ticket_num_of_draws]
+     * Non-monetary prizes such as "cuddly toy" or "supper with Evan Davies"
+
+Raffle properties
+
+    Configured as blotto_prize.level_method = 'RAFF':
+      * number of winners at this prize level - blotto_prize.quantity
+
+    Mean win per draw_entrant is a function of:
+      * the quantity of wins per prize definition
+      * the number of draw entrants
+
+    Mean prize payout per draw is a fixed quantity provided there are at least
+    as many draw entrants as available wins.
+
+Number-match properties
+
+    Configured as (for example) blotto_prize.level_method = '7LR1':
+      * First digit = number of digits to match
+      * L = try matching from the left
+      * R = try matching from the right
+      * Last digit is the number-match group
+      * One random number is drawn per group
+      * Number-match may be:
+          - perfect eg. 6LR1 in a 6-digit ticket pool
+          - partial eg. 7LR2 in an 8-digit ticket pool
+
+    Mean win per draw_entrant is a function of:
+      * the range of the ticket pool
+
+    Mean prize payout per draw is a function of:
+      * the range of the ticket pool
+      * the number of draw entrants
+
+    Rollovers are a number-match-only feature.
+      * Zero or more rollovers allowed - blotto_prize.rollovers_max
+      * Maximum payout may be capped in fewer rollovers - blotto_prize.rollover_cap
+
+Ticket pool
+
+    [Is there something that needs saying about choice/size of ticket pool in
+    terms of game design?]
+
+
+
+The Draw Process
+----------------
+
+Raffle prizes
+
+    Raffle prizes may have multiple winners at multiple levels. Prize level is
+    determined by the order of selection of the total required number of
+    tickets. For example a game defined with one first prize and three second
+    prizes would be drawn in the sequence:
+        "Prize 1", "Prize 2", "Prize 2", "Prize 2".
+
+Number-match prizes
+
+    Number-match prizes are organised in groups.
+    A single random number is selected ly selected ticket from the ticket pool regardless of
+    whether or not it has been issued to a player.
+
+
+
+Example games
+=============
+
+These examples are supported by the above specification which states that each prize can be redefined (or deactivated) for the next draw provided the current rollover value is zero.
+
+Therefore the prize definitions below should be viewed as "current settings".
+
+
+Myton Hospice
+-------------
+Org type:       Standard
+Player fee:     £1.00 per chance
+Client charge:  N/A
+Ticket pool:    1,000,000 tickets
+Draw close:     Friday weekly
+Prize levels:   "£2.5K rolled over", £2500 number match 6LR6, 3 rollovers allowed
+                "1st prize", £1500 raffle x1
+                "2nd prize", £100 raffle x3
+                "3rd prize", £50 raffle x1
+                "4th prize", £10 raffle x1
+                "5th prize", £5 raffle x300
+
+* 6LR6 = "Match 6 of 6 numbers left or right"
+
+
+Myton Hospice Superdraw
+-----------------------
+Org type:       Rule-based entry
+Entry rule:     All entrants into "Myton Hospice" for the same draw date
+Player fee:     None
+Client charge:  £0.04 per chance
+Ticket pool:    1,000,000 tickets
+Draw close:     Fourth Friday in June and December
+Prizes:         "Superdraw", £5000 raffle x1
+
+
+
+National Game
+-------------
+
+Org type:       Rule-based entry
+Entry rule:     All entrants in a configured selection of standard games for the same draw week
+Player fee:     None
+Client charge:  £0.04 per chance
+Ticket pool:    100,000,000 tickets
+Draw close:     Friday weekly
+Prize levels:   "£5K rolled over", £5000 number match 6LR6, 4 rollovers allowed
+                "1st prize", £5000 raffle x1
+                "2nd prize", £1000 raffle x5
+                "5th prize", £25 raffle x100
+
+* 6LR2 = "Match 6 numbers left or right against the number drawn for number-match group 2"
+
+

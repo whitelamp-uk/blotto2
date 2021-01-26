@@ -1,0 +1,87 @@
+
+Glossary
+--------
+
+Chance - the entitlement of one ticket number in any one draw.
+
+Draw - periodic process of running the game having an organisation-bespoke
+schedule.
+
+Draw entrant - a single ticket/chance in a given draw.
+
+Game - activity that takes place inside an organisation database.
+
+Game model - the algorithms by which draw entrants holding well-defined ticket
+numbers and random number generation processes result in prizes with well-
+defined values. Game models are primarily defined by:
+  * The draw schedule
+  * Current prize attributes
+  * Choice of ticket pool with consideration of:
+     - ticket size
+     - private or shared with other organisation(s)
+
+Number-match - see prize type
+
+Organisation - entity that runs a game (organisation:game is 1:1)
+  * Standard - type of organisation that gets money from players and runs normal
+    draws.
+  * RBE organisation - Rule Based Entry organisations have contractual rules
+    agreed with multiple standard organisations to accept entries into
+    superdraws and return winners data.
+
+Pool - see ticket pool
+
+Pool size - see ticket pool
+
+Prize - an ephemeral definition of a lottery prize. *Current* prizes are defined
+uniquely by prize level. Prize level defines the human ordering of the prizes in
+a draw. Normal raffle prizes may be defined to produce one or more winners. By
+definition the quantity of number-match winners cannot be known.
+
+Prize type - fundamental prize characteristic:
+  * Number-match - awarded by comparing ticket numbers with a drawn number
+    (unpredictable number of winners)
+     - Perfect number-match
+     - Partial number-match
+  * Raffle - awarded by drawing a selection of held tickets (guaranteed number
+    of winners)
+     - Normal
+     - Ad hoc (only happens in order to end a rollover)
+
+Raffle - see prize type
+
+Rollover - The accumulated value of a number-match prize that was not won in one
+or more previous draws. By definition, only number-match prizes (see prize type)
+can have rollover properties:
+  * Maximum rollovers - the greatest number of times the prize may be carried
+    forward before it becomes an ad noc raffle.
+  * Rollover cap - the greatest permitted value of the prize.
+
+RBE organisation - see organisation
+
+Standard organisation - see organisation
+
+Superdraw - a draw that:
+  * may only be run by RBE organisations
+  * does not deduct funds from players
+  * derives draw entrants from multiple standard organisations
+  * bases draw entry on bespoke per-organisation rules [1]
+  * must use a private ticket pool
+
+Ticket - A single number from a ticket pool
+
+Ticket holder - usually synonymous with a player but might be a "lower" pool
+allowing a third party application to hold a buffer of tickets to issue to
+players later.
+
+Ticket pool - a ticket range of zero-padded-left positive integers where the
+length of highest integer decides the length of all the tickets. When the data
+for a ticket is created, it is issued to a ticket holder. Only one ticket holder
+is allowed per ticket (see ticket holder).
+
+
+ 1. RBE bespoke PHP invokes processes for each of its client organisations so no
+    repetition is required if the rules are common.
+
+
+

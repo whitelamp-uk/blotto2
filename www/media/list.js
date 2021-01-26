@@ -1,0 +1,82 @@
+
+
+function dateActivate (button=null) {
+    var b,buttona,buttonm,buttons,buttonw,date,last,scrolled;
+    if (!button) {
+        last = sessionStorage.getItem ('data-date-last-clicked');
+        if (date=sessionStorage.getItem('data-date-month')) {
+            if (buttonm=document.querySelector('#list button[data-interval="month"][data-date="'+date+'"]')) {
+                buttonm.classList.add ('active');
+            }
+            if (date==last) {
+                scrolled = buttonm;
+            }
+        }
+        if (date=sessionStorage.getItem('data-date-week')) {
+            if (buttonw=document.querySelector('#list button[data-interval="week"][data-date="'+date+'"]')) {
+                buttonw.classList.add ('active');
+            }
+            if (date==last) {
+                scrolled = buttonw;
+            }
+        }
+        if (scrolled) {
+            scrolled.scrollIntoView (
+                {
+                    behavior : 'smooth',
+                    block    : 'center'
+                }
+            );
+        }
+        return;
+    }
+    buttons = document.querySelectorAll ('#list button[data-interval="'+button.dataset.interval+'"][data-date]');
+    for (b of buttons) {
+        if (b==button) {
+            continue;
+        }
+        b.classList.remove ('active');
+    }
+    button.classList.add ('active');
+    sessionStorage.setItem('data-date-'+button.dataset.interval,button.dataset.date);
+    sessionStorage.setItem('data-date-last-clicked',button.dataset.date);
+}
+
+function dateGo (button) {
+    var element,grp,url;
+    element = button.parentElement.parentElement;
+    element = element.querySelector ('[data-date]');
+    if (element) {
+        dateActivate (element);
+    }
+    url     = button.dataset.url;
+    if (button.dataset.go=='view') {
+        window.top.menuActivate ('adminer');
+    }
+    else {
+        grp = sessionStorage.getItem ('data-group-by');
+        url += "&grp=" + grp;
+        // No unload wait icon - this is a download
+        window.unloadSuppress = true;
+    }
+    window.location.href = url;
+}
+
+function groupSet (input=null) {
+    var current, element;
+    if (input) {
+        sessionStorage.setItem ('data-group-by',input.value);
+        return;
+    }
+    current = sessionStorage.getItem ('data-group-by');
+    if (current=="1") {
+        element = document.querySelector ('[name="group_by_ticket_number"][value="1"]');
+    }
+    else {
+        element = document.querySelector ('[name="group_by_ticket_number"][value="0"]');
+    }
+    if (element) {
+        element.click ();
+    }
+}
+

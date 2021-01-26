@@ -1,0 +1,793 @@
+
+
+@import url('./guide.css');
+
+
+body {
+    margin:             0;
+    padding:            0;
+    font-family:        var(--blotto-dfn-fnt-default);
+    font-size:          var(--blotto-dfn-fsz-default);
+    height:             100%;
+}
+
+body.unloading {
+    background-image:   var(--blotto-url-wait);
+    background-repeat:  no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+body.unloading * {
+    visibility:         hidden;
+}
+
+textarea {
+    width:              50em;
+    height:             15em;
+}
+
+hr {
+    clear:              both;
+    height:             0;
+    border-width:       0;
+}
+
+h2, h3, caption {
+    text-shadow:        var(--blotto-shadow-heading);
+    color:              var(--blotto-color-fgd-heading);
+}
+
+h2 {
+    font-size:          var(--blotto-dfn-fsz-h2);
+}
+
+h3, caption {
+    font-size:          var(--blotto-dfn-fsz-h3);
+}
+
+table {
+    margin-top:         1em;
+    table-layout:       fixed;
+    border-collapse:    collapse;
+    border:             1px solid var(--blotto-color-bdr-table);
+}
+
+table:first-of-type {
+    margin-top:         0;
+}
+
+table caption {
+    margin:             0  0  0.5em 0;
+    text-align:         left;
+    font-weight:        bold;
+    white-space:        nowrap;
+}
+
+th, td {
+    padding:            0.3em 0.5em 0.3em 0.5em;
+    font-size:          var(--blotto-font-size-table);
+    vertical-align:     top;
+}
+
+tbody tr:nth-child(odd) {
+    background-color:   var(--blotto-color-bgd-row-odd);
+}
+
+tbody tr:nth-child(even), tfoot tr {
+    background-color:   var(--blotto-color-bgd-row-even);
+}
+
+tfoot td {
+    text-align:         center;
+}
+
+button, input[type="submit"] {
+    border-color:       var(--blotto-color-bdr-button);
+    background-color:   var(--blotto-color-bgd-button);
+    color:              var(--blotto-color-fgd-button);
+    font-weight:        bold;
+}
+
+button[data-close] {
+    float:              right;
+    margin:             2em 2em 0 0;
+}
+
+
+nav.links {
+    width:              100%;
+    text-align:         center;
+}
+
+a.link-resource {
+    margin:             0.5em 0.2em 0 0;
+    display:            inline-block;
+    width:              1.5em;
+    height:             2em;
+    background-size:    100%;
+}
+
+a.link-image {
+    background-image:   var(--blotto-url-link-image);
+}
+
+a.link-table {
+    background-image:   var(--blotto-url-link-table);
+}
+
+a.link-csv {
+    background-image:   var(--blotto-url-link-csv);
+}
+
+a.help {
+    text-decoration:    none;
+}
+
+#built {
+}
+
+#options {
+    box-sizing:         border-box;
+    margin:             0.4em 0 0.4em 0.4em;
+    border-style:       solid;
+    border-width:       1px;
+    width:              calc(100% - 0.6em - 2px);
+    height:             2.6em;
+    padding:            0.55em 0.5em 0 8em;
+    text-align:         right;
+}
+
+#options a, button, #reconcile input[type="submit"] {
+    margin:             0 0 0 0.05em;
+    border-style:       solid;
+    border-width:       2px;
+    border-radius:      0.3em;
+    padding:            0.1em 0.4em 0.1em 0.4em;
+    font-size:          var(--blotto-font-size-button-default);
+    text-align:         center;
+    text-decoration:    none;
+}
+
+#options a {
+    display:            inline-block;
+    margin-bottom:      0.3em;
+    border-color:       var(--blotto-color-bdr-button);
+    background-color:   var(--blotto-color-bgd-button);
+    color:              var(--blotto-color-fgd-button);
+    font-weight:        bold;
+}
+#options a:hover {
+    border-color:       var(--blotto-color-bdr-button);
+    background-color:   var(--blotto-color-bgd-button);
+    color:              var(--blotto-color-fgd-button-opt-hvr);
+}
+#options a.active, #options a.active:hover, #options a#logout {
+    border-color:       var(--blotto-color-bdr-button-opt-acv);
+    background-color:   var(--blotto-color-bgd-button-opt-acv);
+    color:              var(--blotto-color-fgd-button-opt-acv);
+}
+#options a.active, #options a.active:hover {
+    border-color:       var(--blotto-color-bdr-button-opt-avh);
+}
+#options a#logout:hover {
+    border-color:       var(--blotto-color-bdr-button-lgt-hvr);
+    background-color:   var(--blotto-color-bgd-button-lgt-hvr);
+}
+
+#frame {
+    box-sizing:         border-box;
+    margin:             0 0 0 0.4em;
+    border-style:       solid;
+    border-width:       1px;
+    width:              calc(100% - 0.6em - 2px);
+    height:             calc(100vh - 6.4em - 6px);
+    overflow-y:         scroll;
+}
+
+#footer {
+    box-sizing:         border-box;
+    margin:             0.2em 0 0 0.4em;
+    border-style:       solid;
+    border-width:       1px;
+    width:              calc(100% - 0.6em - 2px);
+    height:             2.6em;
+    padding:            0.5em 0.8em 0 18em;
+    text-align:         left;
+}
+
+#footer a {
+    float:              right;
+    display:            inline-block;
+    margin:             0 0.3em 0 0;
+    padding:            0.4em;
+    font-size:          0.8em;
+    text-decoration:    none;
+    color:              var(--blotto-color-fgd-lk-aux);
+}
+
+#footer a:hover {
+    text-decoration:    none;
+    color:              var(--blotto-color-fgd-lk-aux-hvr);
+}
+
+#footer a.active {
+    color:              var(--blotto-color-fgd-lk-aux-acv);
+}
+
+#login {
+    position:           fixed;
+    top:                calc(50vh - 4em);
+    width:              100vw;
+    height:             8em;
+    background-color:   var(--blotto-color-bgd-login);
+    background-image:   var(--blotto-url-login-bgd);
+    background-repeat:  repeat-y;
+    background-position: var(--blotto-align-bgd-login);
+    background-size:    var(--blotto-size-bgd-login);
+}
+#login.insecure {
+    background-color:   #ffaaaa;
+}
+#login.insecure input {
+    color:              #008888;
+}
+
+form.login {
+    text-align:         center;
+    padding:            1.9em 0 0 0;
+}
+
+form.login input {
+    display:            inline-block;
+    margin:             0 0 1.5em 0;
+    box-sizing:         border-box;
+    width:              17em;
+    height:             2.5em;
+    padding-top:        0.3em;
+    padding-bottom:     0.3em;
+    text-align:         center;
+}
+
+form.login .pwd {
+    position:           relative;
+}
+
+form.login .pwd [name="auth"] {
+    position:           absolute;
+    right:              calc(50vw - 8.45em + 1px);
+    top:                1px;
+    display:            block;
+    box-sizing:         border-box;
+    border-radius:      0;
+    border-width:       0;
+    width:              calc(2.5em - 2px);
+    height:             calc(2.5em - 2px);
+    background-color:   var(--blotto-color-bgd-button-lgn);
+    background-image:   var(--blotto-url-button-login);
+    background-repeat:  no-repeat;
+    background-size:    20%;
+    background-position: center;
+    color:              transparent;
+}
+form.login .pwd [name="auth"]:hover {
+    background-color:   var(--blotto-color-bgd-button-lgn-hvr);
+    color:              transparent;
+}
+
+form#change-mandate,
+form#change-supporter {
+    display:            none;
+    position:           fixed;
+    left:               20vw;
+    top:                0.5em;
+    height:             calc(100vh - 1em);
+    border-style:       solid;
+    border-width:       1px;
+    border-color:       var(--blotto-color-bdr-table);
+    background-color:   var(--blotto-dfn-clr-white);
+    overflow-x:         auto;
+    overflow-y:         scroll;
+}
+form#change-mandate.active,
+form#change-supporter.active {
+    display:            block;
+}
+
+form#change-mandate button.form-close,
+form#change-supporter button.form-close {
+    position:           fixed;
+    left:               calc(20vw + 0.4em);
+    top:                1em;
+    font-size:          0.8em;
+}
+
+form#change-mandate button#post-mandate,
+form#change-supporter button#post-supporter {
+    position:           fixed;
+    left:               calc(20vw + 5em);
+    top:                1em;
+    font-size:          0.8em;
+}
+
+form#change-mandate thead,
+form#change-supporter thead {
+    height:             1.8em;
+}
+
+form#change-mandate tr td:first-child,
+form#change-supporter tr td:first-child {
+    width:              10em;
+    text-align:         right;
+}
+
+form#change-mandate input,
+form#change-supporter input {
+    width:              30em;
+}
+
+#list button {
+    color:              var(--blotto-color-fgd-button-lst);
+}
+#list button:hover {
+    border-color:       var(--blotto-color-bdr-button);
+    background-color:   var(--blotto-color-bgd-button);
+    color:              var(--blotto-color-fgd-button-lst);
+}
+#list button.active, #list button.active:hover {
+    border-color:       var(--blotto-color-bdr-button-lst-acv);
+    background-color:   var(--blotto-color-bgd-button-lst-acv);
+    color:              var(--blotto-color-fgd-button-lst-acv);
+}
+
+#logo {
+    position:           fixed;
+    left:               0.7em;
+    bottom:             0.55em;
+}
+
+#logo-blotto {
+    position:           fixed;
+    width:              auto;
+    height:             34px;
+    left:               1em;
+    top:                0.92em;
+}
+
+#logo-company {
+    position:           fixed;
+    width:              auto;
+    height:             30px;
+    left:               1em;
+    top:                0.92em;
+}
+
+#login #logo-blotto {
+    left:               1em;
+    top:                calc(50vh - 21px);
+}
+
+.content {
+    padding:            2em;
+    width:              calc(100% - 4em);
+}
+
+.content > h2 {
+    box-sizing:         border-box;
+    margin:             0 0 0.5em 0;
+    padding:            0;
+}
+
+#list h2 {
+    margin-left:        3.6em;
+}
+
+h3 {
+    margin-top:         0.5em;
+    margin-bottom:      0.5em;
+}
+
+#list h3 {
+    margin:             0 0 0 5em;
+    padding:            0;
+}
+#list h3:first-of-type {
+    margin-top:         1.2em;
+}
+
+form#group-by {
+    position:          absolute;
+    left:              40em;
+    top:               0.85em;
+    border-style:      solid;
+    border-width:      1px;
+    border-color:      var(--blotto-color-bdr-form-options);
+    padding:           0.1em 0.3em 0.1em 0.3em;
+    white-space:       nowrap;
+}
+
+form#group-by span, form#group-by label {
+    position:          relative;
+    top:               -0.15em;
+    font-size:         var(--blotto-font-size-form-group-by);
+}
+
+#list .choices button {
+    font-size:          var(--blotto-font-size-button-choices);
+    padding:            0.1em 0.2em 0.1em 0.2em;
+}
+
+#list .all-data-choices {
+    position:           absolute;
+    z-index:            1;
+    left:               1.85em;
+    top:                1.85em;
+}
+
+#list .all-data-choices > button {
+    width:              6em;
+    white-space:        nowrap;
+}
+
+#list .all-data-choices .choices button {
+    position:           absolute;
+    z-index:            2;
+    top:                1.75em;
+}
+
+#list .all-data-choices .choices button[data-go="view"] {
+    left:               0.55em;
+}
+
+#list .all-data-choices .choices button[data-go="pull"] {
+    left:               4em;
+}
+
+.month {
+    position:           relative;
+}
+
+#list .month-choices {
+    position:           absolute;
+    z-index:            1;
+    left:               -0.2em;
+    top:                0.35em;
+}
+
+#list .month-choices button[data-interval="month"] {
+    position:           absolute;
+    z-index:            1;
+    left:               0;
+    top:                -0.8em;
+    width:              6em;
+    white-space:        nowrap;
+}
+
+#list .month-choices .choices button {
+    position:           absolute;
+    z-index:            2;
+    top:                0.8em;
+}
+
+#list .month-choices .choices button[data-go="view"] {
+    left:               0.6em;
+}
+
+#list .month-choices .choices button[data-go="pull"] {
+    left:               4.1em;
+}
+
+.fridays {
+    position:           absolute;
+    z-index:            1;
+    left:               16.7em;
+    top:                -0.35em;
+}
+
+.friday {
+    position:           relative;
+}
+
+#list .friday .choices {
+    position:           absolute;
+    z-index:            2;
+    left:               0.5em;
+    top:                1.15em;
+}
+
+.choices a {
+    display:            block;
+    z-index:            1000;
+}
+
+.lottery-number {
+    display:            none;
+    border-style:       solid;
+    border-width:       2px;
+    border-radius:      0.6em;
+    border-color:       var(--blotto-color-bdr-winning-nr);
+    padding:            0.1em;
+    color:              var(--blotto-color-fgd-winning-nr);
+}
+
+.splash {
+    position:           fixed;
+    right:              2em;
+    top:                5em;
+    opacity:            0;
+    animation:          fadeout 5s;
+    margin:             0;
+    padding:            0.2em 0.5em 0.2em 0.5em;
+}
+
+@keyframes fadeout {
+    from { opacity:    1.0; }
+      5% { opacity:    0.5; }
+     10% { opacity:    1.0; }
+     15% { opacity:    0.5; }
+     20% { opacity:    1.0; }
+     75% { opacity:    1.0; }
+      to { opacity:    0.0; }
+}
+
+.negative {
+    color:             var(--blotto-color-fgd-negative-nr);
+}
+
+.msg {
+    font-weight:       bold;
+    background-color:  var(--blotto-color-bgd-message-msg);
+    color:             var(--blotto-color-fgd-message);
+}
+
+.err {
+    background-color:  var(--blotto-color-bgd-message-err);
+    color:             var(--blotto-color-fgd-message);
+}
+
+.wrn {
+    background-color:  var(--blotto-color-bgd-message-wrn);
+    color:             var(--blotto-color-fgd-message);
+}
+
+.ok {
+    background-color:  var(--blotto-color-bgd-message-ok);
+    color:             var(--blotto-color-fgd-message);
+}
+
+.changed, .changed tr, .changed th, .changed td {
+    background-color:  var(--blotto-color-bgd-message-wrn) !important;
+    color:             var(--blotto-color-fgd-message);
+}
+
+.updated, .updated tr, .updated th, .updated td {
+    background-color:  var(--blotto-color-bgd-message-ok) !important;
+    color:             var(--blotto-color-fgd-message);
+}
+
+@keyframes slideup {
+    from { height:      0; }
+      to { height:      calc(100vh - 8.2em - 8px); }
+}
+
+
+#visual {
+    padding-bottom:     5em;
+}
+
+#visual h2 {
+    margin-bottom:      0.3em;
+}
+
+#visual hr:last-of-type {
+    visibility:         hidden;
+}
+
+
+.chart {
+    margin-bottom:      4em;
+    width:              25em;
+    margin-left:        3em;
+    margin-right:       0;
+}
+
+.chart.doughnut {
+    margin-bottom:      -2em;
+    width:              20em;
+}
+
+.chart.left {
+    float:              left;
+}
+
+.chart.left.doughnut {
+    margin-left:        5.5em;
+}
+
+.chart.right {
+    float:              right;
+    margin-right:       3em;
+}
+
+.chart.right.doughnut {
+    margin-right:       5.5em;
+}
+
+
+.chart-title {
+    width:              0;
+    height:             0;
+    overflow:           hidden;
+    font-family:        var(--blotto-dfn-fnt-default);
+    font-weight:        bold;
+    color:              var(--blotto-color-fgd-chart-legend);
+}
+
+.chart-legend {
+    width:              0;
+    height:             0;
+    overflow:           hidden;
+    font-size:          var(--blotto-font-size-chart-legend);
+    color:              var(--blotto-color-fgd-chart-legend);
+}
+
+.chart-grid {
+    width:              0;
+    height:             0;
+    overflow:           hidden;
+    background-color:   var(--blotto-color-bgd-chart-grid);
+    color:              var(--blotto-color-fgd-chart-grid);
+}
+
+.chart-bar-1,
+.chart-bar-5,
+.chart-bar-9,
+.chart-bar-13,
+.chart-bar-17,
+.chart-bar-21 {
+    background-color:   var(--blotto-color-bgd-chart-bar-1);
+}
+
+.chart-bar-2,
+.chart-bar-6,
+.chart-bar-10,
+.chart-bar-14,
+.chart-bar-18,
+.chart-bar-22 {
+    background-color:   var(--blotto-color-bgd-chart-bar-2);
+}
+
+.chart-bar-3,
+.chart-bar-7,
+.chart-bar-11,
+.chart-bar-15,
+.chart-bar-19,
+.chart-bar-23 {
+    background-color:   var(--blotto-color-bgd-chart-bar-3);
+}
+
+.chart-bar-4,
+.chart-bar-8,
+.chart-bar-12,
+.chart-bar-16,
+.chart-bar-20,
+.chart-bar-24 {
+    background-color:   var(--blotto-color-bgd-chart-bar-4);
+}
+
+
+
+#reconcile .reconcile {
+    margin-top:         1em;
+    width:              30em;
+}
+
+#reconcile-table-draw-summary tbody td:nth-of-type(3),
+#reconcile-table-draw-summary tbody td:nth-of-type(4) {
+    text-align:         right;
+}
+
+#reconcile-table-draw-summary-super tbody td:nth-of-type(2),
+#reconcile-table-draw-summary-super tbody td:nth-of-type(3) {
+    text-align:         right;
+}
+
+#reconcile-table-reconcile tbody tr:nth-of-type(1),
+#reconcile-table-reconcile tbody tr:nth-of-type(12) {
+    font-weight:        bold;
+}
+
+#reconcile-table-reconcile tbody td:nth-of-type(1),
+#reconcile-table-reconcile tbody td:nth-of-type(2) {
+    text-align:         right;
+}
+
+#reconcile-table-reconcile tbody td:nth-of-type(1),
+#reconcile-table-reconcile tbody td:nth-of-type(3):first-letter {
+    text-transform:     uppercase;
+}
+
+#system-info {
+    float: right;
+}
+
+#guide-video {
+    width:              calc(100vw - 50em);
+}
+
+#support form button {
+    font-size:          1.1em;
+    float:              right;
+}
+
+
+@media screen and (max-width: 1200px) {
+    #options {
+        height:         4.5em;
+    }
+    #frame {
+        height:         calc(100vh - 10.2em - 6px);
+    }
+    #list {
+        min-width:      50em;
+    }
+    #footer {
+        height:         4.5em;
+        padding-left:   1em;
+    }
+}
+
+
+@media screen and (max-width: 1050px) {
+    #list {
+        font-size:      0.8em;
+    }
+}
+
+
+@media screen and (max-width: 830px) {
+    #options {
+        height:         6.4em;
+    }
+    #frame {
+        height:         calc(100vh - 12.1em - 6px);
+    }
+    #list {
+        padding-right:  0;
+        font-size:      0.65em;
+    }
+    .chart {
+        width:          22em;
+        margin-left:    1em;
+    }
+}
+
+
+@media screen and (max-width: 650px) {
+    #frame {
+        height:         calc(100vh - 14em - 6px);
+    }
+    #footer {
+        height:         6.4em;
+    }
+    .chart {
+        width:          20em;
+        margin-left:    0.5em;
+    }
+}
+
+
+@media screen and (max-width: 560px) {
+    #options {
+        height:         9.3em;
+    }
+    #frame {
+        height:         calc(100vh - 15.9em - 6px);
+    }
+    .chart {
+        width:          18em;
+        margin-left:    0.3em;
+    }
+}
+
+

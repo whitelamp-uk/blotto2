@@ -1,0 +1,126 @@
+
+
+MANDATE CHANGE RULES
+====================
+
+Bank details may be changed by amending an existing mandate
+
+Any other changes must be done by terminating the mandate and creating a new one with:
+ * a new ClientRef (the old one plus hyphenated suffix)
+ * AND a new DDRefNo (it must be a unique integer).
+
+Example ClientRef for replacement mandates:
+ * Original BB1234_654321
+ * First replacement BB1234_654321-0001
+ * Second replacement BB1234_654321-0002
+
+
+
+EXPORT RULES
+============
+
+
+All export files have a header row
+
+
+Candidate export format
+-----------------------
+
+Used for RSM upload
+
+Col [not RSM field - remove] = Nomination date (yyyy-mm-dd)
+Col [not RSM field - remove] = Desired Collection Day (01 thru 28)
+Col A = [space]
+Col B = [blank]
+Col C = [blank]
+Col D = [blank]
+Col E = [blank]
+Col F = [blank]
+Col G = [blank]
+Col H = [blank]
+Col I = [blank]
+Col J = ClientRef
+Col K = Account Name
+Col L = Account Number
+Col M = Sort Code
+Col N = Record Type
+Col O = [blank]
+Col P = Amount
+Col Q = Frequency
+Col R = Start Date
+Col S = [space]
+Col T = [space]
+Col U = [blank]
+Col V = [blank]
+
+
+
+
+
+IMPORT RULES
+============
+
+All import files must have a header row but it is ignored
+
+
+Mandate import rules
+--------------------
+
+Provided from RSM download
+
+
+Col A = DDRefOrig
+Col B = Ignore1
+Col C = Ignore2
+Col D = Name
+Col E = Sortcode
+Col F = Account
+Col G = Amount
+Col H = StartDate
+Col I = Freq
+Col J = Ignore3
+Col K = Ignore4
+Col L = Ignore5
+Col M = Ignore6
+Col N = Ignore7
+Col O = Ignore8
+Col P = CreatedString
+Col Q = ClientRef
+Col R = Ignore9
+Col S = Status
+Col T = FailReason
+Col U = Updated
+Col V = Ignore
+Col W = Ignore
+Col X = Ignore
+Col Y = Ignore
+Col Z = Ignore
+Col AA = Ignore
+Col AB = Ignore
+Col AC = Ignore
+Col AD = Ignore
+Col AE = Ignore
+
+
+
+Collection import rules 
+-----------------------
+
+Provided from RSM download
+
+Col A = ClientRef (must not contain hyphen character implies a replacement mandate)
+Col B = DDRefNo (must be a string coontaining an integer)
+Col C = Date Due
+Col D = Amount
+Col E = Repeat (unused)
+Col F = Pay Status
+Col G = Status
+Col H = Fail Reason
+Col I = Pay Ref (unused)
+Col J = Paid Amount
+Col K = Collection Type (unused)
+
+
+
+
+

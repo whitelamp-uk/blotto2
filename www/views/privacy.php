@@ -1,0 +1,1 @@
+../../../blotto-brand/privacy.php

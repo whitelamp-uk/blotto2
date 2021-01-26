@@ -1,0 +1,205 @@
+
+
+@import url('./media/guide.css');
+
+
+body {
+    margin:            0;
+    padding:           0;
+    background-repeat: no-repeat;
+    background-position: 1.4em 98%;
+    background-attachment: fixed;
+    background-image:  url('./media/logo-adminer.png');
+    font-family:       var(--blotto-dfn-fnt-default);
+}
+
+body.unloading {
+    background-image:   url('./media/wait.gif');
+    background-repeat:  no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+body.unloading * {
+    visibility:         hidden;
+}
+
+input[type=submit] {
+    height:            1.8em;
+    border-radius:     0.3em;
+    border-color:      var(--blotto-color-bdr-button);
+    background-color:  var(--blotto-color-bgd-button);
+    padding:           0.15em 1em 0.15em 1em;
+    color:             var(--blotto-color-fgd-button);
+    font-size:         1.25em;
+    font-weight:       bold;
+}
+
+table thead tr td, table thead tr th {
+    background-color:  var(--blotto-color-bgd-row-odd);
+}
+
+a[href="#import"] {
+    display:           none;
+}
+
+
+a, a:visited {
+    color:             var(--blotto-color-fgd-adminer-link);
+}
+
+#content td {
+    background-color:  var(--blotto-color-bgd-row-even);
+}
+
+#content .odd td {
+    background-color:  var(--blotto-color-bgd-row-odd);
+}
+
+
+#logout {
+    display:           none;
+}
+
+
+#breadcrumb {
+    position:          static;
+    visibility:        hidden;
+    margin:            0;
+    height:            0;
+    padding:           0;
+    overflow:          hidden;
+}
+
+#breadcrumb a:nth-child(3) {
+    position:          fixed;
+    z-index:           1001;
+    visibility:        visible;
+    left:              1em;
+    top:               0.55em;
+    width:             19em;
+    background-image:  linear-gradient(to right, rgba( 255 , 255 , 255 , 1 ) 85%, rgba( 255 , 255 , 255 , 0 ) 100% );
+    padding-bottom:    0.5em;
+}
+
+#breadcrumb a:nth-child(3):before {
+    content:           'DB "';
+}
+
+#breadcrumb a:nth-child(3):after {
+    content:           '"';
+}
+
+#content {
+    margin:            0 0 0 21em;
+}
+
+#content h2 {
+    display:           none;
+}
+
+#content .links {
+    display:           none;
+}
+
+#form {
+    position:          sticky;
+    z-index:           1000;
+    top:               1.55em;
+    background-image:  linear-gradient(to bottom, rgba( 255 , 255 , 255 , 1 ) 85%, rgba( 255 , 255 , 255 , 0 ) 100% );
+    padding-bottom:    0.6em;
+}
+
+#form fieldset {
+    margin-top:        0.3em;
+}
+
+#table td:first-child {
+    display:           none;
+}
+
+#table thead {
+    position:          sticky;
+    top:               0;
+}
+
+#tables {
+    font-size:         1.05em;
+}
+
+#tables a {
+    font-weight:       bold;
+}
+
+#tables a.active {
+    background-color:  var(--blotto-color-bgd-adminer-link);
+}
+
+#tables a.structure {
+    font-weight:       normal;
+}
+#tables a.structure:active {
+    font-weight:       normal;
+}
+
+#tables-views + form table td:first-child {
+    display:           none;
+}
+
+#tables-views + form > .footer {
+    display:           none;
+}
+
+.footer > div > fieldset:nth-of-type(3), .footer > div > fieldset:nth-of-type(4), .footer > div > fieldset:nth-of-type(5) {
+    display:           none;
+}
+
+.footer > div > fieldset input {
+    display:           none;
+}
+
+#routines, #routines + p, #routines + p + p {
+    display:           none;
+}
+
+#events, #events + p, #events + p + p {
+    display:           none;
+}
+
+#triggers, #triggers + p, #triggers + p + p {
+    display:           none;
+}
+
+#menu {
+    position:          fixed;
+    z-index:           1001;
+    width:             19em;
+    background-image:  linear-gradient(to right, rgba( 255 , 255 , 255 , 1 ) 85%, rgba( 255 , 255 , 255 , 0 ) 100% );
+}
+#menu p, #tables {
+    border-style:      solid;
+    border-width:      0;
+}
+
+#menu h1 {
+    display:           none;
+}
+
+#dbs {
+    display:           none;
+}
+
+#menu .links {
+    margin-top:        -1.2em;
+}
+
+#menu .links a {
+    display:           none;
+}
+
+#menu .links a:first-of-type, #menu .links #dump {
+    display:           block;
+    margin-top:        0.4em;
+    margin-bottom:     0.5em;
+}
+

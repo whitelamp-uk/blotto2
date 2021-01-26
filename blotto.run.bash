@@ -1,0 +1,87 @@
+
+
+get_args () {
+    cfg=""
+    verbose=""
+    while [ 1 ]
+    do
+        if [[ "$1" == "-"* ]]
+        then
+            if    [[ "$1" == *"v"* ]]
+            then
+                verbose="1"
+            fi
+            shift
+        fi
+        if [ ! "$@" ]
+        then
+            return
+        fi
+        cfg="$1"
+        shift
+    done
+}
+
+
+
+# Set up
+echo "----------------"
+date '+%Y-%m-%d %H:%M:%S'
+wd="$(pwd)"
+cd "$(dirname $0)"
+start=$SECONDS
+
+
+# Definitions
+get_args "$@"
+if [ ! "$cfg" ]
+then
+    echo "/bin/bash $0 [-options] path_to_config_file"
+    echo "  options can be combined eg. -nv"
+    echo "    -n = no tidying"
+    echo "    -v = verbose (echo full log to STDOUT)"
+    exit 101
+fi
+now="$(date '+%Y_%m_%d_%H_%M_%S')"
+pdir="$(pwd)/scripts"
+echo -n "blotto running on: "
+/usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_MC_NAME
+if [ $? != 0 ]
+then
+    exit 102
+fi
+ldys="$( /usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_LOG_DURN_DAYS  )"
+ldir="$( /usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_LOG_DIR        )"
+lfil="blotto.run.$now.log"
+
+
+# Report log location
+echo "Writing to log file: $ldir/$lfil"
+
+
+# Tidy
+find "$ldir" -mtime +$ldys -type f -delete
+
+
+# Execute
+if [ "$verbose" ]
+then
+    /bin/bash "$pdir/blotto.bash" "$@" 2>&1 | tee "$ldir/$lfil"
+    err="$?"
+else
+    /bin/bash "$pdir/blotto.bash" "$@" 2>&1 > "$ldir/$lfil"
+    err="$?"
+fi
+
+
+# Return manual terminal to working directory
+cd "$wd"
+
+
+# Report script run time
+echo "Script run time = $(($SECONDS-$start)) seconds"
+
+# Exit with main script exit status
+exit $err
+
+
