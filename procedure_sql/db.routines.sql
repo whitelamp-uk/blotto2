@@ -580,7 +580,7 @@ BEGIN
   ;
 END$$
 
-
+/*
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `cloneTablesFrom`$$
 CREATE PROCEDURE `cloneTablesFrom`(
@@ -649,7 +649,7 @@ BEGIN
   EXECUTE insrt USING @tableTo, @tableFrom
   ;
 END$$
-
+*/
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `draws`$$
