@@ -1364,6 +1364,32 @@ function notarised ($draw_closed,$results=false) {
     return file_exists (BLOTTO_PROOF_DIR.'/'.$draw_closed.'/draw.csv.tsr');
 }
 
+function note ($note) {
+    global $Notes;
+    if (!is_array($Notes)) {
+        $Notes = [];
+    }
+    array_push ($Notes,$note);
+}
+
+function notify ($to,$subject,$message) {
+    global $Notes;
+    $headers        = null;
+    if (defined('BLOTTO_EMAIL_FROM')) {
+        $headers    = "From: ".BLOTTO_EMAIL_FROM."\n";
+    }
+    mail (
+        $to,
+        BLOTTO_BRAND." ".$subject." for ".BLOTTO_ORG_NAME." from ".BLOTTO_MC_NAME,
+        $message."\n\nNotes: ".print_r($Notes,true),
+        $headers
+    );
+}
+
+function notify_winnings ($amounts) {
+    notify (BLOTTO_EMAIL_WARN_TO,'Winnings report','Winnings: '.print_r($amounts,true));
+}
+
 function players_new (&$players,&$tickets,$oid=BLOTTO_ORG_ID,$db=null) {
     if (!$db) {
         $db = ['make'=>BLOTTO_MAKE_DB, 'frontend'=>BLOTTO_DB];
@@ -2406,12 +2432,15 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
                 $winner    = $matchtickets[$group];
                 $prizewon  = prize_match ($e,$prizelist,$winner);
                 if ($prizewon) {
-                    $levels_matched[$prizewon['level']] = 'placeholder';
+                    $amount  = prize_amount ($prizewon,$verbose);
+                    if (!array_key_exists($prizewon['level'],$levels_matched)) {
+                        $levels_matched[$prizewon['level']] = 0;
+                    }
+                    $levels_matched[$prizewon['level']] += $amount;
                     // prize_amount() is in BLOTTO_BESPOKE_FUNC
                     if ($verbose) {
                         echo "TICKET = {$e['ticket_number']}\n";
                     }
-                    $amount  = prize_amount ($prizewon,$verbose);
                     $qw   .= "({$e['id']},'{$e['ticket_number']}',{$prizewon['level']},'{$prizewon['starts']}',$amount),";
                     if ($rbe) {
                         array_push (
@@ -2429,7 +2458,6 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
                 }
             }
         }
-        $levels_matched = array_keys ($levels_matched);
     }
     // Run results insert
     if ($rcount>0) {
@@ -2457,7 +2485,7 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
             winnings_super ($wins,'number-match');
         }
     }
-    // Return levels that matched
+    // Return the total amount won for each level that matched
     return $levels_matched;
 }
 
@@ -2488,12 +2516,17 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
       (`entry_id`,`number`,`prize_level`,`prize_starts`,`amount`)
       VALUES
     ";
-    $wins               = array ();
+    $wins               = [];
+    $levels_matched     = [];
     foreach ($prizes as $p) {
         // blotto_entry.id
         $eid            = array_pop ($rafflewinners);
         $entry          = $entries[$eid];
         $amount         = prize_amount ($p,$verbose);
+        if (!array_key_exists($p['level'],$levels_matched)) {
+            $levels_matched[$p['level']] = 0;
+        }
+        $levels_matched[$p['level']] += $amount;
         $qr            .= "('{$entry['draw_closed']}',{$p['level']},'{$entry['ticket_number']}'),";
         $qw            .= "($eid,'{$entry['ticket_number']}',{$p['level']},'{$p['starts']}',$amount),";
         if ($rbe) {
@@ -2534,7 +2567,7 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
         // Call bespoke function
         winnings_super ($wins,'raffle');
     }
-    return true;
+    return $levels_matched;
 }
 
 function winnings_super ($wins,$type) {
