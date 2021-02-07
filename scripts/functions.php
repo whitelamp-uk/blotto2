@@ -1,5 +1,18 @@
 <?php
 
+function amounts_add ($amounts,$draw_closed,$as) {
+    foreach ($as as $level=>$amount) {
+        if (!array_key_exists($draw_closed,$amounts)) {
+            $amounts[$draw_closed] = [];
+        }
+        if (!array_key_exists($level,$amounts[$draw_closed])) {
+            $amounts[$draw_closed][$level] = 0;
+        }
+        $amounts[$draw_closed][$level] += $amount;
+    }
+    return $amounts;
+}
+
 function bank_decrypt ($key,$data,&$sortcode,&$accountnr) {
     $method = 'AES-256-CBC';
     $data = base64_decode($data);
