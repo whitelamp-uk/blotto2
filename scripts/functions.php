@@ -1,18 +1,5 @@
 <?php
 
-function amounts_add ($amounts,$draw_closed,$as) {
-    foreach ($as as $level=>$amount) {
-        if (!array_key_exists($draw_closed,$amounts)) {
-            $amounts[$draw_closed] = [];
-        }
-        if (!array_key_exists($level,$amounts[$draw_closed])) {
-            $amounts[$draw_closed][$level] = 0;
-        }
-        $amounts[$draw_closed][$level] += $amount;
-    }
-    return $amounts;
-}
-
 function bank_decrypt ($key,$data,&$sortcode,&$accountnr) {
     $method = 'AES-256-CBC';
     $data = base64_decode($data);
@@ -1377,14 +1364,6 @@ function notarised ($draw_closed,$results=false) {
     return file_exists (BLOTTO_PROOF_DIR.'/'.$draw_closed.'/draw.csv.tsr');
 }
 
-function note ($note) {
-    global $Notes;
-    if (!is_array($Notes)) {
-        $Notes = [];
-    }
-    array_push ($Notes,$note);
-}
-
 function notify ($to,$subject,$message) {
     global $Notes;
     $headers        = null;
@@ -1397,13 +1376,6 @@ function notify ($to,$subject,$message) {
         $message."\n\nNotes: ".print_r($Notes,true),
         $headers
     );
-}
-
-function notify_winnings ($amounts) {
-    if (!count($amounts)) {
-        return;
-    }
-    notify (BLOTTO_EMAIL_WARN_TO,'Winnings report','Winnings: '.print_r($amounts,true));
 }
 
 function players_new (&$players,&$tickets,$oid=BLOTTO_ORG_ID,$db=null) {
@@ -2383,6 +2355,32 @@ function win_last ( ) {
         return $w['last'];
     }
     return $yesterday;
+}
+
+function winnings_add ($amounts,$draw_closed,$as) {
+    if (!count($as)) {
+        return;
+    }
+    foreach ($as as $level=>$amount) {
+        if (!$amount) {
+            continue;
+        }
+        if (!array_key_exists($draw_closed,$amounts)) {
+            $amounts[$draw_closed] = [];
+        }
+        if (!array_key_exists($level,$amounts[$draw_closed])) {
+            $amounts[$draw_closed][$level] = 0;
+        }
+        $amounts[$draw_closed][$level] += $amount;
+    }
+    return $amounts;
+}
+
+function winnings_notify ($amounts) {
+    if (!count($amounts)) {
+        return;
+    }
+    notify (BLOTTO_EMAIL_WARN_TO,'Winnings report','Winnings: '.print_r($amounts,true));
 }
 
 function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=false) {

@@ -131,7 +131,7 @@ while ($d=$ds->fetch_assoc()) {
     if ($now<$d['draw_after']) {
         fwrite (STDERR,"Refusing to draw closed $draw_closed until after {$d['draw_after']}\n");
         fwrite (STDERR,"So draws.php bailing out at this point\n");
-        notify_winnings ($amounts);
+        winnings_notify ($amounts);
         exit (0);
     }
     $draw_closed    = $d['draw_closed'];
@@ -156,7 +156,7 @@ while ($d=$ds->fetch_assoc()) {
         foreach ($prizes as $p) {
             if ($p['insure'] && !$d['insured']) {
                 fwrite (STDERR,"Refusing to do draws on or after $draw_closed because prize {$p['level']}@{$p['starts']} requires insurance\n");
-                notify_winnings ($amounts);
+                winnings_notify ($amounts);
                 exit (0);
             }
         }
@@ -206,7 +206,7 @@ while ($d=$ds->fetch_assoc()) {
             if (!$p['results']) {
                 if (!$p['function_name']) {
                     fwrite (STDERR,"Refusing to do draws on or after $draw_closed because manual prize {$p['level']}@{$p['starts']} has no results, and no manual function is given (that is, results must be inserted into blotto_result by hand)\n");
-                        notify_winnings ($amounts);
+                        winnings_notify ($amounts);
                         exit (0);
                 }
                 try {
@@ -216,7 +216,7 @@ while ($d=$ds->fetch_assoc()) {
                 catch (\Exception $e) {
                     fwrite (STDERR,"Prize {$p['level']} for $draw_closed = ".print_r($p,true));
                     fwrite (STDERR,$draw_closed.' '.$e->getMessage()."\n");
-                    notify_winnings ($amounts);
+                    winnings_notify ($amounts);
                     exit (108);
                 }
             }
@@ -251,7 +251,7 @@ while ($d=$ds->fetch_assoc()) {
             $ms = $results_nrmatch->response->result->random->data;
             if (count($ms)!=$m) {
                 fwrite (STDERR,"$m tickets needed for number-match prizes but got ".print_r($ms, true)."\n");
-                notify_winnings ($amounts);
+                winnings_notify ($amounts);
                 exit (109);
             }
             foreach ($ms as $k=>$v) {
@@ -274,7 +274,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            notify_winnings ($amounts);
+            winnings_notify ($amounts);
             exit (110);
         }
     }
@@ -296,11 +296,11 @@ while ($d=$ds->fetch_assoc()) {
     try {
         $as             = winnings_nrmatch ($nrmatchprizes,$entries,$nrmatchtickets,$rbe,!$quiet);
         $levels_matched = array_keys ($as);
-        $amounts        = amounts_add ($amounts,$draw_closed,$as);
+        $amounts        = winnings_add ($amounts,$draw_closed,$as);
     }
     catch (\Exception $e) {
         fwrite (STDERR,$e->getMessage()."\n");
-        notify_winnings ($amounts);
+        winnings_notify ($amounts);
         exit (111);
     }
     if (!$quiet) {
@@ -336,7 +336,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$qr."\n".$e->getMessage()."\n");
-            notify_winnings ($amounts);
+            winnings_notify ($amounts);
             exit (112);
         }
     }
@@ -373,11 +373,11 @@ while ($d=$ds->fetch_assoc()) {
                 echo $draw_closed." Doing capped rollovers by raffle\n";
             }
             $as         = winnings_raffle ($rolloverprizes,$entries,$rolloverwinners,$rbe,'ADHOC',!$quiet);
-            $amounts    = amounts_add ($amounts,$draw_closed,$as);
+            $amounts    = winnings_add ($amounts,$draw_closed,$as);
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            notify_winnings ($amounts);
+            winnings_notify ($amounts);
             exit (113);
         }
     }
@@ -409,18 +409,15 @@ while ($d=$ds->fetch_assoc()) {
                 echo $draw_closed." Doing standard raffle winners\n";
             }
             $as         = winnings_raffle ($raffleprizes,$entries,$rafflewinners,$rbe,false,!$quiet);
-            $amounts    = amounts_add ($amounts,$draw_closed,$as);
+            $amounts    = winnings_add ($amounts,$draw_closed,$as);
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            notify_winnings ($amounts);
+            winnings_notify ($amounts);
             exit (114);
         }
     }
-    if (count($d)) {
-        note ($d);
-    }
 }
 
-notify_winnings ($amounts);
+winnings_notify ($amounts);
 
