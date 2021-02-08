@@ -2380,7 +2380,7 @@ function winnings_notify ($amounts) {
     if (!count($amounts)) {
         return;
     }
-    notify (BLOTTO_EMAIL_WARN_TO,'Winnings report','Winnings: '.print_r($amounts,true));
+    notify (BLOTTO_EMAIL_TO,'Winnings report','Winnings: '.print_r($amounts,true));
 }
 
 function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=false) {
