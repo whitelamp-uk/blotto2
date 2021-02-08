@@ -2360,9 +2360,11 @@ function win_last ( ) {
 function winnings_add ($amounts,$draw_closed,$as) {
     if (!is_array($amounts)) {
         throw new \Exception ('First argument must be an array');
+        return false;
     }
     if (!is_array($as)) {
         throw new \Exception ('Third argument must be an array');
+        return false;
     }
     if (!count($as)) {
         return;
@@ -2383,6 +2385,10 @@ function winnings_add ($amounts,$draw_closed,$as) {
 }
 
 function winnings_notify ($amounts) {
+    if (!is_array($amounts)) {
+        throw new \Exception ('First argument must be an array');
+        return false;
+    }
     if (!count($amounts)) {
         return;
     }
