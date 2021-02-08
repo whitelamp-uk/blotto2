@@ -2366,9 +2366,6 @@ function winnings_add ($amounts,$draw_closed,$as) {
         throw new \Exception ('Third argument must be an array');
         return false;
     }
-    if (!count($as)) {
-        return;
-    }
     foreach ($as as $level=>$amount) {
         if (!$amount) {
             continue;
