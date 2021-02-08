@@ -16,10 +16,11 @@ define ( 'BLOTTO_EXEC_LAST_FILE',   'ls -tp "{{DIR}}" | grep -v /$ | head -1'   
 define ( 'BLOTTO_LOG_DURN_DAYS',    14                  );
 define ( 'BLOTTO_MC_NAME',          'mymachine'         );
 define ( 'BLOTTO_EMAIL_FROM',       'mymachine@mydomain'                        );
-define ( 'BLOTTO_EMAIL_WARN_ON',    false               );
+define ( 'BLOTTO_EMAIL_WARN_ON',    true                );
 define ( 'BLOTTO_EMAIL_WARN_TO',    'techsupport@mysite.co.uk'                  );
 define ( 'BLOTTO_EMAIL_BACS_TO',    'bacs@mysite.co.uk'                         );
 define ( 'BLOTTO_EMAIL_TO',         'support@mysite.co.uk'                      );
+define ( 'BLOTTO_EMAIL_WINS_ON',    true                );
 define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      );
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
 

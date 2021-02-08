@@ -2382,6 +2382,9 @@ function winnings_add ($amounts,$draw_closed,$as) {
 }
 
 function winnings_notify ($amounts) {
+    if (!defined('BLOTTO_EMAIL_WINS_ON') || !BLOTTO_EMAIL_WINS_ON) {
+        return;
+    }
     if (!is_array($amounts)) {
         throw new \Exception ('First argument must be an array');
         return false;
