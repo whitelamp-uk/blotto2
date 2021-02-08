@@ -22,7 +22,7 @@ if (defined('BLOTTO_EMAIL_FROM')) {
 
 mail (
     BLOTTO_EMAIL_WARN_TO,
-    BLOTTO_BRAND." report for ".BLOTTO_ORG_NAME." from ".BLOTTO_MC_NAME,
+    BLOTTO_BRAND." - Status report for ".BLOTTO_ORG_NAME." from ".BLOTTO_MC_NAME,
     "Message at ".date('Y-m-d H:i:s')." was:\n".$argv[2],
     $headers
 );

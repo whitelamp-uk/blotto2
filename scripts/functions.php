@@ -1372,7 +1372,7 @@ function notify ($to,$subject,$message) {
     }
     mail (
         $to,
-        BLOTTO_BRAND." ".$subject." for ".BLOTTO_ORG_NAME." from ".BLOTTO_MC_NAME,
+        BLOTTO_BRAND." - ".$subject." for ".BLOTTO_ORG_NAME." from ".BLOTTO_MC_NAME,
         $message."\n\nNotes: ".print_r($Notes,true),
         $headers
     );
