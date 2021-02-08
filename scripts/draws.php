@@ -136,7 +136,6 @@ while ($d=$ds->fetch_assoc()) {
     }
     $draw_closed    = $d['draw_closed'];
     $won            = $d['won'];
-    $amounts[$draw_closed] = [];
     if (!$quiet) {
         echo "$draw_closed ----------------\n";
     }
