@@ -30,7 +30,7 @@ if (!$zo) {
 
 // Insert any missing manual results by deriving them
 // from partial results inserted by hand
-echo "    Updating manual results to fill holes\n"; 
+echo "    Updating manual results to fill holes\n";
 $qi ="
   INSERT IGNORE INTO `$rdb`.`blotto_result`
     (`draw_closed`,`prize_level`,`number`)
@@ -67,7 +67,7 @@ catch (\mysqli_sql_exception $e) {
 
 
 // Get a list of draw closed dates having entries
-// TODO tighten up the insurance check by making sure that every 
+// TODO tighten up the insurance check by making sure that every
 // blotto_entry has a corresponding blotto_insurance.  As it stands
 // it assumes that as long as one ticket is insured they all are.
 $qs = "
@@ -124,7 +124,7 @@ if ($ds->num_rows==0 && !$quiet) {
 }
 
 
-echo "    Processing draws\n"; 
+echo "    Processing draws\n";
 $now                = date ('Y-m-d H:i:s');
 $amounts            = [];
 while ($d=$ds->fetch_assoc()) {
@@ -200,7 +200,7 @@ while ($d=$ds->fetch_assoc()) {
             }
             continue;
         }
-        $nrmatchtktgroup = substr ($p['level_method'],-1);  
+        $nrmatchtktgroup = substr ($p['level_method'],-1);
         if ($p['results_manual']) {
             if (!$p['results']) {
                 if (!$p['function_name']) {
@@ -255,7 +255,7 @@ while ($d=$ds->fetch_assoc()) {
             }
             foreach ($ms as $k=>$v) {
                 $ms[$k] = str_pad ($v,strlen(BLOTTO_TICKET_MAX),'0',STR_PAD_LEFT);
-            }        
+            }
             foreach ($nrmatchtickets as $group=>$placeholder) {
                 $nrmatchtickets[$group] = array_pop ($ms); // identifies group
             }
