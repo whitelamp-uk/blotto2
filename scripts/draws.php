@@ -295,7 +295,8 @@ while ($d=$ds->fetch_assoc()) {
     try {
         $as             = winnings_nrmatch ($nrmatchprizes,$entries,$nrmatchtickets,$rbe,!$quiet);
         $levels_matched = array_keys ($as);
-        $amounts        = winnings_add ($amounts,$draw_closed,$as);
+        $as             = winnings_add ($amounts,$draw_closed,$as);
+        $amounts        = $as;
     }
     catch (\Exception $e) {
         fwrite (STDERR,$e->getMessage()."\n");
@@ -372,7 +373,8 @@ while ($d=$ds->fetch_assoc()) {
                 echo $draw_closed." Doing capped rollovers by raffle\n";
             }
             $as         = winnings_raffle ($rolloverprizes,$entries,$rolloverwinners,$rbe,'ADHOC',!$quiet);
-            $amounts    = winnings_add ($amounts,$draw_closed,$as);
+            $as         = winnings_add ($amounts,$draw_closed,$as);
+            $amounts    = $as;
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
@@ -408,7 +410,8 @@ while ($d=$ds->fetch_assoc()) {
                 echo $draw_closed." Doing standard raffle winners\n";
             }
             $as         = winnings_raffle ($raffleprizes,$entries,$rafflewinners,$rbe,false,!$quiet);
-            $amounts    = winnings_add ($amounts,$draw_closed,$as);
+            $as         = winnings_add ($amounts,$draw_closed,$as);
+            $amounts    = $as;
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
