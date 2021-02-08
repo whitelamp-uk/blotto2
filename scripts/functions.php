@@ -1400,6 +1400,9 @@ function notify ($to,$subject,$message) {
 }
 
 function notify_winnings ($amounts) {
+    if (!count($amounts)) {
+        return;
+    }
     notify (BLOTTO_EMAIL_WARN_TO,'Winnings report','Winnings: '.print_r($amounts,true));
 }
 

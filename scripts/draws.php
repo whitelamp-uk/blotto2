@@ -417,7 +417,9 @@ while ($d=$ds->fetch_assoc()) {
             exit (114);
         }
     }
-    note ($d);
+    if (count($d)) {
+        note ($d);
+    }
 }
 
 notify_winnings ($amounts);
