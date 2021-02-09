@@ -21,7 +21,12 @@ function enter ($draw_closed) {
 
 function prize_amount (&$prize,$verbose) {
     // Do nothing - just use the standard prize configuration
+    return;
     // Or calculate a bespoke $prize['amount']
+    if (strpos(date('F'),'r')) {
+        // If there is an "r" in the month, add a quid
+        $prize['amount'] += 1.00;
+    }
 }
 
 
