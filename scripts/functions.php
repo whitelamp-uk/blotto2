@@ -2455,15 +2455,19 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
         ";
         foreach ($entries as $e) {
             foreach ($prizes as $group => $prizelist) {
-                $winner    = $matchtickets[$group];
-                $prizewon  = prize_match ($e,$prizelist,$winner);
+                $winner         = $matchtickets[$group];
+                $prizewon       = prize_match ($e,$prizelist,$winner);
                 if ($prizewon) {
-                    $amount  = prize_amount ($prizewon,$verbose);
+                    // Bespoke modification of prize amount in BLOTTO_BESPOKE_FUNC
+                    if (function_exists('prize_amount')) {
+                        prize_amount ($prizewon,$verbose);
+                    }
+                    // Calculate amount after rollover/cap
+                    $amount     = prize_calc ($prizewon,$verbose);
                     if (!array_key_exists($prizewon['level'],$amounts)) {
                         $amounts[$prizewon['level']] = 0;
                     }
                     $amounts[$prizewon['level']] += $amount;
-                    // prize_amount() is in BLOTTO_BESPOKE_FUNC
                     if ($verbose) {
                         echo "TICKET = {$e['ticket_number']}\n";
                     }
@@ -2548,7 +2552,12 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
         // blotto_entry.id
         $eid            = array_pop ($rafflewinners);
         $entry          = $entries[$eid];
-        $amount         = prize_amount ($p,$verbose);
+        // Bespoke modification of prize amount in BLOTTO_BESPOKE_FUNC
+        if (function_exists('prize_amount')) {
+            prize_amount ($p,$verbose);
+        }
+        // Calculate amount after rollover/cap
+        $amount         = prize_calc ($p,$verbose);
         if (!array_key_exists($p['level'],$amounts)) {
             $amounts[$p['level']] = 0;
         }
