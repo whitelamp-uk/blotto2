@@ -73,7 +73,7 @@ catch (\mysqli_sql_exception $e) {
 $qs = "
     SELECT
       `e`.`draw_closed`
-     ,drawAfter(`e`.`draw_closed`) AS `draw_after`
+     ,drawOnOrAfter(`e`.`draw_closed`) AS `draw_from`
      ,`e`.`id_min`
      ,`e`.`id_max`
      ,`ins`.`draw_closed` IS NOT NULL AS `insured`
@@ -128,8 +128,8 @@ echo "    Processing draws\n";
 $now                = date ('Y-m-d H:i:s');
 $amounts            = [];
 while ($d=$ds->fetch_assoc()) {
-    if ($now<$d['draw_after']) {
-        fwrite (STDERR,"Refusing to draw closed $draw_closed until after {$d['draw_after']}\n");
+    if ($now<$d['draw_from']) {
+        fwrite (STDERR,"Refusing to draw closed $draw_closed until {$d['draw_from']} or later\n");
         fwrite (STDERR,"So draws.php bailing out at this point\n");
         winnings_notify ($amounts);
         exit (0);
