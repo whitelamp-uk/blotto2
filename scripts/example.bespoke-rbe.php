@@ -20,9 +20,19 @@ function enter ($draw_closed) {
 }
 
 function prize_amount (&$prize,$verbose) {
-    // Do nothing - just use the standard prize configuration
+    // Do nothing - just use the standard prize table configuration
     return;
-    // Or calculate a bespoke $prize['amount']
+    // Or calculate a prize pot at £x per £1k of revenue
+    if (!array_key_exists('draw_closed',$prize)) {
+        throw new \Exception ('prize[draw_closed] required to calculate prize pot');
+        return false;
+        if ($prize['level']==1) {
+            // 5% of the pot (£50 per $1k)
+            $prize['amount']  = prize_pot ($prize['draw_closed'],50,$verbose);
+        }
+        return;
+    }
+    // Or calculate another bespoke $prize['amount']
     if (strpos(date('F'),'r')) {
         // If there is an "r" in the month, add a quid
         $prize['amount'] += 1.00;
