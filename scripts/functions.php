@@ -1505,6 +1505,27 @@ function prize_match ($entry,$prizelist,$winner) {
     return false;
 }
 
+function prize_pot ($draw_closed,$quids_per_thou,$verbose=false) {
+    $q ="
+      SELECT
+        COUNT(`e`.`id`) AS `tickets`
+      FROM `blotto_entry` AS `e`
+      WHERE `e`.`draw_closed`='$date'
+      ;
+    ";
+    try {
+        $zo = connect (BLOTTO_MAKE_DB);
+        $ts = $zo->query ($qs);
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    $t = $ts->fetch_assoc (); // Tickets
+    $r = $t * BLOTTO_TICKET_PRICE/100; // Quids collected
+    return $quids_per_thou * $r/1000; // Quids pay-out
+}
+
 function prizes ($date) {
     $rdb = BLOTTO_RESULTS_DB;
     $qs = "
