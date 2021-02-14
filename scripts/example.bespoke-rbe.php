@@ -29,6 +29,12 @@ function prize_amount (&$prize,$verbose) {
         if ($prize['level']==1) {
             // 5% of the pot (£50 per $1k)
             $prize['amount']  = prize_pot ($prize['draw_closed'],50,$verbose);
+            return;
+        }
+        if ($prize['level']==2) {
+            // 0.5% of the pot (£5 per $1k)
+            $prize['amount']  = prize_pot ($prize['draw_closed'],5,$verbose);
+            return;
         }
         return;
     }
