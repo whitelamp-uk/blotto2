@@ -1455,9 +1455,10 @@ function prize_calc ($prize,$verbose) {
         return $amount;
     }
     if ($verbose) {
-        echo "prize={$prize['amount']}, rollovers={$prize['rollover_count']}\n";
+        echo "prize={$prize['amount']}, rollovers={$prize['rollover_count']}, rollover_amount={$prize['rollover_amount']}\n";
     }
-    $amount    += ((1+$prize['rollover_count']) * $prize['amount']);
+    $amount    += $prize['amount'];
+    $amount    += $prize['rollover_count'] * $prize['rollover_amount'];
     if ($verbose) {
         echo "calculated = $amount\n";
     }
@@ -1541,6 +1542,7 @@ function prizes ($date) {
        ,`p`.`amount`
        ,`p`.`amount_cap`
        ,`p`.`amount_brought_forward`
+       ,`p`.`rollover_amount`
        ,`p`.`rollover_cap`
        ,`p`.`rollover_count`
        ,`g`.`group`

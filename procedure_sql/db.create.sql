@@ -282,6 +282,7 @@ CREATE TABLE IF NOT EXISTS `blotto_prize` (
   `amount` int(11) unsigned DEFAULT NULL,
   `amount_cap` int(11) unsigned NOT NULL DEFAULT 0,
   `amount_brought_forward` int(11) unsigned NOT NULL DEFAULT 0,
+  `rollover_amount` int(11) unsigned NOT NULL DEFAULT 0,
   `rollover_cap` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `rollover_count` tinyint(3) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`starts`,`level`)

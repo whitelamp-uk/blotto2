@@ -227,7 +227,7 @@ while ($d=$ds->fetch_assoc()) {
         $nrmatchtickets[$nrmatchtktgroup] = $placeholder;
         $nrmatchprizes[$p['level']] = $p;
     }
-    $m = count ($nrmatchtickets); // probably just 1.  NB count of tickets versus count of prizes.
+    $m = count ($nrmatchtickets); // often just 1.  NB count of tickets versus count of prizes.
     $r = count ($raffleprizes); // probably quite a lot.
     // Firstly do number-match prizes so we can run additional raffle if required
     // Don't *think* you can just add additional numbers and prizes.
