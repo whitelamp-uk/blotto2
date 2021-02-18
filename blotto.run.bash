@@ -42,13 +42,19 @@ then
     echo "    -v = verbose (echo full log to STDOUT)"
     exit 101
 fi
+/usr/bin/php  "$cfg"
+if [ $? != 0 ]
+then
+    echo "Config file \"$cfg\" is not usable"
+    exit 102
+fi
 now="$(date '+%Y_%m_%d_%H_%M_%S')"
 pdir="$(pwd)/scripts"
 echo -n "blotto running on: "
 /usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_MC_NAME
 if [ $? != 0 ]
 then
-    exit 102
+    exit 103
 fi
 ldys="$( /usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_LOG_DURN_DAYS  )"
 ldir="$( /usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_LOG_DIR        )"

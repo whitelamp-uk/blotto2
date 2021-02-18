@@ -85,6 +85,14 @@ then
     exit 104
 fi
 
+# Check config for basic PHP errors
+/usr/bin/php  "$cfg"
+if [ $? != 0 ]
+then
+    echo "Config file \"$cfg\" is not usable"
+    exit 105
+fi
+
 
 # Tidy
 
