@@ -32,8 +32,8 @@ $qs = "
      ,''
     ) AS `ticket_numbers`
   FROM `$mdb`.`blotto_player` AS `p`
-  LEFT JOIN `$mdb`.`blotto_build_mandate` AS `m`
-         ON `m`.`ClientRef`=`p`.`client_ref`
+  JOIN `$mdb`.`blotto_build_mandate` AS `m`
+    ON `m`.`ClientRef`=`p`.`client_ref`
   LEFT JOIN `$tdb`.`blotto_ticket` AS `t`
          ON `t`.`client_ref`=`p`.`client_ref`
   WHERE `p`.`first_draw_close` IS NOT NULL

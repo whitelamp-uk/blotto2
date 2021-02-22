@@ -20,7 +20,6 @@ $splitter = BLOTTO_CREF_SPLITTER;
 $qs = "
   SELECT
     `m`.`ClientRef`
-   ,`m`.`ChancesCsv`
    ,`m`.`Created`
   FROM `blotto_build_mandate` AS `m`
   LEFT JOIN `blotto_player` AS `p`
@@ -49,12 +48,6 @@ while ($m=$ms->fetch_assoc()) {
     $crforig = $crforig[0];
     $crf     = esc ($crf);
     $crforig = esc ($crforig);
-    $chances = explode (',',$m['ChancesCsv']);
-    $chances = intval (trim(array_pop($chances)));
-    if (!preg_match('<^[0-9]+$>',$chances)) {
-        fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have valid chances in its ChancesCsv column\n");
-        exit (103);
-    }
     $qs = "
       SELECT `id`
       FROM `blotto_supporter`
@@ -65,8 +58,8 @@ while ($m=$ms->fetch_assoc()) {
     try {
         $orig = $zo->query ($qs);
         if ($s=$orig->fetch_assoc()) {
-            echo "INSERT INTO `blotto_player` (`started`,`supporter_id`,`client_ref`,`chances`) VALUES\n";
-            echo "  ('$started',{$s['id']},'$crf',$chances);\n";
+            echo "INSERT INTO `blotto_player` (`started`,`supporter_id`,`client_ref`) VALUES\n";
+            echo "  ('$started',{$s['id']},'$crf');\n";
             continue;
         }
         fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
@@ -82,18 +75,15 @@ while ($m=$ms->fetch_assoc()) {
 // TEMPORARY DOUBLE CHECK
 $qs = "
   SELECT
-    `p`.`id`
-  FROM `blotto_player` AS `p`
-  JOIN `blotto_build_mandate` AS `m`
-    ON `m`.`ClientRef`=`p`.`client_ref`
-  WHERE `p`.`started`='0000-00-00'
-     OR `p`.`started` IS NULL
-     OR `p`.`chances` IS NULL
+    `id`
+  FROM `blotto_player`
+  WHERE `started`='0000-00-00'
+     OR `started` IS NULL
 ";
 try {
     $errors = $zo->query ($qs);
     if ($errors->num_rows) {
-      fwrite (STDERR,$qs."\nplayers.php: none of these should happen!\n");
+      fwrite (STDERR,$qs."\nplayers.php: neither of these should happen!\n");
       exit (106);
     }
 }

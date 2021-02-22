@@ -29,6 +29,16 @@ try {
     $players                = $zo->query ($qs);
     fwrite (STDERR,"{$players->num_rows} players where first draw close is not set\n");
     while ($p=$players->fetch_assoc()) {
+
+
+    $chances = explode (',',$m['ChancesCsv']);
+    $chances = intval (trim(array_pop($chances)));
+    if (!preg_match('<^[0-9]+$>',$chances)) {
+        fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have valid chances in its ChancesCsv column\n");
+        exit (103);
+    }
+
+
         $date               = draw_first ($p['first_collected']);
         if (!array_key_exists($date,$dates)) {
             $dates[$date]   = array ();
@@ -44,9 +54,29 @@ catch (\mysqli_sql_exception $e) {
 
 echo "-- Update first draw dates\n";
 foreach ($dates as $date=>$ids) {
-    $q = "UPDATE `blotto_player` SET `first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
-    echo $q;
-    fwrite (STDERR,$q);
+    echo "UPDATE `blotto_player` SET `first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
+}
+
+
+// TEMPORARY DOUBLE CHECK
+$qs = "
+  SELECT
+    `p`.`id`
+  FROM `blotto_player` AS `p`
+  JOIN `blotto_build_mandate` AS `m`
+    ON `m`.`ClientRef`=`p`.`client_ref`
+  WHERE `p`.`chances` IS NULL
+";
+try {
+    $errors = $zo->query ($qs);
+    if ($errors->num_rows) {
+      fwrite (STDERR,$qs."\nplayers_update.php: this should not happen!\n");
+      exit (103);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (104);
 }
 
 
