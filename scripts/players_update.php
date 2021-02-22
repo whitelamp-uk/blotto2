@@ -66,7 +66,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (103);
 }
 
 
@@ -96,7 +96,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (105);
+    exit (104);
 }
 echo "-- Update first draw dates\n";
 foreach ($dates as $date=>$ids) {
