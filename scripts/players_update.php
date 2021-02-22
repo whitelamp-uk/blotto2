@@ -38,12 +38,16 @@ try {
             fwrite (STDERR,"Mandate for $crf does not have valid chances in its ChancesCsv column\n");
             exit (102);
         }
-        echo "UPDATE `blotto_player` SET `started`='$started',chances=$chances WHERE `client_ref`='$crf';\n";
+        if ($chances==0) {
+            fwrite (STDERR,"Zero chances is not valid for $crf\n");
+            exit (103);
+        }
+        echo "UPDATE `blotto_player` SET `started`='$started',`chances`=$chances WHERE `client_ref`='$crf';\n";
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (103);
+    exit (104);
 }
 
 
@@ -72,7 +76,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (105);
 }
 
 
