@@ -31,13 +31,14 @@ try {
     echo "-- Update started date and chances\n";
     while ($m=$ms->fetch_assoc()) {
         $started = $m['Created'];
+        $crf     = $m['ClientRef'];
         $chances = explode (',',$m['ChancesCsv']);
         $chances = intval (trim(array_pop($chances)));
         if (!preg_match('<^[0-9]+$>',$chances)) {
-            fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have valid chances in its ChancesCsv column\n");
+            fwrite (STDERR,"Mandate for $crf does not have valid chances in its ChancesCsv column\n");
             exit (102);
         }
-        echo "UPDATE `blotto_player`SET `started`='$started',chances=$chances WHERE `client_ref`='$crf';\n";
+        echo "UPDATE `blotto_player` SET `started`='$started',chances=$chances WHERE `client_ref`='$crf';\n";
     }
 }
 catch (\mysqli_sql_exception $e) {
