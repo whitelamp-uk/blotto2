@@ -13,40 +13,64 @@ if (!$zo) {
     exit (101);
 }
 
-
+// Set started date
 $qs = "
   SELECT
     `m`.`ClientRef`
    ,`m`.`Created`
-   ,`m`.`ChancesCsv`
   FROM `blotto_build_mandate` AS `m`
   JOIN `blotto_player` AS `p`
     ON `p`.`client_ref`=`m`.`ClientRef`
   WHERE `p`.`started` IS NULL
-     OR `p`.`chances` IS NULL
 ";
 try {
     $ms = $zo->query ($qs);
-    fwrite (STDERR,"{$ms->num_rows} players where started date or chances not set\n");
-    echo "-- Update started date and chances\n";
+    fwrite (STDERR,"{$ms->num_rows} players where started date not set\n");
+    echo "-- Update started date\n";
     while ($m=$ms->fetch_assoc()) {
         $started = $m['Created'];
+        $crf     = $m['ClientRef'];
+        echo "UPDATE `blotto_player` SET `started`='$started' WHERE `client_ref`='$crf';\n";
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (102);
+}
+
+// Set chances
+$qs = "
+  SELECT
+    `m`.`ClientRef`
+   ,`m`.`ChancesCsv`
+  FROM `blotto_build_mandate` AS `m`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`client_ref`=`m`.`ClientRef`
+  WHERE `p`.`chances` IS NULL
+    AND `m`.`ChancesCsv`!=''
+";
+try {
+    $ms = $zo->query ($qs);
+    fwrite (STDERR,"{$ms->num_rows} players where chances not set but could be\n");
+    echo "-- Update chances\n";
+    while ($m=$ms->fetch_assoc()) {
         $crf     = $m['ClientRef'];
         $chances = explode (',',$m['ChancesCsv']);
         $chances = intval (trim(array_pop($chances)));
         if ($chances<1) {
             fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} at $crf\n");
-            exit (102);
+            exit (103);
         }
-        echo "UPDATE `blotto_player` SET `started`='$started',`chances`=$chances WHERE `client_ref`='$crf';\n";
+        echo "UPDATE `blotto_player` SET `chances`=$chances WHERE `client_ref`='$crf';\n";
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (103);
+    exit (104);
 }
 
 
+// Set first_draw_close
 $qs = "
   SELECT
     `p`.`id`
@@ -72,10 +96,8 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (105);
 }
-
-
 echo "-- Update first draw dates\n";
 foreach ($dates as $date=>$ids) {
     echo "UPDATE `blotto_player` SET `first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
