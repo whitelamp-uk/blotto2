@@ -300,3 +300,23 @@ CREATE FULLTEXT INDEX `search_idx`
 ";
 
 
+// TEMPORARY DOUBLE CHECK
+$qs = "
+  SELECT
+    `id`
+  FROM `blotto_player`
+  WHERE `started`='0000-00-00'
+     OR `started` IS NULL
+";
+try {
+    $errors = $zo->query ($qs);
+    if ($errors->num_rows) {
+      fwrite (STDERR,$qs."\nsupporters.php: neither of these should happen!\n");
+      exit (118);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (119);
+}
+

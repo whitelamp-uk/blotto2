@@ -82,16 +82,18 @@ while ($m=$ms->fetch_assoc()) {
 // TEMPORARY DOUBLE CHECK
 $qs = "
   SELECT
-    `id`
-  FROM `blotto_player`
-  WHERE `started`='0000-00-00'
-     OR `started` IS NULL
-     OR `chances` IS NULL
+    `p`.`id`
+  FROM `blotto_player` AS `p`
+  JOIN `blotto_build_mandate` AS `m`
+    ON `m`.`ClientRef`=`p`.`client_ref`
+  WHERE `p`.`started`='0000-00-00'
+     OR `p`.`started` IS NULL
+     OR `p`.`chances` IS NULL
 ";
 try {
     $errors = $zo->query ($qs);
     if ($errors->num_rows) {
-      fwrite (STDERR,$qs."\nNone of these are supposed to happen!\n");
+      fwrite (STDERR,$qs."\nplayers.php: none of these should happen!\n");
       exit (106);
     }
 }
