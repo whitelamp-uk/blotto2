@@ -34,8 +34,8 @@ try {
         $crf     = $m['ClientRef'];
         $chances = explode (',',$m['ChancesCsv']);
         $chances = intval (trim(array_pop($chances)));
-        if (!preg_match('<^[0-9]+$>',$chances) || $chances<1) {
-            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} at $crf \n");
+        if ($chances<1) {
+            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} at $crf\n");
             exit (102);
         }
         echo "UPDATE `blotto_player` SET `started`='$started',`chances`=$chances WHERE `client_ref`='$crf';\n";
