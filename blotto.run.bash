@@ -67,7 +67,7 @@ echo "Writing to log file: $ldir/$lfil"
 
 # Tidy
 find "$ldir" -mtime +$ldys -type f -delete
-rm -f "$ldir/*.last.log"
+rm -f "$ldir/"*.sql.last.log
 
 
 # Execute
@@ -83,7 +83,7 @@ fi
 
 # Log latest SQL
 mkdir "$ldir/$lsql"
-cp "$ldir/*.last.log" "$ldir/$lsql/"
+cp "$ldir/"*.sql.last.log "$ldir/$lsql/"
 
 
 # Return manual terminal to working directory
