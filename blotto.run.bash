@@ -59,7 +59,7 @@ fi
 ldys="$( /usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_LOG_DURN_DAYS  )"
 ldir="$( /usr/bin/php  "$pdir/define.php" "$cfg" BLOTTO_LOG_DIR        )"
 lfil="blotto.run.$now.log"
-
+lsql="blotto.run.$now.sql"
 
 # Report log location
 echo "Writing to log file: $ldir/$lfil"
@@ -67,6 +67,7 @@ echo "Writing to log file: $ldir/$lfil"
 
 # Tidy
 find "$ldir" -mtime +$ldys -type f -delete
+rm -f "$ldir/*.last.log"
 
 
 # Execute
@@ -78,6 +79,11 @@ else
     /bin/bash "$pdir/blotto.bash" "$@" 2>&1 > "$ldir/$lfil"
     err="$?"
 fi
+
+
+# Log latest SQL
+mkdir "$ldir/$lsql"
+cp "$ldir/*.last.log" "$ldir/$lsql/"
 
 
 # Return manual terminal to working directory
