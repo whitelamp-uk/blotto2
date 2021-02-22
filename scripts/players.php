@@ -13,7 +13,7 @@ if (!$zo) {
     exit (101);
 }
 
-echo "-- Insert new players\n";
+echo "-- Insert new players for existing supporters\n";
 
 
 $splitter = BLOTTO_CREF_SPLITTER;
@@ -38,11 +38,6 @@ catch (\mysqli_sql_exception $e) {
 
 
 while ($m=$ms->fetch_assoc()) {
-    if (!$m['Created'] || $m['Created']=='0000-00-00') {
-        fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have a valid Created column\n");
-        exit (103);
-    }
-    $started = $m['Created'];
     $crf     = $m['ClientRef'];
     $crforig = explode ($splitter,$crf);
     $crforig = $crforig[0];
@@ -58,8 +53,8 @@ while ($m=$ms->fetch_assoc()) {
     try {
         $orig = $zo->query ($qs);
         if ($s=$orig->fetch_assoc()) {
-            echo "INSERT INTO `blotto_player` (`started`,`supporter_id`,`client_ref`) VALUES\n";
-            echo "  ('$started',{$s['id']},'$crf');\n";
+            echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
+            echo "  ({$s['id']},'$crf');\n";
             continue;
         }
         fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
@@ -69,27 +64,6 @@ while ($m=$ms->fetch_assoc()) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
         exit (105);
     }
-}
-
-
-// TEMPORARY DOUBLE CHECK
-$qs = "
-  SELECT
-    `id`
-  FROM `blotto_player`
-  WHERE `started`='0000-00-00'
-     OR `started` IS NULL
-";
-try {
-    $errors = $zo->query ($qs);
-    if ($errors->num_rows) {
-      fwrite (STDERR,$qs."\nplayers.php: neither of these should happen!\n");
-      exit (106);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (107);
 }
 
 

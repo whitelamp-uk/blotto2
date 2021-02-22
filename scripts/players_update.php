@@ -13,6 +13,39 @@ if (!$zo) {
     exit (101);
 }
 
+
+$qs = "
+  SELECT
+    `m`.`ClientRef`
+   ,`m`.`Created`
+   ,`m`.`ChancesCsv`
+  FROM `blotto_build_mandate` AS `m`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`client_ref`=`m`.`ClientRef`
+  WHERE `p`.`started` IS NULL
+     OR `p`.`chances` IS NULL
+";
+try {
+    $ms = $zo->query ($qs);
+    fwrite (STDERR,"{$ms->num_rows} players where started date or chances not set\n");
+    echo "-- Update started date and chances\n";
+    while ($m=$ms->fetch_assoc()) {
+        $started = $m['Created'];
+        $chances = explode (',',$m['ChancesCsv']);
+        $chances = intval (trim(array_pop($chances)));
+        if (!preg_match('<^[0-9]+$>',$chances)) {
+            fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have valid chances in its ChancesCsv column\n");
+            exit (102);
+        }
+        echo "UPDATE `blotto_player`SET `started`='$started',chances=$chances WHERE `client_ref`='$crf';\n";
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (103);
+}
+
+
 $qs = "
   SELECT
     `p`.`id`
@@ -27,18 +60,8 @@ $qs = "
 $dates                      = array ();
 try {
     $players                = $zo->query ($qs);
-    fwrite (STDERR,"{$players->num_rows} players where first draw close is not set\n");
+    fwrite (STDERR,"{$players->num_rows} players where first draw close not set\n");
     while ($p=$players->fetch_assoc()) {
-
-
-    $chances = explode (',',$m['ChancesCsv']);
-    $chances = intval (trim(array_pop($chances)));
-    if (!preg_match('<^[0-9]+$>',$chances)) {
-        fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have valid chances in its ChancesCsv column\n");
-        exit (103);
-    }
-
-
         $date               = draw_first ($p['first_collected']);
         if (!array_key_exists($date,$dates)) {
             $dates[$date]   = array ();
@@ -48,7 +71,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (102);
+    exit (104);
 }
 
 
@@ -66,17 +89,19 @@ $qs = "
   JOIN `blotto_build_mandate` AS `m`
     ON `m`.`ClientRef`=`p`.`client_ref`
   WHERE `p`.`chances` IS NULL
+     OR `p`.`started` IS NULL
+     OR `p`.`started`='0000-00-00'
 ";
 try {
     $errors = $zo->query ($qs);
     if ($errors->num_rows) {
       fwrite (STDERR,$qs."\nplayers_update.php: this should not happen!\n");
-      exit (103);
+      exit (106);
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (107);
 }
 
 
