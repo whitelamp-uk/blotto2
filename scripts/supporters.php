@@ -267,8 +267,8 @@ try {
         echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`canvas_code`,`canvas_ref`,`client_ref`) VALUES\n";
         echo "  ('$cd','$sg','$ap','$ccc','$cv','$cr');\n";
         echo "SET @sid = LAST_INSERT_ID();\n";
-        echo "INSERT INTO `blotto_player` (`started`,`supporter_id`,`client_ref`) VALUES\n";
-        echo "  ('$cd',@sid,'$cr');\n\n";
+        echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
+        echo "  (@sid,'$cr');\n\n";
         // First contact should not be `created` = timestamp of when this script runs
         // Rather it should be `created` = when supporter is notionally created
         echo "INSERT INTO `blotto_contact` (`created`,`supporter_id`,`title`,`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`county`,`postcode`,`country`,`p0`,`p1`,`p2`,`p3`,`p4`,`p5`,`p6`,`p7`,`p8`,`p9`) VALUES\n";
@@ -299,24 +299,4 @@ CREATE FULLTEXT INDEX `search_idx`
 ;
 ";
 
-
-// TEMPORARY DOUBLE CHECK
-$qs = "
-  SELECT
-    `id`
-  FROM `blotto_player`
-  WHERE `started`='0000-00-00'
-     OR `started` IS NULL
-";
-try {
-    $errors = $zo->query ($qs);
-    if ($errors->num_rows) {
-      fwrite (STDERR,$qs."\nsupporters.php: neither of these should happen!\n");
-      exit (118);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (119);
-}
 
