@@ -38,8 +38,8 @@ try {
             fwrite (STDERR,"Mandate for $crf does not have valid chances in its ChancesCsv column\n");
             exit (102);
         }
-        if ($chances==0) {
-            fwrite (STDERR,"Zero chances is not valid for $crf\n");
+        if ($chances<1) {
+            fwrite (STDERR,"$chances chances is not valid - $crf\n");
             exit (103);
         }
         echo "UPDATE `blotto_player` SET `started`='$started',`chances`=$chances WHERE `client_ref`='$crf';\n";
