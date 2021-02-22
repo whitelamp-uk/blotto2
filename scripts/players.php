@@ -21,14 +21,13 @@ $qs = "
   SELECT
     `m`.`ClientRef`
    ,`m`.`ChancesCsv`
-   ,MIN(`m`.`Created`) AS `started`
+   ,`m`.`Created`
   FROM `blotto_build_mandate` AS `m`
   LEFT JOIN `blotto_player` AS `p`
          ON `p`.`client_ref`=`m`.`ClientRef`
   WHERE `m`.`ClientRef` LIKE '_%$splitter%_'
     AND `m`.`ClientRef` REGEXP '[^0-9][0-9][0-9][0-9][0-9]$'
     AND `p`.`id` IS NULL
-  GROUP BY `m`.`ClientRef`
 ";
 try {
     $ms = $zo->query ($qs);
@@ -40,6 +39,11 @@ catch (\mysqli_sql_exception $e) {
 
 
 while ($m=$ms->fetch_assoc()) {
+    if (!$m['Created'] || $m['Created']=='0000-00-00') {
+        fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have a valid Created column\n");
+        exit (103);
+    }
+    $started = $m['Created'];
     $crf     = $m['ClientRef'];
     $crforig = explode ($splitter,$crf);
     $crforig = $crforig[0];
@@ -47,8 +51,8 @@ while ($m=$ms->fetch_assoc()) {
     $crforig = esc ($crforig);
     $chances = explode (',',$m['ChancesCsv']);
     $chances = intval (trim(array_pop($chances)));
-    if (!$chances) {
-        fwrite (STDERR,"ClientRef {$m['ClientRef']} has no chances set in its mandate\n");
+    if (!preg_match('<^[0-9]+$>',$chances)) {
+        fwrite (STDERR,"Mandate for {$m['ClientRef']} does not have valid chances in its ChancesCsv column\n");
         exit (103);
     }
     $qs = "
@@ -62,7 +66,7 @@ while ($m=$ms->fetch_assoc()) {
         $orig = $zo->query ($qs);
         if ($s=$orig->fetch_assoc()) {
             echo "INSERT INTO `blotto_player` (`started`,`supporter_id`,`client_ref`,`chances`) VALUES\n";
-            echo "  ('{$m['started']}',{$s['id']},'$crf',$chances);\n";
+            echo "  ('$started',{$s['id']},'$crf',$chances);\n";
             continue;
         }
         fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
@@ -70,7 +74,7 @@ while ($m=$ms->fetch_assoc()) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (103);
+        exit (105);
     }
 }
 
