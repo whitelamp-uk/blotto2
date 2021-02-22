@@ -1380,7 +1380,7 @@ function notify ($to,$subject,$message) {
 
 function players_new (&$players,&$tickets,$oid=BLOTTO_ORG_ID,$db=null) {
     if (!$db) {
-        $db = ['make'=>BLOTTO_MAKE_DB, 'frontend'=>BLOTTO_DB];
+        $db = ['make'=>BLOTTO_MAKE_DB];
     }
     $qs ="
       SELECT
