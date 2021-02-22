@@ -34,20 +34,16 @@ try {
         $crf     = $m['ClientRef'];
         $chances = explode (',',$m['ChancesCsv']);
         $chances = intval (trim(array_pop($chances)));
-        if (!preg_match('<^[0-9]+$>',$chances)) {
-            fwrite (STDERR,"Mandate for $crf does not have valid chances in its ChancesCsv column\n");
+        if (!preg_match('<^[0-9]+$>',$chances) || $chances<1) {
+            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} at $crf \n");
             exit (102);
-        }
-        if ($chances<1) {
-            fwrite (STDERR,"$chances chances is not valid - $crf\n");
-            exit (103);
         }
         echo "UPDATE `blotto_player` SET `started`='$started',`chances`=$chances WHERE `client_ref`='$crf';\n";
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (103);
 }
 
 
@@ -76,7 +72,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (105);
+    exit (104);
 }
 
 
@@ -101,12 +97,12 @@ try {
     $errors = $zo->query ($qs);
     if ($errors->num_rows) {
       fwrite (STDERR,$qs."\nplayers_update.php: this should not happen!\n");
-      exit (106);
+      exit (105);
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (107);
+    exit (106);
 }
 
 
