@@ -78,3 +78,26 @@ while ($m=$ms->fetch_assoc()) {
     }
 }
 
+
+// TEMPORARY DOUBLE CHECK
+$qs = "
+  SELECT
+    `id`
+  FROM `blotto_player`
+  WHERE `started`='0000-00-00'
+     OR `started` IS NULL
+     OR `chances` IS NULL
+";
+try {
+    $errors = $zo->query ($qs);
+    if ($errors->num_rows) {
+      fwrite (STDERR,$qs."\nNone of these are supposed to happen!\n");
+      exit (106);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (107);
+}
+
+
