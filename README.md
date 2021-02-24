@@ -3,6 +3,23 @@
 ---------
 
 
+Cloning static data to a new game
+=================================
+
+Set up a new my_org.cfg.php and create any new databases that it needs.
+
+Then use blotto.bash to pull the data in from the origin database:
+
+/bin/bash /some-path-to-blotto2/scripts/blotto.bash
+           -c some_existing_blotto_db
+             /some-blotto-config/my_org.cfg.php
+
+The new BLOTTO_MAKE_DB now has all the cumulative/underivable/audit data from some_existing_blotto_db. See the variable $tables in scripts/clone.php
+
+These are the tables cloned because they have least one column cannot be derived from anywhere else (eg found in payment data or derivable through calculation).
+
+
+
 Making new charts
 =================
 

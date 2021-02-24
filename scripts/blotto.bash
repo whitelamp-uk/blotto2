@@ -24,15 +24,38 @@ abort_on_error () {
     exit $2
 }
 
+finish_up () {
+    rm -f $cfg.inhibit
+    rm -f $ofl
+    rm -f $tmp
+    if [ "$bel" ]
+    then
+        echo -n $'\a'
+    fi
+    if [ "$1" = "-m" ]
+    then
+        /usr/bin/php "$prm" "$cfg" "$brd build completed successfully"
+    fi
+    echo ""
+    echo "That's all folks!"
+    echo ""
+}
+
 get_args () {
     cfg=""
     sw=""
+    clone=""
     no_tidy=""
     rehearse=""
     while [ 1 ]
     do
         if [[ "$1" == "-"* ]]
         then
+            if    [[ "$1" == *"c"* ]]
+            then
+                echo  "Option: clone from another DB"
+                clone="$2"
+            fi
             if    [[ "$1" == *"n"* ]]
             then
                 no_tidy="1"
@@ -46,7 +69,7 @@ get_args () {
             sw="$sw $1"
             shift
         fi
-        if [ ! "$@" ]
+        if [ $# = 0 ]
         then
             return
         fi
@@ -72,8 +95,9 @@ if [ ! "$cfg" ]
 then
     echo "/bin/bash $0 [-options] path_to_config_file"
     echo "  options can be combined eg. -nvrs"
+    echo "    -c my_origin_db = clone static tables"
     echo "    -n = no tidying"
-    echo "    -r = rehearsal only (do not recreate production database, only the 'make' one)"
+    echo "    -r = rehearsal only (do not recreate front-end database BLOTTO_DB)"
     echo "    -s = single draw only (only do the next required draw and bail out)"
     echo "    -v = verbose (echo full log to STDOUT)"
     exit 103
@@ -146,6 +170,18 @@ mariadb                                                 < $tmp
 abort_on_error 1b $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
+
+if [ "$clone" ]
+then
+    echo "CLONE. From the origin database $clone"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" exec clone.php "$clone"
+    abort_on_error CLONE $?
+    echo "       Cloning completed"
+    finish_up
+    exit
+fi
+echo "END" ; exit
 
 echo " 2. Create/overwrite stored procedures"
 start=$SECONDS
@@ -544,23 +580,5 @@ then
 
 fi
 
-
-rm -f $cfg.inhibit
-rm -f $ofl
-rm -f $tmp
-
-
-if [ "$bel" ]
-then
-    echo -n $'\a'
-fi
-
-
-/usr/bin/php "$prm" "$cfg" "$brd build completed successfully"
-
-
-echo ""
-echo "That's all folks!"
-echo ""
-
+finish_up -m
 

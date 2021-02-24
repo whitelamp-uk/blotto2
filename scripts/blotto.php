@@ -53,6 +53,7 @@ $file = array (
         'bogons.php'
        ,'cache.php'
        ,'changes.php'
+       ,'clone.php'
        ,'demo.php'
        ,'draws.php'
        ,'engine.php'

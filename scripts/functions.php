@@ -1478,9 +1478,9 @@ function prize_function (&$p,$draw_closed) {
     }
     // Bespoke functions should add array of ticket numbers to $p['results']
     $p['results'] = $p['function_name'] ($p,$draw_closed);
-    $qi = "INSERT INTO `blotto_result` (`draw_closed`,`prize_level`,`number`) VALUES ";
+    $qi = "INSERT INTO `blotto_result` (`draw_closed`,`draw_date`,`prize_level`,`number`) VALUES ";
     foreach ($p['results'] as $ticket) {
-        $qi .= "('$draw_closed',{$p['level']},'$ticket'),";
+        $qi .= "('$draw_closed',drawOnOrAfter('$draw_closed'),{$p['level']},'$ticket'),";
     }
     try {
         $qi         = substr ($qi,0,-1);
@@ -2442,7 +2442,7 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
     $rdb                = BLOTTO_RESULTS_DB;
     $qr = "
       INSERT IGNORE INTO `$rdb`.`blotto_result`
-      (`draw_closed`,`prize_level`,`number`)
+      (`draw_closed`,`draw_date`,`prize_level`,`number`)
       VALUES
     ";
     $rcount             = 0;
@@ -2459,7 +2459,7 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
         if (!$mp['results']) {
             // Not a manual result
             $rcount++;
-            $qr        .= "('{$draw_closed}',$prize_level,'$number'),";
+            $qr        .= "('$draw_closed',drawOnOrAfter('$draw_closed'),$prize_level,'$number'),";
         }
     }
     foreach ($prizes as $k => $pa) {
@@ -2561,7 +2561,7 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
     $rdb = BLOTTO_RESULTS_DB;
     $qr = "
       INSERT IGNORE INTO `$rdb`.`blotto_result`
-      (`draw_closed`,`prize_level`,`number`)
+      (`draw_closed`,`draw_date`,`prize_level`,`number`)
       VALUES
     ";
     $qw = "
@@ -2585,7 +2585,7 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
             $amounts[$p['level']] = 0;
         }
         $amounts[$p['level']] += $amount;
-        $qr            .= "('{$entry['draw_closed']}',{$p['level']},'{$entry['ticket_number']}'),";
+        $qr            .= "('{$entry['draw_closed']}',drawOnOrAfter('{$entry['draw_closed']}'),{$p['level']},'{$entry['ticket_number']}'),";
         $qw            .= "($eid,'{$entry['ticket_number']}',{$p['level']},'{$p['starts']}',$amount),";
         if ($rbe) {
             array_push (
