@@ -594,10 +594,10 @@ function draw ($draw_closed) {
         $draw->groups           = [];
         foreach ($draw->prizes as $level=>$p) {
             if ($p['insure']) {
-                $draw->insure   = true;
+                $draw->insure   = $level;
             }
-            if ($p['results_manual'] && !$p['results']) {
-                $draw->manual   = true;
+            if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
+                $draw->manual   = $level;
             }
             // Groups
             $group          = substr ($p['level_method'],-1);
