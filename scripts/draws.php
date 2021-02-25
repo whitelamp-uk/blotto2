@@ -113,13 +113,20 @@ while ($d=$ds->fetch_assoc()) {
         $entries        = entries ($draw_closed);
         // Current prizes by level
         $prizes         = prizes ($draw_closed);
-        // Prize and manual result checks
+        // Insurance and manual result checks
+        $bailmsg = '';
         foreach ($prizes as $p) {
             if ($p['insure'] && !$d['insured']) {
-                fwrite (STDERR,"Refusing to do draws on or after $draw_closed because prize {$p['level']}@{$p['starts']} requires insurance\n");
-                winnings_notify ($amounts);
-                exit (0);
+                $bailmsg .= "- prize {$p['level']}@{$p['starts']} requires insurance\n";
             }
+            if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
+                $bailmsg .= "- manual prize {$p['level']}@{$p['starts']} has no results, and no manual function is given (that is, results must be inserted into blotto_result by hand)";
+            }
+        }
+        if ($bailmsg) {
+            fwrite (STDERR,"Refusing to do draws on or after $draw_closed because:\n".$bailmsg);
+            winnings_notify ($amounts);
+            exit (0);
         }
     }
     catch (\Exception $e) {
