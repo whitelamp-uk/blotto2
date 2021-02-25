@@ -1,5 +1,11 @@
 <?php
 
+function finish_up () {
+    global $amounts;
+    winnings_notify ($amounts);
+}
+register_shutdown_function ('finish_up');
+
 require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
@@ -93,7 +99,6 @@ while ($d=$ds->fetch_assoc()) {
     if ($now<$d['draw_from']) {
         fwrite (STDERR,"Refusing to draw closed $draw_closed until {$d['draw_from']} or later\n");
         fwrite (STDERR,"So draws.php bailing out at this point\n");
-        winnings_notify ($amounts);
         exit (0);
     }
     $draw_closed    = $d['draw_closed'];
@@ -122,7 +127,6 @@ while ($d=$ds->fetch_assoc()) {
             fwrite (STDERR,"Bail before $draw_closed - manual prize {$draw->manual}@{$p['starts']} has no results - see README.md 'Manually inserting external number-matches'\n");
         }
         if ($bail) {
-            winnings_notify ($amounts);
             exit (104);
         }
         // Associative array entry_id => row
@@ -177,7 +181,6 @@ while ($d=$ds->fetch_assoc()) {
                 catch (\Exception $e) {
                     fwrite (STDERR,"Prize {$p['level']} for $draw_closed = ".print_r($p,true));
                     fwrite (STDERR,$draw_closed.' '.$e->getMessage()."\n");
-                    winnings_notify ($amounts);
                     exit (108);
                 }
             }
@@ -213,7 +216,6 @@ while ($d=$ds->fetch_assoc()) {
             $ms = $results_nrmatch->response->result->random->data;
             if (count($ms)!=$m) {
                 fwrite (STDERR,"$m tickets needed for number-match prizes but got ".print_r($ms, true)."\n");
-                winnings_notify ($amounts);
                 exit (109);
             }
             foreach ($ms as $k=>$v) {
@@ -236,7 +238,6 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            winnings_notify ($amounts);
             exit (110);
         }
     }
@@ -263,7 +264,6 @@ while ($d=$ds->fetch_assoc()) {
     }
     catch (\Exception $e) {
         fwrite (STDERR,$e->getMessage()."\n");
-        winnings_notify ($amounts);
         exit (111);
     }
     if (!$quiet) {
@@ -299,7 +299,6 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$qr."\n".$e->getMessage()."\n");
-            winnings_notify ($amounts);
             exit (112);
         }
     }
@@ -341,7 +340,6 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            winnings_notify ($amounts);
             exit (113);
         }
     }
@@ -378,11 +376,8 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            winnings_notify ($amounts);
             exit (114);
         }
     }
 }
-
-winnings_notify ($amounts);
 
