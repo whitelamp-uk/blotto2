@@ -1590,8 +1590,7 @@ function prizes ($date) {
        ,`p`.`rollover_amount`
        ,`p`.`rollover_cap`
        ,`p`.`rollover_count`
-       ,`g`.`group`
-       ,IFNULL(`g`.`results_manual`,0) AS `results_manual`
+       ,`p`.`results_manual`
        ,`r`.`results`
       FROM `blotto_prize` AS `p`
       -- Latest start date that is not after date arg
@@ -1607,17 +1606,6 @@ function prizes ($date) {
       ) AS `current`
         ON `current`.`level`=`p`.`level`
        AND `current`.`start_date`=`p`.`starts`
-      -- If any prize is manual, the whole group is manual
-      LEFT JOIN (
-        SELECT
-          SUBSTR(`level_method`,-1) AS `group`
-         ,MAX(`results_manual`) AS `results_manual`
-        FROM `blotto_prize`
-        WHERE `level_method`!='RAFF'
-        GROUP BY `group`
-      )      AS `g`
-             ON `p`.`level_method`!='RAFF'
-            AND `g`.`group`=SUBSTR(`p`.`level_method`,-1)
       -- Results on date arg = draw_closed
       LEFT JOIN (
         SELECT

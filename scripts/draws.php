@@ -113,13 +113,20 @@ while ($d=$ds->fetch_assoc()) {
         $entries        = entries ($draw_closed);
         // Current prizes by level
         $prizes         = prizes ($draw_closed);
-        // Prize and manual result checks
+        // Insurance and manual result checks
+        $bailmsg = '';
         foreach ($prizes as $p) {
             if ($p['insure'] && !$d['insured']) {
-                fwrite (STDERR,"Refusing to do draws on or after $draw_closed because prize {$p['level']}@{$p['starts']} requires insurance\n");
-                winnings_notify ($amounts);
-                exit (0);
+                $bailmsg .= "- prize {$p['level']}@{$p['starts']} requires insurance\n";
             }
+            if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
+                $bailmsg .= "- manual prize {$p['level']}@{$p['starts']} has no results, and no manual function is given (that is, results must be inserted into blotto_result by hand)";
+            }
+        }
+        if ($bailmsg) {
+            fwrite (STDERR,"Refusing to do draws on or after $draw_closed because:\n".$bailmsg);
+            winnings_notify ($amounts);
+            exit (0);
         }
     }
     catch (\Exception $e) {
@@ -155,15 +162,14 @@ while ($d=$ds->fetch_assoc()) {
     $nrmatchtickets = $manuals = [];
     // Collate the prizes into number matches and raffles
     foreach ($prizes as $level=>$p) {
+        $nrmatchtktgroup = substr ($p['level_method'],-1); // not used for raffles...
         if ($p['level_method']=='RAFF') {
             // Raffle prizes
             for ($i=0;$i<$p['quantity'];$i++) {
                 array_push ($raffleprizes,$p);
             }
-            continue;
         }
-        $nrmatchtktgroup = substr ($p['level_method'],-1);
-        if ($p['results_manual']) {
+        elseif ($p['results_manual']) {
             if (!$p['results']) {
                 if (!$p['function_name']) {
                     fwrite (STDERR,"Refusing to do draws on or after $draw_closed because manual prize {$p['level']}@{$p['starts']} has no results, and no manual function is given (that is, results must be inserted into blotto_result by hand)\n");
@@ -184,10 +190,11 @@ while ($d=$ds->fetch_assoc()) {
             // Manuals are number-matches and number-matches only have one match per prize level
             $manuals[$nrmatchtktgroup] = $p['results'][0];
             $manualmatchprizes[$p['level']] = $p;
-            continue;
         }
-        $nrmatchtickets[$nrmatchtktgroup] = $placeholder;
-        $nrmatchprizes[$p['level']] = $p;
+        else {
+            $nrmatchtickets[$nrmatchtktgroup] = $placeholder;
+            $nrmatchprizes[$p['level']] = $p;
+        }
     }
     $m = count ($nrmatchtickets); // often just 1.  NB count of tickets versus count of prizes.
     $r = count ($raffleprizes); // probably quite a lot.
