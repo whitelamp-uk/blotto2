@@ -6,7 +6,11 @@ require $argv[1];
 
 // Define
 $dbm    = BLOTTO_MAKE_DB;
-$dbo    = array_pop ($argv);
+if (!array_key_exists(4,$argv)) {
+    fwrite (STDERR,"    Origin database not given\n");
+    exit (101);
+}
+$dbo    = $argv[4];
 $ztest  = connect ($dbo);
 if (!$ztest) {
     fwrite (STDERR,"    Could not connect to origin database `$dbo`\n");
