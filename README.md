@@ -3,6 +3,25 @@
 ---------
 
 
+Manually inserting external number-matches
+==========================================
+
+For example Zaffo's lotto.de first six digits of Saturday Spiel77.
+
+# Draw closed date: 2021-02-19
+# Last character of level method (aka group): 6
+# Number to insert: 132435
+root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -m 2021-02-19 6 123456 /home/mark/blotto/config/mark_dbh.cfg.php
+Option: manual result insertion
+Temp file: /home/mark/blotto/config/../log/dbh/blotto.7119.tmp
+MANUAL. Insert results
+Building and executing SQL for crucible2_mark_dbh_make
+INSERT IGNORE INTO `blotto_result` (`draw_closed`,`draw_date`,`prize_level`,`number`) VALUES
+('2021-02-19','2021-02-20',1,'132435');
+That's all folks!
+
+
+
 Cloning static data to a new game
 =================================
 
@@ -10,13 +29,11 @@ Set up a new my_org.cfg.php and create any new databases that it needs.
 
 Then use blotto.bash to pull the data in from the origin database:
 
-/bin/bash /some-path-to-blotto2/scripts/blotto.bash
-           -c some_existing_blotto_db
-             /some-blotto-config/my_org.cfg.php
+root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -c existing_db /my/clone.cfg.php
 
-The new BLOTTO_MAKE_DB now has all the cumulative/underivable/audit data from some_existing_blotto_db. See the variable $tables in scripts/clone.php
+The new BLOTTO_MAKE_DB will then have the data from a selection of tables from existing_db. See the variable "$tables" in scripts/clone.php
 
-These are the tables cloned because they have least one column cannot be derived from anywhere else (eg found in payment data or derivable through calculation).
+This selection is cloned because at least one column in these tables cannot be derived from payment data or by calculation.
 
 
 
