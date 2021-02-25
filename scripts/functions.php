@@ -578,6 +578,43 @@ function download_csv ( ) {
     exit;
 }
 
+function draw ($draw_closed) {
+    $draw                   = new \stdClass ();
+    $draw->closed           = $draw_closed;
+    try {
+        $qs                     = "SELECT drawOnOrAfter('$draw_closed')";
+        $qs                    .= " AS `draw_date`;";
+        $draw->date             = $zo->query ($qs);
+        $draw->date             = $draw->date->fetch_assoc()['draw_date'];
+        $draw->prizes           = prizes ($draw_closed);
+        $draw->insure           = false;
+        $draw->manual           = false;
+        $draw->groups           = [];
+        foreach ($draw->prizes as $level->$prize) {
+            if ($p['insure']) {
+                $draw->insure   = true;
+            }
+            if ($p['results_manual'] && !$p['results']) {
+                $draw->manual   = true;
+            }
+            if ($prize['level_method']=='RAFF') {
+                continue;
+            }
+            // Number-match groups
+            $group          = substr ($p['level_method'],-1);
+            if (!array_key_exists($group,$draw->groups)) {
+                $draw->groups[$group] = [];
+            }
+            array_push ($draw->groups[$group],$level);
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    return $draw;
+}
+
 function draw_first_zaffo_model ($first_collection_date) { // TODO: tidy this up
     /*
     The principle behind the Zaffo model is to ensure that once
@@ -2276,6 +2313,17 @@ function update ( ) {
             $headers
         );
         return '{ "ok" : true }';
+    }
+}
+
+function valid_date ($date,$format='Y-m-d') {
+    try {
+        $d = new DateTime ($date);
+        $d = $d->format ($format);
+        return $d==$date;
+    }
+    catch (\Exception $e) {
+        return false;
     }
 }
 
