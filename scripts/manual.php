@@ -51,7 +51,7 @@ else {
         fwrite (STDERR,"number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
         exit (108);
     }
-    echo "    Building SQL for `".BLOTTO_RESULTS_DB."`\n";
+    echo "    Building and executing SQL for `".BLOTTO_RESULTS_DB."`\n";
     $qi             = "INSERT INTO `blotto_result`";
     $qi            .= " (`draw_closed`,`draw_date`,`prize_level`,`number`)";
     $qi            .= " VALUES\n";
