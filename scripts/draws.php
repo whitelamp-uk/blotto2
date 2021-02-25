@@ -79,7 +79,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (103);
 }
 if ($ds->num_rows==0 && !$quiet) {
     echo "No draw entries found\n";
@@ -109,25 +109,24 @@ while ($d=$ds->fetch_assoc()) {
         continue;
     }
     try {
+        // Draw object with current prizes keyed by level
+        $draw           = draw ($draw_closed);
+        // Insurance and manual result checks
+        $bail           = false;
+        if ($draw->insure && !$d['insured']) {
+            $bail       = true;
+            fwrite (STDERR,"Bail before $draw_closed - prize {$draw->insure}@{$p['starts']} requires insurance\n");
+        }
+        if ($draw->manual) {
+            $bail       = true;
+            fwrite (STDERR,"Bail before $draw_closed - manual prize {$draw->manual}@{$p['starts']} has no results - see README.md 'Manually inserting external number-matches'\n");
+        }
+        if ($bail) {
+            winnings_notify ($amounts);
+            exit (104);
+        }
         // Associative array entry_id => row
         $entries        = entries ($draw_closed);
-        // Current prizes by level
-        $prizes         = prizes ($draw_closed);
-        // Insurance and manual result checks
-        $bailmsg = '';
-        foreach ($prizes as $p) {
-            if ($p['insure'] && !$d['insured']) {
-                $bailmsg .= "- prize {$p['level']}@{$p['starts']} requires insurance\n";
-            }
-            if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
-                $bailmsg .= "- manual prize {$p['level']}@{$p['starts']} has no results, and no manual function is given (that is, results must be inserted into blotto_result by hand)";
-            }
-        }
-        if ($bailmsg) {
-            fwrite (STDERR,"Refusing to do draws on or after $draw_closed because:\n".$bailmsg);
-            winnings_notify ($amounts);
-            exit (0);
-        }
     }
     catch (\Exception $e) {
         fwrite (STDERR,$e->getMessage()."\n");
@@ -140,7 +139,7 @@ while ($d=$ds->fetch_assoc()) {
     }
     else {
         try {
-            notarise ($draw_closed,$prizes,'prizes.json',false,false,true);
+            notarise ($draw_closed,$draw->prizes,'prizes.json',false,false,true);
             notarise ($draw_closed,$entries,'draw.csv','CSV','HEADERS');
             if (!$quiet) {
                 echo "Just notarised\n";
@@ -161,7 +160,7 @@ while ($d=$ds->fetch_assoc()) {
     $manualmatchprizes = $nrmatchprizes = $raffleprizes = $rolloverprizes = [];
     $nrmatchtickets = $manuals = [];
     // Collate the prizes into number matches and raffles
-    foreach ($prizes as $level=>$p) {
+    foreach ($draw->prizes as $level=>$p) {
         $nrmatchtktgroup = substr ($p['level_method'],-1); // not used for raffles...
         if ($p['level_method']=='RAFF') {
             // Raffle prizes
@@ -171,11 +170,6 @@ while ($d=$ds->fetch_assoc()) {
         }
         elseif ($p['results_manual']) {
             if (!$p['results']) {
-                if (!$p['function_name']) {
-                    fwrite (STDERR,"Refusing to do draws on or after $draw_closed because manual prize {$p['level']}@{$p['starts']} has no results, and no manual function is given (that is, results must be inserted into blotto_result by hand)\n");
-                        winnings_notify ($amounts);
-                        exit (0);
-                }
                 try {
                     // Run the manual results function for this prize level
                     prize_function ($p,$draw_closed);
