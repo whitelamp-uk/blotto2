@@ -600,7 +600,7 @@ function draw ($draw_closed) {
                 $draw->manual   = $level;
             }
             // Groups
-            $group          = substr ($p['level_method'],-1);
+            $group              = substr ($p['level_method'],-1);
             if ($p['level_method']=='RAFF') {
                 if ($p['results']) {
                      $draw->results['RAFF'] = true;
