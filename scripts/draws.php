@@ -4,7 +4,6 @@ function finish_up () {
     global $amounts;
     winnings_notify ($amounts);
 }
-register_shutdown_function ('finish_up');
 
 require __DIR__.'/functions.php';
 cfg ();
@@ -95,6 +94,7 @@ if ($ds->num_rows==0 && !$quiet) {
 echo "    Processing draws\n";
 $now                = date ('Y-m-d H:i:s');
 $amounts            = [];
+register_shutdown_function ('finish_up');
 while ($d=$ds->fetch_assoc()) {
     if ($now<$d['draw_from']) {
         fwrite (STDERR,"Refusing to draw closed $draw_closed until {$d['draw_from']} or later\n");
