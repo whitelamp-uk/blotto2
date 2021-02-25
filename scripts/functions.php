@@ -582,11 +582,16 @@ function draw ($draw_closed) {
     $draw                       = new \stdClass ();
     $draw->closed               = $draw_closed;
     try {
-        $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed'))";
-        $qs                    .= " AS `draw_date`;";
+        $qs  = "
+          SELECT
+            DATE(drawOnOrAfter('$draw_closed'))" AS `draw_date`;
+           ,drawOnOrAfter('$draw_closed')" AS `draw_time`;
+        ";
         $zo                     = connect (BLOTTO_MAKE_DB);
-        $draw->date             = $zo->query ($qs);
-        $draw->date             = $draw->date->fetch_assoc()['draw_date'];
+        $d                      = $zo->query ($qs);
+        $d                      = $d->fetch_assoc ();
+        $draw->date             = $d['draw_date'];
+        $draw->time             = $d['draw_time'];
         $draw->prizes           = prizes ($draw_closed);
         $draw->insure           = false;
         $draw->manual           = false;
