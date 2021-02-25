@@ -28,44 +28,6 @@ if (!$zo) {
     exit (102);
 }
 
-// Insert any missing manual results by deriving them
-// from partial results inserted by hand
-echo "    Updating manual results to fill holes\n";
-$qi ="
-  INSERT IGNORE INTO `$rdb`.`blotto_result`
-    (`draw_closed`,`prize_level`,`number`)
-    SELECT
-      `num`.`draw_closed`
-     ,`lev`.`level`
-     ,`num`.`number`
-    FROM (
-      -- List of manually entered numbers by date/level group
-      SELECT
-        `r`.`draw_closed`
-       ,`r`.`number`
-       ,SUBSTR(`p`.`level_method`,-1) AS `group`
-      FROM `$rdb`.`blotto_result` AS `r`
-      JOIN `blotto_prize` AS `p`
-        ON `p`.`level`=`r`.`prize_level`
-       AND `p`.`results_manual`>0
-       AND `p`.`level_method`!='RAFF'
-      GROUP BY `r`.`draw_closed`,`group`
-    ) AS `num`
-    -- Expand to the list of levels in each level group
-    JOIN `blotto_prize` AS `lev`
-      ON substr(`lev`.`level_method`,-1)=`num`.`group`
-    ORDER BY `num`.`draw_closed`,`lev`.`level`
-  ;
-";
-try {
-    $zo->query ($qi);
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qi."\n".$e->getMessage()."\n");
-    exit (103);
-}
-
-
 // Get a list of draw closed dates having entries
 // TODO tighten up the insurance check by making sure that every
 // blotto_entry has a corresponding blotto_insurance.  As it stands
