@@ -4,8 +4,7 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-$rdb                = BLOTTO_RESULTS_DB;
-$zo                 = connect (BLOTTO_MAKE_DB);
+$zo                 = connect (BLOTTO_RESULTS_DB);
 if (!$zo) {
     exit (101);
 }
@@ -52,7 +51,8 @@ else {
         fwrite (STDERR,"number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
         exit (108);
     }
-    $qi             = "INSERT IGNORE INTO `blotto_result`";
+    echo "    Building SQL for `".BLOTTO_RESULTS_DB."`\n";
+    $qi             = "INSERT INTO `blotto_result`";
     $qi            .= " (`draw_closed`,`draw_date`,`prize_level`,`number`)";
     $qi            .= " VALUES\n";
     $count          = 0;
