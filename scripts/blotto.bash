@@ -12,7 +12,10 @@ abort_on_error () {
         cat "$3"
     fi
     echo "Aborting at step $1 on error status = $2"
-    /usr/bin/php "$prm" "$cfg" "$brd build aborted at step $1 on error status = $2"
+    if [ "$build" ]
+    then
+        /usr/bin/php "$prm" "$cfg" "$brd build aborted at step $1 on error status = $2"
+    fi
     rm -f $cfg.inhibit
     rm -f $ofl
     # For the benefit of a manual terminal
@@ -32,7 +35,7 @@ finish_up () {
     then
         echo -n $'\a'
     fi
-    if [ "$1" = "-m" ]
+    if [ "$build" ]
     then
         /usr/bin/php "$prm" "$cfg" "$brd build completed successfully"
     fi
@@ -42,42 +45,81 @@ finish_up () {
 }
 
 get_args () {
-    cfg=""
+    build="1"
     sw=""
     clone=""
+    manual=""
     no_tidy=""
     rehearse=""
     while [ 1 ]
     do
+        if [ $# -lt 2 ]
+        then
+            return
+        fi
         if [[ "$1" == "-"* ]]
         then
             if    [[ "$1" == *"c"* ]]
             then
                 echo  "Option: clone from another DB"
+                build=""
                 clone="$2"
+                shift
+                shift
+                continue
+            fi
+            if    [[ "$1" == *"m"* ]]
+            then
+                echo  "Option: manual result insertion"
+                build=""
+                manual="1"
+                draw_closed="$2"
+                prize_group="$3"
+                manual_number="$4"
+                shift
+                shift
+                shift
+                shift
+                continue
             fi
             if    [[ "$1" == *"n"* ]]
             then
-                no_tidy="1"
                 echo  "Option: no tidying"
+                no_tidy="1"
+                shift
+                sw="$sw -n"
+                continue
             fi
             if [[ "$1" == *"r"* ]]
             then
-                rehearse="1"
                 echo  "Option: rehearse only"
+                rehearse="1"
+                shift
+                sw="$sw -r"
+                continue
             fi
-            sw="$sw $1"
-            shift
         fi
-        if [ $# = 0 ]
-        then
-            return
-        fi
-        cfg="$1"
         shift
     done
 }
 
+get_cfg () {
+    cfg=""
+    while [ 1 ]
+    do
+        if [ $# -lt 2 ]
+        then
+            if [ "$args" ]
+            then
+                get_args $args
+            fi
+            cfg="$1"
+            return
+        fi
+        args="$args $1"
+        shift
+    done
+}
 
 # User
 
@@ -89,17 +131,17 @@ fi
 
 
 # Arguments
-
-get_args "$@"
+get_cfg "$@"
 if [ ! "$cfg" ]
 then
     echo "/bin/bash $0 [-options] path_to_config_file"
     echo "  options can be combined eg. -nvrs"
-    echo "    -c my_origin_db = clone static tables"
-    echo "    -n = no tidying"
-    echo "    -r = rehearsal only (do not recreate front-end database BLOTTO_DB)"
-    echo "    -s = single draw only (only do the next required draw and bail out)"
-    echo "    -v = verbose (echo full log to STDOUT)"
+    echo "    -c orig_db             clone static tables"
+    echo "    -m draw_closed grp nr  manual insert @draw_closed for grp this nr"
+    echo "    -n                     no tidying (leave behind temp files/DB tables)"
+    echo "    -r                     rehearsal only (do not recreate front-end BLOTTO_DB)"
+    echo "    -s                     single draw only (do next required draw and exit)"
+    echo "    -v                     verbose (echo full log to STDOUT)"
     exit 103
 fi
 
@@ -159,6 +201,15 @@ echo "Temp file: $tmp"
 
 
 # Processes
+if [ "$manual" ]
+then
+    echo "MANUAL. Insert results"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" exec manual.php $draw_closed $prize_group $manual_number
+    abort_on_error MANUAL $?
+    finish_up
+    exit
+fi
 
 
 echo " 1. Create databases (if missing) $dbm and $dbt"
@@ -177,11 +228,10 @@ then
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec clone.php "$clone"
     abort_on_error CLONE $?
-    echo "       Cloning completed"
     finish_up
     exit
 fi
-echo "END" ; exit
+
 
 echo " 2. Create/overwrite stored procedures"
 start=$SECONDS
@@ -580,5 +630,5 @@ then
 
 fi
 
-finish_up -m
+finish_up
 

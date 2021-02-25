@@ -59,6 +59,7 @@ $file = array (
        ,'engine.php'
        ,'entries.php'
        ,'legends.php'
+       ,'manual.php'
        ,'payment_fetch.php'
        ,'players.php'
        ,'players_update.php'
