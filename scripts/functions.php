@@ -584,8 +584,9 @@ function draw ($draw_closed) {
     try {
         $qs  = "
           SELECT
-            DATE(drawOnOrAfter('$draw_closed'))" AS `draw_date`;
-           ,drawOnOrAfter('$draw_closed')" AS `draw_time`;
+            DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`
+           ,drawOnOrAfter('$draw_closed') AS `draw_time`
+          ;
         ";
         $zo                     = connect (BLOTTO_MAKE_DB);
         $d                      = $zo->query ($qs);
