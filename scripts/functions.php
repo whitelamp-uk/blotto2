@@ -579,29 +579,37 @@ function download_csv ( ) {
 }
 
 function draw ($draw_closed) {
-    $draw                   = new \stdClass ();
-    $draw->closed           = $draw_closed;
+    $draw                       = new \stdClass ();
+    $draw->closed               = $draw_closed;
     try {
-        $qs                     = "SELECT drawOnOrAfter('$draw_closed')";
+        $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed'))";
         $qs                    .= " AS `draw_date`;";
+        $zo                     = connect (BLOTTO_MAKE_DB);
         $draw->date             = $zo->query ($qs);
         $draw->date             = $draw->date->fetch_assoc()['draw_date'];
         $draw->prizes           = prizes ($draw_closed);
         $draw->insure           = false;
         $draw->manual           = false;
+        $draw->results          = [];
         $draw->groups           = [];
-        foreach ($draw->prizes as $level->$prize) {
+        foreach ($draw->prizes as $level=>$p) {
             if ($p['insure']) {
                 $draw->insure   = true;
             }
             if ($p['results_manual'] && !$p['results']) {
                 $draw->manual   = true;
             }
-            if ($prize['level_method']=='RAFF') {
+            // Groups
+            $group          = substr ($p['level_method'],-1);
+            if ($p['level_method']=='RAFF') {
+                if ($p['results']) {
+                     $draw->results['RAFF'] = true;
+                }
                 continue;
             }
-            // Number-match groups
-            $group          = substr ($p['level_method'],-1);
+            if ($p['results']) {
+                 $draw->results[$group] = true;
+            }
             if (!array_key_exists($group,$draw->groups)) {
                 $draw->groups[$group] = [];
             }
