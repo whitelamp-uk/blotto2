@@ -40,7 +40,6 @@ if (!$zo) {
 $qs = "
     SELECT
       `e`.`draw_closed`
-     ,drawOnOrAfter(`e`.`draw_closed`) AS `draw_from`
      ,`e`.`id_min`
      ,`e`.`id_max`
      ,`ins`.`draw_closed` IS NOT NULL AS `insured`
@@ -90,23 +89,12 @@ if ($ds->num_rows==0 && !$quiet) {
     echo "No draw entries found\n";
 }
 
-
 echo "    Processing draws\n";
 $now                = date ('Y-m-d H:i:s');
 $amounts            = [];
 register_shutdown_function ('finish_up');
 while ($d=$ds->fetch_assoc()) {
-    if ($now<$d['draw_from']) {
-        fwrite (STDERR,"Refusing to draw closed $draw_closed until {$d['draw_from']} or later\n");
-        fwrite (STDERR,"So draws.php bailing out at this point\n");
-        exit (0);
-    }
-    $draw_closed    = $d['draw_closed'];
-    $won            = $d['won'];
-    if (!$quiet) {
-        echo "$draw_closed ----------------\n";
-    }
-    if ($won) {
+    if ($d['won']) {
         // Assume full draw process is done
         if (!$quiet) {
             echo "All done\n";
@@ -115,36 +103,44 @@ while ($d=$ds->fetch_assoc()) {
     }
     try {
         // Draw object with current prizes keyed by level
-        $draw           = draw ($draw_closed);
+        $draw       = draw ($d['draw_closed']);
+        if ($now<$draw->time) {
+            fwrite (STDERR,"Refusing to draw closed {$draw->closed} until {$draw->time} or later\n");
+            fwrite (STDERR,"So draws.php bailing out at this point\n");
+            exit (0);
+        }
+        if (!$quiet) {
+            echo "{$draw->closed} ----------------\n";
+        }
         // Insurance and manual result checks
-        $bail           = false;
+        $bail       = false;
         if ($draw->insure && !$d['insured']) {
-            $bail       = true;
-            fwrite (STDERR,"Bail before $draw_closed - prize {$draw->insure}@{$p['starts']} requires insurance\n");
+            $bail   = true;
+            fwrite (STDERR,"Bail before {$draw->closed} - prize {$draw->insure}@{$p['starts']} requires insurance\n");
         }
         if ($draw->manual) {
-            $bail       = true;
-            fwrite (STDERR,"Bail before $draw_closed - manual prize {$draw->manual}@{$p['starts']} has no results - see README.md 'Manually inserting external number-matches'\n");
+            $bail   = true;
+            fwrite (STDERR,"Bail before {$draw->closed} - manual prize {$draw->manual}@{$p['starts']} has no results - see README.md 'Manually inserting external number-matches'\n");
         }
         if ($bail) {
             exit (104);
         }
         // Associative array entry_id => row
-        $entries        = entries ($draw_closed);
+        $entries    = entries ($draw->closed);
     }
     catch (\Exception $e) {
         fwrite (STDERR,$e->getMessage()."\n");
         exit (106);
     }
-    if (notarised($draw_closed)) {
+    if (notarised($draw->closed)) {
         if (!$quiet) {
             echo "Entries previously notarised\n";
         }
     }
     else {
         try {
-            notarise ($draw_closed,$draw->prizes,'prizes.json',false,false,true);
-            notarise ($draw_closed,$entries,'draw.csv','CSV','HEADERS');
+            notarise ($draw->closed,$draw->prizes,'prizes.json',false,false,true);
+            notarise ($draw->closed,$entries,'draw.csv','CSV','HEADERS');
             if (!$quiet) {
                 echo "Just notarised\n";
             }
@@ -154,7 +150,7 @@ while ($d=$ds->fetch_assoc()) {
             exit (107);
         }
     }
-    if (notarised($draw_closed,true)) {
+    if (notarised($draw->closed,true)) {
         if (!$quiet) {
             echo "Results previously notarised\n";
         }
@@ -176,11 +172,11 @@ while ($d=$ds->fetch_assoc()) {
             if (!$p['results']) {
                 try {
                     // Run the manual results function for this prize level
-                    prize_function ($p,$draw_closed);
+                    prize_function ($p,$draw->closed);
                 }
                 catch (\Exception $e) {
-                    fwrite (STDERR,"Prize {$p['level']} for $draw_closed = ".print_r($p,true));
-                    fwrite (STDERR,$draw_closed.' '.$e->getMessage()."\n");
+                    fwrite (STDERR,"Prize {$p['level']} for {$draw->closed} = ".print_r($p,true));
+                    fwrite (STDERR,$draw->closed.' '.$e->getMessage()."\n");
                     exit (108);
                 }
             }
@@ -198,10 +194,10 @@ while ($d=$ds->fetch_assoc()) {
     // Firstly do number-match prizes so we can run additional raffle if required
     // Don't *think* you can just add additional numbers and prizes.
     if (!$quiet) {
-        echo $draw_closed."   Results required:\n";
-        echo $draw_closed."     ".count($manualmatchprizes)." number-match prizes requiring ".count($manuals)." manual results\n";
-        echo $draw_closed."     ".count($nrmatchprizes)." number-match prizes requiring $m generated results\n";
-        echo $draw_closed."     ".count($raffleprizes)." raffle prizes requiring $r generated results\n";
+        echo $draw->closed."   Results required:\n";
+        echo $draw->closed."     ".count($manualmatchprizes)." number-match prizes requiring ".count($manuals)." manual results\n";
+        echo $draw->closed."     ".count($nrmatchprizes)." number-match prizes requiring $m generated results\n";
+        echo $draw->closed."     ".count($raffleprizes)." raffle prizes requiring $r generated results\n";
     }
     if ($m) {
         try {
@@ -226,7 +222,7 @@ while ($d=$ds->fetch_assoc()) {
             }
             // Random results seem to have worked so:
             notarise (
-                $draw_closed,
+                $draw->closed,
                 array (
                     'prizes' => $nrmatchprizes,
                     'results' => $results_nrmatch,
@@ -234,7 +230,7 @@ while ($d=$ds->fetch_assoc()) {
                 ),
                 'results_nrmatch.json'
             );
-            file_write (BLOTTO_PROOF_DIR.'/'.$draw_closed.'/random_nrmatch.info.txt',$trng_proof);
+            file_write (BLOTTO_PROOF_DIR.'/'.$draw->closed.'/random_nrmatch.info.txt',$trng_proof);
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
@@ -250,16 +246,16 @@ while ($d=$ds->fetch_assoc()) {
         $nrmatchtickets[$grp] = $result;
     }
     if (!$quiet) {
-        echo $draw_closed." Winners required:\n";
-        echo $draw_closed."     ".count($nrmatchprizes)." number-match prize levels with ".count($nrmatchtickets)." perfect match numbers\n";
-        echo $draw_closed."     ".count($raffleprizes)." raffle prize levels with ".count($r)." winners to insert\n";
-        echo $draw_closed." Doing number-match winners\n";
+        echo $draw->closed." Winners required:\n";
+        echo $draw->closed."     ".count($nrmatchprizes)." number-match prize levels with ".count($nrmatchtickets)." perfect match numbers\n";
+        echo $draw->closed."     ".count($raffleprizes)." raffle prize levels with ".count($r)." winners to insert\n";
+        echo $draw->closed." Doing number-match winners\n";
     }
     // Do number-match winners
     try {
         $as             = winnings_nrmatch ($nrmatchprizes,$entries,$nrmatchtickets,$rbe,!$quiet);
         $levels_matched = array_keys ($as);
-        $as             = winnings_add ($amounts,$draw_closed,$as);
+        $as             = winnings_add ($amounts,$draw->closed,$as);
         $amounts        = $as;
     }
     catch (\Exception $e) {
@@ -267,7 +263,7 @@ while ($d=$ds->fetch_assoc()) {
         exit (111);
     }
     if (!$quiet) {
-        echo $draw_closed." Levels matched = ".count($levels_matched)."\n";
+        echo $draw->closed." Levels matched = ".count($levels_matched)."\n";
     }
     // Calculate rollovers
     foreach ($nrmatchprizes as $k=>$mp) {
@@ -305,8 +301,8 @@ while ($d=$ds->fetch_assoc()) {
     // Count rolloverprizes and do ad hoc raffle
     $ro = count ($rolloverprizes);
     if (!$quiet) {
-        echo $draw_closed." Rollovers:\n";
-        echo $draw_closed."     ".count($rolloverprizes)." capped rollovers need forced winners\n";
+        echo $draw->closed." Rollovers:\n";
+        echo $draw->closed."     ".count($rolloverprizes)." capped rollovers need forced winners\n";
     }
     if ($ro) {
         try {
@@ -321,7 +317,7 @@ while ($d=$ds->fetch_assoc()) {
             $rolloverwinners = $results_rollover->response->result->random->data; // array of IDs
             // That seems to have worked so:
             notarise (
-                $draw_closed,
+                $draw->closed,
                 array (
                     'prizes' => $rolloverprizes,
                     'results' => $results_rollover,
@@ -329,13 +325,13 @@ while ($d=$ds->fetch_assoc()) {
                 ),
                 'results_rollover.json'
             );
-            file_write (BLOTTO_PROOF_DIR.'/'.$draw_closed.'/random_rollover.info.txt',$trng_proof);
+            file_write (BLOTTO_PROOF_DIR.'/'.$draw->closed.'/random_rollover.info.txt',$trng_proof);
             // UPDATE blotto_result and insert blotto_winner
             if (!$quiet) {
-                echo $draw_closed." Doing capped rollovers by raffle\n";
+                echo $draw->closed." Doing capped rollovers by raffle\n";
             }
             $as         = winnings_raffle ($rolloverprizes,$entries,$rolloverwinners,$rbe,'ADHOC',!$quiet);
-            $as         = winnings_add ($amounts,$draw_closed,$as);
+            $as         = winnings_add ($amounts,$draw->closed,$as);
             $amounts    = $as;
         }
         catch (\Exception $e) {
@@ -357,7 +353,7 @@ while ($d=$ds->fetch_assoc()) {
             $rafflewinners = $results_raffle->response->result->random->data; // array of IDs
             // That seems to have worked so:
             notarise (
-                $draw_closed,
+                $draw->closed,
                 array (
                     'prizes' => $raffleprizes,
                     'results' => $results_raffle,
@@ -365,13 +361,13 @@ while ($d=$ds->fetch_assoc()) {
                 ),
                 'results_raffle.json'
             );
-            file_write (BLOTTO_PROOF_DIR.'/'.$draw_closed.'/random_raffle.info.txt',$trng_proof);
+            file_write (BLOTTO_PROOF_DIR.'/'.$draw->closed.'/random_raffle.info.txt',$trng_proof);
             // Update blotto_result and blotto_winner
             if (!$quiet) {
-                echo $draw_closed." Doing standard raffle winners\n";
+                echo $draw->closed." Doing standard raffle winners\n";
             }
             $as         = winnings_raffle ($raffleprizes,$entries,$rafflewinners,$rbe,false,!$quiet);
-            $as         = winnings_add ($amounts,$draw_closed,$as);
+            $as         = winnings_add ($amounts,$draw->closed,$as);
             $amounts    = $as;
         }
         catch (\Exception $e) {
