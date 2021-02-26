@@ -10,6 +10,7 @@ if (!$zo) {
 }
 
 // Define
+$rehearse           = get_argument ('r');
 if (!array_key_exists(6,$argv)) {
     fwrite (STDERR,"    Usage: draw_closed_date number-match_group perfect_number\n");
     exit (102);
@@ -51,7 +52,7 @@ else {
         fwrite (STDERR,"number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
         exit (108);
     }
-    echo "    Building and executing SQL for `".BLOTTO_RESULTS_DB."`\n";
+    echo "    Building SQL for `".BLOTTO_RESULTS_DB."`\n";
     $qi             = "INSERT INTO `blotto_result`";
     $qi            .= " (`draw_closed`,`draw_date`,`prize_level`,`number`)";
     $qi            .= " VALUES\n";
@@ -66,13 +67,19 @@ else {
 }
 
 if (!$count) {
-    fwrite (STDERR,"No results to insert\n");
+    fwrite (STDERR,"    No results to insert\n");
     exit (0);
 }
 $qi = substr($qi,0,-1).";";
 
 echo $qi;
+if ($rehearse) {
+    echo "    Rehearsal only - quitting\n";
+    exit (0);
+}
+
 try {
+    echo "    Executing SQL\n";
     $zo->query ($qi);
 }
 catch (\mysqli_sql_exception $e) {
