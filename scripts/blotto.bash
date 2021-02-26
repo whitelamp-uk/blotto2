@@ -57,49 +57,43 @@ get_args () {
         then
             return
         fi
-        if [[ "$1" == "-"* ]]
+        sws="$1"
+        shift
+        if [[ "$sws" == "-"* ]]
         then
-            if    [[ "$1" == *"c"* ]]
+            if    [[ "$sws" == *"c"* ]]
             then
                 echo  "Option: clone from another DB"
                 aux="1"
-                clone="$2"
+                clone="$1"
                 shift
-                shift
-                continue
             fi
-            if    [[ "$1" == *"m"* ]]
+
+            if    [[ "$sws" == *"m"* ]]
             then
                 echo  "Option: manual result insertion"
                 aux="1"
                 manual="1"
-                draw_closed="$2"
-                prize_group="$3"
-                manual_number="$4"
+                draw_closed="$1"
+                prize_group="$2"
+                manual_number="$3"
                 shift
                 shift
                 shift
-                shift
-                continue
             fi
-            if    [[ "$1" == *"n"* ]]
+            if    [[ "$sws" == *"n"* ]]
             then
                 echo  "Option: no tidying"
                 no_tidy="1"
-                shift
                 sw="$sw -n"
-                continue
             fi
-            if [[ "$1" == *"r"* ]]
+            if [[ "$sws" == *"r"* ]]
             then
                 echo  "Option: rehearse only"
                 rehearse="1"
-                shift
                 sw="$sw -r"
-                continue
             fi
         fi
-        shift
     done
 }
 
@@ -205,6 +199,7 @@ if [ "$manual" ]
 then
     echo "MANUAL. Insert results"
     start=$SECONDS
+echo /usr/bin/php $prg $sw "$cfg" exec manual.php $draw_closed $prize_group $manual_number
     /usr/bin/php $prg $sw "$cfg" exec manual.php $draw_closed $prize_group $manual_number
     abort_on_error MANUAL $?
     finish_up
