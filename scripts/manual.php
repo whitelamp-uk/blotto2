@@ -10,7 +10,7 @@ if (!$zo) {
 }
 
 // Define
-if ($rehearse=get_argument('r')) {
+if ($rehearse=get_argument('r',$Sw)) {
     echo "    Rehearsal mode\n";
 }
 if (!array_key_exists(6,$argv)) {
@@ -27,7 +27,7 @@ else {
         exit (103);
     }
     if ($draw->date>date('Y-m-d')) {
-        fwrite (STDERR,"Derived draw date {$draw->date} is in the future\n");
+        fwrite (STDERR,"    Derived draw date {$draw->date} is in the future\n");
         exit (104);
     }
     $group          = null;
@@ -38,11 +38,11 @@ else {
         }
     }
     if (!$group) {
-        fwrite (STDERR,"number-match group '$group' has no prizes\n");
+        fwrite (STDERR,"    Number-match group '$group' has no prizes\n");
         exit (105);
     }
     if (array_key_exists($group,$draw->results)) {
-        fwrite (STDERR,"Group '$group' @ $draw_closed already has results\n");
+        fwrite (STDERR,"    Group '$group' @ $draw_closed already has results\n");
         exit (106);
     }
     $number         = $argv[6];
@@ -51,7 +51,7 @@ else {
         exit (107);
     }
     if ($number<BLOTTO_TICKET_MIN || $number>BLOTTO_TICKET_MAX) {
-        fwrite (STDERR,"number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
+        fwrite (STDERR,"    Number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
         exit (108);
     }
     echo "    Building SQL for `".BLOTTO_RESULTS_DB."`\n";
