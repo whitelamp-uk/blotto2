@@ -7,10 +7,18 @@ function get_args (&$argv,&$switches) {
     $switches   = array ();
     $new        = array ();
     foreach ($argv as $v) {
+        if (strpos($v,'--')===0) {
+            $v = explode ('=',substr($v,2));
+            if (!$v[0]) {
+                continue;
+            }
+            $switches[$v[0]] = $v[1];
+            continue;
+        }
         if (strpos($v,'-')===0) {
             $len = strlen ($v);
             for ($i=1;$i<$len;$i++) {
-                array_push ($switches,$v[$i]);
+                $switches[$v[$i]] = true;
             }
             continue;
         }
