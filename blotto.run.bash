@@ -83,7 +83,7 @@ fi
 
 # Log latest SQL
 mkdir "$ldir/$lsql"
-cp "$ldir/"*.sql.last.log "$ldir/$lsql/"
+cp "$ldir/"*.last*.log "$ldir/$lsql/"
 
 
 # Return manual terminal to working directory
