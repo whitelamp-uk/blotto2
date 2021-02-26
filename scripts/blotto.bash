@@ -12,7 +12,7 @@ abort_on_error () {
         cat "$3"
     fi
     echo "Aborting at step $1 on error status = $2"
-    if [ "$build" ]
+    if [ ! "$aux" ]
     then
         /usr/bin/php "$prm" "$cfg" "$brd build aborted at step $1 on error status = $2"
     fi
@@ -35,7 +35,7 @@ finish_up () {
     then
         echo -n $'\a'
     fi
-    if [ "$build" ]
+    if [ ! "$aux" ]
     then
         /usr/bin/php "$prm" "$cfg" "$brd build completed successfully"
     fi
@@ -45,7 +45,7 @@ finish_up () {
 }
 
 get_args () {
-    build="1"
+    aux=""
     sw=""
     clone=""
     manual=""
@@ -62,7 +62,7 @@ get_args () {
             if    [[ "$1" == *"c"* ]]
             then
                 echo  "Option: clone from another DB"
-                build=""
+                aux="1"
                 clone="$2"
                 shift
                 shift
@@ -71,7 +71,7 @@ get_args () {
             if    [[ "$1" == *"m"* ]]
             then
                 echo  "Option: manual result insertion"
-                build=""
+                aux="1"
                 manual="1"
                 draw_closed="$2"
                 prize_group="$3"
