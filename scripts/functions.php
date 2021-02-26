@@ -1128,14 +1128,17 @@ function get_argument ($element,&$array=false) {
     if (!is_array($argv)) {
         return false;
     }
-    if (is_array($array) && in_array($element,$array)) {
+    if (is_array($array) && array_key_exists($element,$array)) {
         return $array[$element];
     }
     for ($i=1;array_key_exists($i,$argv);$i++) {
         if (strpos($argv[$i],'--')===0) {
             $a = explode ('=',substr($argv[$i],2));
+            if (!$a[0]) {
+                continue;
+            }
             if (is_array($array)) {
-                $array[$element] = $a[1];
+                $array[$a[0]] = $a[1];
             }
             if ($a[0]==$element) {
                 return $a[1];
