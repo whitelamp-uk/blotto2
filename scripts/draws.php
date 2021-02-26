@@ -104,16 +104,12 @@ while ($d=$ds->fetch_assoc()) {
     try {
         // Draw object with current prizes keyed by level
         $draw       = draw ($d['draw_closed']);
-        if ($now<$draw->time) {
-            fwrite (STDERR,"Refusing to draw closed {$draw->closed} until {$draw->time} or later\n");
-            fwrite (STDERR,"So draws.php bailing out at this point\n");
-            exit (0);
-        }
-        if (!$quiet) {
-            echo "{$draw->closed} ----------------\n";
-        }
-        // Insurance and manual result checks
+        // Draw time, insurance and manual result checks
         $bail       = false;
+        if ($now<$draw->time) {
+            $bail = true;
+            fwrite (STDERR,"Bail before {$draw->closed} - must wait until {$draw->time}\n");
+        }
         if ($draw->insure && !$d['insured']) {
             $bail   = true;
             fwrite (STDERR,"Bail before {$draw->closed} - prize {$draw->insure}@{$p['starts']} requires insurance\n");
@@ -123,7 +119,11 @@ while ($d=$ds->fetch_assoc()) {
             fwrite (STDERR,"Bail before {$draw->closed} - manual prize {$draw->manual}@{$p['starts']} has no results - see README.md 'Manually inserting external number-matches'\n");
         }
         if ($bail) {
-            exit (104);
+            // Bail without an error (no more draws, continue build)
+            exit (0);
+        }
+        if (!$quiet) {
+            echo "{$draw->closed} --------\n";
         }
         // Associative array entry_id => row
         $entries    = entries ($draw->closed);
