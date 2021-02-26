@@ -28,7 +28,7 @@ $qs = "
     ON `s`.`id`=`p`.`supporter_id`
   WHERE `p`.`started` IS NULL
 ";
-new = [];
+$new = [];
 try {
     $ms = $zo->query ($qs);
     fwrite (STDERR,"{$ms->num_rows} players where started date not set\n");
