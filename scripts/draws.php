@@ -130,7 +130,7 @@ while ($d=$ds->fetch_assoc()) {
     }
     catch (\Exception $e) {
         fwrite (STDERR,$e->getMessage()."\n");
-        exit (106);
+        exit (104);
     }
     if (notarised($draw->closed)) {
         if (!$quiet) {
@@ -147,7 +147,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            exit (107);
+            exit (105);
         }
     }
     if (notarised($draw->closed,true)) {
@@ -177,7 +177,7 @@ while ($d=$ds->fetch_assoc()) {
                 catch (\Exception $e) {
                     fwrite (STDERR,"Prize {$p['level']} for {$draw->closed} = ".print_r($p,true));
                     fwrite (STDERR,$draw->closed.' '.$e->getMessage()."\n");
-                    exit (108);
+                    exit (106);
                 }
             }
             // Manuals are number-matches and number-matches only have one match per prize level
@@ -212,7 +212,7 @@ while ($d=$ds->fetch_assoc()) {
             $ms = $results_nrmatch->response->result->random->data;
             if (count($ms)!=$m) {
                 fwrite (STDERR,"$m tickets needed for number-match prizes but got ".print_r($ms, true)."\n");
-                exit (109);
+                exit (107);
             }
             foreach ($ms as $k=>$v) {
                 $ms[$k] = str_pad ($v,strlen(BLOTTO_TICKET_MAX),'0',STR_PAD_LEFT);
@@ -234,7 +234,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            exit (110);
+            exit (108);
         }
     }
     // Add manual prizes to other number-match prizes
@@ -260,7 +260,7 @@ while ($d=$ds->fetch_assoc()) {
     }
     catch (\Exception $e) {
         fwrite (STDERR,$e->getMessage()."\n");
-        exit (111);
+        exit (109);
     }
     if (!$quiet) {
         echo $draw->closed." Levels matched = ".count($levels_matched)."\n";
@@ -295,7 +295,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$qr."\n".$e->getMessage()."\n");
-            exit (112);
+            exit (110);
         }
     }
     // Count rolloverprizes and do ad hoc raffle
@@ -336,7 +336,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            exit (113);
+            exit (111);
         }
     }
     // Do raffles
@@ -372,7 +372,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            exit (114);
+            exit (112);
         }
     }
 }
