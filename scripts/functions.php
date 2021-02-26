@@ -1123,23 +1123,29 @@ function file_write ($file,$contents) {
     return true;
 }
 
-function get_argument ($element,&$array) {
+function get_argument ($element,&$array=false) {
     global $argv;
-    if (is_array($array) && in_array($element,$array)) {
-        return true;
-    }
     if (!is_array($argv)) {
         return false;
+    }
+    if (is_array($array) && in_array($element,$array)) {
+        return $array[$element];
     }
     for ($i=1;array_key_exists($i,$argv);$i++) {
         if (strpos($argv[$i],'--')===0) {
             $a = explode ('=',substr($argv[$i],2));
+            if (is_array($array)) {
+                $array[$element] = $a[1];
+            }
             if ($a[0]==$element) {
                 return $a[1];
             }
         }
         if (strpos($argv[$i],'-')===0) {
             if (strpos($argv[$i],$element)) {
+                if (is_array($array)) {
+                    $array[$element] = true;
+                }
                 return true;
             }
         }
