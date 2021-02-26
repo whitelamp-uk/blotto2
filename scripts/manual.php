@@ -72,9 +72,9 @@ if (!$count) {
     fwrite (STDERR,"    No results to insert\n");
     exit (0);
 }
-$qi = substr($qi,0,-1).";";
-
+$qi = substr($qi,0,-1).";\n";
 echo $qi;
+
 if ($rehearse) {
     echo "    Rehearsal only - quitting\n";
     exit (0);
