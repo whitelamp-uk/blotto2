@@ -363,6 +363,7 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `created` date NULL,
   `signed` date DEFAULT NULL,
   `approved` date DEFAULT NULL,
+  `projected_first_draw_close` date DEFAULT NULL,
   `canvas_code` char(4) CHARACTER SET ascii DEFAULT NULL,
   `canvas_agent_ref` varchar(16) CHARACTER SET ascii,
   `canvas_ref` int(11) unsigned,
@@ -372,7 +373,8 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   UNIQUE KEY `client_ref` (`client_ref`),
   KEY `created` (`created`),
   KEY `signed` (`signed`),
-  KEY `approved` (`approved`)
+  KEY `approved` (`approved`),
+  KEY `projected_first_draw_close` (`projected_first_draw_close`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 

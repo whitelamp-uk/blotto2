@@ -56,7 +56,7 @@ BEGIN
       MAX(`tk`.`issue_date`) AS `tickets_issued`
      ,`p`.`canvas_code` AS `ccc`
      ,`m`.`ClientRef`
-     ,DATE_FORMAT(DATE_ADD(`p`.`first_draw_close`,INTERVAL 1 DAY),'%a %D %b %Y') AS `first_play`
+     ,DATE_FORMAT(drawOnOrAfter(`p`.`projected_first_draw_close`),'%a %D %b %Y') AS `projected_first_play`
      ,GROUP_CONCAT(`tk`.`number` SEPARATOR ', ') AS `ticket_numbers`
      ,`sdtk`.`ticket_numbers` AS `superdraw_tickets`
      ,`p`.`title`
@@ -84,6 +84,7 @@ BEGIN
     LEFT JOIN (
       SELECT
         `is`.`canvas_code`
+       ,`is`.`projected_first_draw_close`
        ,`ic`.`title`
        ,`ic`.`name_first`
        ,`ic`.`name_last`
@@ -98,7 +99,6 @@ BEGIN
        ,`ic`.`postcode`
        ,`ic`.`country`
        ,`ip`.`client_ref`
-       ,`ip`.`first_draw_close`
       FROM `blotto_player` AS `ip`
       JOIN `blotto_supporter` AS `is`
         ON `is`.`id`=`ip`.`supporter_id`

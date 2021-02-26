@@ -18,25 +18,43 @@ $qs = "
   SELECT
     `m`.`ClientRef`
    ,`m`.`Created`
+   ,`m`.`StartDate`
+   ,`p`.`supporter_id`
+   ,`s`.`projected_first_draw_close`
   FROM `blotto_build_mandate` AS `m`
   JOIN `blotto_player` AS `p`
     ON `p`.`client_ref`=`m`.`ClientRef`
+  JOIN `blotto_supporter` AS `s`
+    ON `s`.`id`=`p`.`supporter_id`
   WHERE `p`.`started` IS NULL
 ";
+new = [];
 try {
     $ms = $zo->query ($qs);
     fwrite (STDERR,"{$ms->num_rows} players where started date not set\n");
     echo "-- Update started date\n";
     while ($m=$ms->fetch_assoc()) {
-        $started = $m['Created'];
-        $crf     = $m['ClientRef'];
-        echo "UPDATE `blotto_player` SET `started`='$started' WHERE `client_ref`='$crf';\n";
+        if (!$m['projected_first_draw_close']) {
+            if (!array_key_exists($m['StartDate'],$new)) {
+                $new[$m['StartDate']] = [];
+            }
+            array_push ($new[$m['StartDate']],$m['supporter_id'])
+        }
+        echo "UPDATE `blotto_player` SET `started`='{$m['Created']}' WHERE `client_ref`='{$m['ClientRef']}';\n";
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (102);
 }
+
+
+// Set projected_first_draw_close
+foreach ($new as $starts=>$ids) {
+    $first = draw_first ($starts);
+    echo "UPDATE `blotto_supporter` SET `projected_first_draw_close`='$first' WHERE `id` IN (".implode(',',$ids).");\n";
+}
+
 
 // Set chances
 $qs = "

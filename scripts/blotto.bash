@@ -367,14 +367,14 @@ then
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "15. Generate player update SQL in $plu"
+    echo "15. Generate first-draw and chance update SQL in $plu"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players_update.php    > $plu
     abort_on_error 15 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "16. Set player first draw dates and chances using $plu"
+    echo "16. Set first-draw and chances using $plu"
     start=$SECONDS
     mariadb                                                 < $plu
     abort_on_error 16 $?
