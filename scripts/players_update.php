@@ -58,18 +58,20 @@ catch (\mysqli_sql_exception $e) {
 
 
 // Set player started
-if (count($starts)) {
-    foreach ($starts as $date=>$ids) {
-        echo "UPDATE `blotto_player` SET `started`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
+foreach ($starts as $date=>$ids) {
+    if (!count($ids)) {
+        continue;
     }
+    echo "UPDATE `blotto_player` SET `started`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
 
 // Set supporter projected_first_draw_close
-if (count($firsts)) {
-    foreach ($firsts as $closed=>$ids) {
-        $date = draw_first ($closed);
-        echo "UPDATE `blotto_supporter` SET `projected_first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
+foreach ($firsts as $closed=>$ids) {
+    if (!count($ids)) {
+        continue;
     }
+    $date = draw_first ($closed);
+    echo "UPDATE `blotto_supporter` SET `projected_first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
 
 
