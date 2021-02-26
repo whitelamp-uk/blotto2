@@ -19,6 +19,7 @@ $qs = "
     `m`.`ClientRef`
    ,`m`.`Created`
    ,`m`.`StartDate`
+   ,`p`.`id` AS `player_id`
    ,`p`.`supporter_id`
    ,`s`.`projected_first_draw_close`
   FROM `blotto_build_mandate` AS `m`
@@ -27,20 +28,27 @@ $qs = "
   JOIN `blotto_supporter` AS `s`
     ON `s`.`id`=`p`.`supporter_id`
   WHERE `p`.`started` IS NULL
+     OR `s`.`projected_first_draw_close` IS NULL
 ";
-$new = [];
+$starts = [];
+$firsts = [];
 try {
     $ms = $zo->query ($qs);
     fwrite (STDERR,"{$ms->num_rows} players where started date not set\n");
     echo "-- Update started date\n";
     while ($m=$ms->fetch_assoc()) {
-        if (!$m['projected_first_draw_close']) {
-            if (!array_key_exists($m['StartDate'],$new)) {
-                $new[$m['StartDate']] = [];
+        if (!$m['started']) {
+            if (!array_key_exists($m['Created'],$starts)) {
+                $firsts[$m['StartDate']] = [];
             }
-            array_push ($new[$m['StartDate']],$m['supporter_id']);
+            array_push ($starts[$m['Created']],$m['player_id']);
         }
-        echo "UPDATE `blotto_player` SET `started`='{$m['Created']}' WHERE `client_ref`='{$m['ClientRef']}';\n";
+        if (!$m['projected_first_draw_close']) {
+            if (!array_key_exists($m['StartDate'],$firsts)) {
+                $firsts[$m['StartDate']] = [];
+            }
+            array_push ($firsts[$m['StartDate']],$m['supporter_id']);
+        }
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -49,10 +57,16 @@ catch (\mysqli_sql_exception $e) {
 }
 
 
-// Set projected_first_draw_close
-foreach ($new as $starts=>$ids) {
-    $first = draw_first ($starts);
-    echo "UPDATE `blotto_supporter` SET `projected_first_draw_close`='$first' WHERE `id` IN (".implode(',',$ids).");\n";
+// Set player started
+foreach ($starts as $date=>$ids) {
+    echo "UPDATE `blotto_player` SET `started`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
+}
+
+
+// Set supporter projected_first_draw_close
+foreach ($firsts as $closed=>$ids) {
+    $date = draw_first ($closed);
+    echo "UPDATE `blotto_supporter` SET `projected_first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
 
 
