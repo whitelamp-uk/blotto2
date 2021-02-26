@@ -38,7 +38,7 @@ try {
             if (!array_key_exists($m['StartDate'],$new)) {
                 $new[$m['StartDate']] = [];
             }
-            array_push ($new[$m['StartDate']],$m['supporter_id'])
+            array_push ($new[$m['StartDate']],$m['supporter_id']);
         }
         echo "UPDATE `blotto_player` SET `started`='{$m['Created']}' WHERE `client_ref`='{$m['ClientRef']}';\n";
     }
