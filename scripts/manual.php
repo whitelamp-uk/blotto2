@@ -10,7 +10,9 @@ if (!$zo) {
 }
 
 // Define
-$rehearse           = get_argument ('r');
+if ($rehearse=get_argument('r')) {
+    echo "    Rehearsal mode\n";
+}
 if (!array_key_exists(6,$argv)) {
     fwrite (STDERR,"    Usage: draw_closed_date number-match_group perfect_number\n");
     exit (102);
