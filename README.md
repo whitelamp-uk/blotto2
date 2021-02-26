@@ -11,7 +11,8 @@ For example Zaffo's lotto.de first six digits of Saturday Spiel77.
 # Draw closed date: 2021-02-19
 # Last character of level method (aka group): 6
 # Number to insert: 132435
-root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -m 2021-02-19 6 123456 /home/mark/blotto/config/mark_dbh.cfg.php
+
+root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -m 2021-02-19 6 123456 /home/mark/blotto/config/mark.cfg.php
 Option: manual result insertion
 Temp file: /home/mark/blotto/config/../log/dbh/blotto.7119.tmp
 MANUAL. Insert results
@@ -19,6 +20,16 @@ Building and executing SQL for crucible2_mark_dbh_make
 INSERT IGNORE INTO `blotto_result` (`draw_closed`,`draw_date`,`prize_level`,`number`) VALUES
 ('2021-02-19','2021-02-20',1,'132435');
 That's all folks!
+
+# To see rehearse by inspecting the insert SQL use one of:
+
+root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -rm 2021-02-19 6 123456 /home/mark/blotto/config/mark.cfg.php
+
+root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -mr 2021-02-19 6 123456 /home/mark/blotto/config/mark.cfg.php
+
+root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -r -m 2021-02-19 6 123456 /home/mark/blotto/config/mark.cfg.php
+
+# In other words, parameters must immediately follow switch "m"
 
 
 
@@ -33,7 +44,7 @@ root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -c existing_db /m
 
 The new BLOTTO_MAKE_DB will then have the data from a selection of tables from existing_db. See the variable "$tables" in scripts/clone.php
 
-This selection is cloned because at least one column in these tables cannot be derived from payment data or by calculation.
+These tables are cloned because at least one column in these tables cannot be derived from payment data or by calculation.
 
 
 
