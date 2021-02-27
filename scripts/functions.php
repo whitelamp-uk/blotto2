@@ -579,56 +579,56 @@ function download_csv ( ) {
 }
 
 function draw ($draw_closed) {
-    $draw                       = new \stdClass ();
-    $draw->closed               = $draw_closed;
+    $draw                   = new \stdClass ();
+    $draw->closed           = $draw_closed;
+    $qs  = "
+      SELECT
+        DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`
+       ,drawOnOrAfter('$draw_closed') AS `draw_time`
+      ;
+    ";
     try {
-        $qs  = "
-          SELECT
-            DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`
-           ,drawOnOrAfter('$draw_closed') AS `draw_time`
-          ;
-        ";
-        $zo                     = connect (BLOTTO_MAKE_DB);
-        $d                      = $zo->query ($qs);
-        $d                      = $d->fetch_assoc ();
-        $draw->date             = $d['draw_date'];
-        if (!$draw->date) {
-            throw new \Exception ("Could not create draw object having draw_closed={$draw->closed}");
-            return false;
-        }
-        $draw->time             = $d['draw_time'];
-        $draw->prizes           = prizes ($draw_closed);
-        $draw->insure           = false;
-        $draw->manual           = false;
-        $draw->results          = [];
-        $draw->groups           = [];
-        foreach ($draw->prizes as $level=>$p) {
-            if ($p['insure']) {
-                $draw->insure   = $level;
-            }
-            if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
-                $draw->manual   = $level;
-            }
-            // Groups
-            $group              = substr ($p['level_method'],-1);
-            if ($p['level_method']=='RAFF') {
-                if ($p['results']) {
-                     $draw->results['RAFF'] = true;
-                }
-                continue;
-            }
-            if ($p['results']) {
-                 $draw->results[$group] = true;
-            }
-            if (!array_key_exists($group,$draw->groups)) {
-                $draw->groups[$group] = [];
-            }
-            array_push ($draw->groups[$group],$level);
-        }
+        $zo                 = connect (BLOTTO_MAKE_DB);
+        $d                  = $zo->query ($qs);
+        $d                  = $d->fetch_assoc ();
     }
     catch (\mysqli_sql_exception $e) {
-        throw new \Exception ($e->getMessage());
+        throw new \Exception ($qs.$e->getMessage()."\n");
         return false;
+    }
+    $draw->date             = $d['draw_date'];
+    if (!$draw->date) {
+        throw new \Exception ("Draw could not be created; is '{$draw->closed}' a valid date?\n");
+        return false;
+    }
+    $draw->time             = $d['draw_time'];
+    $draw->prizes           = prizes ($draw_closed);
+    $draw->insure           = false;
+    $draw->manual           = false;
+    $draw->results          = [];
+    $draw->groups           = [];
+    foreach ($draw->prizes as $level=>$p) {
+        if ($p['insure']) {
+            $draw->insure   = $level;
+        }
+        if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
+            $draw->manual   = $level;
+        }
+        // Groups
+        $group              = substr ($p['level_method'],-1);
+        if ($p['level_method']=='RAFF') {
+            if ($p['results']) {
+                 $draw->results['RAFF'] = true;
+            }
+            continue;
+        }
+        if ($p['results']) {
+             $draw->results[$group] = true;
+        }
+        if (!array_key_exists($group,$draw->groups)) {
+            $draw->groups[$group] = [];
+        }
+        array_push ($draw->groups[$group],$level);
     }
     return $draw;
 }
