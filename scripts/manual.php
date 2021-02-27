@@ -71,7 +71,7 @@ else {
     $count          = 0;
     foreach ($draw->groups[$group] as $level) {
         $count++;
-        $qi         .= "('{$draw->closed}','{$draw->date}',$level,'$number'),";
+        $qi         .= "('{$draw->closed}','{$draw->date}',$level,'$number'),\n";
     }
 }
 
@@ -79,7 +79,7 @@ if (!$count) {
     fwrite (STDERR,"    No results to insert\n");
     exit (0);
 }
-$qi = substr($qi,0,-1).";\n";
+$qi = substr($qi,0,-2).";\n";
 echo $qi;
 
 if ($rehearse) {
