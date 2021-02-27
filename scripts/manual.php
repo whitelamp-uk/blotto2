@@ -21,7 +21,7 @@ else {
     try {
         $draw       = draw ($argv[4]);
     }
-    catch (\mysqli_sql_exception $e) {
+    catch (\Exception $e) {
         fwrite (STDERR,"    Draw could not be created; is '{$draw->closed}' a valid date?\n");
         exit (103);
     }
