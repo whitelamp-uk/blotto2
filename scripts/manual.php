@@ -22,7 +22,7 @@ else {
         $draw       = draw ($argv[4]);
     }
     catch (\Exception $e) {
-        fwrite (STDERR,"    Draw could not be created; is '{$draw->closed}' a valid date?\n");
+        fwrite (STDERR,"    Draw could not be created; is '{$argv[4]}' a valid date?\n");
         exit (103);
     }
     if ($draw->date>date('Y-m-d')) {
