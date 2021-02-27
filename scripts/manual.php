@@ -22,7 +22,7 @@ else {
         $draw       = draw ($argv[4]);
     }
     catch (\mysqli_sql_exception $e) {
-        fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+        fwrite (STDERR,"    Draw could not be created; is '{$draw->closed}' a valid date?\n");
         exit (103);
     }
     if ($draw->date>date('Y-m-d')) {
