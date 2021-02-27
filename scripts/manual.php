@@ -38,7 +38,7 @@ else {
         }
     }
     if (!$group) {
-        fwrite (STDERR,"    Number-match group '$group' has no prizes\n");
+        fwrite (STDERR,"    Number-match group '$g' has no prizes\n");
         exit (105);
     }
     if (array_key_exists($group,$draw->results)) {
