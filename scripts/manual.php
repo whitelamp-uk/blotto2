@@ -18,9 +18,8 @@ if (!array_key_exists(6,$argv)) {
     exit (102);
 }
 else {
-    $draw_closed    = $argv[4];
     try {
-        $draw       = draw ($draw_closed);
+        $draw       = draw ($argv[4]);
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
@@ -42,7 +41,7 @@ else {
         exit (105);
     }
     if (array_key_exists($group,$draw->results)) {
-        fwrite (STDERR,"    Group '$group' @ $draw_closed already has results\n");
+        fwrite (STDERR,"    Group '$group' @ $draw->closed already has results\n");
         exit (106);
     }
     $number         = $argv[6];
