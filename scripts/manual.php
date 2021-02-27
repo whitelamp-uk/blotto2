@@ -40,18 +40,29 @@ else {
         fwrite (STDERR,"    Number-match group '{$argv[5]}' has no prizes\n");
         exit (105);
     }
+    $manual         = false;
+    foreach ($draw->groups[$group] as $level) {
+        if ($draw->prizes[$level]['results_manual']) {
+            $manual = true;
+            break;
+        }
+    }
+    if (!$manual) {
+        fwrite (STDERR,"    Number-match group '$group' is not manual\n");
+        exit (106);
+    }
     if (array_key_exists($group,$draw->results)) {
         fwrite (STDERR,"    Group '$group' @ $draw->closed already has results\n");
-        exit (106);
+        exit (107);
     }
     $number         = $argv[6];
     if (!preg_match('<^[0-9]+$>',$number)) {
         fwrite (STDERR,"number can only contain digits 0 thru 9\n");
-        exit (107);
+        exit (108);
     }
     if ($number<BLOTTO_TICKET_MIN || $number>BLOTTO_TICKET_MAX) {
         fwrite (STDERR,"    Number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
-        exit (108);
+        exit (109);
     }
     echo "    Building SQL for `".BLOTTO_RESULTS_DB."`\n";
     $qi             = "INSERT INTO `blotto_result`";
@@ -59,9 +70,6 @@ else {
     $qi            .= " VALUES\n";
     $count          = 0;
     foreach ($draw->groups[$group] as $level) {
-        if (!$draw->prizes[$level]['results_manual']) {
-            continue;
-        }
         $count++;
         $qi         .= "('{$draw->closed}','{$draw->date}',$level,'$number'),";
     }
