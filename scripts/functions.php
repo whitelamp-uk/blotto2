@@ -592,6 +592,10 @@ function draw ($draw_closed) {
         $d                      = $zo->query ($qs);
         $d                      = $d->fetch_assoc ();
         $draw->date             = $d['draw_date'];
+        if (!$draw->date) {
+            throw new \Exception ("Could not create draw object having draw_closed={$draw->closed}");
+            return false;
+        }
         $draw->time             = $d['draw_time'];
         $draw->prizes           = prizes ($draw_closed);
         $draw->insure           = false;
