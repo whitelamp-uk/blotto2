@@ -7,13 +7,15 @@ require $argv[1];
 
 echo "\nUSE `".BLOTTO_MAKE_DB."`;\n\n";
 
-
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
     exit (101);
 }
 
-// Set started date
+
+// Set player start date and supporter projected first draw
+$starts = [];
+$firsts = [];
 $qs = "
   SELECT
     `m`.`ClientRef`
@@ -30,8 +32,6 @@ $qs = "
   WHERE `p`.`started` IS NULL
      OR `s`.`projected_first_draw_close` IS NULL
 ";
-$starts = [];
-$firsts = [];
 try {
     $ms = $zo->query ($qs);
     fwrite (STDERR,"{$ms->num_rows} players where started date not set\n");
@@ -55,17 +55,12 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (102);
 }
-
-
-// Set player started
 foreach ($starts as $date=>$ids) {
     if (!count($ids)) {
         continue;
     }
     echo "UPDATE `blotto_player` SET `started`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
-
-// Set supporter projected_first_draw_close
 foreach ($firsts as $closed=>$ids) {
     if (!count($ids)) {
         continue;
@@ -75,7 +70,42 @@ foreach ($firsts as $closed=>$ids) {
 }
 
 
-// Set chances
+
+// Set player actual first draw
+$firsts                     = [];
+$qs = "
+  SELECT
+    `p`.`id`
+   ,MIN(`c`.`DateDue`) AS `first_collected`
+  FROM `blotto_player` AS `p`
+  JOIN `blotto_build_collection` as `c`
+    ON `c`.`ClientRef`=`p`.`client_ref`
+   AND `c`.`PaidAmount`>0
+  WHERE `p`.`first_draw_close` IS NULL
+  GROUP BY `p`.`id`
+";
+try {
+    $players                = $zo->query ($qs);
+    fwrite (STDERR,"{$players->num_rows} players where first draw close not set\n");
+    while ($p=$players->fetch_assoc()) {
+        $date               = draw_first ($p['first_collected']);
+        if (!array_key_exists($date,$firsts)) {
+            $firsts[$date]  = array ();
+        }
+        array_push ($firsts[$date],$p['id']);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (104);
+}
+echo "-- Update first draw dates\n";
+foreach ($firsts as $date=>$ids) {
+    echo "UPDATE `blotto_player` SET `first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
+}
+
+
+// Set player chances
 $qs = "
   SELECT
     `m`.`ClientRef`
@@ -104,40 +134,6 @@ try {
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (103);
-}
-
-
-// Set first_draw_close
-$qs = "
-  SELECT
-    `p`.`id`
-   ,MIN(`c`.`DateDue`) AS `first_collected`
-  FROM `blotto_player` AS `p`
-  JOIN `blotto_build_collection` as `c`
-    ON `c`.`ClientRef`=`p`.`client_ref`
-   AND `c`.`PaidAmount`>0
-  WHERE `p`.`first_draw_close` IS NULL
-  GROUP BY `p`.`id`
-";
-$dates                      = array ();
-try {
-    $players                = $zo->query ($qs);
-    fwrite (STDERR,"{$players->num_rows} players where first draw close not set\n");
-    while ($p=$players->fetch_assoc()) {
-        $date               = draw_first ($p['first_collected']);
-        if (!array_key_exists($date,$dates)) {
-            $dates[$date]   = array ();
-        }
-        array_push ($dates[$date],$p['id']);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
-}
-echo "-- Update first draw dates\n";
-foreach ($dates as $date=>$ids) {
-    echo "UPDATE `blotto_player` SET `first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
 
 
