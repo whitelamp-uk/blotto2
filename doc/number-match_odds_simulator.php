@@ -4,6 +4,10 @@ $example    = "1234567890";
 $matches    = [ 3, 4, 5, 6, 7 ];
 $ranges     = [ 4, 5, 6, 7, 8 ];
 
+// Add BOM to fix UTF-8 in Excel
+fputs (STDOUT, (chr(0xEF).chr(0xBB).chr(0xBF)));
+
+// Add column headings
 fputcsv (STDOUT,['Match','of','Length','Type','Matches','','Tickets','Chances/1,000,000','Readable','']);
 
 foreach ($ranges as $lenr) {

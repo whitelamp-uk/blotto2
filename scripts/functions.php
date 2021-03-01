@@ -279,6 +279,8 @@ function csv ($arrays,$force_delimiter='BLOTTO ') {
     ob_start ();
     try {
         $fp = fopen ('php://output','w');
+        // Add BOM to fix UTF-8 in Excel
+        fputs ($fp,chr(0xEF).chr(0xBB).chr(0xBF));
         foreach ($arrays as $array) {
             foreach ($array as $k=>$v) {
                 if (strpos($v,$force_delimiter)!==false) {
