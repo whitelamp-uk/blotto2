@@ -99,7 +99,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (103);
 }
 echo "-- Update player actual first draw close\n";
 foreach ($firsts as $date=>$ids) {
@@ -132,7 +132,7 @@ try {
         $chances = intval (trim(array_pop($chances)));
         if ($chances<1) {
             fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} for {$m['ClientRef']}\n");
-            exit (103);
+            exit (104);
         }
         if (!array_key_exists($chances,$chances_options)) {
             $chances_options[$chances]  = [];
@@ -142,7 +142,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (103);
+    exit (105);
 }
 echo "-- Update player chances\n";
 foreach ($chances_options as $chances=>$ids) {
@@ -168,12 +168,12 @@ try {
     $errors = $zo->query ($qs);
     if ($errors->num_rows) {
       fwrite (STDERR,$qs."\nplayers_update.php: this should not happen!\n");
-      exit (105);
+      exit (106);
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (106);
+    exit (107);
 }
 
 
