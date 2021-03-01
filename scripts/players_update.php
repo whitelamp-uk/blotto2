@@ -55,12 +55,14 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (102);
 }
+echo "-- Update player started date\n";
 foreach ($starts as $date=>$ids) {
     if (!count($ids)) {
         continue;
     }
     echo "UPDATE `blotto_player` SET `started`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
+echo "-- Update projected first draw close\n";
 foreach ($firsts as $closed=>$ids) {
     if (!count($ids)) {
         continue;
@@ -90,7 +92,7 @@ try {
     while ($p=$players->fetch_assoc()) {
         $date               = draw_first ($p['first_collected']);
         if (!array_key_exists($date,$firsts)) {
-            $firsts[$date]  = array ();
+            $firsts[$date]  = [];
         }
         array_push ($firsts[$date],$p['id']);
     }
@@ -99,16 +101,21 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (104);
 }
-echo "-- Update first draw dates\n";
+echo "-- Update player actual first draw close\n";
 foreach ($firsts as $date=>$ids) {
+    if (!count($ids)) {
+        continue;
+    }
     echo "UPDATE `blotto_player` SET `first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
 
 
 // Set player chances
+$chances_options = [];
 $qs = "
   SELECT
-    `m`.`ClientRef`
+    `p`.`id`
+   ,`m`.`ClientRef`
    ,`m`.`ChancesCsv`
   FROM `blotto_build_mandate` AS `m`
   JOIN `blotto_player` AS `p`
@@ -121,19 +128,28 @@ try {
     fwrite (STDERR,"{$ms->num_rows} players where chances not set but could be\n");
     echo "-- Update chances\n";
     while ($m=$ms->fetch_assoc()) {
-        $crf     = $m['ClientRef'];
         $chances = explode (',',$m['ChancesCsv']);
         $chances = intval (trim(array_pop($chances)));
         if ($chances<1) {
-            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} at $crf\n");
+            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} for {$m['ClientRef']}\n");
             exit (103);
         }
-        echo "UPDATE `blotto_player` SET `chances`=$chances WHERE `client_ref`='$crf';\n";
+        if (!array_key_exists($chances,$chances_options)) {
+            $chances_options[$chances]  = [];
+        }
+        array_push ($chances_options[$chances],$p['id']);
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (103);
+}
+echo "-- Update player chances\n";
+foreach ($chances_options as $chances=>$ids) {
+    if (!count($ids)) {
+        continue;
+    }
+    echo "UPDATE `blotto_player` SET `chances`=$chances WHERE `id` IN (".implode(',',$ids).");\n";
 }
 
 
