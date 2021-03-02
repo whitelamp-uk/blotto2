@@ -406,7 +406,7 @@ form#list-aux {
     white-space:       nowrap;
 }
 
-form#list-aux span, form#list-aux label {
+form#list-aux label {
     position:          relative;
     top:               -0.15em;
     font-size:         var(--blotto-font-size-form-group-by);
