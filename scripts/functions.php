@@ -576,6 +576,11 @@ function download_csv ( ) {
             array_push ($data,"IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')");
             continue;
         }
+        if ($gp && $fn['Field']=='ticket_number') {
+            array_push ($headings,"'ticket_numbers' AS `ticket_numbers`");
+            array_push ($data,"IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')");
+            continue;
+        }
         array_push ($headings,"'{$fn['Field']}' AS `{$fn['Field']}`");
         array_push ($data,"IFNULL(`{$fn['Field']}`,'')");
     }
@@ -586,7 +591,12 @@ function download_csv ( ) {
         $cond       = "";
     }
     if ($gp) {
-        $gpby       = "GROUP BY `client_ref`\n";
+        if ($t=='Supporters') {
+            $gpby   = "GROUP BY `original_client_ref`\n";
+        }
+        else {
+            $gpby   = "GROUP BY `client_ref`\n";
+        }
     }
     else {
         $gpby       = "";
@@ -603,7 +613,7 @@ function download_csv ( ) {
         return "SQL failure [2]";
     }
     header ('Content-Type: text/csv');
-    header ('Content-Disposition: attachment; filename="'.$file.'"'); 
+    header ('Content-Disposition: attachment; filename="'.$file.'"');
     header ('Content-Description: File Transfer');
     header ('Expires: 0');
     header ('Cache-Control: must-revalidate');
