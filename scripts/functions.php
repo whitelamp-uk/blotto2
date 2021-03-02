@@ -586,7 +586,7 @@ function download_csv ( ) {
         $cond       = "";
     }
     if ($gp) {
-        $gpby       = "GROUP BY `ClientRef`\n";
+        $gpby       = "GROUP BY `client_ref`\n";
     }
     else {
         $gpby       = "";
