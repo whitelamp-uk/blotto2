@@ -384,6 +384,7 @@ form#change-supporter input {
   }
   75% {
     background-color:   transparent;        
+    color:              black;
   }
 }
 
