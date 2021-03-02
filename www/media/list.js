@@ -85,11 +85,11 @@ function elzSet (input=null) {
     }
     if (current) {
         element.checked = true;
-        input.nextElementSibling.classList.add ('blink');
+        element.nextElementSibling.classList.add ('blink');
         return;
     }
     element.checked = false;
-    input.nextElementSibling.classList.remove ('blink');
+    element.nextElementSibling.classList.remove ('blink');
 }
 
 function groupSet (input=null) {
