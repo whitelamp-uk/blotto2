@@ -68,7 +68,7 @@ foreach ($months as $m=>$month) {
             <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$latest)); ?>">CSV</button>
           </div>
           <form id="list-aux">
-            <input type="checkbox" name="excel_friendly_zero" /><label>Excel-friendly &apos;012</label>
+            <input type="checkbox" name="excel_leading_zero" /><label>Excel-friendly &apos;012</label>
 <?php if(in_array($table,['Cancellations','Supporters','Draws'])): ?>
             &nbsp; &nbsp;
             <input type="radio" name="group_by_ticket_number" value="0" checked /><label>1 row/ticket</label>
