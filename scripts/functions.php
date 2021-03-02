@@ -516,7 +516,7 @@ function download_csv ( ) {
     $gp         = array_key_exists('grp',$_GET) && $_GET['grp']>0 && in_array(strtolower($t),['cancellations','draws','supporters']);
     $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0;
     $file       = $_GET['table'];
-    $file      .= .'_'.$_GET['from'].'_'.$_GET['to'];
+    $file      .= '_'.$_GET['from'].'_'.$_GET['to'];
     if ($gp) {
         $file  .= '_by_member';
     }
