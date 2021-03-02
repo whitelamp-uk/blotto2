@@ -111,6 +111,7 @@ document.body.classList.add ('framed');
 window.top.menuActivate ('<?php echo $table; ?>');
 dateActivate ();
 groupSet ();
+elzSet ();
     </script>
 
 
