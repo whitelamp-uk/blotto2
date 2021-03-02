@@ -1,0 +1,41 @@
+
+https://en.wikipedia.org/wiki/Binomial_distribution
+
+See cumulative distribution function (CDF).
+
+If one were to randomly pick a CDF y-axis value and look up the x-axis value,
+one would have a fluctuating number of winners with a consistent mean quantity
+per week but with a binomial random deviation.
+
+Inputs:
+* $cdf  randomly selected value between 0 and 1
+* $ts   number of tickets
+* $pb   probability per binomial trial (fixed odds)
+* $wa   expected number of winners $p*$tk
+
+Derived:
+* $wn   simulated number of winners - a "noisy" value
+
+
+        ^
+random  |       _____________________ p=$pb
+ $cdf --| - - -/
+        |     /
+        |    |
+        |    |
+        |    |
+        |    |
+        |    |
+        |    |
+        |    |
+        |    |
+        |   /
+        |__/_________________________
+             |  |                    |
+             | $wn=$p['quantity']   N=$tk
+             |
+   expected $wa
+
+From here on behaves like a regular raffle prize...
+
+
