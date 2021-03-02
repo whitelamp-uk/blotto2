@@ -514,7 +514,7 @@ function download_csv ( ) {
     $d2         = esc ($_GET['to']);
     $cond       = strtolower($t) == 'wins' && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST;
     $gp         = array_key_exists('grp',$_GET) && $_GET['grp']>0 && in_array(strtolower($t),['cancellations','draws','supporters']);
-    $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0
+    $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0;
     if ($gp) {
         $file       = $_GET['table'].'_by_member_'.$_GET['from'].'_'.$_GET['to'].'.csv';
     }
