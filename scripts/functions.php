@@ -539,7 +539,7 @@ function download_csv ( ) {
     }
     catch (\mysqli_sql_exception $e) {
         error_log ('download_csv(): '.$e->getMessage());
-        return "SQL failure";
+        return "SQL failure [1]";
     }
     $q ="
       SELECT
@@ -600,7 +600,7 @@ function download_csv ( ) {
     }
     catch (\mysqli_sql_exception $e) {
         error_log ('download_csv(): '.$e->getMessage());
-        return "SQL failure";
+        return "SQL failure [2]";
     }
     header ('Content-Type: text/csv');
     header ('Content-Disposition: attachment; filename="'.$file.'"'); 
