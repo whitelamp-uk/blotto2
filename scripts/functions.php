@@ -307,7 +307,7 @@ function csv_excel_leading_zero ($file,$complement=false) {
     $error                  = false;
     ob_start ();
     try {
-        $fpin               = fopen ($file);
+        $fpin               = fopen ($file,'r');
         $fpout              = fopen ('php://output','w');
         while ($array=fgetcsv($fpin)) {
             foreach ($array as $k=>$v) {
