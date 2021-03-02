@@ -515,15 +515,18 @@ function download_csv ( ) {
     $cond       = strtolower($t) == 'wins' && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST;
     $gp         = array_key_exists('grp',$_GET) && $_GET['grp']>0 && in_array(strtolower($t),['cancellations','draws','supporters']);
     $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0;
+    $file       = $_GET['table'];
+    $file      .= .'_'.$_GET['from'].'_'.$_GET['to'];
     if ($gp) {
-        $file       = $_GET['table'].'_by_member_'.$_GET['from'].'_'.$_GET['to'].'.csv';
+        $file  .= '_by_member';
     }
     elseif (!in_array(strtolower($t),['anls','wins'])) {
-        $file       = $_GET['table'].'_by_ticket_'.$_GET['from'].'_'.$_GET['to'].'.csv';
+        $file  .= '_by_ticket';
     }
-    else {
-        $file       = $_GET['table'].'_'.$_GET['from'].'_'.$_GET['to'].'.csv';
+    if ($elz) {
+        $file  .= '_XL';
     }
+    $file      .= '.csv';
     if (in_array(strtolower($_GET['table']),['draws','insurance'])) {
         $dt1    = new DateTime ($_GET['from']);
         $dt2    = new DateTime ($_GET['to']);
