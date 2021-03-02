@@ -367,6 +367,22 @@ form#change-supporter input {
     top:                calc(50vh - 21px);
 }
 
+.blink {
+    animation:          1s blinker linear infinite;
+}
+@keyframes blinker {  
+  0% {
+    background-color:   transparent;        
+  }
+  50% {
+    background-color:   var(--blotto-color-bgd-blink);        
+    color:              white;
+  }
+  100% {
+    background-color:   transparent;        
+  }
+}
+
 .content {
     padding:            2em;
     width:              calc(100% - 4em);
