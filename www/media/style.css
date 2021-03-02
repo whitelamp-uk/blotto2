@@ -368,17 +368,20 @@ form#change-supporter input {
 }
 
 .blink {
-    animation:          1s blinker linear infinite;
+    animation:          2s blinker linear infinite;
 }
 @keyframes blinker {  
   0% {
     background-color:   transparent;        
   }
-  50% {
+  5% {
+    background-color:   transparent;        
+  }
+  75% {
     background-color:   var(--blotto-color-bgd-blink);        
     color:              white;
   }
-  100% {
+  80% {
     background-color:   transparent;        
   }
 }
