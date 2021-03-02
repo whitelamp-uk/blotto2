@@ -279,6 +279,7 @@ CREATE TABLE IF NOT EXISTS `blotto_prize` (
   `function_name` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   `level_method` char(4) CHARACTER SET ascii DEFAULT NULL,
   `quantity` tinyint(3) unsigned DEFAULT NULL,
+  `quantity_percent` decimal(3,1) unsigned DEFAULT NULL,
   `amount` int(11) unsigned DEFAULT NULL,
   `amount_cap` int(11) unsigned NOT NULL DEFAULT 0,
   `amount_brought_forward` int(11) unsigned NOT NULL DEFAULT 0,

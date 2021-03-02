@@ -1603,6 +1603,7 @@ function prizes ($date) {
        ,`p`.`function_name`
        ,`p`.`level_method`
        ,`p`.`quantity`
+       ,`p`.`quantity_percent`
        ,`p`.`amount`
        ,`p`.`amount_cap`
        ,`p`.`amount_brought_forward`

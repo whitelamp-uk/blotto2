@@ -161,6 +161,9 @@ while ($d=$ds->fetch_assoc()) {
     $nrmatchtickets = $manuals = [];
     // Collate the prizes into number matches and raffles
     foreach ($draw->prizes as $level=>$p) {
+        if ($p['quantity_percent']) {
+            $p['quantity'] = ceil (count($entries)*$p['quantity_percent']/100);
+        }
         $nrmatchtktgroup = substr ($p['level_method'],-1); // not used for raffles...
         if ($p['level_method']=='RAFF') {
             // Raffle prizes
