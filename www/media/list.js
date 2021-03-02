@@ -56,7 +56,7 @@ function dateGo (button) {
     else {
         grp                     = sessionStorage.getItem ('data-group-by');
         url                    += "&grp=" + grp;
-        elz                     = sessionStorage.getItem ('elz-leading-zero');
+        elz                     = sessionStorage.getItem ('excel-leading-zero');
         if (elz) {
             url                += "&elz=1";
         }
@@ -70,15 +70,15 @@ function elzSet (input=null) {
     var current, element;
     if (input) {
         if (input.checked) {
-            sessionStorage.setItem ('elz-leading-zero','1');
+            sessionStorage.setItem ('excel-leading-zero','1');
             input.nextElementSibling.classList.add ('blink');
             return;
         }
-        sessionStorage.setItem ('elz-leading-zero','');
+        sessionStorage.setItem ('excel-leading-zero','');
         input.nextElementSibling.classList.remove ('blink');
         return;
     }
-    current = sessionStorage.getItem ('elz-leading-zero');
+    current = sessionStorage.getItem ('excel-leading-zero');
     element = document.querySelector ('[name="elz_leading_zero"]');
     if (!element) {
         return;
