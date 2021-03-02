@@ -69,9 +69,9 @@ foreach ($months as $m=>$month) {
           </div>
           <form id="list-aux">
 <?php if(in_array($table,['Cancellations','Supporters','Draws'])): ?>
-            &nbsp; &nbsp;
             <input type="radio" name="group_by_ticket_number" value="0" checked /><label>1 row/ticket</label>
             <input type="radio" name="group_by_ticket_number" value="1" /><label>1 row/member</label>
+            &nbsp; &nbsp;
 <?php endif; ?>
             <input type="checkbox" name="excel_leading_zero" /><label>Excel-friendly &apos;012</label>
           </form>
