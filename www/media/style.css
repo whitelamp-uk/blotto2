@@ -375,13 +375,14 @@ form#change-supporter input {
     background-color:   transparent;        
   }
   5% {
-    background-color:   transparent;        
-  }
-  75% {
     background-color:   var(--blotto-color-bgd-blink);        
     color:              white;
   }
-  80% {
+  70% {
+    background-color:   var(--blotto-color-bgd-blink);        
+    color:              white;
+  }
+  75% {
     background-color:   transparent;        
   }
 }
