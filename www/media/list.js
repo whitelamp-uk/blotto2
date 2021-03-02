@@ -79,7 +79,7 @@ function elzSet (input=null) {
         return;
     }
     current = sessionStorage.getItem ('excel-leading-zero');
-    element = document.querySelector ('[name="elz_leading_zero"]');
+    element = document.querySelector ('[name="excel_leading_zero"]');
     if (!element) {
         return;
     }
