@@ -274,18 +274,19 @@ function connect ($db=BLOTTO_DB,$un=BLOTTO_UN,$pw=BLOTTO_PW,$temp=false,$auth=fa
     }
 }
 
-function csv ($arrays,$force_delimiter='BLOTTO ') {
+function csv ($arrays) {
+    $delim = BLOTTO_CSV_FORCE_DELIM;
     $error = false;
     ob_start ();
     try {
         $fp = fopen ('php://output','w');
         foreach ($arrays as $array) {
             foreach ($array as $k=>$v) {
-                if (strpos($v,$force_delimiter)!==false) {
-                    $error = "The data contains the force-delimiter string '$force_delimiter'";
+                if (strpos($v,$delim)!==false) {
+                    $error = "The data contains the force-delimiter string '$delim'";
                     break;
                 }
-                $array[$k] = $force_delimiter.$v;
+                $array[$k] = $delim.$v;
             }
             fputcsv ($fp,$array);
         }
@@ -299,7 +300,37 @@ function csv ($arrays,$force_delimiter='BLOTTO ') {
         throw new \Exception ($error);
         return false;
     }
-    return str_replace ($force_delimiter,'',$csv);
+    return str_replace ($delim,'',$csv);
+}
+
+function csv_excel_leading_zero ($file,$complement=false) {
+    $error                  = false;
+    ob_start ();
+    try {
+        $fpin               = fopen ($file);
+        $fpout              = fopen ('php://output','w');
+        while ($array=fgetcsv($fpin)) {
+            foreach ($array as $k=>$v) {
+                if ($complement && preg_match("<^'[0-9]+$>",$v)) {
+                    $array[$k] = substr ($v,1);
+                }
+                if (preg_match('^[0-9]+$')) {
+                    $array[$k] = substr ($v,1);
+                }
+            }
+            fputcsv ($fpout,$array);
+        }
+        $csv = ob_get_contents ();
+    }
+    catch (\Exception $e) {
+        $error = $e->getMessage ();
+    }
+    ob_end_clean ();
+    if ($error) {
+        throw new \Exception ($error);
+        return false;
+    }
+    return $csv;
 }
 
 function csv_write ($file,$array2d,$headers=false) {
@@ -483,6 +514,7 @@ function download_csv ( ) {
     $d2         = esc ($_GET['to']);
     $cond       = strtolower($t) == 'wins' && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST;
     $gp         = array_key_exists('grp',$_GET) && $_GET['grp']>0 && in_array(strtolower($t),['cancellations','draws','supporters']);
+    $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0
     if ($gp) {
         $file       = $_GET['table'].'_by_member_'.$_GET['from'].'_'.$_GET['to'].'.csv';
     }
@@ -573,8 +605,14 @@ function download_csv ( ) {
     header ('Expires: 0');
     header ('Cache-Control: must-revalidate');
     header ('Pragma: public');
-    header ('Content-Length: '.filesize($of));
-    readfile ($of);
+    if (!$elz) {
+        header ('Content-Length: '.filesize($of));
+        readfile ($of);
+        exit;
+    }
+    $output = csv_excel_leading_zero ($of);
+    header ('Content-Length: '.strlen($output));
+    echo $output;
     exit;
 }
 
@@ -1395,7 +1433,7 @@ function notarisation ($file) {
 function notarise ($draw_closed,$data,$file,$csv=false,$headers=false) {
     $dir_proof  = BLOTTO_PROOF_DIR;
     if (!is_dir($dir_proof)) {
-        throw new \Exception ("Directory BLOTTO_PROOF_DIR= $dir_proof does not exist");
+        throw new \Exception ("Directory BLOTTO_PROOF_DIR=$dir_proof does not exist");
         return false;
     }
     $dir        = $dir_proof.'/'.$draw_closed;

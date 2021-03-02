@@ -43,23 +43,49 @@ function dateActivate (button=null) {
 }
 
 function dateGo (button) {
-    var element,grp,url;
-    element = button.parentElement.parentElement;
-    element = element.querySelector ('[data-date]');
+    var element,elz,grp,url;
+    element                     = button.parentElement.parentElement;
+    element                     = element.querySelector ('[data-date]');
     if (element) {
         dateActivate (element);
     }
-    url     = button.dataset.url;
+    url                         = button.dataset.url;
     if (button.dataset.go=='view') {
         window.top.menuActivate ('adminer');
     }
     else {
-        grp = sessionStorage.getItem ('data-group-by');
-        url += "&grp=" + grp;
+        grp                     = sessionStorage.getItem ('data-group-by');
+        url                    += "&grp=" + grp;
+        elz                     = sessionStorage.getItem ('elz-leading-zero');
+        if (elz) {
+            url                += "&elz=1";
+        }
         // No unload wait icon - this is a download
-        window.unloadSuppress = true;
+        window.unloadSuppress   = true;
     }
-    window.location.href = url;
+    window.location.href        = url;
+}
+
+function elzSet (input=null) {
+    var current, element;
+    if (input) {
+        if (input.checked) {
+            sessionStorage.setItem ('elz-leading-zero','1');
+            return;
+        }
+        sessionStorage.setItem ('elz-leading-zero','');
+        return;
+    }
+    current = sessionStorage.getItem ('elz-leading-zero');
+    element = document.querySelector ('[name="elz_leading_zero"]');
+    if (!element) {
+        return;
+    }
+    if (current) {
+        element.checked = true;
+        return;
+    }
+    element.checked = false;
 }
 
 function groupSet (input=null) {

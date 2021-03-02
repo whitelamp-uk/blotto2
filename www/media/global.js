@@ -18,6 +18,10 @@ function clickHandler (evt) {
         dateGo (evt.target);
         return;
     }
+    if (evt.target.getAttribute('name')=='excel_leading_zero') {
+        elzSet (evt.target);
+        return;
+    }
     if (evt.target.getAttribute('name')=='group_by_ticket_number') {
         groupSet (evt.target);
         return;
