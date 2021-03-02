@@ -315,7 +315,7 @@ function csv_excel_leading_zero ($file,$complement=false) {
                     $array[$k] = substr ($v,1);
                 }
                 if (preg_match('<^[0-9]+$>',$v)) {
-                    $array[$k] = substr ($v,1);
+                    $array[$k] = "'".$v;
                 }
             }
             fputcsv ($fpout,$array);
