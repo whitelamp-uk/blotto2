@@ -71,11 +71,11 @@ function elzSet (input=null) {
     if (input) {
         if (input.checked) {
             sessionStorage.setItem ('elz-leading-zero','1');
-            input.classList.add ('blink');
+            input.nextElementSibling.classList.add ('blink');
             return;
         }
         sessionStorage.setItem ('elz-leading-zero','');
-        input.classList.remove ('blink');
+        input.nextElementSibling.classList.remove ('blink');
         return;
     }
     current = sessionStorage.getItem ('elz-leading-zero');
@@ -85,11 +85,11 @@ function elzSet (input=null) {
     }
     if (current) {
         element.checked = true;
-        input.classList.add ('blink');
+        input.nextElementSibling.classList.add ('blink');
         return;
     }
     element.checked = false;
-    input.classList.remove ('blink');
+    input.nextElementSibling.classList.remove ('blink');
 }
 
 function groupSet (input=null) {
