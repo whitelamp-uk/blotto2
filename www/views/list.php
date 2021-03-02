@@ -67,17 +67,15 @@ foreach ($months as $m=>$month) {
             <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$latest)); ?>">View</button>
             <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$latest)); ?>">CSV</button>
           </div>
-          <form id="excel-leading-zero">
+          <form id="list-aux">
+<?php if(!in_array($table,['ANLs','Changes','Insurance','Updates','Wins'])): ?>
             <span>Excel friendly</span>
             <input type="checkbox" name="excel_friendly_zero" /><label>Numbers like &squot;012345</label>
-          </form>
-<?php if(!in_array($table,['ANLs','Changes','Insurance','Updates','Wins'])): ?>
-          <form id="group-by">
             <span>CSVs</span>
             <input type="radio" name="group_by_ticket_number" value="0" checked /><label>1 row/ticket</label>
             <input type="radio" name="group_by_ticket_number" value="1" /><label>1 row/member</label>
-          </form>
 <?php endif; ?>
+          </form>
         </span>
 
 <?php foreach($dates as $m=>$days): ?>

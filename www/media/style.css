@@ -395,7 +395,7 @@ h3 {
     margin-top:         1.2em;
 }
 
-form#group-by {
+form#list-aux {
     position:          absolute;
     left:              40em;
     top:               0.85em;
@@ -406,7 +406,7 @@ form#group-by {
     white-space:       nowrap;
 }
 
-form#group-by span, form#group-by label {
+form#list-aux span, form#list-aux label {
     position:          relative;
     top:               -0.15em;
     font-size:         var(--blotto-font-size-form-group-by);
