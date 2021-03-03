@@ -30,6 +30,7 @@ define ( 'BLOTTO_BESPOKE_SQL_FNC',  __DIR__.'/abc.bespoke.functions.sql' );
 define ( 'BLOTTO_ORG_NAME',      'Your Organisation'                    );
 define ( 'BLOTTO_ORG_ID',        8                   );
 define ( 'BLOTTO_ORG_USER',      'abc'               );
+define ( 'BLOTTO_GAME_NAME',     'Your Lottery'                         );
 define ( 'BLOTTO_MAKE_DB',       'mylotto_abc_make'  );
 define ( 'BLOTTO_DUMP_FILE',     '/home/blotto/export/abc/dump.sql'     );
 define ( 'BLOTTO_DB',            'mylotto_abc'       );
