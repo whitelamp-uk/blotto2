@@ -233,6 +233,29 @@ a.help {
     color:              #008888;
 }
 
+#small-print {
+    display:            none;
+    position:           fixed;
+    left:               20vw;
+    top:                1em;
+    width:              60vw;
+    height:             calc(100vh - 6em);
+    border-style:       solid;
+    border-width:       1px;
+    background-color:   white;
+    opacity:            0.85;
+    padding:            2em;
+    overflow-x:         auto;
+    overflow-y:         scroll;
+    color:              black;
+}
+#small-print.visible {
+    display:            block;
+}
+#small-print h2 {
+    margin-top:         0;
+}
+
 form.login {
     text-align:         center;
     padding:            1.9em 0 0 0;

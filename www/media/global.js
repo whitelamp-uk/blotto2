@@ -6,14 +6,19 @@ function clickHandler (evt) {
         window.top.menuActivate ('adminer');
         return;
     }
+    if (evt.target.id=='small-print-view') {
+        evt.preventDefault ();
+        smallPrintOpen (evt.target);
+        return;
+    }
     if ('date' in evt.target.dataset) {
         dateActivate (evt.target);
         return;
     }
     if ('go' in evt.target.dataset) {
         if (evt.target.dataset.url.indexOf('#huge')===0) {
-           evt.preventDefault ();
-           message ('Sorry, that is too much data via the web; request help from your account administrator','err');
+            evt.preventDefault ();
+            message ('Sorry, that is too much data via the web; request help from your account administrator','err');
         }
         dateGo (evt.target);
         return;
@@ -274,6 +279,20 @@ function setFrame (path) {
         path = p;
     }
     document.getElementById ('frame').setAttribute ('src',path);
+}
+
+function smallPrintClose (evt) {
+    var box;
+    box = evt.currentTarget;
+    box.classList.remove ('visible');
+    box.removeEventListener ('click',smallPrintClose);
+}
+
+function smallPrintOpen (link) {
+    var box;
+    box = link.nextElementSibling;
+    box.addEventListener ('click',smallPrintClose);
+    box.classList.add ('visible');
 }
 
 function submitHandler (evt) {
