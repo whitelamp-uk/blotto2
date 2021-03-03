@@ -3,7 +3,7 @@
     [
         {
             "path": ".",
-            "file_exclude_patterns": [".git*","*.sublime-*"]
+            "file_exclude_patterns": [".git*","*.sublime-*","www/views/about.php","www/views/guide.php","www/views/privacy.php","www/views/terms.php","www/views/top.php","www/media/csv.png","www/media/go.png","www/media/guide.css","www/media/image.png","www/media/login.svg","www/media/logo-adminer.png","www/media/logo-company.png","www/media/logo.png","www/media/logo-software.png","www/media/table.png","www/media/wait.gif"]
         },
         {
             "path": "../www",
