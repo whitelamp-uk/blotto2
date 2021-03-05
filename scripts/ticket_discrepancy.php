@@ -15,7 +15,7 @@ if (!$zo) {
 $qc = "CHECKSUM TABLE `$tdb`.`blotto_ticket` EXTENDED";
 try {
     $cks = $zo->query ($qc);
-    $cks = $cks->fetch_assoc ();
+    $cks = $cks->fetch_assoc()['Checksum'];
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qc."\n".$e->getMessage()."\n");
