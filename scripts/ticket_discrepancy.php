@@ -5,13 +5,35 @@ cfg ();
 require $argv[1];
 $mdb = BLOTTO_MAKE_DB;
 $tdb = BLOTTO_TICKET_DB;
-
-tee ("    Looking for discrepancies between player chances and number of tickets\n");
+$csf = BLOTTO_DIR_EXPORT.'/checksum.blotto_ticket.txt';
 
 $zo = connect ($mdb);
 if (!$zo) {
     exit (101);
 }
+
+$qc = "CHECKSUM TABLE `$tdb`.`blotto_ticket` EXTENDED";
+try {
+    $cks = $zo->query ($qc);
+    $cks = $cks->fetch_assoc ();
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qc."\n".$e->getMessage()."\n");
+    exit (102);
+}
+try {
+    $fp = fopen ($csf,'w');
+    fwrite ($fp,"$cks\n");
+    fclose ($fp);
+}
+catch (\Exception $e) {
+    fwrite (STDERR,$e->getMessage()."\n");
+    exit (103);
+}
+tee ("    Ticket pool checksum $cks written to $csf\n");
+
+
+tee ("    Looking for discrepancies between player chances and number of tickets\n");
 
 $qs = "
   SELECT
@@ -60,7 +82,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (102);
+    exit (104);
 }
 
 if ($c=count($players)) {
@@ -68,6 +90,6 @@ if ($c=count($players)) {
     echo $qs;
     print_r ($players);
     fwrite (STDERR,"$c players have ticket discrepancies (see log)\n");
-    exit (103);
+    exit (105);
 }
 

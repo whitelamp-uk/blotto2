@@ -5,11 +5,6 @@ cfg ();
 require $argv[1];
 
 
-if (!BLOTTO_TICKETS_AUTO) {
-    tee ("-- Auto-assignment of tickets is switched off - skipping\n");
-    exit (0);
-}
-
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
     exit (101);
@@ -21,6 +16,11 @@ $fdb = BLOTTO_DB;
 $tdb = BLOTTO_TICKET_DB;
 $dbs = [];
 
+
+if (!BLOTTO_TICKETS_AUTO) {
+    tee ("-- Auto-assignment of tickets is switched off - skipping\n");
+    exit (0);
+}
 
 try {
 
