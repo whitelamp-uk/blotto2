@@ -40,7 +40,7 @@ try {
     while ($m=$ms->fetch_assoc()) {
         if (!$m['started']) {
             if (!array_key_exists($m['Created'],$starts)) {
-                $firsts[$m['Created']] = [];
+                $starts[$m['Created']] = [];
             }
             array_push ($starts[$m['Created']],$m['player_id']);
         }
