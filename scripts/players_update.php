@@ -87,9 +87,9 @@ $qs = "
   GROUP BY `p`.`id`
 ";
 try {
-    $players                = $zo->query ($qs);
-    fwrite (STDERR,"{$players->num_rows} players where first draw close not set\n");
-    while ($p=$players->fetch_assoc()) {
+    $ps                     = $zo->query ($qs);
+    fwrite (STDERR,"{$ps->num_rows} players where first draw close not set\n");
+    while ($p=$ps->fetch_assoc()) {
         $date               = draw_first ($p['first_collected']);
         if (!array_key_exists($date,$firsts)) {
             $firsts[$date]  = [];
@@ -124,14 +124,14 @@ $qs = "
     AND `m`.`ChancesCsv`!=''
 ";
 try {
-    $ms = $zo->query ($qs);
-    fwrite (STDERR,"{$ms->num_rows} players where chances not set but could be\n");
+    $ps = $zo->query ($qs);
+    fwrite (STDERR,"{$ps->num_rows} players where chances not set but could be\n");
     echo "-- Update chances\n";
-    while ($m=$ms->fetch_assoc()) {
-        $chances = explode (',',$m['ChancesCsv']);
+    while ($p=$ps->fetch_assoc()) {
+        $chances = explode (',',$p['ChancesCsv']);
         $chances = intval (trim(array_pop($chances)));
         if ($chances<1) {
-            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$m['ChancesCsv']} for {$m['ClientRef']}\n");
+            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$p['ChancesCsv']} for {$p['ClientRef']}\n");
             exit (104);
         }
         if (!array_key_exists($chances,$chances_options)) {
