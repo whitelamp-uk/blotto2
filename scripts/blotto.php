@@ -70,6 +70,7 @@ $file = array (
        ,'manual.php'
        ,'payment_fetch.php'
        ,'players.php'
+       ,'players_check.php'
        ,'players_update.php'
        ,'reports.php'
        ,'supporters.php'
