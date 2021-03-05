@@ -352,38 +352,6 @@ function csv_write ($file,$array2d,$headers=false) {
     fclose ($fp);
 }
 
-function curl_post ($url,$post,$options=[]) {
-/*
-    * Send a POST requst using cURL
-    * @param string $url to request
-    * @param array $post values to send
-    * @param array $options for cURL
-    * @return string
-*/
-    if (!is_array($post) || !is_array($options)) {
-        throw new \Exception ('Post and option arguments must be arrays');
-        return false;
-    }
-    $defaults = array (
-        CURLOPT_POST => 1,
-        CURLOPT_HEADER => 0,
-        CURLOPT_URL => $url,
-        CURLOPT_FRESH_CONNECT => 1,
-        CURLOPT_RETURNTRANSFER => 1,
-        CURLOPT_FORBID_REUSE => 1,
-        CURLOPT_TIMEOUT => 45,
-        CURLOPT_POSTFIELDS => http_build_query ($post)
-    );
-
-    $ch = curl_init ();
-    curl_setopt_array ($ch,$options+$defaults);
-    if (!$result=curl_exec($ch)) {
-        trigger_error (curl_error($ch));
-    }
-    curl_close ($ch);
-    return $result;
-} 
-
 function date_reformat ($d,$f) {
     $dt = new DateTime ($d);
     return $dt->format ($f);
