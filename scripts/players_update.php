@@ -154,7 +154,7 @@ foreach ($chances_options as $chances=>$ids) {
 }
 
 
-// TEMPORARY DOUBLE CHECK
+// Final check
 $qs = "
   SELECT
     `p`.`id`
