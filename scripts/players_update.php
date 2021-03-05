@@ -23,6 +23,7 @@ $qs = "
    ,`m`.`StartDate`
    ,`p`.`id` AS `player_id`
    ,`p`.`supporter_id`
+   ,`p`.`started`
    ,`s`.`projected_first_draw_close`
   FROM `blotto_build_mandate` AS `m`
   JOIN `blotto_player` AS `p`
