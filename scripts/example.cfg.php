@@ -43,6 +43,7 @@ define ( 'BLOTTO_LOG_DIR',       '/home/blotto/log/abc'                 );
 define ( 'BLOTTO_TICKET_DB',     'blotto_ticket_demo'                   );
 define ( 'BLOTTO_TICKET_MIN',    '000000'            );
 define ( 'BLOTTO_TICKET_MAX',    '999999'            );
+define ( 'BLOTTO_TICKET_CHKSUM', 'https://some.where/sum.txt'           );
 define ( 'BLOTTO_RESULTS_DB',    BLOTTO_MAKE_DB      );
 define ( 'BLOTTO_PROOF_DIR',     __DIR__.'/../export/abc/proof'         );
 define ( 'BLOTTO_OUTFILE',       '/tmp/blotto.abc.outfile.csv'          );

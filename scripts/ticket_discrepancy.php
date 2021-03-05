@@ -7,6 +7,7 @@ $mdb = BLOTTO_MAKE_DB;
 $tdb = BLOTTO_TICKET_DB;
 $csf = BLOTTO_DIR_EXPORT.'/checksum.blotto_ticket.txt';
 
+
 $zo = connect ($mdb);
 if (!$zo) {
     exit (101);
@@ -31,6 +32,36 @@ catch (\Exception $e) {
     exit (103);
 }
 tee ("    Ticket pool checksum $cks written to $csf\n");
+
+
+if (defined('BLOTTO_TICKET_CHKSUM')) {
+
+    $csu = BLOTTO_TICKET_CHKSUM;
+
+    tee ("    Comparing checksum $cks with $csu\n");
+
+    $options = array (
+        CURLOPT_POST            => 0,
+        CURLOPT_HEADER          => 0,
+        CURLOPT_URL             => $csu,
+        CURLOPT_FRESH_CONNECT   => 1,
+        CURLOPT_RETURNTRANSFER  => 1,
+        CURLOPT_FORBID_REUSE    => 1,
+        CURLOPT_TIMEOUT         => 10,
+    );    
+
+    $crl = curl_init ();
+    curl_setopt_array ($crl,$options);
+    $chk = curl_exec ($crl);
+    curl_close ($c);
+
+    if (trim($chk)!=$cks) {
+        fwrite (STDERR,"Checksum discrepancy between $csu and $csf\n");
+        exit (104);
+    }
+
+}
+
 
 
 tee ("    Looking for discrepancies between player chances and number of tickets\n");
@@ -82,7 +113,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (105);
 }
 
 if ($c=count($players)) {
@@ -90,6 +121,6 @@ if ($c=count($players)) {
     echo $qs;
     print_r ($players);
     fwrite (STDERR,"$c players have ticket discrepancies (see log)\n");
-    exit (105);
+    exit (106);
 }
 
