@@ -163,11 +163,12 @@ $qs = "
   WHERE `p`.`chances` IS NULL
      OR `p`.`started` IS NULL
      OR `p`.`started`='0000-00-00'
+  ;
 ";
 try {
     $errors = $zo->query ($qs);
     if ($errors->num_rows) {
-      fwrite (STDERR,$qs."\nplayers_update.php: this should not happen!\n");
+      fwrite (STDERR,$qs.$errors->num_rows." errors!\n");
       exit (106);
     }
 }
