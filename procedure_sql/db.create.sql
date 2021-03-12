@@ -294,12 +294,14 @@ CREATE TABLE IF NOT EXISTS `blotto_prize` (
 CREATE TABLE IF NOT EXISTS `{{BLOTTO_RESULTS_DB}}`.`blotto_result` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `draw_closed` date DEFAULT NULL,
+  `draw_date` date DEFAULT NULL,
   `prize_level` int(11) unsigned NOT NULL DEFAULT 1,
   `number` varchar(16) CHARACTER SET ascii DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `draw_closed_prize_level_number` (`draw_closed`,`prize_level`,`number`),
   KEY `draw_closed_prize_level` (`draw_closed`,`prize_level`),
   KEY `draw_closed` (`draw_closed`),
+  KEY `draw_date` (`draw_date`),
   KEY `prize_level` (`prize_level`),
   KEY `number` (`number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
