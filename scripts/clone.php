@@ -33,15 +33,15 @@ if (!$zo) {
 }
 
 $tables = [
+    'blotto_prize',
+    'blotto_supporter',
+    'blotto_player',
     'blotto_change',
     'blotto_contact',
     'blotto_entry',
     'blotto_generation',
     'blotto_insurance',
-    'blotto_player',
-    'blotto_prize',
     'blotto_result',
-    'blotto_supporter',
     'blotto_ticket'
 ];
 
