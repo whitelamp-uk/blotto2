@@ -1316,7 +1316,7 @@ function links_report ($fname,$number,$xhead) {
 }
 
 function month_end_last ($format='Y-m-d',$date=null) {
-    $date = new DateTime ();
+    $date = new DateTime ($date);
     $date->modify ('last day of previous month');
     return $date->format ($format);
 }
