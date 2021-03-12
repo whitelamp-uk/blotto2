@@ -771,6 +771,44 @@ return $new;
 
 }
 
+function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
+    // Allow dow to be loose
+    $dow            = intval($dow) %7;
+    if (!is_array($months)) {
+        // Illegal input type
+        throw new \Exception ('Second argument, months, must be an array');
+        return false;
+    }
+    // Allow months to be loose
+    foreach ($months as $i=>$m) {
+        $months[$i] = (intval($m-1)%12) +1;
+    }
+    // Empty array implies every month
+    if (!count($months)) {
+        $months     = [1,2,3,4,5,6,7,8,9,10,11,12];
+    }
+    $days           = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat',];
+    $dt             = new DateTime ($today);
+    $today          = $dt->format ('Y-m-d');
+    $dt->modify ('first day of this month');
+    $count          = 0;
+    while ($count<=12) {
+        if (in_array($dt->format('n'),$months)) {
+            $last = new DateTime ($dt->format ('Y-m-d'));
+            $last->modify ('last '.$days[$dow].' of this month');
+            $last = $last->format ('Y-m-d');
+            if ($last>=$today) {
+                return $last;
+            }
+        }
+        $dt->add (new DateInterval('P1M'));
+        $count++;
+    }
+    // Sanity
+    throw new \Exception ('No date found in 12 months');
+    return false;
+}
+
 function draw_upcoming_dow_nths_in_months ($dow,$nths,$months,$today=null) {
     $dt             = new DateTime ($today);
     // Allow dow to be loose
