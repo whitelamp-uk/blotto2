@@ -4,12 +4,17 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-
 echo "\nUSE `".BLOTTO_MAKE_DB."`;\n\n";
 
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
     exit (101);
+}
+
+
+if (!function_exists('draw_first')) {
+    fwrite (STDERR,"Bespoke function draw_first() was not found\n");
+    exit (102);
 }
 
 
@@ -54,7 +59,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (102);
+    exit (103);
 }
 echo "-- Update player started date\n";
 foreach ($starts as $date=>$ids) {
@@ -100,7 +105,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (103);
+    exit (104);
 }
 echo "-- Update player actual first draw close\n";
 foreach ($firsts as $date=>$ids) {
@@ -133,7 +138,7 @@ try {
         $chances = intval (trim(array_pop($chances)));
         if ($chances<1) {
             fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$p['ChancesCsv']} for {$p['ClientRef']}\n");
-            exit (104);
+            exit (105);
         }
         if (!array_key_exists($chances,$chances_options)) {
             $chances_options[$chances]  = [];
@@ -143,7 +148,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (105);
+    exit (106);
 }
 echo "-- Update player chances\n";
 foreach ($chances_options as $chances=>$ids) {

@@ -16,6 +16,12 @@ if (!$zo) {
     exit (101);
 }
 
+if (!function_exists('enter')) {
+    fwrite (STDERR,"Bespoke function enter() was not found\n");
+    exit (102);
+}
+
+
 echo "    Using database ".BLOTTO_MAKE_DB."\n"; 
 
 
@@ -44,7 +50,7 @@ foreach ($close_dates as $date) {
         }
         catch (\Exception $e) {
             fwrite (STDERR,$e->getMessage()."\n");
-            exit (102);
+            exit (103);
         }
         continue;
     }
@@ -108,7 +114,7 @@ foreach ($close_dates as $date) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$q."\n".$e->getMessage()."\n");
-        exit (103);
+        exit (104);
     }
     if ($n) {
         $q              = substr ($q,0,-2);
@@ -120,7 +126,7 @@ foreach ($close_dates as $date) {
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$q."\n".$e->getMessage()."\n");
-            exit (104);
+            exit (105);
         }
         echo "$n tickets inserted into `blotto_entry` for `draw_closed`='$date'\n";
     }

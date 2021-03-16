@@ -898,6 +898,10 @@ function draws ($from,$to) {
 }
 
 function draws_outstanding ( ) {
+    if (!function_exists('draw_upcoming')) {
+        throw new \Exception ("Function draw_upcoming() was not found");
+        return false;
+    }
     $first          = BLOTTO_DRAW_CLOSE_1;
     $zo             = connect (BLOTTO_MAKE_DB);
     $q              = "

@@ -27,6 +27,10 @@ if ($rbe && !function_exists('winnings_super')) {
     exit (101);
 }
 
+if (!function_exists('prize_amount')) {
+    fwrite (STDERR,"Warning: calculating prize amounts without a bespoke prize_amount() function\n");
+}
+
 
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
