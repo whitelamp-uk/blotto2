@@ -210,6 +210,7 @@ while ($d=$ds->fetch_assoc()) {
                 intval (BLOTTO_TICKET_MAX),
                 $m,
                 false,
+                prize_payout_max ($nrmatchprizes),
                 $trng_proof
             );
             $ms = $results_nrmatch->response->result->random->data;
@@ -315,6 +316,7 @@ while ($d=$ds->fetch_assoc()) {
                 $d['id_max'],
                 $ro,
                 false,
+                prize_payout_max ($rolloverprizes),
                 $trng_proof
             );
             $rolloverwinners = $results_rollover->response->result->random->data; // array of IDs
@@ -351,6 +353,7 @@ while ($d=$ds->fetch_assoc()) {
                 $d['id_max'],
                 $r,
                 false,
+                prize_payout_max ($raffleprizes),
                 $trng_proof
             );
             $rafflewinners = $results_raffle->response->result->random->data; // array of IDs

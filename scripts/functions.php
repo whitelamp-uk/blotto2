@@ -1560,33 +1560,14 @@ function plural ($num) {
     return 's';
 }
 
-function prize_calc ($prize,$verbose) {
-    if ($verbose) {
-        echo "prize_calc():\n";
-        print_r ($prize);
-    }
+function prize_calc ($prize) {
     $amount     = $prize['amount_brought_forward'];
-    if ($verbose) {
-        echo "bf = $amount\n";
-    }
     if ($prize['amount_cap'] && $amount>$prize['amount_cap']) {
-        if ($verbose) {
-            echo "capped at $amount\n";
-        }
         return $amount;
-    }
-    if ($verbose) {
-        echo "prize={$prize['amount']}, rollovers={$prize['rollover_count']}, rollover_amount={$prize['rollover_amount']}\n";
     }
     $amount    += $prize['amount'];
     $amount    += $prize['rollover_count'] * $prize['rollover_amount'];
-    if ($verbose) {
-        echo "calculated = $amount\n";
-    }
     if ($prize['amount_cap'] && $amount>$prize['amount_cap']) {
-        if ($verbose) {
-            echo "capped at = {$prize['amount_cap']}\n";
-        }
         return $prize['amount_cap'];
     }
     return $amount;
@@ -1625,6 +1606,17 @@ function prize_match ($entry,$prizelist,$winner) {
         }
     }
     return false;
+}
+
+function prize_payout_max ($prizes) {
+    $ppm = 0;
+    foreach ($prizes as $p) {
+        $amt = prize_calc ($p);
+        if ($amt>$ppm) {
+            $ppm = $amt;
+        }
+    }
+    return $ppm;
 }
 
 function prize_pot ($draw_closed,$quids_per_thou,$verbose=false) {
@@ -1715,23 +1707,32 @@ function prizes ($date) {
             $p['left']          = stripos($p['level_method'],'L') !== false;
             $p['right']         = stripos($p['level_method'],'R') !== false;
         }
+        // Bespoke modification of prize amount in BLOTTO_BESPOKE_FUNC
+        if (function_exists('prize_amount')) {
+            prize_amount ($p);
+        }
         $prizes[$p['level']]    = $p;
     }
     ksort ($prizes);
     return $prizes;
 }
 
-function random_numbers ($min,$max,$num_of_nums,$reuse,&$proof) {
+function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
     // $reuse=false means returned numbers must not be repeated
     $min                            = intval ($min);
     $max                            = intval ($max);
     $num_of_nums                    = intval ($num_of_nums);
+    $payout_max                     = intval ($payout_max);
     if ($min<0 || $max<0 || $max<=$min) {
         throw new \Exception ("Number range $min-$max is not valid");
         return false;
     }
     if (!$reuse && $num_of_nums>(1+$max-$min)) {
         throw new \Exception ("Number range $min-$max is not big enough without reusing numbers");
+        return false;
+    }
+    if ($payout_max<=0) {
+        throw new \Exception ("Maximum payout $payout_max is not valid");
         return false;
     }
     $request                        = new \stdClass ();
@@ -1746,6 +1747,10 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,&$proof) {
     $request->params->max           = $max;
     $request->params->n             = $num_of_nums;
     $request->params->replacement   = $reuse;
+    $request->params->licenseData   = new \stdClass ();
+    $request->params->licenseData->maxPayoutValue = new \stdClass ();
+    $request->params->licenseData->maxPayoutValue->currency = 'GBP';
+    $request->params->licenseData->maxPayoutValue->amount = $payout_max;
     $datetime                       = date ('Y-m-d H:i:s');
     $c                              = curl_init (BLOTTO_TRNG_API_URL);
     if (!$c) {
@@ -2602,10 +2607,6 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
                 $winner         = $matchtickets[$group];
                 $prizewon       = prize_match ($e,$prizelist,$winner);
                 if ($prizewon) {
-                    // Bespoke modification of prize amount in BLOTTO_BESPOKE_FUNC
-                    if (function_exists('prize_amount')) {
-                        prize_amount ($prizewon,$verbose);
-                    }
                     // Calculate amount after rollover/cap
                     $amount     = prize_calc ($prizewon,$verbose);
                     if (!array_key_exists($prizewon['level'],$amounts)) {
@@ -2696,10 +2697,6 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
         // blotto_entry.id
         $eid            = array_pop ($rafflewinners);
         $entry          = $entries[$eid];
-        // Bespoke modification of prize amount in BLOTTO_BESPOKE_FUNC
-        if (function_exists('prize_amount')) {
-            prize_amount ($p,$verbose);
-        }
         // Calculate amount after rollover/cap
         $amount         = prize_calc ($p,$verbose);
         if (!array_key_exists($p['level'],$amounts)) {
