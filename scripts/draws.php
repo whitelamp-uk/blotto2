@@ -9,33 +9,31 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-tee ("    Generating draw results\n");
+tee ("    Draw result engine\n");
 
-$quiet          = get_argument('q',$Sw) !== false;
-$rbe            = get_argument('r',$Sw) !== false;
-$single         = get_argument('s',$Sw) !== false;
-$placeholder    = str_pad ('',strlen(BLOTTO_TICKET_MAX),'-');
 $rdb            = BLOTTO_RESULTS_DB;
+$quiet          = get_argument('q',$Sw) !== false;
+$placeholder    = str_pad ('',strlen(BLOTTO_TICKET_MAX),'-');
+$single         = get_argument('s',$Sw) !== false;
+$rbe            = get_argument('r',$Sw) !== false;
+if ($rbe && !function_exists('winnings_super')) {
+    fwrite (STDERR,"RBE bespoke function winnings_super() does not exist\n");
+    exit (101);
+}
+if (!function_exists('prize_amount')) {
+    fwrite (STDERR,"Warning: calculating prize amounts without a bespoke prize_amount() function\n");
+}
 
 if (!$quiet) {
 	echo "Running verbosely - use -q (after config file) to shut up\n";
     echo "Also as well, use -s for single shot (one draw only) mode\n";
 }
 
-if ($rbe && !function_exists('winnings_super')) {
-    fwrite (STDERR,"RBE bespoke function winnings_super() does not exist\n");
-    exit (101);
-}
-
-if (!function_exists('prize_amount')) {
-    fwrite (STDERR,"Warning: calculating prize amounts without a bespoke prize_amount() function\n");
-}
-
-
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
     exit (102);
 }
+
 
 // Get a list of draw closed dates having entries
 // TODO tighten up the insurance check by making sure that every

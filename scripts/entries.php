@@ -4,20 +4,19 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-$quiet      = get_argument('q',$Sw) !== false;
-$rbe        = get_argument('r',$Sw) !== false;
+tee ("    Draw entry engine\n");
+
 $ticket_db  = BLOTTO_TICKET_DB;
 $price      = BLOTTO_TICKET_PRICE;
-
-echo "    Draw entry engine\n";
-
-$zo = connect (BLOTTO_MAKE_DB);
-if (!$zo) {
+$quiet      = get_argument('q',$Sw) !== false;
+$rbe        = get_argument('r',$Sw) !== false;
+if ($rbe && !function_exists('enter')) {
+    fwrite (STDERR,"Bespoke function enter() was not found\n");
     exit (101);
 }
 
-if ($rbe && !function_exists('enter')) {
-    fwrite (STDERR,"Bespoke function enter() was not found\n");
+$zo = connect (BLOTTO_MAKE_DB);
+if (!$zo) {
     exit (102);
 }
 
