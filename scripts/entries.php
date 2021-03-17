@@ -16,7 +16,7 @@ if (!$zo) {
     exit (101);
 }
 
-if (!function_exists('enter')) {
+if ($rbe && !function_exists('enter')) {
     fwrite (STDERR,"Bespoke function enter() was not found\n");
     exit (102);
 }
