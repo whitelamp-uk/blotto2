@@ -216,7 +216,7 @@ mariadb                                                 < $tmp
 abort_on_error 1b $?
 if [ "$rbe" = "" ]
 then
-    /usr/bin/php $prg $sw "$cfg" sql db.create.super.sql > $tmp
+    /usr/bin/php $prg $sw "$cfg" sql db.create.rbe.sql  > $tmp
     abort_on_error 1c $? $tmp
     cat $tmp
     mariadb                                             < $tmp
