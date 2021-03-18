@@ -419,8 +419,14 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 
 echo "21. Check for ticket discrepancies"
 start=$SECONDS
-/usr/bin/php $prg $sw "$cfg" exec ticket_discrepancy.php
-abort_on_error 21 $?
+if [ "$rbe" = "" ]
+then
+    /usr/bin/php $prg $sw "$cfg" exec ticket_discrepancy.php
+    abort_on_error 21 $?
+else
+    /usr/bin/php $prg $sw "$cfg" exec ticket_discrepancy.php -r
+    abort_on_error 21 $?
+fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 

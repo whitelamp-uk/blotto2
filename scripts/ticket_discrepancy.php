@@ -6,6 +6,7 @@ require $argv[1];
 $mdb = BLOTTO_MAKE_DB;
 $tdb = BLOTTO_TICKET_DB;
 $csf = BLOTTO_DIR_EXPORT.'/checksum.blotto_ticket.txt';
+$rbe = get_argument('r',$Sw) !== false;
 
 
 $zo = connect ($mdb);
@@ -63,8 +64,11 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
 }
 
 
+if ($rbe) {
+    exit (0);
+}
 
-tee ("    Looking for discrepancies between player chances and number of tickets\n");
+tee ("    Looking for discrepancies between player chances and number of tickets (standard game check only)\n");
 
 $qs = "
   SELECT
