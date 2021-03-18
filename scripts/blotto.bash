@@ -209,6 +209,7 @@ fi
 
 echo " 1. Create databases (if missing) $dbm and $dbt"
 start=$SECONDS
+echo "    For all games"
 /usr/bin/php $prg $sw "$cfg" sql db.create.sql          > $tmp
 abort_on_error 1a $? $tmp
 cat $tmp
@@ -216,11 +217,12 @@ mariadb                                                 < $tmp
 abort_on_error 1b $?
 if [ "$rbe" = "" ]
 then
-    /usr/bin/php $prg $sw "$cfg" sql db.create.rbe.sql  > $tmp
-    abort_on_error 1c $? $tmp
+    echo "    For standard (non-RBE) games"
+    /usr/bin/php $prg $sw "$cfg" sql db.create.std.sql  > $tmp
+    abort_on_error 1e $? $tmp
     cat $tmp
     mariadb                                             < $tmp
-    abort_on_error 1d $?
+    abort_on_error 1f $?
 fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 

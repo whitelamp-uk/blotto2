@@ -127,80 +127,34 @@ CREATE TABLE IF NOT EXISTS `blotto_ticket` (
 
 
 
+USE `{{BLOTTO_RESULTS_DB}}`
+;
+
+
+CREATE TABLE IF NOT EXISTS `blotto_result` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `draw_closed` date DEFAULT NULL,
+  `draw_date` date DEFAULT NULL,
+  `prize_level` int(11) unsigned NOT NULL DEFAULT 1,
+  `number` varchar(16) CHARACTER SET ascii DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `draw_closed_prize_level_number` (`draw_closed`,`prize_level`,`number`),
+  KEY `draw_closed_prize_level` (`draw_closed`,`prize_level`),
+  KEY `draw_closed` (`draw_closed`),
+  KEY `draw_date` (`draw_date`),
+  KEY `prize_level` (`prize_level`),
+  KEY `number` (`number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
+
+
 USE `{{BLOTTO_MAKE_DB}}`
 ;
 
 
 SET foreign_key_checks=0;
 
-
-CREATE TABLE IF NOT EXISTS `blotto_change` (
-  `changed_date` date NOT NULL,
-  `ccc` char(4) CHARACTER SET ascii NOT NULL,
-  `agent_ref` char(16) CHARACTER SET ascii,
-  `canvas_ref` int(11) unsigned NOT NULL,
-  `chance_number` tinyint(3) DEFAULT NULL,
-  `client_ref_original` varchar(64) CHARACTER SET ascii,
-  `type` char(4) CHARACTER SET ascii NOT NULL DEFAULT 'DEC',
-  `is_termination` tinyint(1) unsigned NOT NULL DEFAULT 0,
-  `reinstatement_for` char(10) CHARACTER SET ascii NOT NULL,
-  `amount_paid_before_this_date` decimal(8,2) NOT NULL,
-  `supporter_signed` date DEFAULT NULL,
-  `supporter_approved` date DEFAULT NULL,
-  `supporter_created` date DEFAULT NULL,
-  `supporter_first_paid` date DEFAULT NULL,
-  PRIMARY KEY (`changed_date`,`ccc`,`canvas_ref`,`chance_number`),
-  KEY `client_ref_original` (`client_ref_original`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8
-;
-
-CREATE TABLE IF NOT EXISTS `blotto_contact` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `supporter_id` int(11) unsigned NOT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updater` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT 'SYSTEM',
-  `title` varchar(255) DEFAULT NULL,
-  `name_first` varchar(255) DEFAULT NULL,
-  `name_last` varchar(255) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
-  `mobile` varchar(255) DEFAULT NULL,
-  `telephone` varchar(255) DEFAULT NULL,
-  `address_1` varchar(255) DEFAULT NULL,
-  `address_2` varchar(255) DEFAULT NULL,
-  `address_3` varchar(255) DEFAULT NULL,
-  `town` varchar(255) DEFAULT NULL,
-  `county` varchar(255) DEFAULT NULL,
-  `postcode` varchar(255) DEFAULT NULL,
-  `country` varchar(255) DEFAULT NULL,
-  `dob` date DEFAULT NULL,
-  `p0` varchar(255) NOT NULL,
-  `p1` varchar(255) NOT NULL,
-  `p2` varchar(255) NOT NULL,
-  `p3` varchar(255) NOT NULL,
-  `p4` varchar(255) NOT NULL,
-  `p5` varchar(255) NOT NULL,
-  `p6` varchar(255) NOT NULL,
-  `p7` varchar(255) NOT NULL,
-  `p8` varchar(255) NOT NULL,
-  `p9` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `supporter_id` (`supporter_id`),
-  KEY `created` (`created`),
-  KEY `updater` (`updater`),
-  KEY `p0` (`p0`),
-  KEY `p1` (`p1`),
-  KEY `p2` (`p2`),
-  KEY `p3` (`p3`),
-  KEY `p4` (`p4`),
-  KEY `p5` (`p5`),
-  KEY `p6` (`p6`),
-  KEY `p7` (`p7`),
-  KEY `p8` (`p8`),
-  KEY `p9` (`p9`),
-  FULLTEXT KEY `search_idx` (`name_first`,`name_last`,`email`,`mobile`,`address_1`,`address_2`,`address_3`,`town`,`postcode`),
-  CONSTRAINT `blotto_contact_ibfk_1` FOREIGN KEY (`supporter_id`) REFERENCES `blotto_supporter` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-;
 
 CREATE TABLE IF NOT EXISTS `blotto_entry` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -253,22 +207,6 @@ CREATE TABLE IF NOT EXISTS `blotto_insurance` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
-CREATE TABLE IF NOT EXISTS `blotto_player` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `started` date DEFAULT NULL,
-  `supporter_id` int(11) unsigned DEFAULT NULL,
-  `client_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
-  `first_draw_close` date DEFAULT NULL,
-  `chances` int(11) unsigned DEFAULT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `client_ref` (`client_ref`),
-  UNIQUE KEY `supporter_id_started` (`supporter_id`,`started`),
-  KEY `supporter_id` (`supporter_id`),
-  KEY `created` (`created`),
-  CONSTRAINT `blotto_player_ibfk_1` FOREIGN KEY (`supporter_id`) REFERENCES `blotto_supporter` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE IF NOT EXISTS `blotto_prize` (
   `starts` date NOT NULL DEFAULT '2000-01-01',
   `level` tinyint(3) unsigned NOT NULL,
@@ -290,43 +228,6 @@ CREATE TABLE IF NOT EXISTS `blotto_prize` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
   COMMENT='expires column only matters if a prize level is removed rather than replaced'
 ;
-
-CREATE TABLE IF NOT EXISTS `{{BLOTTO_RESULTS_DB}}`.`blotto_result` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `draw_closed` date DEFAULT NULL,
-  `draw_date` date DEFAULT NULL,
-  `prize_level` int(11) unsigned NOT NULL DEFAULT 1,
-  `number` varchar(16) CHARACTER SET ascii DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `draw_closed_prize_level_number` (`draw_closed`,`prize_level`,`number`),
-  KEY `draw_closed_prize_level` (`draw_closed`,`prize_level`),
-  KEY `draw_closed` (`draw_closed`),
-  KEY `draw_date` (`draw_date`),
-  KEY `prize_level` (`prize_level`),
-  KEY `number` (`number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-;
-
-CREATE TABLE IF NOT EXISTS `blotto_supporter` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `created` date NULL,
-  `signed` date DEFAULT NULL,
-  `approved` date DEFAULT NULL,
-  `projected_first_draw_close` date DEFAULT NULL,
-  `canvas_code` char(4) CHARACTER SET ascii DEFAULT NULL,
-  `canvas_agent_ref` varchar(16) CHARACTER SET ascii,
-  `canvas_ref` int(11) unsigned,
-  `client_ref` varchar(64) CHARACTER SET ascii,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `canvas_ref` (`canvas_ref`),
-  UNIQUE KEY `client_ref` (`client_ref`),
-  KEY `created` (`created`),
-  KEY `signed` (`signed`),
-  KEY `approved` (`approved`),
-  KEY `projected_first_draw_close` (`projected_first_draw_close`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-;
-
 
 CREATE TABLE IF NOT EXISTS `blotto_winner` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,

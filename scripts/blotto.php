@@ -39,7 +39,7 @@ $file = array (
     "sql" => array (
         'BESPOKE'
        ,'db.create.sql'
-       ,'db.create.rbe.sql'
+       ,'db.create.std.sql'
        ,'db.functions.sql'
        ,'db.functions.drop.sql'
        ,'db.permissions.sql'
