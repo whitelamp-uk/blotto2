@@ -626,20 +626,25 @@ function draw ($draw_closed) {
     $draw->manual           = false;
     $draw->results          = [];
     $draw->groups           = [];
+    $manual_groups          = [];
     foreach ($draw->prizes as $level=>$p) {
-        if ($p['insure']) {
-            $draw->insure   = $level;
-        }
-        if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
-            $draw->manual   = $level;
-        }
-        // Groups
-        $group              = substr ($p['level_method'],-1);
+        // Raffles
         if ($p['level_method']=='RAFF') {
             if ($p['results']) {
                  $draw->results['RAFF'] = true;
             }
             continue;
+        }
+        // Number-matches
+        $group              = substr ($p['level_method'],-1);
+        $draw->prizes[$level]['group'] = $group;
+        if ($p['insure']) {
+            $draw->insure   = $level;
+        }
+        if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
+            $draw->manual   = $group;
+            // If a level is manual, the whole group is manual
+            array_push ($manual_groups,$group);
         }
         if ($p['results']) {
              $draw->results[$group] = true;
@@ -648,6 +653,15 @@ function draw ($draw_closed) {
             $draw->groups[$group] = [];
         }
         array_push ($draw->groups[$group],$level);
+    }
+    // Every prize level in a manual group should be manual
+    foreach ($draw->prizes as $level=>$p) {
+        if ($p['level_method']=='RAFF') {
+            continue;
+        }
+        if (in_array($p['group'],$manual_groups)) {
+            $draw->prizes[$level]['results_manual'] = 1;
+        }
     }
     return $draw;
 }
@@ -2934,7 +2948,7 @@ function www_winners ($format='Y-m-d') {
     $dt                 = new DateTime ($draw_closed);
     $dt->add (new DateInterval('P1D'));
     $winners['date']    = $dt->format ($format);
-    $prizes             = prizes ($draw_closed);
+    $prizes             = draw($draw_closed)->prizes;
     $q = "
       SELECT
         `prize_level`

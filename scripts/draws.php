@@ -118,7 +118,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         if ($draw->manual) {
             $bail   = true;
-            fwrite (STDERR,"Bail before {$draw->closed} - manual prize {$draw->manual}@{$p['starts']} has no results - see README.md 'Manually inserting external number-matches'\n");
+            fwrite (STDERR,"Bail before {$draw->closed} - manual prize group {$draw->manual} has no results - see README.md 'Manually inserting external number-matches'\n");
         }
         if ($bail) {
             // Bail without an error (no more draws, continue build)
@@ -158,7 +158,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         continue;
     }
-    // Generate winners, do rollovers, ro results notarisation
+    // Generate winners, do rollovers, do results notarisation
     $manualmatchprizes = $nrmatchprizes = $raffleprizes = $rolloverprizes = [];
     $nrmatchtickets = $manuals = [];
     // Collate the prizes into number matches and raffles
@@ -166,7 +166,6 @@ while ($d=$ds->fetch_assoc()) {
         if ($p['quantity_percent']) {
             $p['quantity'] = ceil (count($entries)*$p['quantity_percent']/100);
         }
-        $nrmatchtktgroup = substr ($p['level_method'],-1); // not used for raffles...
         if ($p['level_method']=='RAFF') {
             // Raffle prizes
             for ($i=0;$i<$p['quantity'];$i++) {
@@ -186,11 +185,11 @@ while ($d=$ds->fetch_assoc()) {
                 }
             }
             // Manuals are number-matches and number-matches only have one match per prize level
-            $manuals[$nrmatchtktgroup] = $p['results'][0];
+            $manuals[$p['group']] = $p['results'][0];
             $manualmatchprizes[$p['level']] = $p;
         }
         else {
-            $nrmatchtickets[$nrmatchtktgroup] = $placeholder;
+            $nrmatchtickets[$p['group']] = $placeholder;
             $nrmatchprizes[$p['level']] = $p;
         }
     }
