@@ -473,12 +473,15 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 
 echo "27. Build results tables in make database"
 start=$SECONDS
-echo "    CALL anls();"
-mariadb $dbm                                      <<< "CALL anls();"
-abort_on_error 27a $?
-echo "    CALL cancellationsByRule();"
-mariadb $dbm                                      <<< "CALL cancellationsByRule();"
-abort_on_error 27b $?
+if [ "$rbe" = "" ]
+then
+    echo "    CALL anls();"
+    mariadb $dbm                                  <<< "CALL anls();"
+    abort_on_error 27a $?
+    echo "    CALL cancellationsByRule();"
+    mariadb $dbm                                  <<< "CALL cancellationsByRule();"
+    abort_on_error 27b $?
+fi
 echo "    CALL draws();"
 mariadb $dbm                                      <<< "CALL draws();"
 abort_on_error 27c $?
@@ -490,17 +493,17 @@ then
     echo "    CALL insure('$nxt');"
     mariadb $dbm                                  <<< "CALL insure('$nxt');"
     abort_on_error 27e $?
+    echo "    CALL supporters();"
+    mariadb $dbm                                  <<< "CALL supporters();"
+    abort_on_error 27f $?
+    echo "    CALL updates();"
+    mariadb $dbm                                  <<< "CALL updates();"
+    abort_on_error 27g $?
 else
     echo "    CALL insureRBE();"
     mariadb $dbm                                  <<< "CALL insureRBE();"
-    abort_on_error 27f $?
+    abort_on_error 27h $?
 fi
-echo "    CALL supporters();"
-mariadb $dbm                                      <<< "CALL supporters();"
-abort_on_error 27g $?
-echo "    CALL updates();"
-mariadb $dbm                                      <<< "CALL updates();"
-abort_on_error 27h $?
 echo "    CALL winners();"
 mariadb $dbm                                      <<< "CALL winners();"
 abort_on_error 27i $?
