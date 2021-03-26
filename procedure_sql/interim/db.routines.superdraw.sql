@@ -38,7 +38,7 @@ BEGIN
      ,'' AS `mandate_startdate`
     FROM `blotto_entry` AS `e`
     GROUP BY `e`.`draw_closed`,`e`.`ticket_number`
-    ORDER BY `e`.`draw_closed`,`m`.`ClientRef`,`e`.`ticket_number`
+    ORDER BY `e`.`draw_closed`,`e`.`client_ref`,`e`.`ticket_number`
   ;
   ALTER TABLE `Draws`
   ADD PRIMARY KEY (`draw_closed`,`ticket_number`)
