@@ -273,25 +273,22 @@ mariadb $dbm                                            < $bpf
 abort_on_error 3 $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
-
 if [ "$rbe" = "" ]
 then
+
     echo " 4. Generate mandate / collection table create SQL in $ddc"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
     abort_on_error 4 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
-fi
-
-echo " 5. Create mandate / collection tables using $ddc"
-start=$SECONDS
-mariadb                                             < $ddc
-abort_on_error 5 $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-if [ "$rbe" = "" ]
-then
+    echo " 5. Create mandate / collection tables using $ddc"
+    start=$SECONDS
+    mariadb                                             < $ddc
+    abort_on_error 5 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
 
     echo "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
     start=$SECONDS
@@ -312,7 +309,6 @@ then
     mariadb                                             < $ddx
     abort_on_error 8 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
-
 
     for dir in $(ls "$sdr")
     do
@@ -337,11 +333,13 @@ then
         cat $tmp
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
+
         echo "    10. Create supporter temp table"
         start=$SECONDS
         mariadb                                             < $tmp
         abort_on_error 10 $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
+
 
         echo "    11. Generate supporter insert SQL in $sps-$dir.log"
         start=$SECONDS
@@ -360,6 +358,7 @@ then
             abort_on_error 11d $?
         fi
         echo "        Completed in $(($SECONDS-$start)) seconds"
+
 
         echo "    12. Insert supporters from $sps-$dir.log"
         start=$SECONDS
