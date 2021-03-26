@@ -250,7 +250,7 @@ abort_on_error 2c $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2d $?
-/usr/bin/php $prg $sw "$cfg" sql db.routines.superdraw.sql    > $tmp
+/usr/bin/php $prg $sw "$cfg" sql db.routines.rbe.sql    > $tmp
 abort_on_error 2e $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
