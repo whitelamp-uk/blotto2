@@ -481,15 +481,12 @@ then
     echo "    CALL cancellationsByRule();"
     mariadb $dbm                                  <<< "CALL cancellationsByRule();"
     abort_on_error 27b $?
-fi
-echo "    CALL draws();"
-mariadb $dbm                                      <<< "CALL draws();"
-abort_on_error 27c $?
-echo "    CALL drawsSummarise();"
-mariadb $dbm                                      <<< "CALL drawsSummarise();"
-abort_on_error 27d $?
-if [ "$rbe" = "" ]
-then
+    echo "    CALL draws();"
+    mariadb $dbm                                  <<< "CALL draws();"
+    abort_on_error 27c $?
+    echo "    CALL drawsSummarise();"
+    mariadb $dbm                                  <<< "CALL drawsSummarise();"
+    abort_on_error 27d $?
     echo "    CALL insure('$nxt');"
     mariadb $dbm                                  <<< "CALL insure('$nxt');"
     abort_on_error 27e $?
@@ -500,21 +497,27 @@ then
     mariadb $dbm                                  <<< "CALL updates();"
     abort_on_error 27g $?
 else
+    echo "    CALL drawsRBE();"
+    mariadb $dbm                                  <<< "CALL drawsRBE();"
+    abort_on_error 27h $?
+    echo "    CALL drawsSummariseRBE();"
+    mariadb $dbm                                  <<< "CALL drawsSummariseRBE();"
+    abort_on_error 27i $?
     echo "    CALL insureRBE();"
     mariadb $dbm                                  <<< "CALL insureRBE();"
-    abort_on_error 27h $?
+    abort_on_error 27j $?
 fi
 echo "    CALL winners();"
 mariadb $dbm                                      <<< "CALL winners();"
-abort_on_error 27i $?
+abort_on_error 27k $?
 if [ -f "$bpu" ]
 then
     echo "    Generate bespoke SQL"
     /usr/bin/php $prg $sw "$cfg" sql BESPOKE "$bpu"     > $tmp
-    abort_on_error 27j $?
+    abort_on_error 27l $?
     echo "    Execute bespoke SQL in make database"
     mariadb                                             < $tmp
-    abort_on_error 27k $?
+    abort_on_error 27m $?
 fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
