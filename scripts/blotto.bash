@@ -250,16 +250,21 @@ abort_on_error 2c $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2d $?
-/usr/bin/php $prg $sw "$cfg" sql db.routines.admin.sql  > $tmp
+/usr/bin/php $prg $sw "$cfg" sql db.routines.rbe.sql    > $tmp
 abort_on_error 2e $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2f $?
-/usr/bin/php $prg $sw "$cfg" sql db.routines.org.sql    > $tmp
+/usr/bin/php $prg $sw "$cfg" sql db.routines.admin.sql  > $tmp
 abort_on_error 2g $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2h $?
+/usr/bin/php $prg $sw "$cfg" sql db.routines.org.sql    > $tmp
+abort_on_error 2i $? $tmp
+cat $tmp
+mariadb                                                 < $tmp
+abort_on_error 2j $?
 
 
 echo " 3. Bespoke SQL functions"
@@ -481,15 +486,12 @@ then
     echo "    CALL cancellationsByRule();"
     mariadb $dbm                                  <<< "CALL cancellationsByRule();"
     abort_on_error 27b $?
-fi
-echo "    CALL draws();"
-mariadb $dbm                                      <<< "CALL draws();"
-abort_on_error 27c $?
-echo "    CALL drawsSummarise();"
-mariadb $dbm                                      <<< "CALL drawsSummarise();"
-abort_on_error 27d $?
-if [ "$rbe" = "" ]
-then
+    echo "    CALL draws();"
+    mariadb $dbm                                  <<< "CALL draws();"
+    abort_on_error 27c $?
+    echo "    CALL drawsSummarise();"
+    mariadb $dbm                                  <<< "CALL drawsSummarise();"
+    abort_on_error 27d $?
     echo "    CALL insure('$nxt');"
     mariadb $dbm                                  <<< "CALL insure('$nxt');"
     abort_on_error 27e $?
@@ -499,64 +501,73 @@ then
     echo "    CALL updates();"
     mariadb $dbm                                  <<< "CALL updates();"
     abort_on_error 27g $?
+    echo "    CALL winners();"
+    mariadb $dbm                                  <<< "CALL winners();"
+    abort_on_error 27h $?
 else
+    echo "    CALL drawsRBE();"
+    mariadb $dbm                                  <<< "CALL drawsRBE();"
+    abort_on_error 27i $?
+    echo "    CALL drawsSummariseRBE();"
+    mariadb $dbm                                  <<< "CALL drawsSummariseRBE();"
+    abort_on_error 27j $?
     echo "    CALL insureRBE();"
     mariadb $dbm                                  <<< "CALL insureRBE();"
-    abort_on_error 27h $?
+    abort_on_error 27k $?
+    echo "    CALL winnersRBE();"
+    mariadb $dbm                                  <<< "CALL winnersRBE();"
+    abort_on_error 27l $?
 fi
-echo "    CALL winners();"
-mariadb $dbm                                      <<< "CALL winners();"
-abort_on_error 27i $?
 if [ -f "$bpu" ]
 then
     echo "    Generate bespoke SQL"
     /usr/bin/php $prg $sw "$cfg" sql BESPOKE "$bpu"     > $tmp
-    abort_on_error 27j $?
+    abort_on_error 27m $?
     echo "    Execute bespoke SQL in make database"
     mariadb                                             < $tmp
-    abort_on_error 27k $?
+    abort_on_error 27n $?
 fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "27+. [Interim] If appropriate, generate Zaffo superdraw entries (insurance format)"
-start=$SECONDS
-/usr/bin/php $prg $sw "$cfg" sql db.routines.superdraw.sql > $tmp
-abort_on_error 27x $? $tmp
-cat $tmp
-mariadb                                                 < $tmp
-abort_on_error 27y $?
-/usr/bin/php $prg $sw "$cfg" exec superdraw_export.php
-abort_on_error 27z $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+if [ "$rbe" = "" ]
+then
 
 
-echo "28. Amend and build canvassing company change report"
-start=$SECONDS
-echo "    CALL changesGenerate();"
-mariadb $dbm                                          <<< "CALL changesGenerate();"
-abort_on_error 28a $?
-/usr/bin/php $prg $sw "$cfg" exec changes.php -q
-abort_on_error 28b $?
-echo "    CALL changes();"
-mariadb $dbm                                          <<< "CALL changes();"
-abort_on_error 28c $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+    echo "27+. [Interim] If appropriate, generate Zaffo superdraw entries (insurance format)"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" exec superdraw_export.php
+    abort_on_error 27z $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "29. Generate preference column names in $lgs"
-start=$SECONDS
-/usr/bin/php $prg $sw "$cfg" exec legends.php           > $lgs
-abort_on_error 29 $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+    echo "28. Amend and build canvassing company change report"
+    start=$SECONDS
+    echo "    CALL changesGenerate();"
+    mariadb $dbm                                          <<< "CALL changesGenerate();"
+    abort_on_error 28a $?
+    /usr/bin/php $prg $sw "$cfg" exec changes.php -q
+    abort_on_error 28b $?
+    echo "    CALL changes();"
+    mariadb $dbm                                          <<< "CALL changes();"
+    abort_on_error 28c $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "30. Alter/drop preference columns in make database"
-start=$SECONDS
-mariadb                                                 < $lgs
-abort_on_error 30 $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+    echo "29. Generate preference column names in $lgs"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" exec legends.php           > $lgs
+    abort_on_error 29 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
 
+
+    echo "30. Alter/drop preference columns in make database"
+    start=$SECONDS
+    mariadb                                                 < $lgs
+    abort_on_error 30 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
+fi
 
 echo "31. Generating dump file of make database at $dfl ..."
 start=$SECONDS
@@ -623,6 +634,14 @@ else
     cat $tmp
     mariadb                                             < $tmp
     abort_on_error 33d $?
+    if [ "$rbe" = "" ]
+    then
+        /usr/bin/php $prg $sw "$cfg" sql db.permissions.reports.standard.sql > $tmp
+        abort_on_error 33e $? $tmp
+        cat $tmp
+        mariadb                                         < $tmp
+        abort_on_error 33f $?
+    fi
     if [ -f "$bpp" ]
     then
         echo "    Grant bespoke permissions"

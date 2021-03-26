@@ -3,7 +3,186 @@
 USE `{{BLOTTO_MAKE_DB}}`
 ;
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `drawsRBE`$$
+CREATE PROCEDURE `drawsRBE` (
+)
+BEGIN
+  DROP TABLE IF EXISTS `Draws`
+  ;
+  CREATE TABLE `Draws` AS
+    SELECT
+      `e`.`draw_closed`
+     ,`e`.`client_ref`
+     ,`e`.`ticket_number`
+     ,'' AS `title`
+     ,'' AS `name_first`
+     ,'' AS `name_last`
+     ,'' AS `email`
+     ,'' AS `mobile`
+     ,'' AS `telephone`
+     ,'' AS `address_1`
+     ,'' AS `address_2`
+     ,'' AS `address_3`
+     ,'' AS `town`
+     ,'' AS `county`
+     ,'' AS `postcode`
+     ,'' AS `payment_provider`
+     ,'' AS `payment_ref_no`
+     ,'' AS `payment_name`
+     ,'' AS `payment_sortcode`
+     ,'' AS `payment_account`
+     ,'' AS `payment_frequency`
+     ,'' AS `payment_amount`
+     ,'' AS `mandate_created`
+     ,'' AS `mandate_startdate`
+    FROM `blotto_entry` AS `e`
+    GROUP BY `e`.`draw_closed`,`e`.`ticket_number`
+    ORDER BY `e`.`draw_closed`,`e`.`client_ref`,`e`.`ticket_number`
+  ;
+  ALTER TABLE `Draws`
+  ADD PRIMARY KEY (`draw_closed`,`ticket_number`)
+  ;
+  ALTER TABLE `Draws`
+  ADD KEY `draw_closed` (`draw_closed`)
+  ;
+  ALTER TABLE `Draws`
+  ADD KEY `client_ref` (`client_ref`)
+  ;
+  ALTER TABLE `Draws`
+  ADD KEY `ticket_number` (`ticket_number`)
+  ;
+END$$
 
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `drawsSummariseRBE`$$
+CREATE PROCEDURE `drawsSummariseRBE` (
+)
+BEGIN
+  DROP TABLE IF EXISTS `Draws_Summary`
+  ;
+  CREATE TABLE `Draws_Summary` AS
+    SELECT
+      `e`.`draw_closed`
+     ,'rbe' AS `ccc`
+     ,COUNT(DISTINCT(`e`.`client_ref`)) AS `supporters_entered`
+     ,COUNT(`e`.`id`) AS `tickets_entered`
+    FROM `blotto_entry` AS `e`
+    WHERE `e`.`draw_closed`<CURDATE()
+    GROUP BY `draw_closed`,`ccc`
+    ORDER BY `draw_closed`,`ccc`
+  ;
+  ALTER TABLE `Draws_Summary`
+  ADD PRIMARY KEY (`draw_closed`,`ccc`)
+  ;
+  DROP TABLE IF EXISTS `Draws_Supersummary`
+  ;
+  CREATE TABLE `Draws_Supersummary` AS
+    SELECT
+      `draw_closed`
+     ,SUM(`supporters_entered`) AS `supporters_entered`
+     ,SUM(`tickets_entered`) AS `tickets_entered`
+    FROM `Draws_Summary`
+    GROUP BY `draw_closed`
+    ORDER BY `draw_closed`
+  ;
+  ALTER TABLE `Draws_Supersummary`
+  ADD PRIMARY KEY (`draw_closed`)
+  ;
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `winnersRBE`$$
+CREATE PROCEDURE `winnersRBE` (
+)
+BEGIN
+  DROP TABLE IF EXISTS `WinsAdmin`
+  ;
+  CREATE TABLE `WinsAdmin` AS
+    SELECT
+      `e`.`draw_closed`
+     ,`w`.`amount` AS `winnings`
+     ,`w`.`number` AS `ticket_number`
+     ,'' AS `superdraw`
+     ,`pz`.`name` AS `prize`
+     ,`e`.`client_ref`
+     ,'' AS `Sortcode`
+     ,'' AS `Account`
+     ,'' AS `created`
+     ,'' AS `cancelled`
+     ,'' AS `ccc`
+     ,'' AS `canvas_ref`
+     ,'' AS `supporter_id`
+     ,'' AS `title`
+     ,'' AS `name_first`
+     ,'' AS `name_last`
+     ,'' AS `email`
+     ,'' AS `mobile`
+     ,'' AS `telephone`
+     ,'' AS `address_1`
+     ,'' AS `address_2`
+     ,'' AS `address_3`
+     ,'' AS `town`
+     ,'' AS `county`
+     ,'' AS `postcode`
+     ,'' AS `latest_payment_collected`
+     ,'' AS `active`
+     ,'' AS `status`
+     ,'' AS `fail_reason`
+     ,'' AS `current_mandate_frequency`
+     ,'' AS `current_mandate_amount`
+    FROM `blotto_winner` AS `w`
+    JOIN `blotto_entry` AS `e`
+      ON `e`.`id`=`w`.`entry_id`
+    LEFT JOIN `blotto_prize` AS `pz`
+           ON `pz`.`level`=`w`.`prize_level`
+          AND `pz`.`starts`=`w`.`prize_starts`
+    ORDER BY `e`.`draw_closed`,`winnings`,`ticket_number`
+  ;
+  ALTER TABLE `WinsAdmin`
+  ADD PRIMARY KEY (`draw_closed`,`winnings`,`ticket_number`)
+  ;
+  ALTER TABLE `WinsAdmin`
+  ADD KEY `draw_closed` (`draw_closed`)
+  ;
+  ALTER TABLE `WinsAdmin`
+  ADD KEY `winnings` (`winnings`)
+  ;
+  ALTER TABLE `WinsAdmin`
+  ADD KEY `ticket_number` (`ticket_number`)
+  ;
+  ALTER TABLE `WinsAdmin`
+  ADD KEY `client_ref` (`client_ref`)
+  ;
+  DROP TABLE IF EXISTS `Wins`
+  ;
+  CREATE TABLE `Wins` AS
+    SELECT
+      *
+    FROM `WinsAdmin`
+    ORDER BY `draw_closed`,`winnings`,`ticket_number`
+  ;
+  ALTER TABLE `Wins`
+  ADD PRIMARY KEY (`draw_closed`,`winnings`,`ticket_number`)
+  ;
+  ALTER TABLE `Wins`
+  ADD KEY `draw_closed` (`draw_closed`)
+  ;
+  ALTER TABLE `Wins`
+  ADD KEY `winnings` (`winnings`)
+  ;
+  ALTER TABLE `Wins`
+  ADD KEY `ticket_number` (`ticket_number`)
+  ;
+  ALTER TABLE `Wins`
+  ADD KEY `client_ref` (`client_ref`)
+  ;
+END$$
+
+
+-- TEMPORARY UNTIL ZAFFO-MODEL RBE IS WORKING
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `zaffoSuperdrawEntries`$$
 CREATE PROCEDURE `zaffoSuperdrawEntries` (

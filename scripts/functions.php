@@ -622,7 +622,7 @@ function draw ($draw_closed) {
     }
     $draw->time             = $d['draw_time'];
     $draw->prizes           = prizes ($draw_closed);
-    $draw->insure           = false;
+    $draw->insure           = [];
     $draw->manual           = false;
     $draw->results          = [];
     $draw->groups           = [];
@@ -639,7 +639,7 @@ function draw ($draw_closed) {
         $group              = substr ($p['level_method'],-1);
         $draw->prizes[$level]['group'] = $group;
         if ($p['insure']) {
-            $draw->insure   = $level;
+            array_push ($draw->insure,$level);
         }
         if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
             $draw->manual   = $group;
