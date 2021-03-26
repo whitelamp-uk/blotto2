@@ -537,32 +537,36 @@ abort_on_error 27z $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "28. Amend and build canvassing company change report"
-start=$SECONDS
-echo "    CALL changesGenerate();"
-mariadb $dbm                                          <<< "CALL changesGenerate();"
-abort_on_error 28a $?
-/usr/bin/php $prg $sw "$cfg" exec changes.php -q
-abort_on_error 28b $?
-echo "    CALL changes();"
-mariadb $dbm                                          <<< "CALL changes();"
-abort_on_error 28c $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+if [ "$rbe" = "" ]
+then
+
+    echo "28. Amend and build canvassing company change report"
+    start=$SECONDS
+    echo "    CALL changesGenerate();"
+    mariadb $dbm                                          <<< "CALL changesGenerate();"
+    abort_on_error 28a $?
+    /usr/bin/php $prg $sw "$cfg" exec changes.php -q
+    abort_on_error 28b $?
+    echo "    CALL changes();"
+    mariadb $dbm                                          <<< "CALL changes();"
+    abort_on_error 28c $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "29. Generate preference column names in $lgs"
-start=$SECONDS
-/usr/bin/php $prg $sw "$cfg" exec legends.php           > $lgs
-abort_on_error 29 $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+    echo "29. Generate preference column names in $lgs"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" exec legends.php           > $lgs
+    abort_on_error 29 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "30. Alter/drop preference columns in make database"
-start=$SECONDS
-mariadb                                                 < $lgs
-abort_on_error 30 $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+    echo "30. Alter/drop preference columns in make database"
+    start=$SECONDS
+    mariadb                                                 < $lgs
+    abort_on_error 30 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
 
+fi
 
 echo "31. Generating dump file of make database at $dfl ..."
 start=$SECONDS
