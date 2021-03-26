@@ -112,9 +112,9 @@ while ($d=$ds->fetch_assoc()) {
             $bail = true;
             fwrite (STDERR,"Bail before {$draw->closed} - must wait until {$draw->time}\n");
         }
-        if ($draw->insure && !$d['insured']) {
+        if (count($draw->insure) && !$d['insured']) {
             $bail   = true;
-            fwrite (STDERR,"Bail before {$draw->closed} - prize {$draw->insure}@{$p['starts']} requires insurance\n");
+            fwrite (STDERR,"Bail before {$draw->closed} - prize".plural(count($draw->insure))." ".implode(', ',$draw->insure)." insurance requirement\n");
         }
         if ($draw->manual) {
             $bail   = true;
