@@ -48,6 +48,7 @@ $file = array (
        ,'db.routines.admin.sql'
        ,'db.routines.drop.sql'
        ,'db.routines.org.sql'
+       ,'db.routines.rbe.sql'
        ,'db.tables.drop.sql'
        ,'import.collection.sql'
        ,'import.mandate.sql'
@@ -55,8 +56,6 @@ $file = array (
        ,'payment.create.sql'
        ,'payment.update.sql'
        ,'results.export.sql'
-// INTERIM:
-       ,'db.routines.superdraw.sql'
     ),
     "exec" => array (
         'bogons.php'
