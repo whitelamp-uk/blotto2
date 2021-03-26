@@ -530,15 +530,16 @@ fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "27+. [Interim] If appropriate, generate Zaffo superdraw entries (insurance format)"
-start=$SECONDS
-/usr/bin/php $prg $sw "$cfg" exec superdraw_export.php
-abort_on_error 27z $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
-
-
 if [ "$rbe" = "" ]
 then
+
+
+    echo "27+. [Interim] If appropriate, generate Zaffo superdraw entries (insurance format)"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" exec superdraw_export.php
+    abort_on_error 27z $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
 
     echo "28. Amend and build canvassing company change report"
     start=$SECONDS
