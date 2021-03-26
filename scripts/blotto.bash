@@ -250,16 +250,21 @@ abort_on_error 2c $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2d $?
-/usr/bin/php $prg $sw "$cfg" sql db.routines.admin.sql  > $tmp
+/usr/bin/php $prg $sw "$cfg" sql db.routines.superdraw.sql    > $tmp
 abort_on_error 2e $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2f $?
-/usr/bin/php $prg $sw "$cfg" sql db.routines.org.sql    > $tmp
+/usr/bin/php $prg $sw "$cfg" sql db.routines.admin.sql  > $tmp
 abort_on_error 2g $? $tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2h $?
+/usr/bin/php $prg $sw "$cfg" sql db.routines.org.sql    > $tmp
+abort_on_error 2i $? $tmp
+cat $tmp
+mariadb                                                 < $tmp
+abort_on_error 2j $?
 
 
 echo " 3. Bespoke SQL functions"
@@ -524,11 +529,6 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 
 echo "27+. [Interim] If appropriate, generate Zaffo superdraw entries (insurance format)"
 start=$SECONDS
-/usr/bin/php $prg $sw "$cfg" sql db.routines.superdraw.sql > $tmp
-abort_on_error 27x $? $tmp
-cat $tmp
-mariadb                                                 < $tmp
-abort_on_error 27y $?
 /usr/bin/php $prg $sw "$cfg" exec superdraw_export.php
 abort_on_error 27z $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
