@@ -634,6 +634,14 @@ else
     cat $tmp
     mariadb                                             < $tmp
     abort_on_error 33d $?
+    if [ "$rbe" = "" ]
+    then
+        /usr/bin/php $prg $sw "$cfg" sql db.permissions.reports.standard.sql > $tmp
+        abort_on_error 33e $? $tmp
+        cat $tmp
+        mariadb                                         < $tmp
+        abort_on_error 33f $?
+    fi
     if [ -f "$bpp" ]
     then
         echo "    Grant bespoke permissions"

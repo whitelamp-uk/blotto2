@@ -44,6 +44,7 @@ $file = array (
        ,'db.functions.drop.sql'
        ,'db.permissions.sql'
        ,'db.permissions.reports.sql'
+       ,'db.permissions.reports.standard.sql'
        ,'db.routines.sql'
        ,'db.routines.admin.sql'
        ,'db.routines.drop.sql'
