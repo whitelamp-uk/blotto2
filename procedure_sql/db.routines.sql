@@ -590,7 +590,7 @@ BEGIN
   ;
   CREATE TABLE `Draws` AS
     SELECT
-      `e`.`draw_closed` AS `draw_closed`
+      `e`.`draw_closed`
      ,`e`.`client_ref`
      ,`e`.`ticket_number`
      ,`s`.`title`
