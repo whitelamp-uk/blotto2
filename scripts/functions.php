@@ -1966,7 +1966,7 @@ function search ( ) {
 
     $tooshort = true; // at least one term must be three or more characters; "Mr" is a legit term
     foreach ($string as $term) {
-        $term_alphanum = preg_replace ('<[^A-z0-9]>','',$term);
+        $term_alphanum = preg_replace ('<[^A-z0-9\-]>','',$term);
         if (strlen($term_alphanum)>=BLOTTO_SEARCH_LEN_MIN) {
             $tooshort = false;
         }
@@ -2012,6 +2012,11 @@ function search ( ) {
             return $rs;
         }
     }
+    foreach ($rs as $supporter) {
+        $crefterms[] = esc($supporter['current_client_ref']);
+        $crefterms[] = esc($supporter['original_client_ref']);
+    }
+    $crefterms = array_unique($crefterms); //easier to tidy up afterwards than only add if not there yet.
     try {
         $rm = search_result ('m',$crefterms,$fts,$limit);
     }
@@ -2039,10 +2044,11 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         return (object) ['error' => 121];
     }
     if ($type=='s') {
-        $ref        = "original_client_ref";
+        $ref        = "current_client_ref"; //DL: was original
+        $oref       = "original_client_ref";
         $table      = "Supporters";
         $index      = "`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`postcode`,`dob`";
-        $fields     = "`$ref`,`signed`,CONCAT_WS(' ',`title`,`name_first`,`name_last`) AS `name`,`email`,`mobile`,`telephone`,CONCAT_WS(' ',`address_1`,`address_2`,`address_3`) AS `address`,`town`,`county`,`postcode`,`dob`";
+        $fields     = "`$ref`,`$oref`,`signed`,CONCAT_WS(' ',`title`,`name_first`,`name_last`) AS `name`,`email`,`mobile`,`telephone`,CONCAT_WS(' ',`address_1`,`address_2`,`address_3`) AS `address`,`town`,`county`,`postcode`,`dob`";
     }
     elseif ($type=='m') {
         $ref        = "ClientRef";
@@ -2062,6 +2068,11 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         $qw .= "
         OR `$ref` LIKE '%$term%'
         ";
+        if (isset($oref)) {
+            $qw .= "
+            OR `$oref` LIKE '%$term%'
+            ";
+        }
     }
 //error_log('search_result(): '.$qc.$qw);
     try {
@@ -2097,21 +2108,25 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     $ql = "
       LIMIT 0,$limit
     ";
+    //error_log('search_result(): '.$qs.$qw.$qg.$qo.$ql);
     try {
         $result         = $zo->query ($qs.$qw.$qg.$qo.$ql);
     }
     catch (\mysqli_sql_exception $e) {
-// return $e->getMessage ();
+        // return $e->getMessage ();
         return (object) ['error' => 124];
     }
     $rows           = [];
     if ($result) {
         while ($r=$result->fetch_assoc()) {
             $rows[$r[$ref]] = $r;
+            if (isset($oref) && !isset($rows[$r[$oref]])) {
+                $rows[$r[$oref]] = $r;
+            }
         }
     }
     else {
-// return $qs.$qw.$qg.$qo.$ql;   
+        // return $qs.$qw.$qg.$qo.$ql;   
         return (object) ['error' => 125];
     }
     return $rows;
@@ -2121,6 +2136,7 @@ function search_splice ($supporters,$mandates,&$rows) {
     $rows = array ();
     $merged = array ();
     foreach ($supporters as $k=>$s) {
+        unset ($s['current_client_ref']);
         unset ($s['original_client_ref']);
         $merged[$k] = array ('ClientRef'=>$k,'Supporter'=>implode(', ',array_filter($s)),'Mandate'=>'');
     }
