@@ -501,28 +501,31 @@ then
     echo "    CALL updates();"
     mariadb $dbm                                  <<< "CALL updates();"
     abort_on_error 27g $?
+    echo "    CALL winners();"
+    mariadb $dbm                                  <<< "CALL winners();"
+    abort_on_error 27h $?
 else
     echo "    CALL drawsRBE();"
     mariadb $dbm                                  <<< "CALL drawsRBE();"
-    abort_on_error 27h $?
+    abort_on_error 27i $?
     echo "    CALL drawsSummariseRBE();"
     mariadb $dbm                                  <<< "CALL drawsSummariseRBE();"
-    abort_on_error 27i $?
+    abort_on_error 27j $?
     echo "    CALL insureRBE();"
     mariadb $dbm                                  <<< "CALL insureRBE();"
-    abort_on_error 27j $?
+    abort_on_error 27k $?
+    echo "    CALL winnersRBE();"
+    mariadb $dbm                                  <<< "CALL winnersRBE();"
+    abort_on_error 27l $?
 fi
-echo "    CALL winners();"
-mariadb $dbm                                      <<< "CALL winners();"
-abort_on_error 27k $?
 if [ -f "$bpu" ]
 then
     echo "    Generate bespoke SQL"
     /usr/bin/php $prg $sw "$cfg" sql BESPOKE "$bpu"     > $tmp
-    abort_on_error 27l $?
+    abort_on_error 27m $?
     echo "    Execute bespoke SQL in make database"
     mariadb                                             < $tmp
-    abort_on_error 27m $?
+    abort_on_error 27n $?
 fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
