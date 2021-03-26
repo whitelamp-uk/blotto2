@@ -2108,6 +2108,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     $ql = "
       LIMIT 0,$limit
     ";
+    //error_log('search_result(): '.$qs.$qw.$qg.$qo.$ql);
     try {
         $result         = $zo->query ($qs.$qw.$qg.$qo.$ql);
     }
