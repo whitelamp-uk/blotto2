@@ -2578,6 +2578,7 @@ function winnings_notify ($amounts) {
     if (!count($amounts)) {
         return;
     }
+    ksort ($amounts);
     notify (BLOTTO_EMAIL_TO,'Winnings report','Winnings: '.print_r($amounts,true));
 }
 
