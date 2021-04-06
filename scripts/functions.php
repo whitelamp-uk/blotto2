@@ -2192,8 +2192,16 @@ function select ( ) {
         FROM `blotto_supporter` AS `s`
         JOIN `blotto_contact` AS `c`
           ON `c`.`supporter_id`=`s`.`id`
-        WHERE `s`.`client_ref`='$cref'
-        ORDER BY `c`.`created` DESC
+        JOIN (
+          SELECT
+            `supporter_id`
+          FROM `blotto_player`
+          WHERE `client_ref`='$cref'
+             OR `client_ref` LIKE '$match'
+          ORDER BY `client_ref` DESC
+          LIMIT 0,1
+        ) AS `player`
+          ON `player`.`supporter_id`=`s`.`id`
       ";
     }
     try {
