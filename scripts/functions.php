@@ -1941,54 +1941,60 @@ function result_spiel66 ($prize,$draw_closed) {
 }
 
 function search ( ) {
-    // $expert removes automatic boolean operators which are to make
-    // each term mandatory and match to the left
-    // i.e. "smit" returns smiths, "mith" does not.
-    // dashes are a pain.  searching for burton-on-trent doesn't work as wanted.
-    if (array_key_exists('t',$_GET)) {
+    if (array_key_exists('t',$_GET) && array_key_exists('r',$_GET)) {
+        // Select data for a particular known ClientRef
         return select ();
     }
-    $string = '';
+    // Smart search string with one or more search terms
+    $string             = '';
     if (array_key_exists('s',$_GET)) {
-        $string = $_GET['s'];
+        $string         = $_GET['s'];
     }
-    $expert = false;
+    // Expert means https://mariadb.com/kb/en/full-text-index-overview/#in-boolean-mode
+    $expert             = false;
     if (array_key_exists('e',$_GET) && $_GET['e']>0) {
-        $expert = true;
+        $expert         = true;
     }
-    $limit = 20;
+    // Maximum results to display
+    $limit              = BLOTTO_SEARCH_LIMIT;
     if (array_key_exists('l',$_GET) && intval($_GET['l'])>0) {
-        $limit = intval ($_GET['l']);
+        $limit          = intval ($_GET['l']);
     }
-    $string         = explode (' ',$string);
-    $terms          = [];
-    $crefterms      = [];
-
-    $tooshort = true; // at least one term must be three or more characters; "Mr" is a legit term
+    // Each term is mandatory
+    // Each term is left-matched ("smit" returns smiths, "mith" does not)
+    // NB: dashes are a pain - searching for burton-on-trent doesn't work as wanted
+    // At least one term must be BLOTTO_SEARCH_LEN_MIN or more characters
+    $string             = explode (' ',$string);
+    $terms              = [];
+    $crefterms          = [];
+    $tooshort           = true;
     foreach ($string as $term) {
-        $term_alphanum = preg_replace ('<[^A-z0-9\-]>','',$term);
+        $term_alphanum  = preg_replace ('<[^A-z0-9\-]>','',$term);
         if (strlen($term_alphanum)>=BLOTTO_SEARCH_LEN_MIN) {
-            $tooshort = false;
+            $tooshort   = false;
         }
         if (strlen($term_alphanum)) {
             if (strlen($term_alphanum) >= BLOTTO_SEARCH_CREF_MIN) {
-              array_push ($crefterms,esc($term_alphanum));
+                array_push ($crefterms,esc($term_alphanum));
             }
-            if (!$expert) { // if not expert allow @ sign (but see below on that one!) and maybe others
-                $term_alphanum_extended = preg_replace('<[^A-z0-9\-@]>', '', $term);  // Add \- to allow dashes through
+            // If not expert, allow @ sign (but see below on that one!) and maybe others
+            if (!$expert) {
+                // Add \- to allow dashes through
+                $term_alphanum_extended = preg_replace('<[^A-z0-9\-@]>', '', $term);
                 if (strpos($term_alphanum_extended,'-') !== false) {
-                  $term = '+"'.$term_alphanum_extended.'"'; 
+                    $term = '+"'.$term_alphanum_extended.'"'; 
                 }
                 else {
-                  $term = '+'.$term_alphanum_extended.'*'; 
+                    $term = '+'.$term_alphanum_extended.'*'; 
                 }
             }
         }
-        elseif (!$expert) { // if not expert and no alphanumerics, continue
+        elseif (!$expert) {
+            // So not expert and no alphanumerics
             continue;
         }
         // https://stackoverflow.com/questions/25088183/mysql-fulltext-search-with-symbol-produces-error-syntax-error-unexpected
-        $term = str_replace("@", " +", $term); // 
+        $term = str_replace ('@',' +',$term); // 
         if (strlen($term)) {
             array_push ($terms,esc($term));
         }
@@ -1996,8 +2002,7 @@ function search ( ) {
     if ($tooshort) {
         return '{ "short" : true }';
     }
-
-    $fts = implode (', ', $terms);
+    $fts = implode (', ',$terms);
     try {
         $rs = search_result ('s',$crefterms,$fts,$limit);
     }
@@ -2013,10 +2018,11 @@ function search ( ) {
         }
     }
     foreach ($rs as $supporter) {
-        $crefterms[] = esc($supporter['current_client_ref']);
-        $crefterms[] = esc($supporter['original_client_ref']);
+        $crefterms[]    = esc ($supporter['current_client_ref']);
+        $crefterms[]    = esc ($supporter['original_client_ref']);
     }
-    $crefterms = array_unique($crefterms); //easier to tidy up afterwards than only add if not there yet.
+    // Easier to tidy up afterwards than only add if not there yet
+    $crefterms          = array_unique ($crefterms);
     try {
         $rm = search_result ('m',$crefterms,$fts,$limit);
     }
@@ -2160,17 +2166,11 @@ function search_splice ($supporters,$mandates,&$rows) {
 }
 
 function select ( ) {
-    $type = '';
-    if (array_key_exists('t',$_GET)) {
-        $type = $_GET['t'];
-    }
+    $type = $_GET['t'];
     if (!in_array($type,['m','s'])) {
         return '{ "error" : 103 }';
     }
-    $cref = false;
-    if (array_key_exists('r',$_GET)) {
-        $cref = $_GET['r'];
-    }
+    $cref = $_GET['r'];
     if (!$cref) {
         return '{ "error" : 104 }';
     }
