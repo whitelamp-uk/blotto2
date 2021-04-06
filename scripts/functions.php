@@ -2190,8 +2190,17 @@ function select ( ) {
           `s`.`client_ref` AS `ClientRef`
          ,`c`.*
         FROM `blotto_supporter` AS `s`
+        JOIN (
+          SELECT
+            `supporter_id`
+           ,MAX(`created`) AS `created`
+          FROM `blotto_contact`
+          GROUP BY `supporter_id`
+        ) AS `clast`
+          ON `clast`.`supporter_id`=`s`.`id`
         JOIN `blotto_contact` AS `c`
-          ON `c`.`supporter_id`=`s`.`id`
+          ON `c`.`supporter_id`=`clast`.`supporter_id`
+         AND `c`.`created`=`clast`.`created`
         JOIN (
           SELECT
             `supporter_id`
