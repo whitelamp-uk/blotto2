@@ -2,7 +2,7 @@
 
     <section id="bacs" class="content">
 
-        <h2>BACS change request</h2>
+        <h2>Find mandate/make BACS change request</h2>
 
         <form id="search-mandates" class="search" action="" method="get">
           <input type="hidden" name="l" value="20" />

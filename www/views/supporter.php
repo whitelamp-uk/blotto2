@@ -2,7 +2,7 @@
 
     <section id="supporter" class="content">
 
-        <h2>Change supporter details</h2>
+        <h2>Find/update supporter details</h2>
 
         <form id="search-supporters" class="search" action="" method="get">
           <input type="hidden" name="l" value="20" />

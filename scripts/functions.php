@@ -2010,8 +2010,8 @@ function search ( ) {
         return '{ "short" : true }';
     }
     $fts = implode (', ',$terms);
-    // We have $type is s for supporters or m for mandates
-    // Do we really need the splicing of both result sets below?
+    // We have $type above which has s for supporters or m for mandates
+    // Do we really need this splicing business below?
     try {
         $rs = search_result ('s',$crefterms,$fts,$limit);
     }
