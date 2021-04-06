@@ -40,6 +40,7 @@ define ( 'BLOTTO_CSV_DIR_S',     '/home/sct/blotto/abc/supporters'      );
 define ( 'BLOTTO_CSV_DIR_M',     '/home/sct/blotto/abc/mandates'        );
 define ( 'BLOTTO_CSV_DIR_C',     '/home/sct/blotto/abc/collections'     );
 define ( 'BLOTTO_LOG_DIR',       '/home/blotto/log/abc'                 );
+define ( 'BLOTTO_LOG_SEARCH_SQL',false                                  );
 define ( 'BLOTTO_TICKET_DB',     'blotto_ticket_demo'                   );
 define ( 'BLOTTO_TICKET_MIN',    '000000'            );
 define ( 'BLOTTO_TICKET_MAX',    '999999'            );

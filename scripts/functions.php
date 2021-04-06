@@ -2074,12 +2074,15 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
             ";
         }
     }
-//error_log('search_result(): '.$qc.$qw);
+    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
+        error_log ('search_result(): '.$qc.$qw);
+    }
     try {
         $result     = $zo->query ($qc.$qw);
     }
     catch (\mysqli_sql_exception $e) {
-//        return $qc.$qw;
+        error_log ('search_result(): '.$qc.$qw);
+        error_log ('search_result(): '.$e->getMessage());
         return (object) ['error' => 122];
     }
     if ($result) {
@@ -2108,12 +2111,15 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     $ql = "
       LIMIT 0,$limit
     ";
-    //error_log('search_result(): '.$qs.$qw.$qg.$qo.$ql);
+    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
+        error_log ('search_result(): '.$qs.$qw.$qg.$qo.$ql);
+    }
     try {
         $result         = $zo->query ($qs.$qw.$qg.$qo.$ql);
     }
     catch (\mysqli_sql_exception $e) {
-        // return $e->getMessage ();
+        error_log ('search_result(): '.$qs.$qw.$qg.$qo.$ql);
+        error_log ('search_result(): '.$e->getMessage());
         return (object) ['error' => 124];
     }
     $rows           = [];
@@ -2213,6 +2219,9 @@ function select ( ) {
           ON `player`.`supporter_id`=`s`.`id`
       ";
     }
+    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
+        error_log ('select(): '.$q);
+    }
     try {
         $rs = $zo->query ($q);
         while ($r=$rs->fetch_assoc()) {
@@ -2220,6 +2229,7 @@ function select ( ) {
         }
     }
     catch (\mysqli_sql_exception $e) {
+        error_log ('select(): '.$q);
         error_log ('select(): '.$e->getMessage());
         return '{ "error" : 105 }';
     }
