@@ -2075,7 +2075,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         }
     }
     if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ("Search SQL [1] (search_result(), type=$type): ".$qc.$qw);
+        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qw");
     }
     try {
         $result     = $zo->query ($qc.$qw);
@@ -2112,7 +2112,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
       LIMIT 0,$limit
     ";
     if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ('Search SQL [2] (search_result(), type=$type): '.$qs.$qw.$qg.$qo.$ql);
+        error_log ("Search SQL [2] (search_result(), type=$type): $qs $qw $qg $qo $ql");
     }
     try {
         $result         = $zo->query ($qs.$qw.$qg.$qo.$ql);
@@ -2220,7 +2220,7 @@ function select ( ) {
       ";
     }
     if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ('Search SQL [3] (select(), type=$type): '.$q);
+        error_log ("Search SQL [3] (select(), type=$type): $q");
     }
     try {
         $rs = $zo->query ($q);
