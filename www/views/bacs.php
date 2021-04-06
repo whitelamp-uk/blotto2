@@ -6,6 +6,7 @@
 
         <form id="search-mandates" class="search" action="" method="get">
           <input type="hidden" name="l" value="20" />
+          <input type="hidden" name="t" value="m" />
           <input id="search" type="text" name="s" placeholder="Search for a mandate" />
           <input id="expert" type="checkbox" name="e" />Expert [ <a target="_blank" class="help" href="https://mariadb.com/kb/en/full-text-index-overview/#in-boolean-mode">?</a> ]
         </form>

@@ -1941,9 +1941,16 @@ function result_spiel66 ($prize,$draw_closed) {
 }
 
 function search ( ) {
-    if (array_key_exists('t',$_GET) && array_key_exists('r',$_GET)) {
-        // Select data for a particular known ClientRef
-        return select ();
+    $type               = 's'; // s for supporter or m for mandate
+    if (array_key_exists('t',$_GET)) {
+        $type           = $_GET['t'];
+    }
+    if (!in_array($type,['m','s'])) {
+        return '{ "error" : 101 }';
+    }
+    if (array_key_exists('r',$_GET)) {
+        // Just get the data for a particular known ClientRef
+        return select ($type);
     }
     // Smart search string with one or more search terms
     $string             = '';
@@ -2003,11 +2010,13 @@ function search ( ) {
         return '{ "short" : true }';
     }
     $fts = implode (', ',$terms);
+    // We have $type is s for supporters or m for mandates
+    // Do we really need the splicing of both result sets below?
     try {
         $rs = search_result ('s',$crefterms,$fts,$limit);
     }
     catch (\Exception $e) {
-        return '{ "error" : 101 }';
+        return '{ "error" : 102 }';
     }
     if (!is_array($rs)) {
         if (!is_object($rs) || property_exists($rs,'error') || $rs->count>0) {
@@ -2027,7 +2036,7 @@ function search ( ) {
         $rm = search_result ('m',$crefterms,$fts,$limit);
     }
     catch (\Exception $e) {
-        return '{ "error" : 102 }';
+        return '{ "error" : 103 }';
     }
     if (!is_array($rm)) {
         if (!is_object($rm) || property_exists($rm,'error') || $rm->count>0) {
@@ -2165,11 +2174,7 @@ function search_splice ($supporters,$mandates,&$rows) {
     }
 }
 
-function select ( ) {
-    $type = $_GET['t'];
-    if (!in_array($type,['m','s'])) {
-        return '{ "error" : 103 }';
-    }
+function select ($type) {
     $cref = $_GET['r'];
     if (!$cref) {
         return '{ "error" : 104 }';
