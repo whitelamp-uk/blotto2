@@ -2034,7 +2034,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     ";
     $qs = "
       SELECT
-        IFNULL(`p`.`client_ref`,`m`.`ClientRef`) AS `ClientRef`
+        IFNULL(`s`.`current_client_ref`,`m`.`ClientRef`) AS `ClientRef`
        ,CONCAT_WS(
           ' '
          ,`s`.`signed`
