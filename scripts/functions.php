@@ -1974,6 +1974,7 @@ function search ( ) {
     $string             = explode (' ',$string);
     $terms              = [];
     $crefterms          = [];
+    $rows               = [];
     $tooshort           = true;
     foreach ($string as $term) {
         $term_alphanum  = preg_replace ('<[^A-z0-9\-]>','',$term);
@@ -2009,169 +2010,164 @@ function search ( ) {
     if ($tooshort) {
         return '{ "short" : true }';
     }
-    $fts = implode (', ',$terms);
-    // We have $type above which has s for supporters or m for mandates
-    // Do we really need this splicing business below?
     try {
-        $rs = search_result ('s',$crefterms,$fts,$limit);
+        return search_result ($type,$crefterms,implode(', ',$terms),$limit);
     }
     catch (\Exception $e) {
-        return '{ "error" : 102 }';
+        return $e->getMessage();
     }
-    if (!is_array($rs)) {
-        if (!is_object($rs) || property_exists($rs,'error') || $rs->count>0) {
-            if (is_object($rs)) {
-                return json_encode ($rs);
-            }
-            return $rs;
-        }
-    }
-    foreach ($rs as $supporter) {
-        $crefterms[]    = esc ($supporter['current_client_ref']);
-        $crefterms[]    = esc ($supporter['original_client_ref']);
-    }
-    // Easier to tidy up afterwards than only add if not there yet
-    $crefterms          = array_unique ($crefterms);
-    try {
-        $rm = search_result ('m',$crefterms,$fts,$limit);
-    }
-    catch (\Exception $e) {
-        return '{ "error" : 103 }';
-    }
-    if (!is_array($rm)) {
-        if (!is_object($rm) || property_exists($rm,'error') || $rm->count>0) {
-            if (is_object($rm)) {
-                return json_encode ($rm);
-            }
-            return $rm;
-        }
-    }
-    search_splice ($rs,$rm,$rows);
-    if (count($rows)==0) {
-        return '{ "count" : 0 }';
-    }
-    return json_encode ($rows,JSON_PRETTY_PRINT);
 }
 
 function search_result ($type,$crefterms,$fulltextsearch,$limit) {
-    $zo             = connect ();
+    if (!in_array($type,['m','s'])) {
+        throw new \Exception ('{ error : 121 }');
+        return false;
+    }
+    $zo = connect ();
     if (!$zo) {
-        return (object) ['error' => 121];
-    }
-    if ($type=='s') {
-        $ref        = "current_client_ref"; //DL: was original
-        $oref       = "original_client_ref";
-        $table      = "Supporters";
-        $index      = "`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`postcode`,`dob`";
-        $fields     = "`$ref`,`$oref`,`signed`,CONCAT_WS(' ',`title`,`name_first`,`name_last`) AS `name`,`email`,`mobile`,`telephone`,CONCAT_WS(' ',`address_1`,`address_2`,`address_3`) AS `address`,`town`,`county`,`postcode`,`dob`";
-    }
-    elseif ($type=='m') {
-        $ref        = "ClientRef";
-        $table      = "blotto_build_mandate";
-        $index      = "`Name`,`Sortcode`,`Account`,`StartDate`,`LastStartDate`,`Freq`";
-        $fields     = "`ClientRef`,dateSilly2Sensible(`StartDate`) AS `FirstStartDate`,`Name`,`Amount`,`Freq`,CONCAT('***',SUBSTR(`Sortcode`,-3),'/*****',SUBSTR(`Account`,-3)) AS `Account`";
+        throw new \Exception ('{ error : 122 }');
+        return false;
     }
     $qc = "
       SELECT
-        COUNT(DISTINCT `$ref`) AS `rows`
-      FROM `$table`
+        COUNT(*) AS `rows`
     ";
-    $qw = "
-      WHERE MATCH($index) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
+    $qs = "
+      SELECT
+        IFNULL(`p`.`client_ref`,`m`.`ClientRef`) AS `ClientRef`
+       ,CONCAT_WS(
+          ' '
+         ,`s`.`signed`
+         ,CONCAT_WS(' ',`s`.`title`,`s`.`name_first`,`s`.`name_last`)
+         ,`s`.`email`
+         ,`s`.`mobile`
+         ,`s`.`telephone`
+         ,CONCAT_WS(' ',`s`.`address_1`,`s`.`address_2`,`s`.`address_3`)
+         ,`s`.`town`
+         ,`s`.`county`
+         ,`s`.`postcode`
+         ,`s`.`dob`
+       ) AS `Supporter`
+       ,CONCAT_WS(
+          ' '
+         ,`m`.`ClientRef`
+         ,dateSilly2Sensible(`m`.`StartDate`)
+         ,`m`.`Name`
+         ,`m`.`Amount`
+         ,`m`.`Freq`
+         ,CONCAT('***',SUBSTR(`m`.`Sortcode`,-3),'/*****',SUBSTR(`m`.`Account`,-3))
+       ) AS `Mandate`
     ";
-    foreach ($crefterms as $term) {
-        $qw .= "
-        OR `$ref` LIKE '%$term%'
+    if ($type=='s') {
+        $qt = "
+          FROM `Supporters` AS `s`
+          LEFT JOIN `blotto_player` AS `p`
+                 ON `p`.`supporter_id`=`s`.`supporter_id`
+          LEFT JOIN `blotto_build_mandate` AS `m`
+                 ON `m`.`ClientRef`=`p`.`client_ref`
         ";
-        if (isset($oref)) {
-            $qw .= "
-            OR `$oref` LIKE '%$term%'
+    }
+    else {
+        $qt = "
+          FROM `blotto_build_mandate` AS `m`
+          LEFT JOIN `blotto_player` AS `p`
+                 ON `p`.`client_ref`=`m`.`ClientRef`
+          LEFT JOIN `Supporters` AS `s`
+                 ON `s`.`supporter_id`=`p`.`supporter_id`
+        ";
+    }
+    $qw = "
+      WHERE (
+            `s`.`supporter_id` IS NOT NULL
+        AND MATCH(
+              `name_first`
+             ,`name_last`
+             ,`email`
+             ,`mobile`
+             ,`telephone`
+             ,`address_1`
+             ,`address_2`
+             ,`address_3`
+             ,`town`
+             ,`postcode`
+             ,`dob`
+            ) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
+      )
+         OR (
+            `m`.`RefNo` IS NOT NULL
+        AND MATCH(
+              `Name`
+             ,`Sortcode`
+             ,`Account`
+             ,`StartDate`
+             ,`LastStartDate`
+             ,`Freq`
+            ) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
+      )
+    ";
+    $indexm = "";
+    if (count($crefterms)) {
+        if ($type=='s') {
+            foreach ($crefterms as $term) {
+              $qw .= "
+                OR ( `p`.`supporter_id` IS NOT NULL AND `p`.`client_ref` LIKE '%$term%' )
+              ";
+            }
+            $qg = "
+              GROUP BY `s`.`supporter_id`
+            ";
+        }
+        else {
+            foreach ($crefterms as $term) {
+              $qw .= "
+                OR ( `m`.`RefNo` IS NOT NULL AND `m`.`ClientRef` LIKE '%$term%' )
+              ";
+            }
+            $qg = "
+              GROUP BY `m`.`ClientRef`
             ";
         }
     }
-    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qw");
-    }
-    try {
-        $result     = $zo->query ($qc.$qw);
-    }
-    catch (\mysqli_sql_exception $e) {
-        error_log ('search_result(): '.$qc.$qw);
-        error_log ('search_result(): '.$e->getMessage());
-        return (object) ['error' => 122];
-    }
-    if ($result) {
-        while ($r=$result->fetch_assoc()) {
-            $rows       = $r['rows'];
-            break;
-        }
-    }
-    else {
-        return (object) ['error' => 123];
-    }
-    if ($rows>$limit) {
-        return (object) ['count' => $rows];
-    }
-    $qs = "
-      SELECT
-        $fields
-      FROM `$table`
-    ";
-    $qg = "
-      GROUP BY `$ref`
-    ";
     $qo = "
-      ORDER BY `$ref`
+      ORDER BY IFNULL(`p`.`client_ref`,`m`.`ClientRef`)
     ";
     $ql = "
       LIMIT 0,$limit
     ";
     if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ("Search SQL [2] (search_result(), type=$type): $qs $qw $qg $qo $ql");
+        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qt $qw $qg $ql");
     }
     try {
-        $result         = $zo->query ($qs.$qw.$qg.$qo.$ql);
+        $result = $zo->query ($qc.$qt.$qw.$qg.$ql);
+        $rows =$result->fetch_assoc()['rows'];
     }
     catch (\mysqli_sql_exception $e) {
-        error_log ('search_result(): '.$qs.$qw.$qg.$qo.$ql);
+        error_log ('search_result(): $qc $qt $qw $qg $ql');
         error_log ('search_result(): '.$e->getMessage());
-        return (object) ['error' => 124];
+        throw new \Exception ('{ error : => 123 }');
+        return false;
     }
-    $rows           = [];
-    if ($result) {
+    if ($rows>$limit) {
+        throw new \Exception ("{ count : => $rows }");
+        return false;
+    }
+    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
+        error_log ("Search SQL [2] (search_result(), type=$type): $qs $qt $qw $qg $qo $ql");
+    }
+    $rows = [];
+    try {
+        $result = $zo->query ($qs.$qt.$qw.$qg.$qo.$ql);
         while ($r=$result->fetch_assoc()) {
-            $rows[$r[$ref]] = $r;
-            if (isset($oref) && !isset($rows[$r[$oref]])) {
-                $rows[$r[$oref]] = $r;
-            }
+            array_push ($rows,$r);
         }
     }
-    else {
-        // return $qs.$qw.$qg.$qo.$ql;   
-        return (object) ['error' => 125];
+    catch (\mysqli_sql_exception $e) {
+        error_log ('search_result(): $qs $qt $qw $qg $qo $ql');
+        error_log ('search_result(): '.$e->getMessage());
+        throw new \Exception ('{ error : => 124 }');
+        return false;
     }
-    return $rows;
-}
-
-function search_splice ($supporters,$mandates,&$rows) {
-    $rows = array ();
-    $merged = array ();
-    foreach ($supporters as $k=>$s) {
-        unset ($s['current_client_ref']);
-        unset ($s['original_client_ref']);
-        $merged[$k] = array ('ClientRef'=>$k,'Supporter'=>implode(', ',array_filter($s)),'Mandate'=>'');
-    }
-    foreach ($mandates as $k=>$m) {
-        unset ($m['ClientRef']);
-        if (!array_key_exists($k,$merged)) {
-            $merged[$k] = array ('ClientRef'=>$k,'Supporter'=>'','Mandate'=>implode(', ',array_filter($m)));
-            continue;
-        }
-        $merged[$k]['Mandate'] = implode (', ',array_filter($m));
-    }
-    foreach ($merged as $r) {
-        array_push ($rows,$r);
-    }
+    return json_encode ($rows,JSON_PRETTY_PRINT);
 }
 
 function select ($type) {
