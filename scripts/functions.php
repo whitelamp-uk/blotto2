@@ -2240,33 +2240,6 @@ function select ($type) {
     return json_encode ($response,JSON_PRETTY_PRINT);
 }
 
-function sorted_results ($date) {
-    $qs = "
-      SELECT
-        *
-      FROM `blotto_result`
-      WHERE `draw_closed`='$date'
-      ORDER BY `id`
-    ";
-    try {
-      $zo = connect (BLOTTO_RESULTS_DB);
-      $rs = $zo->query ($qs);
-    }
-    catch (\mysqli_sql_exception $e) {
-        throw new \Exception ($e->getMessage());
-        return false;
-    }
-    $results = [];
-    while ($r=$rs->fetch_assoc()) {
-        if (!array_key_exists($r['prize_level'],$results)) {
-            $results[$r['prize_level']] = [];
-        }
-        array_push ($results[$r['prize_level']],$r);
-    }
-    ksort ($results);
-    return $results;
-}
-
 function table ($id,$class,$caption,$headings,$data,$output=true) {
     if ($output) {
         require __DIR__.'/table.php';
