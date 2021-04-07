@@ -2106,27 +2106,25 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
       )
     ";
     $indexm = "";
-    if (count($crefterms)) {
-        if ($type=='s') {
-            foreach ($crefterms as $term) {
-              $qw .= "
-                OR ( `p`.`supporter_id` IS NOT NULL AND `p`.`client_ref` LIKE '%$term%' )
-              ";
-            }
-            $qg = "
-              GROUP BY `s`.`supporter_id`
-            ";
+    if ($type=='s') {
+        foreach ($crefterms as $term) {
+          $qw .= "
+            OR ( `p`.`supporter_id` IS NOT NULL AND `p`.`client_ref` LIKE '%$term%' )
+          ";
         }
-        else {
-            foreach ($crefterms as $term) {
-              $qw .= "
-                OR ( `m`.`RefNo` IS NOT NULL AND `m`.`ClientRef` LIKE '%$term%' )
-              ";
-            }
-            $qg = "
-              GROUP BY `m`.`ClientRef`
-            ";
+        $qg = "
+          GROUP BY `s`.`supporter_id`
+        ";
+    }
+    else {
+        foreach ($crefterms as $term) {
+          $qw .= "
+            OR ( `m`.`RefNo` IS NOT NULL AND `m`.`ClientRef` LIKE '%$term%' )
+          ";
         }
+        $qg = "
+          GROUP BY `m`.`ClientRef`
+        ";
     }
     $qo = "
       ORDER BY IFNULL(`p`.`client_ref`,`m`.`ClientRef`) DESC
