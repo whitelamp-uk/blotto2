@@ -159,6 +159,7 @@ function mandateSelectResult (responseText) {
             option.value = 'Monthly';
             option.textContent = 'Monthly';
             select.appendChild (option);
+            option = document.createElement ('option');
             option.value = 'Annually';
             option.textContent = 'Annually';
             select.appendChild (option);
