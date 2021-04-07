@@ -2050,8 +2050,9 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
        ) AS `Supporter`
        ,CONCAT_WS(
           ' '
+         ,`m`.`Status`
          ,`m`.`ClientRef`
-         ,dateSilly2Sensible(`m`.`StartDate`)
+         ,`m`.`Updated`
          ,`m`.`Name`
          ,`m`.`Amount`
          ,`m`.`Freq`
