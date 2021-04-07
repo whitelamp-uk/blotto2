@@ -2129,7 +2129,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         }
     }
     $qo = "
-      ORDER BY IFNULL(`p`.`client_ref`,`m`.`ClientRef`)
+      ORDER BY IFNULL(`p`.`client_ref`,`m`.`ClientRef`) DESC
     ";
     $ql = "
       LIMIT 0,$limit
