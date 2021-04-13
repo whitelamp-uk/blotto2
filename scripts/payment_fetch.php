@@ -18,15 +18,19 @@ if (!$zo) {
 
 try {
 
-    require BLOTTO_PAY_API_CLASS;
+    foreach (get_defined_constants(true)['user'] as $dfn) {
 
-    $api = new \PayApi ($zo);
+        if (strpos($dfn,'BLOTTO_PAY_API_CLASS')!==0) {
+            continue;
+        }
 
-    //$h = $api->do_heartbeat ();
-    //print_r ($h);
-    //$api->import (20,100); // Limit mandates,collections
+        require constant ($dfn);
 
-    $api->import (BLOTTO_DAY_FIRST); // pass starting date
+        $api = new \PayApi ($zo);
+
+        $api->import (BLOTTO_DAY_FIRST);
+
+    }
 
 }
 catch (\Exception $e) {

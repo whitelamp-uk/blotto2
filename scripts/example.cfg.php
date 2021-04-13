@@ -65,10 +65,20 @@ define ( 'BLOTTO_CREF_SPLITTER', '-'                 );  // Split mandate detect
 define ( 'BLOTTO_NO_CLAWBACK',   3                   );  // Used by early ticket reduction reporting
 define ( 'BLOTTO_CANCEL_RULE',   '2 MONTH'           );  // Used to define when a supporter has "cancelled"
 
-define ( 'BLOTTO_PAY_API_CLASS',    '/some/path/to/rsm-api/PayApi.php'              );
-define ( 'RSM_USER',                '***_rsm_api'                                   );
-define ( 'RSM_PASSWORD',            '**********'                                    );
-define ( 'RSM_ERROR_LOG',           false                                           );
-define ( 'RSM_FILE_DEBOGON',        __DIR__.'/***.cfg.bogons.rsm.sql'               );
+define ( 'BLOTTO_PAY_API_CLASS_RSM',    '/some/path/to/rsm-api/PayApi.php'          );
+define ( 'RSM_USER',                    '***_rsm_api'                               );
+define ( 'RSM_PASSWORD',                '**********'                                );
+define ( 'RSM_ERROR_LOG',               false                                       );
+define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'           );
 
-
+// PPONCE, a one-off Paypal payment integration at blotto2/www/tickets_buy.php
+/*
+define ( 'BLOTTO_PAY_API_CLASS_PPONCE',  '/some/path/to/pponce-api/PayApi.php' );
+define ( 'PPONCE_EMAIL',            'paypal.account@my.domain'             );
+define ( 'PPONCE_ERROR_LOG',        false                                  );
+define ( 'PPONCE_CNFM_EM',          true                ); // User must confirm email address
+define ( 'PPONCE_CNFM_PH',          false               ); // User mst confirm phone number
+define ( 'PPONCE_CCC',              'WXYZ'              ); // CCC to use in lottery data
+define ( 'PPONCE_CMPLN_EM',         true                ); // Send completion message by email
+define ( 'PPONCE_CMPLN_PH',         false               ); // Send completion message by SMS
+*/

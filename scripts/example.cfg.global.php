@@ -44,9 +44,13 @@ define ( 'BLOTTO_SEARCH_CREF_MIN',   4                  ); // search terms only 
 define ( 'BLOTTO_SEARCH_LIMIT',      20                 ); // maximum number of front end results
 define ( 'BLOTTO_CSV_FORCE_DELIM',   'BLOTTO '          ); // see csv()
 
-define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
-define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Recent collections to ignore - see BACS behaviour
-define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'        );
-define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'     );
+define ( 'PPONCE_PROVIDER',             'CRUX'                      );
+define ( 'PPONCE_TABLE_MANDATE',        'blotto_build_mandate'      );
+define ( 'PPONCE_TABLE_COLLECTION',     'blotto_build_collection'   );
+
+define ( 'RSM_URL',                     'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
+define ( 'RSM_PAY_INTERVAL',            '2 DAY' ); // Ignore recent collections - see BACS behaviour
+define ( 'RSM_TABLE_MANDATE',           'blotto_build_mandate'      );
+define ( 'RSM_TABLE_COLLECTION',        'blotto_build_collection'   );
 
 
