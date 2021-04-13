@@ -666,92 +666,12 @@ function draw ($draw_closed) {
     return $draw;
 }
 
-function draw_first_zaffo_model ($first_collection_date) { // TODO: tidy this up
+function draw_first_zaffo_model ($first_collection_date) {
     /*
-    The principle behind the Zaffo model is to ensure that once
-    an account is active it will always have a ticket every week
-    as long as no collections fail.
-    Technically we are not certain that this works for more than
-    about 10 years but it's not our model so...
-    */
-
-/*
-Dom's description which Mark found ambiguous (and somewhat
-unhelpful given that draw_closed is not a Saturday but a Friday):
-    An account becomes active two weeks on Saturday,
-    unless collection is Friday or Saturday, in which case three
-    weeks.  
-
-Given that blotto_player.first_draw_closed should be a Friday and
-this function was returning Saturday, I did the following check on
-a zaffo-repair-shop database (can be very slow):
-    drop table if exists tmp
-    ;
-    create table tmp as
-    select
-      a.*
-     ,c.collected
-    -- just for readability:
-     ,a.activedate as activated
-     ,e.entered
-     ,datediff(e.entered,a.activedate) as days
-    from dom_account as a
-    join (
-      select
-        ClientRef
-       ,MIN(DateDue) as collected
-      from dd_collection
-      where ClientRef like 'BB%'
-        and PaidAmount>0
-      group by DDRefNo
-      order by ClientRef
-    ) as c
-      on c.ClientRef=a.client_ref
-    join (
-      select
-        client_ref
-       ,MIN(draw_day) as entered
-      from dom_entry
-      where client_ref like 'BB%'
-      group by client_ref
-      order by client_ref
-    ) as e
-      on e.client_ref=a.client_ref
-    where a.client_ref like 'BB%'
-    group by a.id
-    order by a.client_ref
-    ;
-    select
-      days
-     ,count(id)
-    from tmp
-    group by days
-    ;
-This suggests that MIN(dom_entry.draw_day) is 6 days after
-dom_account.activedate (with a few unexplained anomalies)
-
-So Mark replaced the old function for generating zaffo-repair-shop
-activedate (always a Saturday):
-*/
-    $fcd = new DateTime ($first_collection_date);
-    $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
-    $dayofweek  = $fcd->format ('w'); // 0 = Sunday. 6 = Saturday.
-    $daysuntilactive = 20 - $dayofweek;
-    if ($daysuntilactive<16) { // if friday or saturday, add a week.
-        $daysuntilactive = $daysuntilactive + 7;
-    }
-    $fcd->add (new DateInterval('P'.$daysuntilactive.'D'));
-//    return $fcd->format ('Y-m-d');
-$old = $fcd->format ('Y-m-d');
-/*
-with this new one along with its new algorithmic description for
-generating blotto2 first_draw_close (always a Friday):
-*/    
-    /*
-    1. Take first_collection_date
-    2. Add pay delay
-    3. Move on to next Friday (even if first_collection_date is a Friday)
-    4. Move on 21 more days
+        1. Take first_collection_date
+        2. Add pay delay
+        3. Move on to next Friday (even if first_collection_date is a Friday)
+        4. Move on 21 more days
     */
     $fcd        = new DateTime ($first_collection_date);
     $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
@@ -764,25 +684,7 @@ generating blotto2 first_draw_close (always a Friday):
     // Move on 21 more days
     $days      += 21;
     $fcd->add (new DateInterval('P'.$days.'D'));
-//    return $fcd->format ('Y-m-d');
-$new = $fcd->format ('Y-m-d');
-
-/*
-Temporary check to make sure that this is always a 6-day difference.
-In other words, confirm that Mark did not bungle it.
-*/
-$date1          = date_create ($old);
-$date2          = date_create ($new);
-$diff           = date_diff ($date1,$date2);
-if ($diff->format("%a")!=6) {
-    fwrite (STDERR,"draw_first_zaffo_model() being naughty:\n");
-    fwrite (STDERR,"    activedate            = $old\n");
-    fwrite (STDERR,"    first_draw_close      = $new\n");
-    fwrite (STDERR,"Why is this not a 6-day difference?\n");
-    exit (127);
-}
-return $new;
-
+    return $fcd->format ('Y-m-d');
 }
 
 function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
