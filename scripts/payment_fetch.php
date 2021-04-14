@@ -4,11 +4,6 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-if (!defined('BLOTTO_PAY_API_CLASS')) {
-    echo "No payment API - aborting\n";
-    exit (101);
-}
-
 echo "    Fetching mandate and collection data\n";
 
 $zo = connect (BLOTTO_MAKE_DB);
@@ -17,21 +12,24 @@ if (!$zo) {
 }
 
 try {
+    $cn = get_defined_constants(true);
+    $userconst = $cn['user'];
 
-    foreach (get_defined_constants(true)['user'] as $dfn) {
+    $api_found = false;
+    foreach ($userconst as $dfn => $file) {
+        if (strpos($dfn,'BLOTTO_PAY_API_CLASS')===0) {
+            require $file;
 
-        if (strpos($dfn,'BLOTTO_PAY_API_CLASS')!==0) {
-            continue;
+            $api = new \PayApi ($zo);
+
+            $api->import (BLOTTO_DAY_FIRST);
+            $api_found = true;
         }
-
-        require constant ($dfn);
-
-        $api = new \PayApi ($zo);
-
-        $api->import (BLOTTO_DAY_FIRST);
-
     }
-
+    if (!$api_found) {
+        echo "No payment API - aborting\n";
+        exit (101);
+    }
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
