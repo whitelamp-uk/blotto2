@@ -71,14 +71,43 @@ define ( 'RSM_PASSWORD',                '**********'                            
 define ( 'RSM_ERROR_LOG',               false                                       );
 define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'           );
 
-// PPONCE, a one-off Paypal payment integration at blotto2/www/tickets_buy.php
 /*
-define ( 'BLOTTO_PAY_API_CLASS_PPONCE',  '/some/path/to/pponce-api/PayApi.php' );
-define ( 'PPONCE_EMAIL',            'paypal.account@my.domain'             );
-define ( 'PPONCE_ERROR_LOG',        false                                  );
-define ( 'PPONCE_CNFM_EM',          true                ); // User must confirm email address
-define ( 'PPONCE_CNFM_PH',          false               ); // User mst confirm phone number
-define ( 'PPONCE_CCC',              'WXYZ'              ); // CCC to use in lottery data
-define ( 'PPONCE_CMPLN_EM',         true                ); // Send completion message by email
-define ( 'PPONCE_CMPLN_PH',         false               ); // Send completion message by SMS
+
+// paypal-api, a Paypal payment class
+define ( 'BLOTTO_PAY_API_CLASS_PAYPAL', '/path/to/paypal-api/PayApi.php'    );
+define ( 'PAYPAL_ADMIN_EMAIL',              'paypal.support@my.biz'         );
+define ( 'PAYPAL_ADMIN_PHONE',              '01 234 567 890'                );
+define ( 'PAYPAL_TERMS' ,                   'https://my.biz/terms'          );
+define ( 'PAYPAL_PRIVACY' ,                 'https://my.biz/privacy'        );
+define ( 'PAYPAL_EMAIL',            'paypal.account@my.domain'              );
+define ( 'PAYPAL_ERROR_LOG',        false                                   );
+define ( 'PAYPAL_CNFM_EM',          true                ); // User must confirm email address
+define ( 'PAYPAL_CNFM_PH',          false               ); // User must confirm phone number
+define ( 'PAYPAL_CMPLN_EM',         true                ); // Send completion message by email
+define ( 'PAYPAL_CMPLN_PH',         false               ); // Send completion message by SMS
+define ( 'PAYPAL_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'        );
+define ( 'PAYPAL_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
+
+// stripe-api, a Stripe payment class
+define ( 'BLOTTO_PAY_API_CLASS_STRIPE', '/path/to/paypal-api/PayApi.php'    );
+define ( 'STRIPE_ADMIN_EMAIL',              'stripe.support@my.biz'         );
+define ( 'STRIPE_ADMIN_PHONE',              '01 234 567 890'                );
+define ( 'STRIPE_TERMS' ,                   'https://my.biz/terms'          );
+define ( 'STRIPE_PRIVACY' ,                 'https://my.biz/privacy'        );
+define ( 'STRIPE_EMAIL',            'paypal.account@my.domain'              );
+define ( 'STRIPE_ERROR_LOG',        false                                   );
+define ( 'STRIPE_CNFM_EM',          true                ); // User must confirm email address
+define ( 'STRIPE_CNFM_PH',          false               ); // User must confirm phone number
+define ( 'STRIPE_CMPLN_EM',         true                ); // Send completion message by email
+define ( 'STRIPE_CMPLN_PH',         false               ); // Send completion message by SMS
+define ( 'STRIPE_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'    );
+define ( 'STRIPE_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
+
+// Direct sign-up class for integration at blotto2/www/tickets.php
+define ( 'BLOTTO_SIGNUP_PAY_API',   BLOTTO_PAY_API_CLASS_STRIPE);
+
+define ( 'CAMPAIGN_MONITOR_KEY',    '' );
+define ( 'CAMPAIGN_MONITOR_SMART_EMAIL_ID', '' );
+
 */
+

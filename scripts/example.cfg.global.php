@@ -9,9 +9,10 @@ define ( 'BLOTTO_UPLOAD_MAX_MB',    4                   );
 define ( 'BLOTTO_ROWS_PER_QRY',     1000                );
 define ( 'BLOTTO_BOGONS_MAX',       2000                );
 define ( 'MYSQL_CODE_DUPLICATE',    1062                );
-define ( 'BLOTTO_TITLES',            'Baron,Baroness,Canon,Cllr,Br,Brother,Dame,Doctor,Dr,Father,Fr,Lady,Lord,Major,Miss,Mr,Mrs,Ms,Mx,Pr,Prof,Professor,Rabbi,Rev,Reverend,Sir,Sr,Sra' );
-define ( 'BLOTTO_MALE_TITLES',       'Baron,Br,Brother,Father,Fr,Lord,Mr,Sir,Sr' );
-define ( 'BLOTTO_FEMALE_TITLES',     'Baroness,Dame,Lady,Miss,Mrs,Ms,Sra' );
+define ( 'BLOTTO_TITLES',           'Baron,Baroness,Canon,Cllr,Br,Brother,Dame,Doctor,Dr,Father,Fr,Lady,Lord,Major,Miss,Mr,Mrs,Ms,Mx,Pr,Prof,Professor,Rabbi,Rev,Reverend,Sir,Sr,Sra' );
+define ( 'BLOTTO_TITLES_WEB',       'Mrs,Mr,Miss,Ms,Mx,Dr,Prof,Rev,Sir,Dame,Lady');
+define ( 'BLOTTO_MALE_TITLES',      'Baron,Br,Brother,Father,Fr,Lord,Mr,Sir,Sr' );
+define ( 'BLOTTO_FEMALE_TITLES',    'Baroness,Dame,Lady,Miss,Mrs,Ms,Sra' );
 define ( 'BLOTTO_EXEC_LAST_FILE',   'ls -tp "{{DIR}}" | grep -v /$ | head -1'   );
 define ( 'BLOTTO_LOG_DURN_DAYS',    14                  );
 define ( 'BLOTTO_MC_NAME',          'mymachine'         );
@@ -39,18 +40,34 @@ define ( 'BLOTTO_TSA_CACERT',       'https://freetsa.org/files/cacert.pem'      
 
 define ( 'BLOTTO_BRAND',            'mylotto'           );
 
-define ( 'BLOTTO_SEARCH_LEN_MIN',    3                  ); // at least one search term must be this long
-define ( 'BLOTTO_SEARCH_CREF_MIN',   4                  ); // search terms only matched against clientrefs if at least this long
-define ( 'BLOTTO_SEARCH_LIMIT',      20                 ); // maximum number of front end results
-define ( 'BLOTTO_CSV_FORCE_DELIM',   'BLOTTO '          ); // see csv()
+define ( 'BLOTTO_SEARCH_LEN_MIN',   3               ); // at least one search term must be this long
+define ( 'BLOTTO_SEARCH_CREF_MIN',  4               ); // CREF terms not matched if not this long
+define ( 'BLOTTO_SEARCH_LIMIT',     20              ); // maximum number of front end results
+define ( 'BLOTTO_CSV_FORCE_DELIM',  'BLOTTO '       ); // see csv()
 
-define ( 'PPONCE_PROVIDER',             'CRUX'                      );
-define ( 'PPONCE_TABLE_MANDATE',        'blotto_build_mandate'      );
-define ( 'PPONCE_TABLE_COLLECTION',     'blotto_build_collection'   );
+// paypal-api with data-8.co.uk and Campaign Monitor dependencies
+define ( 'PAYPAL_PROVIDER',         'PXXX'          ); // Provider code for mandates
+define ( 'PAYPAL_CCC',              'CXXX'          ); // CCC to use in lottery data
+define ( 'PAYPAL_TABLE_MANDATE',    'blotto_build_mandate'      );
+define ( 'PAYPAL_TABLE_COLLECTION', 'blotto_build_collection'   );
 
-define ( 'RSM_URL',                     'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
-define ( 'RSM_PAY_INTERVAL',            '2 DAY' ); // Ignore recent collections - see BACS behaviour
-define ( 'RSM_TABLE_MANDATE',           'blotto_build_mandate'      );
-define ( 'RSM_TABLE_COLLECTION',        'blotto_build_collection'   );
+define ( 'STRIPE_PROVIDER',         'PXXX'          ); // Provider code for mandates
+define ( 'STRIPE_CCC',              'CXXX'          ); // CCC to use in lottery data
+define ( 'STRIPE_TABLE_MANDATE',    'blotto_build_mandate'      );
+define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
+
+define ( 'DATA8_USERNAME',          'development@burdenandburden.co.uk' );
+define ( 'DATA8_PASSWORD',          ''              );
+define ( 'DATA8_EMAIL_LEVEL',       'MX'            );
+
+define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
+define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
+define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'          );
+define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'       );
+
+
+define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44 );
+define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed' );
+define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json'   );
 
 
