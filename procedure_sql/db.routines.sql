@@ -1036,7 +1036,7 @@ BEGIN
       `p`.`id`
      ,`p`.`supporter_id`
      ,`p`.`client_ref`
-     ,GROUP_CONCAT(`d`.`ticket_number` ORDER BY `d`.`ticket_number` SEPARATOR ', ') AS `tickets`
+     ,`d`.`tickets`
      ,IFNULL(`d`.`FirstPayment`,'') AS `FirstPayment`
      ,IFNULL(`d`.`FirstCreated`,'') AS `FirstCreated`
      ,IFNULL(`d`.`PaymentsCollected`,0) AS `PaymentsCollected`
@@ -1051,7 +1051,7 @@ BEGIN
        ,`m`.`RefOrig`
        ,`m`.`ClientRef`
        ,`m`.`Name`
-       ,IFNULL(`tk`.`number`,'') AS `ticket_number`
+       ,`tn`.`tickets`
        ,IFNULL(`cl`.`FirstSuccessfulDate`,'') AS `FirstPayment`
        ,`m`.`Created` AS `FirstCreated`
        ,IFNULL(`cl`.`SuccessfulPayments`,0) AS `PaymentsCollected`
@@ -1087,12 +1087,18 @@ BEGIN
         GROUP BY `client_ref`
       )         AS `e`
                 ON `e`.`client_ref`=`m`.`ClientRef`
-      LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `tk`
-             ON `tk`.`mandate_provider`=`m`.`Provider`
-            AND `tk`.`client_ref`=`m`.`ClientRef`
-            AND `tk`.`org_id`={{BLOTTO_ORG_ID}}
+      LEFT JOIN (
+        SELECT
+        `tk`.`mandate_provider`, `tk`.`client_ref`,
+        GROUP_CONCAT(`tk`.`number` ORDER BY `tk`.`number` SEPARATOR ', ') AS `tickets`
+        FROM  `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `tk`
+        WHERE `tk`.`org_id`={{BLOTTO_ORG_ID}}
+        GROUP BY `tk`.`mandate_provider`, `tk`.`client_ref`
+      ) AS `tn`
+            ON `tn`.`mandate_provider`=`m`.`Provider`
+            AND `tn`.`client_ref`=`m`.`ClientRef`
       WHERE 1
-      GROUP BY IFNULL(`tk`.`number`,`m`.`ClientRef`)
+      GROUP BY IFNULL(`tn`.`tickets`,`m`.`ClientRef`) -- DL: check this
     )      AS `d`
            ON `d`.`ClientRef`=`p`.`client_ref`
     GROUP BY `p`.`id`
@@ -1169,8 +1175,8 @@ BEGIN
      ,`s`.`AmountCollected` AS `current_amount`
      ,`s`.`plays` AS `current_plays`
      ,`s`.`balance` AS `current_balance`
-    FROM `tmp_supporter` AS `s`
-    JOIN `tmp_player` AS `p`
+    FROM `tmp_player` AS `p`
+    JOIN `tmp_supporter` AS `s`
       ON `p`.`supporter_id`=`s`.`id`
     GROUP BY `s`.`id`,`s`.`current_ticket_number`
     ORDER BY `s`.`created`,`ccc`,`s`.`current_client_ref`,`s`.`current_ticket_number`
