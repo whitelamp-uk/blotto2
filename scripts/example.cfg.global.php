@@ -44,6 +44,9 @@ define ( 'BLOTTO_SEARCH_LEN_MIN',   3               ); // at least one search te
 define ( 'BLOTTO_SEARCH_CREF_MIN',  4               ); // CREF terms not matched if not this long
 define ( 'BLOTTO_SEARCH_LIMIT',     20              ); // maximum number of front end results
 define ( 'BLOTTO_CSV_FORCE_DELIM',  'BLOTTO '       ); // see csv()
+define ( 'BLOTTO_CSV_DELIMITER',    ','             ); // see download_csv()
+define ( 'BLOTTO_CSV_ENCLOSER',     '"'             ); // see download_csv()
+define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
 
 // paypal-api with data-8.co.uk and Campaign Monitor dependencies
 define ( 'PAYPAL_PROVIDER',         'PXXX'          ); // Provider code for mandates

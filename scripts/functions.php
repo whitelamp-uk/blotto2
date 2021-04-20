@@ -530,9 +530,6 @@ function download_csv ( ) {
           LIMIT 0,$lim
         ) AS `i`
       ) AS `o`
-      INTO OUTFILE '$of'
-      FIELDS TERMINATED BY ',' ENCLOSED BY '\"'
-      LINES TERMINATED BY '\\n'
       ;
     ";
     $fields         = [];
@@ -573,10 +570,25 @@ function download_csv ( ) {
     $q              = str_replace ('{{DATA}}',implode(",\n",$data),$q);
     $q              = str_replace ('{{CONDITION}}',$cond,$q);
     $q              = str_replace ('{{GROUP}}',$gpby,$q);
+    $fp             = fopen ($of,'w');
+    if (!$fp) {
+        return "file open failure";
+    }
     try {
-        $save       = $zo->query ($q);
+        $rows       = $zo->query ($q);
+        while ($r=$rows->fetch_assoc()) {
+            fputcsv (
+                $fp,
+                $r,
+                BLOTTO_CSV_DELIMITER,
+                BLOTTO_CSV_ENCLOSER,
+                BLOTTO_CSV_ESCAPER
+            );
+        }
+        fclose ($fp);
     }
     catch (\mysqli_sql_exception $e) {
+        fclose ($fp);
         error_log ('download_csv(): '.$e->getMessage());
         return "SQL failure [2]";
     }
