@@ -3,39 +3,21 @@
 require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
+
 require BLOTTO_SIGNUP_PAY_API;
-require PAYPAL_CAMPAIGN_MONITOR;
+//require PAYPAL_CAMPAIGN_MONITOR;
 
+require STRIPE_DIR_STRIPE.'/????';
 
+$error = null;
 try {
-    $api = new PayApi (connect(BLOTTO_MAKE_DB));
+    $class = BLOTTO_PAY_API_STRIPE_CLASS;
+    $api = new $class (connect(BLOTTO_MAKE_DB));
 }
 catch (Exception $e) {
      $error = $e->getMessage ();
 }
 
-if (!$error) {
-
-    if (array_key_exists('callback',$_GET)) {
-        $api->callback ();
-        exit;
-    }
-
-    header ('Access-Control-Allow-Origin: *');
-    $error = null;
-    $finished = null;
-
-    if (count($_POST)) {
-        // The user wants a "buy now" link
-        try {
-            $api->start ();
-        }
-        catch (Exception $e) {
-             $error = $e->getMessage ();
-        }
-    }
-
-}
 
 ?><!doctype html>
 <html class="no-js" lang="">
@@ -50,8 +32,9 @@ if (!$error) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link rel="apple-touch-icon" href="./icon.png" />
-
-
+    <?php if (count($_POST)) { ?>
+      <script src="https://js.stripe.com/v3/"></script>
+    <?php } ?>
     <link rel="author" href="http://www.burdenandburden.co.uk" />
     <title title="Burden &amp; Burden self-sign-up service">Sign-up service</title>
 
@@ -90,8 +73,34 @@ if (!$error) {
 
   <body>
 
-<?php $api->output_signup_form(); ?>
+<?php
+$ccform = false;
 
+if (!$error) {
+
+    if (array_key_exists('callback',$_GET)) {
+        $api->callback ();
+        exit;
+    }
+
+    header ('Access-Control-Allow-Origin: *');
+    $finished = null;
+
+    if (count($_POST)) {
+        //echo "<pre>"; print_r($_POST); exit;
+        // The user wants a "buy now" link
+        try {
+            $api->start (); // outputs buy button
+        }
+        catch (Exception $e) {
+             $error = $e->getMessage ();
+        }
+    } else {
+      $api->output_signup_form(); 
+    }
+
+}
+?>
   </body>
 
 </html>
