@@ -1161,13 +1161,13 @@ BEGIN
      ,`s`.`Freq` AS `current_mandate_frequency`
      ,`s`.`Amount` AS `current_mandate_amount`
      ,`s`.`per_play`
-     ,GROUP_CONCAT(`p`.`tickets` ORDER BY `p`.`client_ref` SEPARATOR ' / ') AS `ticket_history`
-     ,IF(LENGTH(`p`.`FirstPayment`)=0,'',MIN(`p`.`FirstPayment`)) AS `original_first_payment`
-     ,IF(LENGTH(`p`.`FirstCreated`)=0,'',MIN(`p`.`FirstCreated`)) AS `original_mandate_created`
-     ,SUM(`p`.`PaymentsCollected`) AS `total_payments`
-     ,SUM(`p`.`AmountCollected`) AS `total_amount`
-     ,SUM(`p`.`plays`) AS `total_plays`
-     ,SUM(`p`.`balance`) AS `total_balance`
+     ,`p`.`ticket_history`
+     ,`p`.`original_first_payment`
+     ,`p`.`original_mandate_created`
+     ,`p`.`total_payments`
+     ,`p`.`total_amount`
+     ,`p`.`total_plays`
+     ,`p`.`total_balance`
      ,`s`.`first_draw_close` AS `current_first_draw`
      ,`s`.`FirstPayment` AS `current_first_payment`
      ,`s`.`LastCreated` AS `current_mandate_created`
@@ -1175,9 +1175,21 @@ BEGIN
      ,`s`.`AmountCollected` AS `current_amount`
      ,`s`.`plays` AS `current_plays`
      ,`s`.`balance` AS `current_balance`
-    FROM `tmp_player` AS `p`
+    FROM (
+      SELECT
+        `supporter_id`
+       ,GROUP_CONCAT(`tickets` ORDER BY `client_ref` SEPARATOR ' / ') AS `ticket_history`
+       ,IF(LENGTH(`FirstPayment`)=0,'',MIN(`FirstPayment`)) AS `original_first_payment`
+       ,IF(LENGTH(`FirstCreated`)=0,'',MIN(`FirstCreated`)) AS `original_mandate_created`
+       ,SUM(`PaymentsCollected`) AS `total_payments`
+       ,SUM(`AmountCollected`) AS `total_amount`
+       ,SUM(`plays`) AS `total_plays`
+       ,SUM(`balance`) AS `total_balance`
+      FROM `tmp_player`
+      GROUP BY `supporter_id`
+    ) AS `p`
     JOIN `tmp_supporter` AS `s`
-      ON `p`.`supporter_id`=`s`.`id`
+      ON `s`.`id`=`p`.`supporter_id`
     GROUP BY `s`.`id`,`s`.`current_ticket_number`
     ORDER BY `s`.`created`,`ccc`,`s`.`current_client_ref`,`s`.`current_ticket_number`
   ;

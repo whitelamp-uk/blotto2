@@ -7,7 +7,7 @@ function bank_decrypt ($key,$data,&$sortcode,&$accountnr) {
     // $data also contains $data->mac which is constructed thus:
     // $mac = $this->hash($iv = base64_encode($iv), $value);
     $out = openssl_decrypt ( $data->value, $method, $key, 0, base64_decode($data->iv)); // , OPENSSL_RAW_DATA 
-    $out = unserialize($out);
+    $out = unserialize ($out);
     if ($out) {
         $sortcode   = $out['sort_code'];
         $accountnr  = $out['account_number'];
