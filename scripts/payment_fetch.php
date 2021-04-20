@@ -19,7 +19,7 @@ try {
             continue;
         }
         if (!is_readable($classfile)) {
-            fwrite (STDERR,"Payment API file '$filepath' is not readable - aborting\n");
+            fwrite (STDERR,"Payment API file '$classfile' is not readable - aborting\n");
             exit (101);
         }
         require $classfile;
