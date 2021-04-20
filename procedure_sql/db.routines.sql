@@ -1158,19 +1158,20 @@ BEGIN
      ,`s`.`active`
      ,`s`.`status`
      ,`s`.`fail_reason`
-     ,`s`.`Freq` AS `current_mandate_frequency`
-     ,`s`.`Amount` AS `current_mandate_amount`
+     ,`s`.`Freq` AS `latest_mandate_frequency`
+     ,`s`.`Amount` AS `latest_mandate_amount`
      ,`s`.`per_play`
      ,`p`.`ticket_history`
-     ,`p`.`original_first_payment`
-     ,`p`.`original_mandate_created`
-     ,`p`.`total_payments`
-     ,`p`.`total_amount`
-     ,`p`.`total_plays`
-     ,`p`.`total_balance`
+     ,`p`.`original_first_payment` AS `supporter_first_payment`
+     ,`p`.`original_mandate_created` AS `supporter_first_mandate`
+     ,`p`.`total_payments` AS `supporter_total_payments`
+     ,`p`.`total_amount` AS `supporter_total_amount`
+     ,`p`.`total_plays` AS `supporter_total_plays`
+     ,`p`.`total_balance` AS `supporter_current_balance`
+     ,'' AS `further_detail`
      ,`s`.`first_draw_close` AS `latest_player_first_draw`
      ,`s`.`FirstPayment` AS `latest_player_first_payment`
-     ,`s`.`LastCreated` AS `latest_player_mandate_created`
+     ,`s`.`LastCreated` AS `latest_player_mandate`
      ,`s`.`PaymentsCollected` AS `latest_player_payments`
      ,`s`.`AmountCollected` AS `latest_player_amount`
      ,`s`.`plays` AS `latest_player_plays`
@@ -1825,8 +1826,8 @@ BEGIN
      ,`s`.`active`
      ,`s`.`status`
      ,`s`.`fail_reason`
-     ,`s`.`current_mandate_frequency`
-     ,`s`.`current_mandate_amount`
+     ,`s`.`latest_mandate_frequency`
+     ,`s`.`latest_mandate_amount`
     FROM `blotto_winner` AS `w`
     JOIN `blotto_entry` AS `e`
       ON `e`.`id`=`w`.`entry_id`
@@ -1888,8 +1889,8 @@ BEGIN
      ,`s`.`active`
      ,`s`.`status`
      ,`s`.`fail_reason`
-     ,`s`.`current_mandate_frequency`
-     ,`s`.`current_mandate_amount`
+     ,`s`.`latest_mandate_frequency`
+     ,`s`.`latest_mandate_amount`
     FROM `blotto_super_winner` AS `w`
     JOIN `blotto_super_entry` AS `e`
       ON `e`.`id`=`w`.`entry_id`
