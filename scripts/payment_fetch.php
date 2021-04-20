@@ -12,30 +12,39 @@ if (!$zo) {
 }
 
 try {
-    $cn = get_defined_constants(true);
-    $userconst = $cn['user'];
-
-    $api_found = false;
-    foreach ($userconst as $dfn => $file) {
-        if (strpos($dfn,'BLOTTO_PAY_API_CLASS')===0) {
-            require $file;
-
-            $api = new \PayApi ($zo);
-
-            $api->import (BLOTTO_DAY_FIRST);
-            $api_found = true;
+    $constants      = get_defined_constants (true);
+    $apis = 0;
+    foreach ($constants['user'] as $name => $classfile) {
+        if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
+            continue;
         }
+        if (!is_readable($classfile)) {
+            fwrite (STDERR,"Payment API file '$filepath' is not readable - aborting\n");
+            exit (101);
+        }
+        require $classfile;
+        $class      = constant ($name.'_CLASS');
+        if (!class_exists($class)) {
+            fwrite (STDERR,"Payment API class '$class' does not exist - aborting\n");
+            exit (102);
+        }
+        $api        = new $class ($zo);
+        echo "    Instantiated $class\n";
+        $api->import (BLOTTO_DAY_FIRST);
+        echo "    Imported payments using $class::import (".BLOTTO_DAY_FIRST.")\n";
+        $apis++;
     }
-    if (!$api_found) {
-        echo "No payment API - aborting\n";
-        exit (101);
+    if (!$apis) {
+        fwrite (STDERR,"No payment APIs - aborting\n");
+        exit (103);
     }
+    echo "    Imported payments using $apis APIs\n";
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
     if (!$api->errorCode) {
         // Unexpected error
-        exit (103);
+        exit (104);
     }
     exit ($api->errorCode);
 }

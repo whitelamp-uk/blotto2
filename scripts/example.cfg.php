@@ -65,20 +65,23 @@ define ( 'BLOTTO_CREF_SPLITTER', '-'                 );  // Split mandate detect
 define ( 'BLOTTO_NO_CLAWBACK',   3                   );  // Used by early ticket reduction reporting
 define ( 'BLOTTO_CANCEL_RULE',   '2 MONTH'           );  // Used to define when a supporter has "cancelled"
 
-define ( 'BLOTTO_PAY_API_CLASS_RSM',    '/some/path/to/rsm-api/PayApi.php'          );
-define ( 'RSM_USER',                    '***_rsm_api'                               );
-define ( 'RSM_PASSWORD',                '**********'                                );
-define ( 'RSM_ERROR_LOG',               false                                       );
-define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'           );
+// rsm-api, an RSM payment class
+define ( 'BLOTTO_PAY_API_RSM',          '/some/path/to/rsm-api/PayApi.php'  );
+define ( 'BLOTTO_PAY_API_RSM_CLASS',    '\Blotto\Rsm\PayApi'                );
+define ( 'RSM_USER',                    '***_rsm_api'                       );
+define ( 'RSM_PASSWORD',                '**********'                        );
+define ( 'RSM_ERROR_LOG',               false                               );
+define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'   );
 
 /*
 
 // paypal-api, a Paypal payment class
-define ( 'BLOTTO_PAY_API_CLASS_PAYPAL', '/path/to/paypal-api/PayApi.php'    );
-define ( 'PAYPAL_ADMIN_EMAIL',              'paypal.support@my.biz'         );
-define ( 'PAYPAL_ADMIN_PHONE',              '01 234 567 890'                );
-define ( 'PAYPAL_TERMS' ,                   'https://my.biz/terms'          );
-define ( 'PAYPAL_PRIVACY' ,                 'https://my.biz/privacy'        );
+define ( 'BLOTTO_PAY_API_PAYPAL',           '/path/to/paypal-api/PayApi.php' );
+define ( 'BLOTTO_PAY_API_PAYPAL_CLASS',     '\Blotto\Paypal\PayApi'         );
+define ( 'PAYPAL_ADMIN_EMAIL',      'paypal.support@my.biz'                 );
+define ( 'PAYPAL_ADMIN_PHONE',      '01 234 567 890'                        );
+define ( 'PAYPAL_TERMS' ,           'https://my.biz/terms'                  );
+define ( 'PAYPAL_PRIVACY' ,         'https://my.biz/privacy'                );
 define ( 'PAYPAL_EMAIL',            'paypal.account@my.domain'              );
 define ( 'PAYPAL_ERROR_LOG',        false                                   );
 define ( 'PAYPAL_CNFM_EM',          true                ); // User must confirm email address
@@ -89,11 +92,12 @@ define ( 'PAYPAL_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'        );
 define ( 'PAYPAL_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 
 // stripe-api, a Stripe payment class
-define ( 'BLOTTO_PAY_API_CLASS_STRIPE', '/path/to/paypal-api/PayApi.php'    );
-define ( 'STRIPE_ADMIN_EMAIL',              'stripe.support@my.biz'         );
-define ( 'STRIPE_ADMIN_PHONE',              '01 234 567 890'                );
-define ( 'STRIPE_TERMS' ,                   'https://my.biz/terms'          );
-define ( 'STRIPE_PRIVACY' ,                 'https://my.biz/privacy'        );
+define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-api/PayApi.php' );
+define ( 'BLOTTO_PAY_API_STRIPE_CLASS',     '\Blotto\Stripe\PayApi'         );
+define ( 'STRIPE_ADMIN_EMAIL',      'stripe.support@my.biz'                 );
+define ( 'STRIPE_ADMIN_PHONE',      '01 234 567 890'                        );
+define ( 'STRIPE_TERMS' ,           'https://my.biz/terms'                  );
+define ( 'STRIPE_PRIVACY' ,         'https://my.biz/privacy'                );
 define ( 'STRIPE_EMAIL',            'paypal.account@my.domain'              );
 define ( 'STRIPE_ERROR_LOG',        false                                   );
 define ( 'STRIPE_CNFM_EM',          true                ); // User must confirm email address
