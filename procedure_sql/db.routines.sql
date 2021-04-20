@@ -1168,13 +1168,13 @@ BEGIN
      ,`p`.`total_amount`
      ,`p`.`total_plays`
      ,`p`.`total_balance`
-     ,`s`.`first_draw_close` AS `current_first_draw`
-     ,`s`.`FirstPayment` AS `current_first_payment`
-     ,`s`.`LastCreated` AS `current_mandate_created`
-     ,`s`.`PaymentsCollected` AS `current_payments`
-     ,`s`.`AmountCollected` AS `current_amount`
-     ,`s`.`plays` AS `current_plays`
-     ,`s`.`balance` AS `current_balance`
+     ,`s`.`first_draw_close` AS `latest_player_first_draw`
+     ,`s`.`FirstPayment` AS `latest_player_first_payment`
+     ,`s`.`LastCreated` AS `latest_player_mandate_created`
+     ,`s`.`PaymentsCollected` AS `latest_player_payments`
+     ,`s`.`AmountCollected` AS `latest_player_amount`
+     ,`s`.`plays` AS `latest_player_plays`
+     ,`s`.`balance` AS `latest_player_balance`
     FROM (
       SELECT
         `supporter_id`
