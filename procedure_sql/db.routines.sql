@@ -1161,6 +1161,7 @@ BEGIN
      ,`s`.`Freq` AS `latest_mandate_frequency`
      ,`s`.`Amount` AS `latest_mandate_amount`
      ,`s`.`per_play`
+     ,`p`.`players`
      ,`p`.`ticket_history`
      ,`p`.`original_first_payment` AS `supporter_first_payment`
      ,`p`.`original_mandate_created` AS `supporter_first_mandate`
@@ -1168,7 +1169,7 @@ BEGIN
      ,`p`.`total_amount` AS `supporter_total_amount`
      ,`p`.`total_plays` AS `supporter_total_plays`
      ,`p`.`total_balance` AS `supporter_current_balance`
-     ,'' AS `further_detail`
+     ,'' AS `latest_player_columns`
      ,`s`.`first_draw_close` AS `latest_player_first_draw`
      ,`s`.`FirstPayment` AS `latest_player_first_payment`
      ,`s`.`LastCreated` AS `latest_player_mandate`
@@ -1179,6 +1180,7 @@ BEGIN
     FROM (
       SELECT
         `supporter_id`
+       ,COUNT(`id`) AS `players`
        ,GROUP_CONCAT(`tickets` ORDER BY `client_ref` SEPARATOR ' / ') AS `ticket_history`
        ,IF(LENGTH(`FirstPayment`)=0,'',MIN(`FirstPayment`)) AS `original_first_payment`
        ,IF(LENGTH(`FirstCreated`)=0,'',MIN(`FirstCreated`)) AS `original_mandate_created`
