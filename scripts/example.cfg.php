@@ -92,8 +92,9 @@ define ( 'PAYPAL_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'        );
 define ( 'PAYPAL_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 
 // stripe-api, a Stripe payment class
-define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-api/PayApi.php' );
+define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-php-7.77.0/PayApi.php' );
 define ( 'BLOTTO_PAY_API_STRIPE_CLASS',     '\Blotto\Stripe\PayApi'         );
+define ( 'STRIPE_DIR_STRIPE',       '/some/stripe-php-7.77.0'               );
 define ( 'STRIPE_ADMIN_EMAIL',      'stripe.support@my.biz'                 );
 define ( 'STRIPE_ADMIN_PHONE',      '01 234 567 890'                        );
 define ( 'STRIPE_TERMS' ,           'https://my.biz/terms'                  );
@@ -108,7 +109,7 @@ define ( 'STRIPE_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'    );
 define ( 'STRIPE_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 
 // Direct sign-up class for integration at blotto2/www/tickets.php
-define ( 'BLOTTO_SIGNUP_PAY_API',   BLOTTO_PAY_API_CLASS_STRIPE);
+define ( 'BLOTTO_SIGNUP_PAY_API',   BLOTTO_PAY_API_STRIPE);
 
 define ( 'CAMPAIGN_MONITOR_KEY',    '' );
 define ( 'CAMPAIGN_MONITOR_SMART_EMAIL_ID', '' );
