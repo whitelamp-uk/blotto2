@@ -78,6 +78,7 @@ define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'   );
 // paypal-api, a Paypal payment class
 define ( 'BLOTTO_PAY_API_PAYPAL',           '/path/to/paypal-api/PayApi.php' );
 define ( 'BLOTTO_PAY_API_PAYPAL_CLASS',     '\Blotto\Paypal\PayApi'         );
+define ( 'BLOTTO_PAY_API_PAYPAL_CODE',      'PYPL'      ); // CCC and Provider
 define ( 'PAYPAL_ADMIN_EMAIL',      'paypal.support@my.biz'                 );
 define ( 'PAYPAL_ADMIN_PHONE',      '01 234 567 890'                        );
 define ( 'PAYPAL_TERMS' ,           'https://my.biz/terms'                  );
@@ -94,6 +95,7 @@ define ( 'PAYPAL_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactiona
 // stripe-api, a Stripe payment class
 define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-php-7.77.0/PayApi.php' );
 define ( 'BLOTTO_PAY_API_STRIPE_CLASS',     '\Blotto\Stripe\PayApi'         );
+define ( 'BLOTTO_PAY_API_STRIPE_CODE',      'STRP'      ); // CCC and Provider
 define ( 'STRIPE_DIR_STRIPE',       '/some/stripe-php-7.77.0'               );
 define ( 'STRIPE_ADMIN_EMAIL',      'stripe.support@my.biz'                 );
 define ( 'STRIPE_ADMIN_PHONE',      '01 234 567 890'                        );
