@@ -30,6 +30,7 @@ $qs = "
    ,`p`.`supporter_id`
    ,`p`.`started`
    ,`s`.`projected_first_draw_close`
+   ,`s`.`canvas_code`
   FROM `blotto_build_mandate` AS `m`
   JOIN `blotto_player` AS `p`
     ON `p`.`client_ref`=`m`.`ClientRef`
@@ -50,10 +51,11 @@ try {
             array_push ($starts[$m['Created']],$m['player_id']);
         }
         if (!$m['projected_first_draw_close']) {
-            if (!array_key_exists($m['StartDate'],$firsts)) {
-                $firsts[$m['StartDate']] = [];
+            $close = draw_first ($m['StartDate'],$m['canvas_code']);
+            if (!array_key_exists($close,$firsts)) {
+                $firsts[$close] = [];
             }
-            array_push ($firsts[$m['StartDate']],$m['supporter_id']);
+            array_push ($firsts[$close],$m['supporter_id']);
         }
     }
 }
@@ -69,12 +71,11 @@ foreach ($starts as $date=>$ids) {
     echo "UPDATE `blotto_player` SET `started`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
 echo "-- Update projected first draw close\n";
-foreach ($firsts as $closed=>$ids) {
+foreach ($firsts as $close=>$ids) {
     if (!count($ids)) {
         continue;
     }
-    $date = draw_first ($closed);
-    echo "UPDATE `blotto_supporter` SET `projected_first_draw_close`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
+    echo "UPDATE `blotto_supporter` SET `projected_first_draw_close`='$close' WHERE `id` IN (".implode(',',$ids).");\n";
 }
 
 
@@ -84,8 +85,11 @@ $firsts                     = [];
 $qs = "
   SELECT
     `p`.`id`
+   ,`s`.`canvas_code`
    ,MIN(`c`.`DateDue`) AS `first_collected`
   FROM `blotto_player` AS `p`
+  JOIN `blotto_supporter` AS `s`
+    ON `s`.`id`=`p`.`supporter_id`
   JOIN `blotto_build_collection` as `c`
     ON `c`.`ClientRef`=`p`.`client_ref`
    AND `c`.`PaidAmount`>0
@@ -96,7 +100,7 @@ try {
     $ps                     = $zo->query ($qs);
     fwrite (STDERR,"{$ps->num_rows} players where first draw close not set\n");
     while ($p=$ps->fetch_assoc()) {
-        $date               = draw_first ($p['first_collected']);
+        $date               = draw_first ($p['first_collected'],$p['canvas_code']);
         if (!array_key_exists($date,$firsts)) {
             $firsts[$date]  = [];
         }
