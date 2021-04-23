@@ -678,6 +678,14 @@ function draw ($draw_closed) {
     return $draw;
 }
 
+function draw_first_asap ($first_collection_date) {
+    /*
+        Money received may be used in
+        a draw closing on the same day
+    */
+    return $first_collection_date;
+}
+
 function draw_first_zaffo_model ($first_collection_date) {
     /*
         1. Take first_collection_date
