@@ -1,0 +1,88 @@
+
+
+function errorClose (evt) {
+    evt.target.parentElement.parentElement.removeChild (evt.target.parentElement);
+}
+
+function inputCorrect (evt) {
+    if (!evt.target.name) {
+        return;
+    }
+    evt.target.value            = evt.target.value.trim ();
+    evt.target.value            = evt.target.value.replace ('  ',' ');
+    if (['sort_code','account_number'].includes(evt.target.name)) {
+        evt.target.value        = evt.target.value.replace (/\D/g,'');
+    }
+    if (['sort_code'].includes(evt.target.name)) {
+        var i = 0;
+        var sc = '';
+        if (evt.target.value.length>=2) {
+            i                   = 2;
+            sc                 += evt.target.value.substr (0,2);
+            sc                 += '-';
+        }
+        if (evt.target.value.length>=4) {
+            i                   = 4;
+            sc                 += evt.target.value.substr (2,2);
+            sc                 += '-';
+        }
+        sc                     += evt.target.value.substr (i);
+        evt.target.value        = sc;
+    }
+    if (['dob'].includes(evt.target.name) && evt.target.getAttribute('type')=='text') {
+        if (evt.target.value.indexOf('-')==-1 && evt.target.value.length==8) {
+            var dob             = evt.target.value;
+            evt.target.value    = dob.substr (0,4);
+            evt.target.value   += '-' + dob.substr (4,2);
+            evt.target.value   += '-' + dob.substr (6,2);
+        }
+        if (!evt.target.checkValidity()) {
+            evt.target.value    = '';
+        }
+    }
+    if (['email'].includes(evt.target.name)) {
+        evt.target.value        = evt.target.value.replace (' ','');
+    }
+}
+
+function setDobInput ( ) {
+    var input, value;
+    input = document.createElement ('input');
+    value = 'a';
+    input.setAttribute ('type', 'date');
+    input.setAttribute ('value', value);
+    if (input.value!==value) {
+        // Date input is supported
+        return;
+    }
+    input = document.getElementById ('dob');
+    input.setAttribute ('type','text');
+    input.setAttribute ('placeholder','YYYY-MM-DD');
+    input.setAttribute ('pattern','[0-9]{4}-[0-9]{2}-[0-9]{2}');
+}
+
+function submitInhibit (evt) {
+    evt.preventDefault ();
+    evt.target.disabled = true;
+    evt.target.textContent = 'Please wait...';
+    evt.target.form.submit ();
+}
+
+(function () {
+    var button,input,inputs;
+    button = document.querySelector ('form.signup button[type="submit"]');
+    if (button !== null) {
+        button.addEventListener ('click',submitInhibit);
+    }
+    inputs = document.querySelectorAll ('form.signup input, form.signup select');
+    if (inputs.length > 0) {
+        for (input of inputs) {
+            input.addEventListener ('blur',inputCorrect);
+        }
+    }
+    if (window.self==window.top) {
+        document.body.classList.add ('unframed');
+    }
+    setDobInput ();
+})();
+
