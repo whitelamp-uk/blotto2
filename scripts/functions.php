@@ -2857,7 +2857,7 @@ function www_logout ( ) {
 function www_pay_apis ( ) {
     $constants = get_defined_constants (true);
     foreach ($constants['user'] as $name => $file) {
-        if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
+        if (!preg_match('<^BLOTTO_PAY_API_([A-Z]+)$>',$name,$matches)) {
             // Not an API class file
             continue;
         }
@@ -2865,12 +2865,12 @@ function www_pay_apis ( ) {
             // Not to be integrated
             continue;
         }
-        if (!defined($name.'_CODE') || !($code=constant($name.'_CODE'))) {
-            // Code not found
-            continue;
-        }
         if (!defined($name.'_CLASS') || !($class=constant($name.'_CLASS'))) {
             // Class name not found
+            continue;
+        }
+        if (!defined($matches[1].'_CODE') || !($code=constant($matches[1].'_CODE'))) {
+            // Code not found
             continue;
         }
         $apis[$code] = new \stdClass ();
