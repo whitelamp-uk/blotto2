@@ -7,7 +7,7 @@ require BLOTTO_WWW_CONFIG;
 require BLOTTO_SIGNUP_PAY_API;
 //require PAYPAL_CAMPAIGN_MONITOR;
 
-require STRIPE_DIR_STRIPE.'/????';
+require STRIPE_INIT_FILE;
 
 $error = null;
 try {
@@ -41,7 +41,7 @@ catch (Exception $e) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script defer type="text/javascript" src="https://webservices.data-8.co.uk/javascript/address_min.js"></script>
     <script type="text/javascript" src="js-config.js"></script>
-    <script defer type="text/javascript" src="postcode-lookup.js"></script>
+    <script defer type="text/javascript" src="custom-postcode-lookup.js"></script>
     <script defer type="text/javascript" src="form.js"></script>
 <?php if(defined('PAYPAL_FACEBOOK_ID') && PAYPAL_FACEBOOK_ID): ?>
 <!-- Facebook Pixel Code -->
@@ -64,7 +64,7 @@ catch (Exception $e) {
 <?php endif; ?>
 
     <link rel="stylesheet" href="normalize.css" />
-    <link rel="stylesheet" href="style.css" />
+    <!-- link rel="stylesheet" href="style.css" / -->
 <?php if (array_key_exists('css',$_GET)): ?>
     <link rel="stylesheet" href="<?php echo htmlspecialchars ($_GET['css']); ?>" />
 <?php endif; ?>
@@ -90,6 +90,7 @@ if (!$error) {
         //echo "<pre>"; print_r($_POST); exit;
         // The user wants a "buy now" link
         try {
+            echo '<link rel="stylesheet" href="stripe.css" />';
             $api->start (); // outputs buy button
         }
         catch (Exception $e) {
