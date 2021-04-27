@@ -69,10 +69,14 @@ function submitInhibit (evt) {
 }
 
 (function () {
-    var button,input,inputs;
+    var button,close,input,inputs;
     button = document.querySelector ('form.signup button[type="submit"]');
-    if (button !== null) {
+    if (button) {
         button.addEventListener ('click',submitInhibit);
+    }
+    close = document.querySelector ('form.signup button[data-close]');
+    if (close) {
+        close.addEventListener ('click',errorClose);
     }
     inputs = document.querySelectorAll ('form.signup input, form.signup select');
     if (inputs.length > 0) {

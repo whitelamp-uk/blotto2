@@ -90,8 +90,13 @@ button, input[type="submit"] {
 }
 
 button[data-close] {
-    float:              right;
-    margin:             2em 2em 0 0;
+    position:           absolute;
+    top:                0.6em;
+    right:              0.6em;
+    background-image:   url('./close.png');
+    background-size:    contain;
+    width:              2em;
+    height:             2em;
 }
 
 
@@ -297,6 +302,22 @@ form.login .pwd [name="auth"]:hover {
     background-color:   var(--blotto-color-bgd-button-lgn-hvr);
     color:              transparent;
 }
+
+form.signup div.error {
+    position:           fixed;
+    left:               30vw;
+    top:                30vh;
+    width:              40vw;
+    min-height:         40vh;
+    border-style:       solid;
+    border-color:       black;
+    border-width:       1px;
+    border-radius:      0.6em;
+    background-color:   #ffffff;
+    overflow-y:         auto;
+    padding:            2em 2em 1em 2em;
+}
+
 
 form#change-mandate,
 form#change-supporter {

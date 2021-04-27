@@ -229,14 +229,16 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <button type="submit" name="continue">Sign up now</button>
 
-<?php foreach($error as $e): ?>
-        <p class="error"><?php echo htmlspecialchars ($e); ?></p>
-<?php endforeach; ?>
-
-<?php if (!count($error) && $api): ?>
+<?php if (count($error)): ?>
+        <div class="error">
+          <button data-close></button>
+<?php     foreach($error as $e): ?>
+          <p><?php echo htmlspecialchars ($e); ?></p>
+<?php     endforeach; ?>
+        </div>
+<?php elseif ($api): ?>
 <?php     $api->button (); ?>
 <?php endif; ?>
-
 
       </fieldset>
 
