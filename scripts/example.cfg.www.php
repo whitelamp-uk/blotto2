@@ -9,5 +9,5 @@ define ( 'BLOTTO_WWW_ALG',              'AES-256-CBC'                           
 define ( 'BLOTTO_WWW_SESSION_MINUTES',  15                                                  );
 define ( 'BLOTTO_WWW_ROWS_MAX_VIEW',    2500                                                );
 define ( 'BLOTTO_WWW_ROWS_MAX_PULL',    100000                                              );
-
+define ( 'BLOTTO_WWW_FACEBOOK_ID',      null                                                );
 

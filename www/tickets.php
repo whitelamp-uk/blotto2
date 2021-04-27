@@ -4,27 +4,58 @@ require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
 
-require BLOTTO_SIGNUP_PAY_API;
-//require PAYPAL_CAMPAIGN_MONITOR;
+$apis = www_pay_apis ();
+// print_r ($apis);
 
-require STRIPE_INIT_FILE;
-
-$error = null;
-try {
-    $class = BLOTTO_PAY_API_STRIPE_CLASS;
-    $api = new $class (connect(BLOTTO_MAKE_DB));
+$api_code = null;
+if (array_key_exists('method',$_GET)) {
+    if (array_key_exists($_GET['method'],$apis)) {
+        $api_code = $_GET['method'];
+    }
 }
-catch (Exception $e) {
-     $error = $e->getMessage ();
+elseif (array_key_exists('method',$_POST)) {
+    if (array_key_exists($_POST['method'],$apis)) {
+        $api_code = $_POST['method'];
+    }
 }
 
+// Make this sign-and-pay page available for use in a charity website's iframe
+header ('Access-Control-Allow-Origin: *');
+
+$error = [];
+$api = null;
+if (count($_POST)) {
+    if (www_verify_signup($error)) {
+        if ($_POST['telephone'] && !www_verify_phone ($_POST['telephone'],'L')) {
+            $error[] = 'Telephone number (landline) is not valid';
+        }
+        if ($_POST['mobile'] && !www_verify_phone($_POST['mobile'],'M')) {
+            $error[] = 'Telephone number (mobile) is not valid';
+        }
+        if ($_POST['email'] && !www_verify_email($_POST['email'])) {
+            $error[] = 'Email address is not valid';
+        }
+    }
+    if (!count($error)) {
+        $api = null;
+        try {
+            $file = $apis[$api_code]->file;
+            $class = $apis[$api_code]->class;
+            require $file;
+            $api = new $class (connect(BLOTTO_MAKE_DB));
+            $api->start ();
+        }
+        catch (Exception $e) {
+             $error[] = 'Sorry we could not process your request - please try later';
+             require __DIR__.'/views/signup.php';
+        }
+    }
+}
 
 ?><!doctype html>
 <html class="no-js" lang="">
 
   <head>
-
-    <!-- Copyright 2020 Burden and Burden  http://www.burdenandburden.co.uk/ -->
 
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
@@ -35,15 +66,15 @@ catch (Exception $e) {
     <?php if (count($_POST)) { ?>
       <script src="https://js.stripe.com/v3/"></script>
     <?php } ?>
-    <link rel="author" href="http://www.burdenandburden.co.uk" />
-    <title title="Burden &amp; Burden self-sign-up service">Sign-up service</title>
+    <link rel="author" href="http://www.whitelamp.com/" />
+    <title title="Buy lottery tickets now">Buy lottery tickets now</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script defer type="text/javascript" src="https://webservices.data-8.co.uk/javascript/address_min.js"></script>
-    <script type="text/javascript" src="js-config.js"></script>
-    <script defer type="text/javascript" src="custom-postcode-lookup.js"></script>
-    <script defer type="text/javascript" src="form.js"></script>
-<?php if(defined('PAYPAL_FACEBOOK_ID') && PAYPAL_FACEBOOK_ID): ?>
+    <script type="text/javascript" src="./media/js-config.js"></script>
+    <script defer type="text/javascript" src="./media/custom-postcode-lookup.js"></script>
+    <script defer type="text/javascript" src="./media/form.js"></script>
+<?php if(defined('BLOTTO_WWW_FACEBOOK_ID') && BLOTTO_WWW_FACEBOOK_ID): ?>
 <!-- Facebook Pixel Code -->
 <script>
   !function(f,b,e,v,n,t,s)
@@ -54,54 +85,31 @@ catch (Exception $e) {
   t.src=v;s=b.getElementsByTagName(e)[0];
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '<?php echo PAYPAL_FACEBOOK_ID; ?>');
+  fbq('init', '<?php echo BLOTTO_WWW_FACEBOOK_ID; ?>');
   fbq('track', 'PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=<?php echo urlencode (PAYPAL_FACEBOOK_ID); ?>&ev=PageView&noscript=1"
+  src="https://www.facebook.com/tr?id=<?php echo urlencode (BLOTTO_WWW_FACEBOOK_ID); ?>&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Facebook Pixel Code -->
 <?php endif; ?>
 
-    <link rel="stylesheet" href="normalize.css" />
-    <!-- link rel="stylesheet" href="style.css" / -->
+    <link rel="stylesheet" href="./media/normalize.css" />
+    <link rel="stylesheet" href="./media/stripe.css" />
 <?php if (array_key_exists('css',$_GET)): ?>
     <link rel="stylesheet" href="<?php echo htmlspecialchars ($_GET['css']); ?>" />
+<?php else: ?>
+    <link rel="stylesheet" href="./media/style.css" />
 <?php endif; ?>
 
   </head>
 
   <body>
 
-<?php
-$ccform = false;
+<?php require __DIR__.'/views/signup.php'; ?>
 
-if (!$error) {
+<?php if ($api) { $api->start (); } ?>
 
-    if (array_key_exists('callback',$_GET)) {
-        $api->callback ();
-        exit;
-    }
-
-    header ('Access-Control-Allow-Origin: *');
-    $finished = null;
-
-    if (count($_POST)) {
-        //echo "<pre>"; print_r($_POST); exit;
-        // The user wants a "buy now" link
-        try {
-            echo '<link rel="stylesheet" href="stripe.css" />';
-            $api->start (); // outputs buy button
-        }
-        catch (Exception $e) {
-             $error = $e->getMessage ();
-        }
-    } else {
-      $api->output_signup_form(); 
-    }
-
-}
-?>
   </body>
 
 </html>

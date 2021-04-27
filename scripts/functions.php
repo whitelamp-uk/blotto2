@@ -2161,6 +2161,12 @@ function select ($type) {
     return json_encode ($response,JSON_PRETTY_PRINT);
 }
 
+function set_once (&$var,$value) {
+    if ($var!==null) {
+        $var = $value;
+    }
+}
+
 function table ($id,$class,$caption,$headings,$data,$output=true) {
     if ($output) {
         require __DIR__.'/table.php';
@@ -2800,6 +2806,36 @@ function www_auth ($db,&$time,&$err,&$msg) {
     return true;
 }
 
+function www_get_address ( ) {
+    if (ctype_digit($_POST['address_1'][0])) {
+        $firstline          = explode(' ', $_POST['address_1'], 2);
+        $house_number       = $firstline[0];
+        $address_1          = $firstline[1];
+        $address_2          = $_POST['address_2'];
+        if ($_POST['address_3']) {
+            $address_2     .= ', '.$_POST['address_3'];
+        }
+        $house_name         = '';
+    }
+    else {
+        $house_name         = $_POST['address_1'];
+        $address_1          = $_POST['address_2'];
+        $address_2          = $_POST['address_3'];
+        $house_number       = '';
+    }
+    $address_obj                = new \stdClass ();
+    $address_obj->city          = $_POST['town'];
+    $address_obj->county        = $_POST['county'];
+    $address_obj->country       = 'GB';
+    $address_obj->postcode      = $_POST['postcode'];
+    $address_obj->address_1     = $address_1;
+    $address_obj->address_2     = $address_2;
+    $address_obj->house_name    = $house_name;
+    $address_obj->house_number  = $house_number;
+    $address = json_encode ($address_obj);
+    return $address;
+}
+
 function www_logout ( ) {
     if (!isset($_SESSION)) {
         www_session_start ();
@@ -2816,6 +2852,32 @@ function www_logout ( ) {
     setcookie ('blotto_end',0,0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     header ('Location: ./');
     exit;
+}
+
+function www_pay_apis ( ) {
+    $constants = get_defined_constants (true);
+    foreach ($constants['user'] as $name => $file) {
+        if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
+            // Not an API class file
+            continue;
+        }
+        if (!defined($name.'_BUY') || !constant($name.'_BUY')) {
+            // Not to be integrated
+            continue;
+        }
+        if (!defined($name.'_CODE') || !($code=constant($name.'_CODE'))) {
+            // Code not found
+            continue;
+        }
+        if (!defined($name.'_CLASS') || !($class=constant($name.'_CLASS'))) {
+            // Class name not found
+            continue;
+        }
+        $apis[$code] = new \stdClass ();
+        $apis[$code]->file = $file;
+        $apis[$code]->class = $class;
+    }
+    return $apis;
 }
 
 function www_session (&$time) {
@@ -2847,6 +2909,154 @@ function www_session_start () {
     }
     session_set_cookie_params (0,BLOTTO_WWW_COOKIE_PATH,$_SERVER['HTTP_HOST'],true);
     session_start();
+}
+
+function www_signup_vars ( ) {
+    $dev_mode = defined('BLOTTO_DEV_MODE') && BLOTTO_DEV_MODE;
+    $vars = array (
+        'title'      => !$dev_mode ? '' : 'Mr',
+        'first_name' => !$dev_mode ? '' : 'Mickey',
+        'last_name'  => !$dev_mode ? '' : 'Mouse',
+        'dob'        => !$dev_mode ? '' : '1928-05-15',
+        'postcode'   => !$dev_mode ? '' : 'W1A 1AA',
+        'address_1'  => !$dev_mode ? '' : 'Broadcasting House',
+        'address_2'  => !$dev_mode ? '' : '',
+        'address_3'  => !$dev_mode ? '' : '',
+        'town'       => !$dev_mode ? '' : 'London',
+        'county'     => !$dev_mode ? '' : '',
+        'quantity'   => !$dev_mode ? '' : '1',
+        'draws'      => !$dev_mode ? '' : '1',
+        'pref_1'     => !$dev_mode ? '' : '',
+        'pref_2'     => !$dev_mode ? '' : 'on',
+        'pref_3'     => !$dev_mode ? '' : '',
+        'pref_4'     => !$dev_mode ? '' : '',
+        'telephone'  => !$dev_mode ? '' : '01234567890',
+        'mobile'     => !$dev_mode ? '' : '07890123456',
+        'email'      => !$dev_mode ? '' : 'mm@disney.com',
+        'gdpr'       => !$dev_mode ? '' : 'on',
+        'terms'      => !$dev_mode ? '' : 'on',
+        'age'        => !$dev_mode ? '' : 'on',
+        'signed'     => !$dev_mode ? '' : '',
+    );
+    foreach ($_POST as $k=>$v) {
+        $vars[$k] = $v;
+    }
+    return $vars;
+}
+
+function www_verify_email ($email,&$e=null) {
+    $e = [];
+    $params = array(
+        "username" => STRIPE_D8_USERNAME,
+        "password" => STRIPE_D8_PASSWORD,
+        "email" => $email,
+        "level" => STRIPE_D8_EML_VERIFY_LEVEL,
+    );
+    $client = new \SoapClient ("https://webservices.data-8.co.uk/EmailValidation.asmx?WSDL");
+    $result = $client->IsValid($params);
+    if ($result->IsValidResult->Status->Success == false) {
+        $e[] = "Error trying to validate email: ".$result->Status->ErrorMessage;
+        return false;
+    }
+    if ($result->IsValidResult->Result=='Invalid') {
+        define ( 'STRIPE_GO', 'contact');
+        $e[] = "$email is an invalid address";
+        return false;
+    }
+    return true;
+}
+
+function www_verify_signup (&$e=null) {
+    $e = [];
+    foreach ($_POST as $key => $value) {
+        $_POST[$key] = trim($value);
+    }
+    if (!$_POST['title']) {
+        set_once ($go,'about');
+        $e[] = 'Title is required';
+    }
+    if (!$_POST['first_name']) {
+        set_once ($go,'about');
+        $e[] = 'First name is required';
+    }
+    if (!$_POST['last_name']) {
+        set_once ($go,'about');
+        $e[] = 'Last name is required';
+    }
+    if (!$_POST['dob']) {
+        set_once ($go,'about');
+        $e[] = 'Date of birth is required';
+    }
+    $dt             = new \DateTime ($_POST['dob']);
+    if (!$dt) {
+        set_once ($go,'dob');
+        $e[] = 'Date of birth is not valid';
+    }
+    else {
+        $now        = new \DateTime ();
+        $years      = $dt->diff($now)->format ('%r%y');
+        if ($years<18) {
+            $e[] = 'You must be 18 or over to sign up';
+        }
+    }
+    if (!$_POST['postcode']) {
+        set_once ($go,'address');
+        $e[] = 'Postcode is required';
+    }
+    if (!$_POST['address_1']) {
+        set_once ($go,'address');
+        $e[] = 'First line of address is required';
+    }
+    if (!$_POST['town']) {
+        set_once ($go,'address');
+        $e[] = 'Town/city is required';
+    }
+    if (!array_key_exists('gdpr',$_POST) || !$_POST['gdpr']) {
+        set_once ($go,'gdpr');
+        $e[] = 'You must confirm that you have read the GDPR statement';
+    }
+    if (!array_key_exists('terms',$_POST) || !$_POST['terms']) {
+        set_once ($go,'sign');
+        $e[] = 'You must agree to terms & conditions and the privacy policy';
+    }
+    if (!array_key_exists('age',$_POST) || !$_POST['age']) {
+        set_once ($go,'sign');
+        $e[] = 'You must be aged 18 or over to signup';
+    }
+    if (count($e)) {
+        define ('BLOTTO_WWW_GO',$go);
+        return false;
+    }
+    return true;
+}
+
+function www_verify_phone ($number,$type,&$e=null) {
+    $e = [];
+    $params = array(
+        "username" => STRIPE_D8_USERNAME,
+        "password" => STRIPE_D8_PASSWORD,
+        "telephoneNumber" => $number,
+        "defaultCountry" => 'GB',
+    );
+    $params['options']['Option'][] =  array("Name" => "UseMobileValidation", "Value" => false);
+    $params['options']['Option'][] =  array("Name" => "UseLineValidation", "Value" => false);
+    $client = new \SoapClient ("https://webservices.data-8.co.uk/InternationalTelephoneValidation.asmx?WSDL");
+    $result = $client->IsValid($params);
+    if ($result->IsValidResult->Status->Success == false) {
+        $e[] = "Error trying to validate phone number: ".$result->Status->ErrorMessage;
+        return false;
+    }
+    if ($result->IsValidResult->Result->ValidationResult=='Invalid') {
+        define ( 'STRIPE_GO', 'contact');
+        $e[] = "$number is not a valid phone number";
+        return false;
+    }
+    elseif ($type == 'M' && $result->IsValidResult->Result->NumberType!='Mobile') {
+        define ( 'STRIPE_GO', 'contact');
+        $e[] = "$number is not a valid mobile phone number";
+        return false;
+    }
+    return true;
 }
 
 function www_winners ($format='Y-m-d') {

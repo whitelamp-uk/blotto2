@@ -78,7 +78,8 @@ define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'   );
 // paypal-api, a Paypal payment class
 define ( 'BLOTTO_PAY_API_PAYPAL',           '/path/to/paypal-api/PayApi.php' );
 define ( 'BLOTTO_PAY_API_PAYPAL_CLASS',     '\Blotto\Paypal\PayApi'         );
-define ( 'BLOTTO_PAY_API_PAYPAL_CODE',      'PYPL'      ); // CCC and Provider
+define ( 'BLOTTO_PAY_API_PAYPAL_BUY',       true        ); // Provide integration
+define ( 'PAYPAL_CODE',                     'PYPL'      ); // CCC and Provider
 define ( 'PAYPAL_ADMIN_EMAIL',      'paypal.support@my.biz'                 );
 define ( 'PAYPAL_ADMIN_PHONE',      '01 234 567 890'                        );
 define ( 'PAYPAL_TERMS' ,           'https://my.biz/terms'                  );
@@ -93,10 +94,11 @@ define ( 'PAYPAL_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'        );
 define ( 'PAYPAL_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 
 // stripe-api, a Stripe payment class
-define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-php-7.77.0/PayApi.php' );
+define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-api/PayApi.php' );
 define ( 'BLOTTO_PAY_API_STRIPE_CLASS',     '\Blotto\Stripe\PayApi'         );
-define ( 'BLOTTO_PAY_API_STRIPE_CODE',      'STRP'      ); // CCC and Provider
-define ( 'STRIPE_DIR_STRIPE',       '/some/stripe-php-7.77.0'               );
+define ( 'BLOTTO_PAY_API_STRIPE_BUY',       true        ); // Provide integration
+define ( 'STRIPE_CODE',             'STRP'      ); // CCC and Provider
+define ( 'STRIPE_INIT_FILE',        '/path/to/stripe-php-7.77.0/init.php'   );
 define ( 'STRIPE_ADMIN_EMAIL',      'stripe.support@my.biz'                 );
 define ( 'STRIPE_ADMIN_PHONE',      '01 234 567 890'                        );
 define ( 'STRIPE_TERMS' ,           'https://my.biz/terms'                  );
@@ -109,9 +111,6 @@ define ( 'STRIPE_CMPLN_EM',         true                ); // Send completion me
 define ( 'STRIPE_CMPLN_PH',         false               ); // Send completion message by SMS
 define ( 'STRIPE_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'    );
 define ( 'STRIPE_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
-
-// Direct sign-up class for integration at blotto2/www/tickets.php
-define ( 'BLOTTO_SIGNUP_PAY_API',   BLOTTO_PAY_API_STRIPE);
 
 define ( 'CAMPAIGN_MONITOR_KEY',    '' );
 define ( 'CAMPAIGN_MONITOR_SMART_EMAIL_ID', '' );
