@@ -227,7 +227,8 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <legend>Complete</legend>
 
-        <button type="submit" name="continue">Sign up now</button>
+        <input type="submit" name="STRP" value="Sign up now with Stripe">
+        <input type="submit" name="PAYP" value="Sign up now with Paypal">
 
 <?php if (count($error)): ?>
         <div class="error">
@@ -236,9 +237,13 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
           <p><?php echo htmlspecialchars ($e); ?></p>
 <?php     endforeach; ?>
         </div>
-<?php elseif ($api): ?>
-<?php     $api->button (); ?>
 <?php endif; ?>
+
+<?php foreach ($apis as $api_code => $api_definition) {
+ // echo button
+}
+// if no apis found then report error
+?>
 
       </fieldset>
 

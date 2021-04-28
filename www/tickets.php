@@ -1,58 +1,9 @@
 <?php
-
-require './bridge.php';
-require BLOTTO_WWW_FUNCTIONS;
-require BLOTTO_WWW_CONFIG;
-
-$apis = www_pay_apis ();
-// print_r ($apis);
-
-$api_code = null;
-if (array_key_exists('method',$_GET)) {
-    if (array_key_exists($_GET['method'],$apis)) {
-        $api_code = $_GET['method'];
-    }
-}
-elseif (array_key_exists('method',$_POST)) {
-    if (array_key_exists($_POST['method'],$apis)) {
-        $api_code = $_POST['method'];
-    }
-}
-
 // Make this sign-and-pay page available for use in a charity website's iframe
 header ('Access-Control-Allow-Origin: *');
 
-$error = [];
-$api = null;
-if (count($_POST)) {
-    if (www_verify_signup($error)) {
-        if ($_POST['telephone'] && !www_verify_phone ($_POST['telephone'],'L')) {
-            $error[] = 'Telephone number (landline) is not valid';
-        }
-        if ($_POST['mobile'] && !www_verify_phone($_POST['mobile'],'M')) {
-            $error[] = 'Telephone number (mobile) is not valid';
-        }
-        if ($_POST['email'] && !www_verify_email($_POST['email'])) {
-            $error[] = 'Email address is not valid';
-        }
-    }
-    if (!count($error)) {
-        $api = null;
-        try {
-            $file = $apis[$api_code]->file;
-            $class = $apis[$api_code]->class;
-            require $file;
-            $api = new $class (connect(BLOTTO_MAKE_DB));
-            $api->start ();
-        }
-        catch (Exception $e) {
-             $error[] = 'Sorry we could not process your request - please try later';
-             require __DIR__.'/views/signup.php';
-        }
-    }
-}
-
-?><!doctype html>
+?>
+<!doctype html>
 <html class="no-js" lang="">
 
   <head>
@@ -103,12 +54,65 @@ if (count($_POST)) {
 <?php endif; ?>
 
   </head>
-
   <body>
+<?php 
 
-<?php require __DIR__.'/views/signup.php'; ?>
+require './bridge.php';
+require BLOTTO_WWW_FUNCTIONS;
+require BLOTTO_WWW_CONFIG;
 
-<?php if ($api) { $api->start (); } ?>
+$show_form = true;
+
+$apis = www_pay_apis ();
+// print_r ($apis); // Array ( [STRP] => stdClass Object ( [file] => /home/dom/stripe-api/PayApi.php [class] => \Blotto\Stripe\PayApi ) )
+//print_r($_POST);
+
+$error = [];
+if (count($_POST)) {
+    $api_found = false;
+    foreach ($apis as $api_code => $api_definition) { // NB also used at end of signup.php
+      if (isset($_POST[$api_code])) {
+        $api_found = true;
+      }
+    }
+
+    if (!$api_found) { // if this happens forget what's wrong with the form!
+      $error[] = 'Could not find the payment system!';
+    }
+    elseif (www_verify_signup($error)) { // passed by reference and zeroed out...
+        if ($_POST['telephone'] && !www_verify_phone ($_POST['telephone'],'L')) {
+            $error[] = 'Telephone number (landline) is not valid';
+        }
+        if ($_POST['mobile'] && !www_verify_phone($_POST['mobile'],'M')) {
+            $error[] = 'Telephone number (mobile) is not valid';
+        }
+        if ($_POST['email'] && !www_verify_email($_POST['email'])) {
+            $error[] = 'Email address is not valid';
+        }
+    }
+
+    if (!count($error)) {
+        $api = null;
+        try {
+            $file = $apis[$api_code]->file;
+            $class = $apis[$api_code]->class;
+            require $file;
+            $api = new $class (connect(BLOTTO_MAKE_DB));
+            $api->start (); // includes api's own form.php
+            $show_form = false;
+        }
+        catch (Exception $e) {
+             $error[] = 'Sorry we could not process your request - please try later';
+             //require __DIR__.'/views/signup.php';
+        }
+    }
+}
+
+if ($show_form) {
+    require __DIR__.'/views/signup.php'; 
+}
+
+?>
 
   </body>
 
