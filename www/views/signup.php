@@ -240,7 +240,12 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 <?php endif; ?>
 
 <?php foreach ($apis as $api_code => $api_definition) {
- // echo button
+  $file = $apis[$api_code]->file;
+  $class = $apis[$api_code]->class;
+  require $file;
+  $api = new $class (connect(BLOTTO_MAKE_DB));
+  echo '<input type="submit" name="'.$api_code.'" value="'.$api->button ().'">';
+  $api->button (); 
 }
 // if no apis found then report error
 ?>

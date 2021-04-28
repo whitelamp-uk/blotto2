@@ -61,7 +61,7 @@ require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
 
-$show_form = true;
+$show_form = true; //TODO seems rather kludgy
 
 $apis = www_pay_apis ();
 // print_r ($apis); // Array ( [STRP] => stdClass Object ( [file] => /home/dom/stripe-api/PayApi.php [class] => \Blotto\Stripe\PayApi ) )
