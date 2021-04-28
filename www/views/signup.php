@@ -228,7 +228,14 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <legend>Select payment method</legend>
 
 <?php foreach ($apis as $code=>$api): ?>
+
+        <style>
+form.signup input[name="<?php echo $code; ?>"] {
+    background-image:  url('./media/<?php echo strtolower ($api->name); ?>.png');
+}
+        </style>
         <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />
+
 <?php endforeach; ?>
 
       </fieldset>

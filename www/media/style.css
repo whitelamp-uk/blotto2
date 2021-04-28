@@ -329,12 +329,6 @@ form.signup input[type="submit"] {
     background-size:    contain;
     background-repeat:  no-repeat;
 }
-form.signup input[name="PYPL"] {
-    background-image:  url('./paypal.png');
-}
-form.signup input[name="STRP"] {
-    background-image:  url('./stripe.png');
-}
 
 form#change-mandate,
 form#change-supporter {

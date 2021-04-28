@@ -112,6 +112,7 @@ if (count($_POST)) {
 <?php
     if ($step==1) {
         require __DIR__.'/views/signup.php';
+    }
     elseif ($step==2) {
         $api->start ();
     }
