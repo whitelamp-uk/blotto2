@@ -225,25 +225,11 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
       <fieldset>
 
-        <legend>Complete</legend>
+        <legend>Select payment method</legend>
 
-        <input type="submit" name="STRP" value="Sign up now with Stripe">
-        <input type="submit" name="PAYP" value="Sign up now with Paypal">
-
-<?php if (count($error)): ?>
-        <div class="error">
-          <button data-close></button>
-<?php     foreach($error as $e): ?>
-          <p><?php echo htmlspecialchars ($e); ?></p>
-<?php     endforeach; ?>
-        </div>
-<?php endif; ?>
-
-<?php foreach ($apis as $api_code => $api_definition) {
- // echo button
-}
-// if no apis found then report error
-?>
+<?php foreach ($apis as $code=>$api): ?>
+        <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />
+<?php endforeach; ?>
 
       </fieldset>
 

@@ -303,7 +303,7 @@ form.login .pwd [name="auth"]:hover {
     color:              transparent;
 }
 
-form.signup div.error {
+section.signup div.error {
     position:           fixed;
     left:               30vw;
     top:                30vh;
@@ -318,6 +318,23 @@ form.signup div.error {
     padding:            2em 2em 1em 2em;
 }
 
+form.signup input[type="submit"] {
+    display:            inline-block;
+    margin:             0;
+    border-width:       0;
+    width:              120px;
+    height:             60px;
+    cursor:             pointer;
+    padding:            0;
+    background-size:    contain;
+    background-repeat:  no-repeat;
+}
+form.signup input[name="PYPL"] {
+    background-image:  url('./paypal.png');
+}
+form.signup input[name="STRP"] {
+    background-image:  url('./stripe.png');
+}
 
 form#change-mandate,
 form#change-supporter {

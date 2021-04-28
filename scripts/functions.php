@@ -2874,6 +2874,7 @@ function www_pay_apis ( ) {
             continue;
         }
         $apis[$code] = new \stdClass ();
+        $apis[$code]->name = ucwords (strtolower($matches[1]));
         $apis[$code]->file = $file;
         $apis[$code]->class = $class;
     }
