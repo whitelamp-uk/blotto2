@@ -245,7 +245,6 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
 <?php foreach ($apis as $code=>$api): ?>
 
-<<<<<<< HEAD
 <?php if (count($error)): ?>
         <div class="error">
           <button data-close></button>
