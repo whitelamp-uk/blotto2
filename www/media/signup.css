@@ -1,0 +1,236 @@
+
+body {
+    font-family: sans-serif;
+}
+
+section.signup div.error {
+    position:           fixed;
+    left:               30vw;
+    top:                30vh;
+    width:              40vw;
+    min-height:         40vh;
+    border-style:       solid;
+    border-color:       black;
+    border-width:       1px;
+    border-radius:      0.6em;
+    background-color:   #ffffff;
+    overflow-y:         auto;
+    padding:            2em 2em 1em 2em;
+}
+
+form.signup {
+    padding-bottom: 2em;
+    width: 100%;
+}
+
+form.signup label.hidden {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+form.signup label[for="dob"],
+form.signup label.requirements {
+    margin-left: 0.3em;
+}
+
+
+form.signup label[for="dob"] {
+    width: 17em;
+}
+
+form.signup label.requirements {
+    width: 29.5em;
+}
+
+form.signup fieldset {
+    margin: 0.8em 0.5em 0 0.5em;
+    border-style: solid;
+    border-width: 1px;
+    border-color: grey;
+    border-radius: 0.3em;
+    padding-bottom: 0.8em;
+}
+
+form.signup fieldset h3:first-of-type {
+    margin-top: 0.3em;
+}
+
+form.signup fieldset.finished {
+    position: relative;
+    bottom: 13.6em;
+}
+
+body.unframed form.signup fieldset.finished {
+    position: fixed;
+    top: 3em;
+}
+
+form.signup fieldset legend {
+    padding-left: 0.6em;
+    padding-right: 0.6em;
+}
+
+form.signup fieldset.finished div {
+    border-style: solid;
+    border-width: 1px;
+    border-color: grey;
+    border-radius: 0.3em;
+    background-color: #a2ff8f;
+    padding: 0.5em;
+}
+
+form.signup.hidden fieldset {
+    visibility: hidden;
+}
+
+form.signup.hidden fieldset.finished {
+    visibility: visible;
+}
+
+
+
+form.signup hr {
+    border-width: 0;
+}
+
+form.signup div.hidden {
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+@media screen and (max-width: 508px) {
+    #AddressCapture_FindButton,
+    #county {
+        display: block;
+        margin-top: 0.5em;
+        margin-left: 0;
+    }
+}
+
+form.signup label,
+form.signup input {
+    display: inline-block;
+}
+
+
+form.signup select[name="title"] {
+    margin-left: 0.3em;
+    width: 8em;
+}
+
+form.signup div.data8-postcodelookup-dropdown {
+    display: none;
+    width: 0;
+    height: 0;
+    border-style: none;
+    border-width: 0;
+}
+
+form.signup select.data8-postcodelookup-list {
+    position: fixed;
+    display: block;
+    left: 1em;
+    top: 1em;
+    width: calc(100vw - 3em);
+    height: 10em;
+}
+
+form.signup select.data8-postcodelookup-list option {
+    position: static;
+    display: block;
+    line-height: 1em;
+    height: 1.1em;
+}
+
+form.signup select.data8-postcodelookup-list + div {
+    position: fixed;
+    display: block;
+    left: 1em;
+    top: 10em;
+    width: calc(100vw - 3em);
+    background-color: grey;
+}
+
+form.signup input[type="radio"] {
+    display: inline-block;
+    position: relative;
+    top: 0.5em;
+    width: 1.5em;
+    height: 1.5em;
+}
+
+form.signup input[type="radio"] + label {
+}
+
+form.signup input[type="button"],
+form.signup button,
+form.signup select {
+    height: 1.8em;
+    line-height: 1.8em;
+}
+
+form.signup input[type="text"],
+form.signup input[type="email"],
+form.signup input[type="tel"],
+form.signup input[type="date"] {
+    margin-top: 0.5em;
+    display: inline-block;
+    height: 2em;
+    line-height: 1.6em;
+    padding: 0;
+}
+
+form.signup input[type="text"],
+form.signup input[type="email"],
+form.signup input[type="tel"],
+form.signup input[type="date"],
+form.signup button {
+    margin-left: 0;
+    margin-right: 0.4em;
+    box-sizing: border-box;
+    width: 16.25em;
+}
+
+form.signup button[data-verify],
+input#email_verify,
+input#mobile_verify {
+    width: 8em;
+}
+
+form.signup input[type="button"],
+form.signup button {
+    border-style: solid;
+    border-width: 1px;
+    border-color: grey;
+}
+
+#AddressCapture_FindButton {
+    margin-left: 0.4em;
+    width: 16.5em;
+}
+
+form.signup input.address-line {
+    width: 33.5em;
+}
+
+form.signup input[name="signed"],
+form.signup input[name="terms"],
+form.signup input[name="age"] {
+    margin-left: 2em;
+}
+
+form.signup input[type="submit"] {
+    display:            inline-block;
+    margin:             0;
+    border-width:       0;
+    width:              120px;
+    height:             60px;
+    cursor:             pointer;
+    padding:            0;
+    background-size:    contain;
+    background-repeat:  no-repeat;
+}
+

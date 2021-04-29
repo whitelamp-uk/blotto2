@@ -3,6 +3,12 @@
 require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
+if (defined(CAMPAIGN_MONITOR) && CAMPAIGN_MONITOR) {
+    require CAMPAIGN_MONITOR;
+}
+if (defined(VOODOOSMS) && VOODOOSMS) {
+    require VOODOOSMS;
+}
 
 $apis = www_pay_apis ();
 // print_r ($apis);
@@ -16,6 +22,7 @@ if (!array_key_exists($_GET['provider'],$apis)) {
     exit;
 }
 http_response_code (200);
+
 
 try {
     $file = $apis[$_GET['provider']]->file;

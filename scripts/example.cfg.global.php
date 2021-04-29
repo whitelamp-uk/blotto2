@@ -68,7 +68,6 @@ define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - se
 define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'          );
 define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'       );
 
-
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44 );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed' );
 define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json'   );

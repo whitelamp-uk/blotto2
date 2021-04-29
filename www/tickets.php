@@ -1,9 +1,65 @@
 <?php
+
+require './bridge.php';
+require BLOTTO_WWW_FUNCTIONS;
+require BLOTTO_WWW_CONFIG;
+if (defined(CAMPAIGN_MONITOR) && CAMPAIGN_MONITOR) {
+    require CAMPAIGN_MONITOR;
+}
+if (defined(VOODOOSMS) && VOODOOSMS) {
+    require VOODOOSMS;
+}
 // Make this sign-and-pay page available for use in a charity website's iframe
 header ('Access-Control-Allow-Origin: *');
+$apis = www_pay_apis ();
+//print_r ($apis);
+//print_r($_POST);
 
-?>
-<!doctype html>
+
+$step = 1;
+$error = [];
+if (count($_POST)) {
+
+    $api_found = false;
+    foreach ($apis as $api_code => $api_definition) { // NB also used at end of signup.php
+        if (isset($_POST[$api_code])) {
+            $api_found = true;
+        }
+    }
+
+    if (!$api_found) { // if this happens forget what's wrong with the form!
+        $error[] = 'Could not find the payment system!';
+    }
+    elseif (www_verify_signup($error)) { // passed by reference and zeroed out...
+        if ($_POST['telephone'] && !www_verify_phone ($_POST['telephone'],'L')) {
+            $error[] = 'Telephone number (landline) is not valid';
+        }
+        if ($_POST['mobile'] && !www_verify_phone($_POST['mobile'],'M')) {
+            $error[] = 'Telephone number (mobile) is not valid';
+        }
+        if ($_POST['email'] && !www_verify_email($_POST['email'])) {
+            $error[] = 'Email address is not valid';
+        }
+    }
+
+    if (!count($error)) {
+        $api = null;
+        try {
+            $file = $apis[$api_code]->file;
+            $class = $apis[$api_code]->class;
+            require $file;
+            $api = new $class (connect(BLOTTO_MAKE_DB));
+            $step = 2;
+        }
+        catch (Exception $e) {
+             $error[] = 'Sorry we could not process your request - please try later';
+        }
+    }
+
+}
+
+// Output front end
+?><!doctype html>
 <html class="no-js" lang="">
 
   <head>
@@ -24,7 +80,7 @@ header ('Access-Control-Allow-Origin: *');
     <script defer type="text/javascript" src="https://webservices.data-8.co.uk/javascript/address_min.js"></script>
     <script type="text/javascript" src="./media/js-config.js"></script>
     <script defer type="text/javascript" src="./media/custom-postcode-lookup.js"></script>
-    <script defer type="text/javascript" src="./media/form.js"></script>
+    <script defer type="text/javascript" src="./media/signup.js"></script>
 <?php if(defined('BLOTTO_WWW_FACEBOOK_ID') && BLOTTO_WWW_FACEBOOK_ID): ?>
 <!-- Facebook Pixel Code -->
 <script>
@@ -46,74 +102,34 @@ header ('Access-Control-Allow-Origin: *');
 <?php endif; ?>
 
     <link rel="stylesheet" href="./media/normalize.css" />
-    <link rel="stylesheet" href="./media/stripe.css" />
-<?php if (array_key_exists('css',$_GET)): ?>
+    <link rel="stylesheet" href="./media/signup.css" />
+<?php if (array_key_exists('css',$_GET)): // This allows charity to override styles ?>
     <link rel="stylesheet" href="<?php echo htmlspecialchars ($_GET['css']); ?>" />
-<?php else: ?>
-    <link rel="stylesheet" href="./media/style.css" />
 <?php endif; ?>
 
   </head>
   <body>
-<?php 
+    <section class="signup">
 
-require './bridge.php';
-require BLOTTO_WWW_FUNCTIONS;
-require BLOTTO_WWW_CONFIG;
-
-$show_form = true; //TODO seems rather kludgy
-
-$apis = www_pay_apis ();
-// print_r ($apis); // Array ( [STRP] => stdClass Object ( [file] => /home/dom/stripe-api/PayApi.php [class] => \Blotto\Stripe\PayApi ) )
-//print_r($_POST);
-
-$error = [];
-if (count($_POST)) {
-    $api_found = false;
-    foreach ($apis as $api_code => $api_definition) { // NB also used at end of signup.php
-      if (isset($_POST[$api_code])) {
-        $api_found = true;
-      }
+<?php
+    if ($step==1) {
+        require __DIR__.'/views/signup.php';
     }
-
-    if (!$api_found) { // if this happens forget what's wrong with the form!
-      $error[] = 'Could not find the payment system!';
+    elseif ($step==2) {
+        $api->start ();
     }
-    elseif (www_verify_signup($error)) { // passed by reference and zeroed out...
-        if ($_POST['telephone'] && !www_verify_phone ($_POST['telephone'],'L')) {
-            $error[] = 'Telephone number (landline) is not valid';
-        }
-        if ($_POST['mobile'] && !www_verify_phone($_POST['mobile'],'M')) {
-            $error[] = 'Telephone number (mobile) is not valid';
-        }
-        if ($_POST['email'] && !www_verify_email($_POST['email'])) {
-            $error[] = 'Email address is not valid';
-        }
-    }
-
-    if (!count($error)) {
-        $api = null;
-        try {
-            $file = $apis[$api_code]->file;
-            $class = $apis[$api_code]->class;
-            require $file;
-            $api = new $class (connect(BLOTTO_MAKE_DB));
-            $api->start (); // includes api's own form.php
-            $show_form = false;
-        }
-        catch (Exception $e) {
-             $error[] = 'Sorry we could not process your request - please try later';
-             //require __DIR__.'/views/signup.php';
-        }
-    }
-}
-
-if ($show_form) {
-    require __DIR__.'/views/signup.php'; 
-}
-
 ?>
 
+<?php if (count($error)): ?>
+        <div class="error">
+          <button data-close></button>
+<?php     foreach($error as $e): ?>
+          <p><?php echo htmlspecialchars ($e); ?></p>
+<?php     endforeach; ?>
+        </div>
+<?php endif; ?>
+
+    </section>
   </body>
 
 </html>

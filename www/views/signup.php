@@ -8,7 +8,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
       <fieldset>
 
-        <legend>About you<sup>*</sup></legend>
+        <legend>About you</legend>
 
         <select name="title" required />
           <option value="">Title:</option>
@@ -32,6 +32,39 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
       </fieldset>
 
+      <a name="contact"></a>
+
+      <fieldset>
+
+        <legend>Contact details</legend>
+
+        <label for="email" class="hidden">Email address</label>
+        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address" title="Email address" required />
+
+<?php if (BLOTTO_SIGNUP_VFY_EML): ?>
+        <label for="email_verify" class="hidden">Verify</label>
+        <button data-verify="email">Send email</button>
+        <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code" title="Email verification code" required />
+<?php endif; ?>
+
+        <hr/>
+
+        <label for="mobile" class="hidden">Mobile number</label>
+        <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" pattern="[0-9]{10,12}" required />
+
+<?php if (BLOTTO_SIGNUP_VFY_MOB): ?>
+        <label for="mobile_verify" class="hidden">Verify</label>
+        <button data-verify="mobile">Send SMS</button>
+        <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code" title="Mobile number verification code" required />
+<?php endif; ?>
+
+        <hr/>
+
+        <label for="telephone" class="hidden">Landline number</label>
+        <input type="tel" id="telephone" name="telephone" value="<?php echo htmlspecialchars ($v['telephone']); ?>" placeholder="Landline number" title="Landline number" pattern="\+?[\d\s]{10,}" />
+
+      </fieldset>
+
       <a name="address"></a>
 
       <fieldset>
@@ -39,12 +72,12 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <legend>Address</legend>
 
         <label for="postcode" class="hidden">Postcode</label>
-        <input type="text" id="postcode" name="postcode" value="<?php echo htmlspecialchars ($v['postcode']); ?>" placeholder="Postcode *" title="Postcode" required />
+        <input type="text" id="postcode" name="postcode" value="<?php echo htmlspecialchars ($v['postcode']); ?>" placeholder="Postcode" title="Postcode" required />
 
         <hr/>
 
         <label for="address_1" class="hidden">Address line 1</label>
-        <input type="text" class="address-line" id="address_1" name="address_1" value="<?php echo htmlspecialchars ($v['address_1']); ?>" placeholder="Address line 1 *" title="Address line 1" required />
+        <input type="text" class="address-line" id="address_1" name="address_1" value="<?php echo htmlspecialchars ($v['address_1']); ?>" placeholder="Address line 1" title="Address line 1" required />
 
         <hr/>
 
@@ -59,7 +92,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <hr/>
 
         <label for="town" class="hidden">Town/city</label>
-        <input type="text" id="town" name="town" value="<?php echo htmlspecialchars ($v['town']); ?>" placeholder="Town/city *" title="Town/city" required />
+        <input type="text" id="town" name="town" value="<?php echo htmlspecialchars ($v['town']); ?>" placeholder="Town/city" title="Town/city" required />
 
         <label for="county" class="hidden">County</label>
         <input type="text" id="county" name="county" value="<?php echo htmlspecialchars ($v['county']); ?>" placeholder="County" title="County" />
@@ -72,7 +105,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <div class="field">
 
-          <label class="field-label">Number of chances each weekly draw</label>
+          <label class="requirements">Number of chances each weekly draw</label>
 
             <select name="quantity" id="quantity">
               <?php
@@ -102,7 +135,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <div class="field">
 
-          <label class="field-label">Number of weekly draws</label>
+          <label class="requirements">Number of weekly draws</label>
 
             <select name="draws" id="draws">
               <?php
@@ -162,23 +195,6 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
       </fieldset>
 
-      <a name="contact"></a>
-
-      <fieldset>
-
-        <legend>Contact details</legend>
-
-        <label for="email" class="hidden">Email address</label>
-        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address *" title="Email address" required />
-
-        <label for="mobile" class="hidden">Email address</label>
-        <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number *" title="Mobile number" pattern="[0-9]{10,12}" required />
-
-        <label for="telephone" class="hidden">Email address</label>
-        <input type="tel" id="telephone" name="telephone" value="<?php echo htmlspecialchars ($v['telephone']); ?>" placeholder="Landline number" title="Landline number" pattern="\+?[\d\s]{10,}" />
-
-      </fieldset>
-
       <a name="gdpr"></a>
 
       <fieldset>
@@ -199,7 +215,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
           <div>
             <input id="gdpr" type="checkbox" name="gdpr" <?php if($v['gdpr']): ?>checked<?php endif; ?> required />
-            <label for="gdpr">I have read and understood the above.<sup>*</sup></label>
+            <label for="gdpr">I have read and understood the above.</label>
           </div>
 
         </div>
@@ -213,23 +229,23 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <div class="field">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
-          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_PRIVACY); ?>">privacy policy</a>.<sup>*</sup></label>
+          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_PRIVACY); ?>">privacy policy</a>.</label>
         </div>
 
         <div class="field">
           <input id="age" type="checkbox" name="age" <?php if($v['age']): ?>checked<?php endif; ?> required />
-          <label for="age">I confirm that I am aged 18 or over.<sup>*</sup></label>
+          <label for="age">I confirm that I am aged 18 or over.</label>
         </div>
 
       </fieldset>
 
       <fieldset>
 
-        <legend>Complete</legend>
+        <legend>Select payment method</legend>
 
-        <input type="submit" name="STRP" value="Sign up now with Stripe">
-        <input type="submit" name="PAYP" value="Sign up now with Paypal">
+<?php foreach ($apis as $code=>$api): ?>
 
+<<<<<<< HEAD
 <?php if (count($error)): ?>
         <div class="error">
           <button data-close></button>
@@ -239,16 +255,16 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         </div>
 <?php endif; ?>
 
-<?php foreach ($apis as $api_code => $api_definition) {
-  $file = $apis[$api_code]->file;
-  $class = $apis[$api_code]->class;
-  require $file;
-  $api = new $class (connect(BLOTTO_MAKE_DB));
-  echo '<input type="submit" name="'.$api_code.'" value="'.$api->button ().'">';
-  $api->button (); 
+<?php foreach ($apis as $code=>$api): ?>
+
+        <style>
+form.signup input[name="<?php echo $code; ?>"] {
+    background-image:  url('./media/<?php echo strtolower ($api->name); ?>.png');
 }
-// if no apis found then report error
-?>
+        </style>
+        <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />
+
+<?php endforeach; ?>
 
       </fieldset>
 
