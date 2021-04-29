@@ -80,7 +80,7 @@ if (count($_POST)) {
     <script defer type="text/javascript" src="https://webservices.data-8.co.uk/javascript/address_min.js"></script>
     <script type="text/javascript" src="./media/js-config.js"></script>
     <script defer type="text/javascript" src="./media/custom-postcode-lookup.js"></script>
-    <script defer type="text/javascript" src="./media/form.js"></script>
+    <script defer type="text/javascript" src="./media/signup.js"></script>
 <?php if(defined('BLOTTO_WWW_FACEBOOK_ID') && BLOTTO_WWW_FACEBOOK_ID): ?>
 <!-- Facebook Pixel Code -->
 <script>

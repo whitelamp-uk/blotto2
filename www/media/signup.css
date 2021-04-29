@@ -30,9 +30,18 @@ form.signup label.hidden {
     overflow: hidden;
 }
 
+form.signup label[for="dob"],
 form.signup label.requirements {
-    display: inline-block;
-    width: 22.5em;
+    margin-left: 0.3em;
+}
+
+
+form.signup label[for="dob"] {
+    width: 17em;
+}
+
+form.signup label.requirements {
+    width: 29.5em;
 }
 
 form.signup fieldset {
@@ -96,6 +105,7 @@ form.signup div.hidden {
     }
 }
 
+form.signup label,
 form.signup input {
     display: inline-block;
 }
@@ -171,8 +181,7 @@ form.signup input[type="text"],
 form.signup input[type="email"],
 form.signup input[type="tel"],
 form.signup input[type="date"],
-form.signup button,
-form.signup label[for="dob"] {
+form.signup button {
     margin-left: 0;
     margin-right: 0.4em;
     box-sizing: border-box;

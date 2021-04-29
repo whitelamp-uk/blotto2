@@ -68,7 +68,7 @@ function submitInhibit (evt) {
     evt.target.form.submit ();
 }
 
-function verify (evt) {
+function verifyHandle (evt) {
     console.log ('PING');
 }
 
@@ -91,7 +91,7 @@ function verify (evt) {
     verifies = document.querySelectorAll ('form.signup [data-verify]');
     if (verifies.length > 0) {
         for (verify of verifies) {
-            verify.addEventListener ('click',verify);
+            verify.addEventListener ('click',verifyHandle);
         }
     }
     if (window.self==window.top) {
