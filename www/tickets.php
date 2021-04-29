@@ -102,11 +102,9 @@ if (count($_POST)) {
 <?php endif; ?>
 
     <link rel="stylesheet" href="./media/normalize.css" />
-    <link rel="stylesheet" href="./media/stripe.css" />
+    <link rel="stylesheet" href="./media/signup.css" />
 <?php if (array_key_exists('css',$_GET)): // This allows charity to override styles ?>
     <link rel="stylesheet" href="<?php echo htmlspecialchars ($_GET['css']); ?>" />
-<?php else: ?>
-    <link rel="stylesheet" href="./media/style.css" />
 <?php endif; ?>
 
   </head>

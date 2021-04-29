@@ -68,8 +68,12 @@ function submitInhibit (evt) {
     evt.target.form.submit ();
 }
 
+function verify (evt) {
+    console.log ('PING');
+}
+
 (function () {
-    var button,close,input,inputs;
+    var button,close,input,inputs,verify,verifies;
     button = document.querySelector ('form.signup button[type="submit"]');
     if (button) {
         button.addEventListener ('click',submitInhibit);
@@ -82,6 +86,12 @@ function submitInhibit (evt) {
     if (inputs.length > 0) {
         for (input of inputs) {
             input.addEventListener ('blur',inputCorrect);
+        }
+    }
+    verifies = document.querySelectorAll ('form.signup [data-verify]');
+    if (verifies.length > 0) {
+        for (verify of verifies) {
+            verify.addEventListener ('click',verify);
         }
     }
     if (window.self==window.top) {

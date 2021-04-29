@@ -303,33 +303,6 @@ form.login .pwd [name="auth"]:hover {
     color:              transparent;
 }
 
-section.signup div.error {
-    position:           fixed;
-    left:               30vw;
-    top:                30vh;
-    width:              40vw;
-    min-height:         40vh;
-    border-style:       solid;
-    border-color:       black;
-    border-width:       1px;
-    border-radius:      0.6em;
-    background-color:   #ffffff;
-    overflow-y:         auto;
-    padding:            2em 2em 1em 2em;
-}
-
-form.signup input[type="submit"] {
-    display:            inline-block;
-    margin:             0;
-    border-width:       0;
-    width:              120px;
-    height:             60px;
-    cursor:             pointer;
-    padding:            0;
-    background-size:    contain;
-    background-repeat:  no-repeat;
-}
-
 form#change-mandate,
 form#change-supporter {
     display:            none;
