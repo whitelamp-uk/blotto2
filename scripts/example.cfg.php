@@ -90,8 +90,7 @@ define ( 'PAYPAL_CNFM_EM',          true                ); // User must confirm 
 define ( 'PAYPAL_CNFM_PH',          false               ); // User must confirm phone number
 define ( 'PAYPAL_CMPLN_EM',         true                ); // Send completion message by email
 define ( 'PAYPAL_CMPLN_PH',         false               ); // Send completion message by SMS
-define ( 'PAYPAL_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'        );
-define ( 'PAYPAL_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
+define ( 'PAYPAL_REFNO_OFFSET',     100000000           );
 
 // stripe-api, a Stripe payment class
 define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-api/PayApi.php' );
@@ -109,11 +108,13 @@ define ( 'STRIPE_CNFM_EM',          true                ); // User must confirm 
 define ( 'STRIPE_CNFM_PH',          false               ); // User must confirm phone number
 define ( 'STRIPE_CMPLN_EM',         true                ); // Send completion message by email
 define ( 'STRIPE_CMPLN_PH',         false               ); // Send completion message by SMS
-define ( 'STRIPE_VOODOOSMS',        '/home/blotto/voodoosms/SMS.php'    );
-define ( 'STRIPE_CAMPAIGN_MONITOR', '/path/to/createsend-php/csrest_transactional_smartemail.php' );
+define ( 'STRIPE_REFNO_OFFSET',     100000000           );
 
+define ( 'CAMPAIGN_MONITOR',        '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 define ( 'CAMPAIGN_MONITOR_KEY',    '' );
 define ( 'CAMPAIGN_MONITOR_SMART_EMAIL_ID', '' );
+
+define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.php'        );
 
 */
 

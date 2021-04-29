@@ -1,9 +1,14 @@
 <?php
 
-// For readability, if no other reason, do all the back-end stuff first
 require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
+if (defined(CAMPAIGN_MONITOR) && CAMPAIGN_MONITOR) {
+    require CAMPAIGN_MONITOR;
+}
+if (defined(VOODOOSMS) && VOODOOSMS) {
+    require VOODOOSMS;
+}
 // Make this sign-and-pay page available for use in a charity website's iframe
 header ('Access-Control-Allow-Origin: *');
 $apis = www_pay_apis ();
