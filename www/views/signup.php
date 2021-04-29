@@ -8,7 +8,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
       <fieldset>
 
-        <legend>About you<sup>*</sup></legend>
+        <legend>About you</legend>
 
         <select name="title" required />
           <option value="">Title:</option>
@@ -39,23 +39,23 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <legend>Contact details</legend>
 
         <label for="email" class="hidden">Email address</label>
-        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address *" title="Email address" required />
+        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address" title="Email address" required />
 
 <?php if (BLOTTO_SIGNUP_VFY_EML): ?>
         <label for="email_verify" class="hidden">Verify</label>
         <button data-verify="email">Send email</button>
-        <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code *" title="Email verification code" required />
+        <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code" title="Email verification code" required />
 <?php endif; ?>
 
         <hr/>
 
         <label for="mobile" class="hidden">Mobile number</label>
-        <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number *" title="Mobile number" pattern="[0-9]{10,12}" required />
+        <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" pattern="[0-9]{10,12}" required />
 
 <?php if (BLOTTO_SIGNUP_VFY_MOB): ?>
         <label for="mobile_verify" class="hidden">Verify</label>
         <button data-verify="mobile">Send SMS</button>
-        <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code *" title="Mobile number verification code" required />
+        <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code" title="Mobile number verification code" required />
 <?php endif; ?>
 
         <hr/>
@@ -72,12 +72,12 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <legend>Address</legend>
 
         <label for="postcode" class="hidden">Postcode</label>
-        <input type="text" id="postcode" name="postcode" value="<?php echo htmlspecialchars ($v['postcode']); ?>" placeholder="Postcode *" title="Postcode" required />
+        <input type="text" id="postcode" name="postcode" value="<?php echo htmlspecialchars ($v['postcode']); ?>" placeholder="Postcode" title="Postcode" required />
 
         <hr/>
 
         <label for="address_1" class="hidden">Address line 1</label>
-        <input type="text" class="address-line" id="address_1" name="address_1" value="<?php echo htmlspecialchars ($v['address_1']); ?>" placeholder="Address line 1 *" title="Address line 1" required />
+        <input type="text" class="address-line" id="address_1" name="address_1" value="<?php echo htmlspecialchars ($v['address_1']); ?>" placeholder="Address line 1" title="Address line 1" required />
 
         <hr/>
 
@@ -92,7 +92,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <hr/>
 
         <label for="town" class="hidden">Town/city</label>
-        <input type="text" id="town" name="town" value="<?php echo htmlspecialchars ($v['town']); ?>" placeholder="Town/city *" title="Town/city" required />
+        <input type="text" id="town" name="town" value="<?php echo htmlspecialchars ($v['town']); ?>" placeholder="Town/city" title="Town/city" required />
 
         <label for="county" class="hidden">County</label>
         <input type="text" id="county" name="county" value="<?php echo htmlspecialchars ($v['county']); ?>" placeholder="County" title="County" />
@@ -215,7 +215,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
           <div>
             <input id="gdpr" type="checkbox" name="gdpr" <?php if($v['gdpr']): ?>checked<?php endif; ?> required />
-            <label for="gdpr">I have read and understood the above.<sup>*</sup></label>
+            <label for="gdpr">I have read and understood the above.</label>
           </div>
 
         </div>
@@ -229,12 +229,12 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <div class="field">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
-          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_PRIVACY); ?>">privacy policy</a>.<sup>*</sup></label>
+          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_PRIVACY); ?>">privacy policy</a>.</label>
         </div>
 
         <div class="field">
           <input id="age" type="checkbox" name="age" <?php if($v['age']): ?>checked<?php endif; ?> required />
-          <label for="age">I confirm that I am aged 18 or over.<sup>*</sup></label>
+          <label for="age">I confirm that I am aged 18 or over.</label>
         </div>
 
       </fieldset>

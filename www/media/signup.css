@@ -67,6 +67,11 @@ body.unframed form.signup fieldset.finished {
     top: 3em;
 }
 
+form.signup fieldset legend {
+    padding-left: 0.6em;
+    padding-right: 0.6em;
+}
+
 form.signup fieldset.finished div {
     border-style: solid;
     border-width: 1px;
