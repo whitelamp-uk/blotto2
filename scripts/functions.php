@@ -75,6 +75,32 @@ function calculate ($start=null,$end=null) {
     return $results;
 }
 
+function campaign_monitor ($data) {
+    if (!class_exists('\CS_REST_Transactional_SmartEmail')) {
+        throw new \Exception ('Class \CS_REST_Transactional_SmartEmail not found');
+        return false;
+    }
+    $cm         = new \CS_REST_Transactional_SmartEmail (
+        CAMPAIGN_MONITOR_SMART_EMAIL_ID,
+        array ('api_key' => CAMPAIGN_MONITOR_KEY)
+    );
+    $first      = new \DateTime ($data['First_Draw']);
+    $first->add ('P1D');
+    $data['First_Draw'] = $first->format ('l jS F Y');
+    $name       = str_replace (':','',$data['First_Name']);
+    $name      .= ' ';
+    $name      .= str_replace (':','',$data['Last_Name']);
+    $message    = array (
+        "To"    => $name.' <'.$data['Email'].'>',
+        "Data"  => $data
+    );
+    $result     = $cm->send (
+        $message,
+        'unchanged'
+    );
+    // error_log ('Campaign Monitor result: '.print_r($result,true));
+}
+
 function cfg ( ) {
     global $argv;
     if (!array_key_exists(1,$argv)) {
@@ -2167,6 +2193,62 @@ function set_once (&$var,$value) {
     }
 }
 
+function signup ($s,$ccc,$cref) {
+    try {
+        $c = connect ();
+        $c->query (
+          "
+            INSERT INTO `blotto_supporter` SET
+              `created`=DATE('{$s['created']}')
+             ,`signed`=DATE('{$s['created']}')
+             ,`approved`=DATE('{$s['created']}')
+             ,`canvas_code`='$ccc'
+             ,`canvas_agent_ref`='$ccc'
+             ,`canvas_ref`='{$s['id']}'
+             ,`client_ref`='$cref'
+          "
+        );
+        $sid = $c->lastInsertId ();
+        $c->query (
+          "
+            INSERT INTO `blotto_player` SET
+             ,`started`=DATE('{$s['created']}')
+             ,`supporter_id`=$sid
+             ,`client_ref`='$cref'
+             ,`chances`={$s['quantity']}
+          "
+        );
+        $c->query (
+          "
+            INSERT INTO `blotto_contact` SET
+              `supporter_id`=$sid
+             ,`title`='{$s['title']}'
+             ,`name_first`='{$s['first_name']}'
+             ,`name_last`='{$s['last_name']}'
+             ,`email`='{$s['email']}'
+             ,`mobile`='{$s['mobile']}'
+             ,`telephone`='{$s['telephone']}'
+             ,`address_1`='{$s['address_1']}'
+             ,`address_2`='{$s['address_2']}'
+             ,`address_3`='{$s['address_3']}'
+             ,`town`='{$s['town']}'
+             ,`county`='{$s['county']}'
+             ,`postcode`='{$s['postcode']}'
+             ,`dob`='{$s['dob']}'
+             ,`p0`='{$s['pref_1']}'
+             ,`p1`='{$s['pref_2']}'
+             ,`p2`='{$s['pref_3']}'
+             ,`p3`='{$s['pref_4']}'
+          "
+        );
+        return true;
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+}
+
 function table ($id,$class,$caption,$headings,$data,$output=true) {
     if ($output) {
         require __DIR__.'/table.php';
@@ -2216,6 +2298,55 @@ function tidy_addr ($str) {
     $str        = trim ($str);
     $str        = trim ($str,"'-,");
     return $str;
+}
+
+function tickets ($provider_code,$refno,$cref,$qty) {
+    $org_id = BLOTTO_ORG_ID;
+    $tickets = [];
+    try {
+        $zo = connect (BLOTTO_MAKE_DB);
+        for ($i=0;$i<$qty;$i++) {
+            while (1) {
+                $new = mt_rand (intval(BLOTTO_TICKET_MIN),intval(BLOTTO_TICKET_MAX));
+                $new = str_pad ($new,$pad_length,'0',STR_PAD_LEFT);
+                if (in_array($new,$tickets)) {
+                    // Already selected so try again
+                    continue;
+                }
+                $qs = "
+                  SELECT
+                    `number`
+                  FROM `blotto_ticket`
+                  WHERE `number`='$new'
+                  LIMIT 0,1
+                  ;
+                ";
+                $r = $zo->query ($qs);
+                if ($r->num_rows>0) {
+                    // Already issued so try again
+                    continue;
+                }
+                $qi = "
+                  INSERT INTO `blotto_ticket` SET
+                    `number`='$new'
+                   ,`issue_date`=CURDATE()
+                   ,`org_id`=$org_id
+                   ,`mandate_provider`='$provider_code'
+                   ,`dd_ref_no`=$refno
+                   ,`client_ref`=$cref
+                  ;
+                ";
+                $zo->query ($qi);
+                array_push ($tickets,$new);
+                break;
+            }
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    return $tickets;
 }
 
 function update ( ) {
