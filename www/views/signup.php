@@ -245,17 +245,6 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
 <?php foreach ($apis as $code=>$api): ?>
 
-<?php if (count($error)): ?>
-        <div class="error">
-          <button data-close></button>
-<?php     foreach($error as $e): ?>
-          <p><?php echo htmlspecialchars ($e); ?></p>
-<?php     endforeach; ?>
-        </div>
-<?php endif; ?>
-
-<?php foreach ($apis as $code=>$api): ?>
-
         <style>
 form.signup input[name="<?php echo $code; ?>"] {
     background-image:  url('./media/<?php echo strtolower ($api->name); ?>.png');
