@@ -82,6 +82,9 @@ function verifyHandle (evt) {
     if (close) {
         close.addEventListener ('click',errorClose);
     }
+else {
+console.log ('ARSE');
+}
     inputs = document.querySelectorAll ('form.signup input, form.signup select');
     if (inputs.length > 0) {
         for (input of inputs) {

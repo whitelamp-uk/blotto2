@@ -18,6 +18,7 @@ $apis = www_pay_apis ();
 
 $step = 1;
 $error = [];
+$go = null;
 if (count($_POST)) {
 
     $api_found = false;
@@ -30,14 +31,17 @@ if (count($_POST)) {
     if (!$api_found) { // if this happens forget what's wrong with the form!
         $error[] = 'Could not find the payment system!';
     }
-    elseif (www_verify_signup($error)) { // passed by reference and zeroed out...
+    elseif (www_verify_signup($error,$go)) { // both optional args passed by reference
         if ($_POST['telephone'] && !www_verify_phone ($_POST['telephone'],'L')) {
+            set_once ($go,'contact');
             $error[] = 'Telephone number (landline) is not valid';
         }
         if ($_POST['mobile'] && !www_verify_phone($_POST['mobile'],'M')) {
+            set_once ($go,'contact');
             $error[] = 'Telephone number (mobile) is not valid';
         }
         if ($_POST['email'] && !www_verify_email($_POST['email'])) {
+            set_once ($go,'contact');
             $error[] = 'Email address is not valid';
         }
     }
@@ -81,6 +85,11 @@ if (count($_POST)) {
     <script type="text/javascript" src="./media/js-config.js"></script>
     <script defer type="text/javascript" src="./media/custom-postcode-lookup.js"></script>
     <script defer type="text/javascript" src="./media/signup.js"></script>
+<?php if ($go): ?>
+    <script>
+window.location.href = '#<?php echo $go; ?>';
+    </script>
+<?php endif; ?>
 <?php if(defined('BLOTTO_WWW_FACEBOOK_ID') && BLOTTO_WWW_FACEBOOK_ID): ?>
 <!-- Facebook Pixel Code -->
 <script>

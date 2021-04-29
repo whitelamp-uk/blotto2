@@ -18,6 +18,19 @@ section.signup div.error {
     padding:            2em 2em 1em 2em;
 }
 
+section.signup div.error button[data-close] {
+    position:           absolute;
+    top:                0.6em;
+    right:              0.6em;
+    background-image:   url('./close.png');
+    background-size:    contain;
+    width:              2em;
+    height:             2em;
+}
+
+
+
+
 form.signup {
     padding-bottom: 2em;
     width: 100%;
