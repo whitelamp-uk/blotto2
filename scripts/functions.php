@@ -2249,6 +2249,12 @@ function signup ($s,$ccc,$cref) {
     }
 }
 
+function sms ($to,$message,$from) {
+    $sms        = new \SMS ();
+    $sms->send ($to,$message,$from);
+    return true;
+}
+
 function table ($id,$class,$caption,$headings,$data,$output=true) {
     if ($output) {
         require __DIR__.'/table.php';
