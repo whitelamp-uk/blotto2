@@ -229,6 +229,19 @@ CREATE TABLE IF NOT EXISTS `blotto_prize` (
   COMMENT='expires column only matters if a prize level is removed rather than replaced'
 ;
 
+CREATE TABLE IF NOT EXISTS `blotto_verification` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `created` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `type` char(16) CHARACTER SET ascii NOT NULL,
+  `verify_value` varchar(255) CHARACTER SET ascii NOT NULL,
+  `code` char(16) CHARACTER SET ascii NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `created` (`created`),
+  KEY `type` (`type`),
+  KEY `verify_value` (`verify_value`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
 CREATE TABLE IF NOT EXISTS `blotto_winner` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `entry_id` int(11) unsigned NOT NULL,
