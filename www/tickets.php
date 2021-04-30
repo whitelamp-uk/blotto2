@@ -161,6 +161,7 @@ window.location.href = '#<?php echo $go; ?>';
 
     <link rel="stylesheet" href="./media/normalize.css" />
     <link rel="stylesheet" href="./media/signup.css" />
+    <link rel="stylesheet" href="./media/stripe.css" />
 <?php if (array_key_exists('css',$_GET)): // This allows charity to override styles ?>
     <link rel="stylesheet" href="<?php echo htmlspecialchars ($_GET['css']); ?>" />
 <?php endif; ?>
