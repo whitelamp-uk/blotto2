@@ -3,10 +3,10 @@
 require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
-if (defined(CAMPAIGN_MONITOR) && CAMPAIGN_MONITOR) {
+if (defined('CAMPAIGN_MONITOR') && CAMPAIGN_MONITOR) {
     require CAMPAIGN_MONITOR;
 }
-if (defined(VOODOOSMS) && VOODOOSMS) {
+if (defined('VOODOOSMS') && VOODOOSMS) {
     require VOODOOSMS;
 }
 // Make this sign-and-pay page available for use in a charity website's iframe
