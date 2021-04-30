@@ -204,7 +204,7 @@ form.signup button {
     width: 16.25em;
 }
 
-form.signup button[data-verify],
+form.signup button[data-verifytype],
 input#email_verify,
 input#mobile_verify {
     width: 8em;

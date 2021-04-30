@@ -10,39 +10,62 @@ if (defined('VOODOOSMS') && VOODOOSMS) {
     require VOODOOSMS;
 }
 
+// Session
+session_start ();
+
+
 // Verification by JS HTTPRequest
 if (array_key_exists('verify',$_GET)) {
-    header ('Content-Type: text/plain');
-    $code = rand (1000,9999);
-    if (array_key_exists('email',$_GET)) {
-        www_signup_verify_store ('email',$_GET['email'],$code);
-        $result = campaign_monitor (
-            BLOTTO_SIGNUP_CM_ID,
-            $_GET['email'],
-            $code
-        );
-        echo $result->http_status_code==200;
+    $error                      = 'Not understood'; // suitably unhelpful
+    $code                       = rand (1000,9999);
+    $response                   = new \stdClass ();
+    $request                    = json_decode (trim(file_get_contents('php://input')));
+    if (!$request) {
+        $response->e            = $error;
     }
-    elseif (array_key_exists('mobile',$_GET)) {
-        www_signup_verify_store ('mobile',$_GET['mobile'],$code);
-        echo sms (
-            $_GET['mobile'],
-            "Please enter this verification code into the form: $code",
-            BLOTTO_SIGNUP_SMS_FROM
-        );
+    elseif (property_exists($request,'email')) {
+        if ($nonce=nonce_challenge('email',$request->nonce)) {
+            www_signup_verify_store ('email',$request->email,$code);
+            $result = campaign_monitor (
+                BLOTTO_SIGNUP_CM_ID,
+                $request->email,
+                $code
+            );
+            $response->result   = $result->http_status_code == 200;
+            $response->nonce    = $nonce;
+        }
+        else {
+            $response->e        = $error;
+        }
+    }
+    elseif (property_exists($request,'mobile')) {
+        if ($nonce=nonce_challenge('mobile',$request->nonce)) {
+            www_signup_verify_store ('mobile',$request->mobile,$code);
+            $response->result   = sms (
+                $request->mobile,
+                "Please enter this verification code into the form: $code",
+                BLOTTO_SIGNUP_SMS_FROM
+            );
+            $response->nonce    = $nonce;
+        }
+        else {
+            $response->e        = $error;
+        }
     }
     else {
-        echo 0;
+        $response->e            = $error;
     }
+    header ('Content-Type: application/json');
+    echo json_encode ($response,JSON_PRETTY_PRINT);
     exit;
 }
 
 
 // Make this sign-and-pay page available for use in a charity website's iframe
 header ('Access-Control-Allow-Origin: *');
+//print_r($_POST);
 $apis = www_pay_apis ();
 //print_r ($apis);
-//print_r($_POST);
 
 
 $step = 1;
@@ -111,6 +134,12 @@ if (count($_POST)) {
 
 }
 
+else {
+    // No AJAX or POST so new nonces are allowed
+    nonce_set ('email');
+    nonce_set ('mobile');
+}
+
 // Output front end
 ?><!doctype html>
 <html class="no-js" lang="">
@@ -161,7 +190,9 @@ window.location.href = '#<?php echo $go; ?>';
 
     <link rel="stylesheet" href="./media/normalize.css" />
     <link rel="stylesheet" href="./media/signup.css" />
+<?php if ($step>1): ?>
     <link rel="stylesheet" href="./media/stripe.css" />
+<?php endif; ?>    
 <?php if (array_key_exists('css',$_GET)): // This allows charity to override styles ?>
     <link rel="stylesheet" href="<?php echo htmlspecialchars ($_GET['css']); ?>" />
 <?php endif; ?>

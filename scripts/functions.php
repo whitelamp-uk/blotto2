@@ -1343,6 +1343,40 @@ function months ($date1=null,$date2=null,$format='Y-m-d') {
     return $output;
 }
 
+function nonce ($name) {
+    if (!array_key_exists('nonce',$_SESSION)) {
+        $_SESSION['nonce'] = [];
+    }
+    if (!array_key_exists($name,$_SESSION['nonce'])) {
+        $_SESSION['nonce'][$name] = '';
+    }
+    return $_SESSION['nonce'][$name];
+}
+
+function nonce_challenge ($name,$candidate) {
+    if ($candidate!=nonce($name)) {
+        return false;
+    }
+    // Change nonce for next contact
+    nonce_set ($name);
+    // Return the new nonce
+    return nonce($name);
+}
+
+function nonce_new ($name) {
+    if (!nonce($name)) {
+        nonce_set ($name);
+    }
+}
+
+function nonce_set ($name) {
+    if (!array_key_exists('nonce',$_SESSION)) {
+        $_SESSION['nonce'] = [];
+    }
+    $_SESSION['nonce'][$name] = bin2hex (random_bytes(16));
+    return $_SESSION['nonce'][$name];
+}
+
 function notarisation ($file) {
     if (!is_readable($file)) {
         throw new \Exception ("Could not read file '$file'");
