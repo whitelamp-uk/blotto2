@@ -1,6 +1,6 @@
 
 
-function errorClose (evt) {
+function closeHandle (evt) {
     evt.target.parentElement.parentElement.removeChild (evt.target.parentElement);
 }
 
@@ -73,14 +73,16 @@ function verifyHandle (evt) {
 }
 
 (function () {
-    var button,close,input,inputs,verify,verifies;
+    var button,close,closes,input,inputs,verify,verifies;
     button = document.querySelector ('form.signup button[type="submit"]');
     if (button) {
         button.addEventListener ('click',submitInhibit);
     }
-    close = document.querySelector ('form.signup button[data-close]');
-    if (close) {
-        close.addEventListener ('click',errorClose);
+    closes = document.querySelectorAll ('[data-close]');
+    if (closes.length > 0) {
+        for (close of closes) {
+            close.addEventListener ('click',closeHandle);
+        }
     }
     inputs = document.querySelectorAll ('form.signup input, form.signup select');
     if (inputs.length > 0) {

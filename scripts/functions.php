@@ -75,13 +75,13 @@ function calculate ($start=null,$end=null) {
     return $results;
 }
 
-function campaign_monitor ($data) {
+function campaign_monitor ($campaign_id,$data) {
     if (!class_exists('\CS_REST_Transactional_SmartEmail')) {
         throw new \Exception ('Class \CS_REST_Transactional_SmartEmail not found');
         return false;
     }
     $cm         = new \CS_REST_Transactional_SmartEmail (
-        CAMPAIGN_MONITOR_SMART_EMAIL_ID,
+        $campaign_id,
         array ('api_key' => CAMPAIGN_MONITOR_KEY)
     );
     $first      = new \DateTime ($data['First_Draw']);
@@ -98,7 +98,7 @@ function campaign_monitor ($data) {
         $message,
         'unchanged'
     );
-    // error_log ('Campaign Monitor result: '.print_r($result,true));
+    // error_log ('Campaign Monitor result for campaign $campaign_id: '.print_r($result,true));
 }
 
 function cfg ( ) {
@@ -2188,7 +2188,7 @@ function select ($type) {
 }
 
 function set_once (&$var,$value) {
-    if ($var!==null) {
+    if ($var===null) {
         $var = $value;
     }
 }
@@ -3106,7 +3106,7 @@ function www_verify_email ($email,&$e=null) {
     return true;
 }
 
-function www_verify_signup (&$e=null) {
+function www_verify_signup (&$e=null,&$go=null) {
     $e = [];
     foreach ($_POST as $key => $value) {
         $_POST[$key] = trim($value);
@@ -3123,21 +3123,24 @@ function www_verify_signup (&$e=null) {
         set_once ($go,'about');
         $e[] = 'Last name is required';
     }
-    if (!$_POST['dob']) {
-        set_once ($go,'about');
-        $e[] = 'Date of birth is required';
-    }
-    $dt             = new \DateTime ($_POST['dob']);
-    if (!$dt) {
-        set_once ($go,'dob');
-        $e[] = 'Date of birth is not valid';
+    if ($_POST['dob']) {
+        $dt             = new \DateTime ($_POST['dob']);
+        if (!$dt) {
+            set_once ($go,'about');
+            $e[]        = 'Date of birth is not valid';
+        }
+        else {
+            $now        = new \DateTime ();
+            $years      = $dt->diff($now)->format ('%r%y');
+            if ($years<18) {
+                set_once ($go,'about');
+                $e[]    = 'You must be 18 or over to sign up';
+            }
+        }
     }
     else {
-        $now        = new \DateTime ();
-        $years      = $dt->diff($now)->format ('%r%y');
-        if ($years<18) {
-            $e[] = 'You must be 18 or over to sign up';
-        }
+        set_once ($go,'about');
+        $e[] = 'Date of birth is required';
     }
     if (!$_POST['postcode']) {
         set_once ($go,'address');
@@ -3164,7 +3167,6 @@ function www_verify_signup (&$e=null) {
         $e[] = 'You must be aged 18 or over to signup';
     }
     if (count($e)) {
-        define ('BLOTTO_WWW_GO',$go);
         return false;
     }
     return true;
