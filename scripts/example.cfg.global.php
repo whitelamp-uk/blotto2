@@ -47,6 +47,7 @@ define ( 'BLOTTO_CSV_FORCE_DELIM',  'BLOTTO '       ); // see csv()
 define ( 'BLOTTO_CSV_DELIMITER',    ','             ); // see download_csv()
 define ( 'BLOTTO_CSV_ENCLOSER',     '"'             ); // see download_csv()
 define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
+define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 
 // paypal-api with data-8.co.uk and Campaign Monitor dependencies
 define ( 'PAYPAL_PROVIDER',         'PXXX'          ); // Provider code for mandates
@@ -71,5 +72,4 @@ define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'       );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44 );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed' );
 define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json'   );
-
 

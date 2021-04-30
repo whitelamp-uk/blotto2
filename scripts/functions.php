@@ -75,7 +75,7 @@ function calculate ($start=null,$end=null) {
     return $results;
 }
 
-function campaign_monitor ($campaign_id,$data) {
+function campaign_monitor ($campaign_id,$to,$data) {
     if (!class_exists('\CS_REST_Transactional_SmartEmail')) {
         throw new \Exception ('Class \CS_REST_Transactional_SmartEmail not found');
         return false;
@@ -84,21 +84,13 @@ function campaign_monitor ($campaign_id,$data) {
         $campaign_id,
         array ('api_key' => CAMPAIGN_MONITOR_KEY)
     );
-    $first      = new \DateTime ($data['First_Draw']);
-    $first->add ('P1D');
-    $data['First_Draw'] = $first->format ('l jS F Y');
-    $name       = str_replace (':','',$data['First_Name']);
-    $name      .= ' ';
-    $name      .= str_replace (':','',$data['Last_Name']);
-    $message    = array (
-        "To"    => $name.' <'.$data['Email'].'>',
-        "Data"  => $data
-    );
-    $result     = $cm->send (
-        $message,
+    return $cm->send (
+        [
+            "To"    => $to,
+            "Data"  => $data
+        ],
         'unchanged'
     );
-    // error_log ('Campaign Monitor result for campaign $campaign_id: '.print_r($result,true));
 }
 
 function cfg ( ) {
@@ -2251,8 +2243,7 @@ function signup ($s,$ccc,$cref) {
 
 function sms ($to,$message,$from) {
     $sms        = new \SMS ();
-    $sms->send ($to,$message,$from);
-    return true;
+    return $sms->send ($to,$message,$from);
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true) {
@@ -3084,7 +3075,50 @@ function www_signup_vars ( ) {
     return $vars;
 }
 
-function www_verify_email ($email,&$e=null) {
+function www_signup_verify_check ($type,$value,$code) {
+    $interval = BLOTTO_VERIFY_INTERVAL;
+    $c = connect ();
+    $c->query (
+        "
+          DELETE FROM `blotto_verification`
+          WHERE `created`<DATE_SUB(NOW(),INTERVAL $interval)
+        "
+    );
+    $c->query (
+        "
+          SELECT `verify_value`
+          FROM `blotto_verification`
+          WHERE `type`='$type'
+            AND `verify_value`='$value'
+            AND `code`='$code'
+          LIMIT 0,1
+        "
+    );
+    return $c->fetch_assoc() && true;
+}
+
+function www_signup_verify_store ($type,$value,$code) {
+    $interval = BLOTTO_VERIFY_INTERVAL;
+    $c = connect ();
+    $c->query (
+        "
+          DELETE FROM `blotto_verification`
+          WHERE `created`<DATE_SUB(NOW(),INTERVAL $interval)
+             OR ( `type`='$type' AND `verify_value`='$value' )
+        "
+    );
+    $c->query (
+        "
+          INSERT INTO `blotto_verification`
+          SET
+            `type`='$type'
+           ,`verify_value`='$value'
+           ,`code`='$code'
+        "
+    );
+}
+
+function www_validate_email ($email,&$e=null) {
     $e = [];
     $params = array(
         "username" => STRIPE_D8_USERNAME,
@@ -3106,7 +3140,7 @@ function www_verify_email ($email,&$e=null) {
     return true;
 }
 
-function www_verify_signup (&$e=null,&$go=null) {
+function www_validate_signup (&$e=null,&$go=null) {
     $e = [];
     foreach ($_POST as $key => $value) {
         $_POST[$key] = trim($value);
@@ -3172,7 +3206,7 @@ function www_verify_signup (&$e=null,&$go=null) {
     return true;
 }
 
-function www_verify_phone ($number,$type,&$e=null) {
+function www_validate_phone ($number,$type,&$e=null) {
     $e = [];
     $params = array(
         "username" => STRIPE_D8_USERNAME,

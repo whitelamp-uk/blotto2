@@ -116,6 +116,7 @@ define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.php'        );
 define ( 'BLOTTO_SIGNUP_VFY_EML',   true        ); // User must confirm email address
 define ( 'BLOTTO_SIGNUP_VFY_MOB',   false       ); // User must confirm phone number
 define ( 'BLOTTO_SIGNUP_CM_ID',     ''  );
+define ( 'BLOTTO_SIGNUP_SMS_FROM',  ''  );
 
 */
 

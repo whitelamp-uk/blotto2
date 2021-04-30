@@ -3,12 +3,41 @@
 require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
-if (defined(CAMPAIGN_MONITOR) && CAMPAIGN_MONITOR) {
+if (defined('CAMPAIGN_MONITOR') && CAMPAIGN_MONITOR) {
     require CAMPAIGN_MONITOR;
 }
-if (defined(VOODOOSMS) && VOODOOSMS) {
+if (defined('VOODOOSMS') && VOODOOSMS) {
     require VOODOOSMS;
 }
+
+// Verification by JS HTTPRequest
+if (array_key_exists('verify',$_GET)) {
+    header ('Content-Type: text/plain');
+    $code = rand (1000,9999);
+    if (array_key_exists('email',$_GET)) {
+        www_signup_verify_store ('email',$_GET['email'],$code);
+        $result = campaign_monitor (
+            BLOTTO_SIGNUP_CM_ID,
+            $_GET['email'],
+            $code
+        );
+        echo $result->http_status_code==200;
+    }
+    elseif (array_key_exists('mobile',$_GET)) {
+        www_signup_verify_store ('mobile',$_GET['mobile'],$code);
+        echo sms (
+            $_GET['mobile'],
+            "Please enter this verification code into the form: $code",
+            BLOTTO_SIGNUP_SMS_FROM
+        );
+    }
+    else {
+        echo 0;
+    }
+    exit;
+}
+
+
 // Make this sign-and-pay page available for use in a charity website's iframe
 header ('Access-Control-Allow-Origin: *');
 $apis = www_pay_apis ();
@@ -31,18 +60,38 @@ if (count($_POST)) {
     if (!$api_found) { // if this happens forget what's wrong with the form!
         $error[] = 'Could not find the payment system!';
     }
-    elseif (www_verify_signup($error,$go)) { // both optional args passed by reference
-        if ($_POST['telephone'] && !www_verify_phone ($_POST['telephone'],'L')) {
+    elseif (www_validate_signup($error,$go)) { // both optional args passed by reference
+        if ($_POST['email']) {
+            if (BLOTTO_SIGNUP_VFY_EML) {
+                if (!www_signup_verify_check('email',$_POST['email'],$_POST['verify_email'])) {
+                    set_once ($go,'contact');
+                    $error[] = 'Email address is not verified';
+                }
+            }
+            else {
+                if (!www_validate_email($_POST['email'])) {
+                    set_once ($go,'contact');
+                    $error[] = 'Email address is not valid';
+                }
+            }
+        }
+        if ($_POST['mobile']) {
+            if (BLOTTO_SIGNUP_VFY_MOB) {
+                if (!www_signup_verify_check('mobile',$_POST['mobile'],$_POST['verify_mobile'])) {
+                    set_once ($go,'contact');
+                    $error[] = 'Telephone number (mobile) is not verified';
+                }
+            }
+            else {
+                if (!www_validate_phone($_POST['mobile'],'M')) {
+                    set_once ($go,'contact');
+                    $error[] = 'Telephone number (mobile) is not valid';
+                }
+            }
+        }
+        if ($_POST['telephone'] && !www_validate_phone ($_POST['telephone'],'L')) {
             set_once ($go,'contact');
             $error[] = 'Telephone number (landline) is not valid';
-        }
-        if ($_POST['mobile'] && !www_verify_phone($_POST['mobile'],'M')) {
-            set_once ($go,'contact');
-            $error[] = 'Telephone number (mobile) is not valid';
-        }
-        if ($_POST['email'] && !www_verify_email($_POST['email'])) {
-            set_once ($go,'contact');
-            $error[] = 'Email address is not valid';
         }
     }
 
