@@ -75,13 +75,13 @@ function calculate ($start=null,$end=null) {
     return $results;
 }
 
-function campaign_monitor ($data) {
+function campaign_monitor ($campaign_id,$data) {
     if (!class_exists('\CS_REST_Transactional_SmartEmail')) {
         throw new \Exception ('Class \CS_REST_Transactional_SmartEmail not found');
         return false;
     }
     $cm         = new \CS_REST_Transactional_SmartEmail (
-        CAMPAIGN_MONITOR_SMART_EMAIL_ID,
+        $campaign_id,
         array ('api_key' => CAMPAIGN_MONITOR_KEY)
     );
     $first      = new \DateTime ($data['First_Draw']);
@@ -98,7 +98,7 @@ function campaign_monitor ($data) {
         $message,
         'unchanged'
     );
-    // error_log ('Campaign Monitor result: '.print_r($result,true));
+    // error_log ('Campaign Monitor result for campaign $campaign_id: '.print_r($result,true));
 }
 
 function cfg ( ) {
