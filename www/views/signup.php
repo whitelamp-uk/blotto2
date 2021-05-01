@@ -3,6 +3,7 @@ $v = www_signup_vars ();
 $titles = explode (',',BLOTTO_TITLES_WEB);
 ?>
     <form class="signup" method="post" action="">
+      <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
 
       <a name="about"></a>
 
@@ -255,7 +256,7 @@ form.signup input[name="<?php echo $code; ?>"] {
         <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />
 
 <?php endforeach; ?>
-
+<?php echo nonce('signup'); ?>
       </fieldset>
 
     </form>

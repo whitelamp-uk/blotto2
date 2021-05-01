@@ -3174,8 +3174,7 @@ function www_validate_email ($email,&$e=null) {
     return true;
 }
 
-function www_validate_signup (&$e=null,&$go=null) {
-    $e = [];
+function www_validate_signup (&$e=[],&$go=null) {
     foreach ($_POST as $key => $value) {
         $_POST[$key] = trim($value);
     }
@@ -3233,6 +3232,34 @@ function www_validate_signup (&$e=null,&$go=null) {
     if (!array_key_exists('age',$_POST) || !$_POST['age']) {
         set_once ($go,'sign');
         $e[] = 'You must be aged 18 or over to signup';
+    }
+    if ($_POST['email']) {
+        if (BLOTTO_SIGNUP_VFY_EML) {
+            if (!www_signup_verify_check('email',$_POST['email'],$_POST['verify_email'])) {
+                set_once ($go,'contact');
+                $error[] = 'Email address is not verified';
+            }
+        }
+        elseif (!www_validate_email($_POST['email'])) {
+            set_once ($go,'contact');
+            $error[] = 'Email address is not valid';
+        }
+    }
+    if ($_POST['mobile']) {
+        if (BLOTTO_SIGNUP_VFY_MOB) {
+            if (!www_signup_verify_check('mobile',$_POST['mobile'],$_POST['verify_mobile'])) {
+                set_once ($go,'contact');
+                $error[] = 'Telephone number (mobile) is not verified';
+            }
+        }
+        elseif (!www_validate_phone($_POST['mobile'],'M')) {
+            set_once ($go,'contact');
+            $error[] = 'Telephone number (mobile) is not valid';
+        }
+    }
+    if ($_POST['telephone'] && !www_validate_phone ($_POST['telephone'],'L')) {
+        set_once ($go,'contact');
+        $error[] = 'Telephone number (landline) is not valid';
     }
     if (count($e)) {
         return false;

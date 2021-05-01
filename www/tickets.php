@@ -9,14 +9,16 @@ if (defined('CAMPAIGN_MONITOR') && CAMPAIGN_MONITOR) {
 if (defined('VOODOOSMS') && VOODOOSMS) {
     require VOODOOSMS;
 }
+$e_default = 'Sorry something went wrong - please try later';
+
 
 // Session
 session_start ();
 
 
-// Verification by JS HTTPRequest
+// Verification by JS fetch
 if (array_key_exists('verify',$_GET)) {
-    $error                      = 'Not understood'; // suitably unhelpful
+    $error                      = $e_default;
     $code                       = rand (1000,9999);
     $response                   = new \stdClass ();
     $request                    = json_decode (trim(file_get_contents('php://input')));
@@ -74,51 +76,22 @@ $go = null;
 if (count($_POST)) {
 
     $api_found = false;
-    foreach ($apis as $api_code => $api_definition) { // NB also used at end of signup.php
-        if (isset($_POST[$api_code])) {
+    foreach ($apis as $api_code=>$api_object) {
+        if (array_key_exists($api_code,$_POST)) {
             $api_found = true;
         }
     }
-
-    if (!$api_found) { // if this happens forget what's wrong with the form!
-        $error[] = 'Could not find the payment system!';
+    if (!$api_found) {
+        error_log ('Payment API could not be identified');
+        $error[] = $e_default;
     }
+
+    elseif (!array_key_exists('nonce_signup',$_POST) || !nonce_challenge('signup',$_POST['nonce_signup'])) {
+        // Probably just an attempt to refresh stage 2
+        $error[] = 'Please post the form again';
+    }
+
     elseif (www_validate_signup($error,$go)) { // both optional args passed by reference
-        if ($_POST['email']) {
-            if (BLOTTO_SIGNUP_VFY_EML) {
-                if (!www_signup_verify_check('email',$_POST['email'],$_POST['verify_email'])) {
-                    set_once ($go,'contact');
-                    $error[] = 'Email address is not verified';
-                }
-            }
-            else {
-                if (!www_validate_email($_POST['email'])) {
-                    set_once ($go,'contact');
-                    $error[] = 'Email address is not valid';
-                }
-            }
-        }
-        if ($_POST['mobile']) {
-            if (BLOTTO_SIGNUP_VFY_MOB) {
-                if (!www_signup_verify_check('mobile',$_POST['mobile'],$_POST['verify_mobile'])) {
-                    set_once ($go,'contact');
-                    $error[] = 'Telephone number (mobile) is not verified';
-                }
-            }
-            else {
-                if (!www_validate_phone($_POST['mobile'],'M')) {
-                    set_once ($go,'contact');
-                    $error[] = 'Telephone number (mobile) is not valid';
-                }
-            }
-        }
-        if ($_POST['telephone'] && !www_validate_phone ($_POST['telephone'],'L')) {
-            set_once ($go,'contact');
-            $error[] = 'Telephone number (landline) is not valid';
-        }
-    }
-
-    if (!count($error)) {
         $api = null;
         try {
             $file = $apis[$api_code]->file;
@@ -128,7 +101,8 @@ if (count($_POST)) {
             $step = 2;
         }
         catch (Exception $e) {
-             $error[] = 'Sorry we could not process your request - please try later';
+            error_log ($e->getMessage());
+            $error[] = $e_default;
         }
     }
 
@@ -136,6 +110,7 @@ if (count($_POST)) {
 
 else {
     // No AJAX or POST so new nonces are allowed
+    nonce_set ('signup');
     nonce_set ('email');
     nonce_set ('mobile');
 }
