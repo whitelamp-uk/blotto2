@@ -48,6 +48,8 @@ define ( 'BLOTTO_CSV_DELIMITER',    ','             ); // see download_csv()
 define ( 'BLOTTO_CSV_ENCLOSER',     '"'             ); // see download_csv()
 define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
+define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
+
 
 // paypal-api with data-8.co.uk and Campaign Monitor dependencies
 define ( 'PAYPAL_PROVIDER',         'PXXX'          ); // Provider code for mandates

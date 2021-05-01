@@ -51,7 +51,7 @@ if (array_key_exists('verify',$_GET)) {
             $response->nonce    = $nonce;
         }
         else {
-            $response->e        = $error;
+            $response->e        = 'nonce';
         }
     }
     else {

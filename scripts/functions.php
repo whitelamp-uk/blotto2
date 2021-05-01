@@ -1344,11 +1344,17 @@ function months ($date1=null,$date2=null,$format='Y-m-d') {
 }
 
 function nonce ($name) {
-    if (!array_key_exists('nonce',$_SESSION)) {
-        $_SESSION['nonce'] = [];
-    }
+    nonce_init ();
     if (!array_key_exists($name,$_SESSION['nonce'])) {
-        $_SESSION['nonce'][$name] = '';
+        return '';
+    }
+    if (!array_key_exists($name,$_SESSION['nonce_expires'])) {
+        return '';
+    }
+    if ($_SESSION['nonce_expires'][$name]<time()) {
+        unset ($_SESSION['nonce_expires'][$name]);
+        unset ($_SESSION['nonce'][$name]);
+        return '';
     }
     return $_SESSION['nonce'][$name];
 }
@@ -1363,6 +1369,15 @@ function nonce_challenge ($name,$candidate) {
     return nonce($name);
 }
 
+function nonce_init ( ) {
+    if (!array_key_exists('nonce',$_SESSION)) {
+        $_SESSION['nonce'] = [];
+    }
+    if (!array_key_exists('nonce_expires',$_SESSION)) {
+        $_SESSION['nonce_expires'] = [];
+    }
+}
+
 function nonce_new ($name) {
     if (!nonce($name)) {
         nonce_set ($name);
@@ -1370,9 +1385,8 @@ function nonce_new ($name) {
 }
 
 function nonce_set ($name) {
-    if (!array_key_exists('nonce',$_SESSION)) {
-        $_SESSION['nonce'] = [];
-    }
+    nonce_init ();
+    $_SESSION['nonce_expires'][$name] = time() + BLOTTO_NONCE_MINUTES*60;
     $_SESSION['nonce'][$name] = bin2hex (random_bytes(16));
     return $_SESSION['nonce'][$name];
 }

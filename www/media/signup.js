@@ -122,6 +122,13 @@ function verifyHandle (evt) {
                     nonce.value = response.nonce;
                 }
                 if (response.e) {
+                    if (response.e=='nonce') {
+                        if (confirm('This page has expired. Reload it now?')) {
+                            window.location.href = './tickets.php';
+                            return;
+                        }
+                    }
+                    // This should not happen really
                     userMessage ('Sorry that failed - please try again');
                 }
                 else if (type=='email') {
