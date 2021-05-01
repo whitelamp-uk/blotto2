@@ -256,7 +256,7 @@ form.signup input[name="<?php echo $code; ?>"] {
         <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />
 
 <?php endforeach; ?>
-<?php echo nonce('signup'); ?>
+
       </fieldset>
 
     </form>
