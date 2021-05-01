@@ -132,10 +132,10 @@ function verifyHandle (evt) {
                     userMessage ('Sorry that failed - please try again');
                 }
                 else if (type=='email') {
-                    userMessage ('An email has been sent with a verification code');
+                    userMessage ('An email containing a verification code has been sent to '+field.value);
                 }
                 else if (type=='mobile') {
-                    userMessage ('An SMS has been sent with a verification code');
+                    userMessage ('An SMS containing a verification code has been sent to '+field.value);
                 }
             }
         );
