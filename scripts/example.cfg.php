@@ -101,7 +101,7 @@ define ( 'STRIPE_ADMIN_EMAIL',      'stripe.support@my.biz'                 );
 define ( 'STRIPE_ADMIN_PHONE',      '01 234 567 890'                        );
 define ( 'STRIPE_TERMS' ,           'https://my.biz/terms'                  );
 define ( 'STRIPE_PRIVACY' ,         'https://my.biz/privacy'                );
-define ( 'STRIPE_EMAIL',            'paypal.account@my.domain'              );
+define ( 'STRIPE_EMAIL',            'stripe.account@my.domain'              );
 define ( 'STRIPE_CMPLN_EML',        true        ); // Send completion message by email
 define ( 'STRIPE_CMPLN_EML_CM_ID',  ''  );
 define ( 'STRIPE_CMPLN_MOB',        false       ); // Send completion message by SMS

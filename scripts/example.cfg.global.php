@@ -52,8 +52,6 @@ define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce va
 
 
 // paypal-api with data-8.co.uk and Campaign Monitor dependencies
-define ( 'PAYPAL_PROVIDER',         'PXXX'          ); // Provider code for mandates
-define ( 'PAYPAL_CCC',              'CXXX'          ); // CCC to use in lottery data
 define ( 'PAYPAL_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'PAYPAL_TABLE_COLLECTION', 'blotto_build_collection'   );
 
