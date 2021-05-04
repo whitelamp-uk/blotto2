@@ -44,6 +44,7 @@ try {
         $msg    = $msg->fetch_assoc()['msg'];
     }
     catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
         throw new \Exception ("Could not get SMS message from database");
     }
     $file       = $apis[$_GET['provider']]->file;
