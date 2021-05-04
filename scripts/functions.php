@@ -2290,6 +2290,10 @@ function signup ($s,$ccc,$cref) {
 }
 
 function sms ($to,$message,$from) {
+    if (!$to || !$message || !$from) {
+        throw new \Exception ("Invalid parameters ('$to','$message','$from')");
+        return false;
+    }
     $sms        = new \SMS ();
     return $sms->send ($to,$message,$from);
 }
