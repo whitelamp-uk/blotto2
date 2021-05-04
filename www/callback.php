@@ -69,9 +69,9 @@ catch (\Exception $e) {
     error_log ('GET '.print_r($_GET,true));
     error_log ('POST '.print_r($_POST,true));
     error_log ($e->getMessage());
-    $subj = "Callback error from $class";
+    $subj = "Callback error";
     if ($class) {
-       $subj .= " class=$class";
+       $subj .= " from class=$class";
     }
     mail (
         BLOTTO_EMAIL_WARN_TO,
