@@ -56,7 +56,6 @@ try {
     $api->callback ($msg,$responded);
 }
 catch (\Exception $e) {
-    echo "Something went wrong\n";
     if ($responded) {
         $responded = 'Y';
     }
@@ -66,6 +65,7 @@ catch (\Exception $e) {
         // So respond now
         http_response_code (500);
     }
+    echo "Something went wrong\n";
     error_log ('GET '.print_r($_GET,true));
     error_log ('POST '.print_r($_POST,true));
     error_log ($e->getMessage());
