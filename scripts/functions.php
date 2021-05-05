@@ -3016,6 +3016,10 @@ function www_get_address ( ) {
     return $address;
 }
 
+function www_is_url ($str) {
+    return preg_match ('<^https?://>',$str);
+}
+
 function www_logout ( ) {
     if (!isset($_SESSION)) {
         www_session_start ();
@@ -3195,6 +3199,10 @@ function www_validate_email ($email,&$e=null) {
 function www_validate_signup (&$e=[],&$go=null) {
     foreach ($_POST as $key => $value) {
         $_POST[$key] = trim($value);
+        if (www_is_url($_POST[$key])) {
+            // Foil phishing attempts
+            $_POST[$key] = '';
+        }
     }
     if (!$_POST['title']) {
         set_once ($go,'about');
