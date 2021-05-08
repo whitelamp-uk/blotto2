@@ -145,7 +145,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
               if(!$v['draws']) {
                 $v['draws'] = 1;
               }
-              $max_weeks = intval(STRIPE_MAX_PAYMENT / $v['quantity']);
+              $max_weeks = intval(BLOTTO_MAX_PAYMENT / $v['quantity']);
               for ($i = 1; $i <= $max_weeks; $i++) {
                 echo '<option value="'.$i.'"';
                 if ($i == $v['draws']) {
@@ -210,7 +210,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
             <h3>GDPR Statement</h3>
 
-            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling or e-mailing us on <?php echo htmlspecialchars (STRIPE_ADMIN_PHONE); ?> or <a href="mailto:<?php echo htmlspecialchars (STRIPE_ADMIN_EMAIL); ?>"><?php echo htmlspecialchars (STRIPE_ADMIN_EMAIL); ?></a></p>
+            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling or e-mailing us on <?php echo htmlspecialchars (BLOTTO_ADMIN_PHONE); ?> or <a href="mailto:<?php echo htmlspecialchars (BLOTTO_ADMIN_EMAIL); ?>"><?php echo htmlspecialchars (BLOTTO_ADMIN_EMAIL); ?></a></p>
 
             <p>We will never sell your details on to anyone else.</p>
 
@@ -232,7 +232,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <div class="field">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
-          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_PRIVACY); ?>">privacy policy</a>.</label>
+          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (BLOTTO_SIGNUP_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (BLOTTO_SIGNUP_PRIVACY); ?>">privacy policy</a>.</label>
         </div>
 
         <div class="field">
