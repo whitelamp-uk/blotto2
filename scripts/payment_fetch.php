@@ -1,5 +1,5 @@
 <?php
-// see end for stand-alone bash test script
+
 require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
@@ -22,6 +22,7 @@ try {
             fwrite (STDERR,"Payment API file '$classfile' is not readable - aborting\n");
             exit (101);
         }
+        fwrite (STDERR,"Processing payment API class file: $classfile\n");
         require $classfile;
         $class      = constant ($name.'_CLASS');
         if (!class_exists($class)) {
@@ -31,7 +32,6 @@ try {
         $api        = new $class ($zo);
         echo "    Instantiated $class\n";
         $api->import (BLOTTO_DAY_FIRST);
-        echo "    Imported payments using $class::import (".BLOTTO_DAY_FIRST.")\n";
         $apis++;
     }
     if (!$apis) {
