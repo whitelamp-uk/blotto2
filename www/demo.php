@@ -111,7 +111,7 @@
 
         <h4 id="lottery-signup-heading">Sign-up form</h4>
 
-        <!-- Public sign-up of -->
+        <!-- Public sign-up for one-off payments -->
         <!-- Remove demo=1 in order to activate the sign-up form -->
         <!-- Use css=[my stylesheet URL] to override form styling as demonstrated here -->
         <iframe id="lottery-signup" src="https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/tickets.php'); ?>?demo=1&amp;css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
