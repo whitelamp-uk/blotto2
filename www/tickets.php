@@ -181,7 +181,7 @@ window.location.href = '#<?php echo $go; ?>';
         require __DIR__.'/views/signup.php';
     }
     elseif ($step==2) {
-        $api->start ();
+        $api->start ($error);
     }
 ?>
 
