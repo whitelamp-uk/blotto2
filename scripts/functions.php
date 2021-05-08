@@ -3174,23 +3174,47 @@ function www_signup_verify_store ($type,$value,$code) {
     );
 }
 
-function www_validate_email ($email,&$e=null) {
-    $e = [];
-    $params = array(
-        "username" => STRIPE_D8_USERNAME,
-        "password" => STRIPE_D8_PASSWORD,
-        "email" => $email,
-        "level" => STRIPE_D8_EML_VERIFY_LEVEL,
-    );
+function www_validate_email ($email,&$e) {
+    $params = [
+        "username"  => DATA8_USERNAME,
+        "password"  => DATA8_PASSWORD,
+        "email"     => $email,
+        "level"     => DATA8_EMAIL_LEVEL,
+    ];
     $client = new \SoapClient ("https://webservices.data-8.co.uk/EmailValidation.asmx?WSDL");
-    $result = $client->IsValid($params);
-    if ($result->IsValidResult->Status->Success == false) {
+    $result = $client->IsValid ($params);
+    if ($result->IsValidResult->Status->Success==false) {
         $e[] = "Error trying to validate email: ".$result->Status->ErrorMessage;
         return false;
     }
     if ($result->IsValidResult->Result=='Invalid') {
-        define ( 'STRIPE_GO', 'contact');
         $e[] = "$email is an invalid address";
+        return false;
+    }
+    return true;
+}
+
+function www_validate_phone ($number,$type,&$e) {
+    $params = array(
+        "username"          => DATA8_USERNAME,
+        "password"          => DATA8_PASSWORD,
+        "telephoneNumber"   => $number,
+        "defaultCountry"    => DATA8_COUNTRY,
+    );
+    $params['options']['Option'][] = [ "Name" => "UseMobileValidation", "Value" => false ];
+    $params['options']['Option'][] = [ "Name" => "UseLineValidation",   "Value" => false ];
+    $client = new \SoapClient ("https://webservices.data-8.co.uk/InternationalTelephoneValidation.asmx?WSDL");
+    $result = $client->IsValid($params);
+    if ($result->IsValidResult->Status->Success == false) {
+        $e[] = "Error trying to validate phone number: ".$result->Status->ErrorMessage;
+        return false;
+    }
+    if ($result->IsValidResult->Result->ValidationResult=='Invalid') {
+        $e[] = "$number is not a valid phone number";
+        return false;
+    }
+    elseif ($type == 'M' && $result->IsValidResult->Result->NumberType!='Mobile') {
+        $e[] = "$number is not a valid mobile phone number";
         return false;
     }
     return true;
@@ -3263,60 +3287,28 @@ function www_validate_signup (&$e=[],&$go=null) {
         if (BLOTTO_SIGNUP_VFY_EML) {
             if (!www_signup_verify_check('email',$_POST['email'],$_POST['verify_email'])) {
                 set_once ($go,'contact');
-                $error[] = 'Email address is not verified';
+                $e[] = 'Email address is not verified';
             }
         }
-        elseif (!www_validate_email($_POST['email'])) {
+        elseif (!www_validate_email($_POST['email'],$e)) {
             set_once ($go,'contact');
-            $error[] = 'Email address is not valid';
         }
     }
     if ($_POST['mobile']) {
         if (BLOTTO_SIGNUP_VFY_MOB) {
             if (!www_signup_verify_check('mobile',$_POST['mobile'],$_POST['verify_mobile'])) {
                 set_once ($go,'contact');
-                $error[] = 'Telephone number (mobile) is not verified';
+                $e[] = 'Telephone number (mobile) is not verified';
             }
         }
-        elseif (!www_validate_phone($_POST['mobile'],'M')) {
+        elseif (!www_validate_phone($_POST['mobile'],'M',$e)) {
             set_once ($go,'contact');
-            $error[] = 'Telephone number (mobile) is not valid';
         }
     }
-    if ($_POST['telephone'] && !www_validate_phone ($_POST['telephone'],'L')) {
+    if ($_POST['telephone'] && !www_validate_phone ($_POST['telephone'],'L',$e)) {
         set_once ($go,'contact');
-        $error[] = 'Telephone number (landline) is not valid';
     }
     if (count($e)) {
-        return false;
-    }
-    return true;
-}
-
-function www_validate_phone ($number,$type,&$e=null) {
-    $e = [];
-    $params = array(
-        "username" => STRIPE_D8_USERNAME,
-        "password" => STRIPE_D8_PASSWORD,
-        "telephoneNumber" => $number,
-        "defaultCountry" => 'GB',
-    );
-    $params['options']['Option'][] =  array("Name" => "UseMobileValidation", "Value" => false);
-    $params['options']['Option'][] =  array("Name" => "UseLineValidation", "Value" => false);
-    $client = new \SoapClient ("https://webservices.data-8.co.uk/InternationalTelephoneValidation.asmx?WSDL");
-    $result = $client->IsValid($params);
-    if ($result->IsValidResult->Status->Success == false) {
-        $e[] = "Error trying to validate phone number: ".$result->Status->ErrorMessage;
-        return false;
-    }
-    if ($result->IsValidResult->Result->ValidationResult=='Invalid') {
-        define ( 'STRIPE_GO', 'contact');
-        $e[] = "$number is not a valid phone number";
-        return false;
-    }
-    elseif ($type == 'M' && $result->IsValidResult->Result->NumberType!='Mobile') {
-        define ( 'STRIPE_GO', 'contact');
-        $e[] = "$number is not a valid mobile phone number";
         return false;
     }
     return true;
