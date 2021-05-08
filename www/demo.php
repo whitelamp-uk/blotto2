@@ -65,6 +65,25 @@
   content: "£";
 }
 
+#lottery-signup {
+    position: absolute;
+    box-sizing: border-box;
+    left: 18em;
+    top: 3em;
+}
+
+#lottery-signup iframe {
+    position: absolute;
+    box-sizing: border-box;
+    left: 0;
+    top: 3em;
+    width: calc(100vw - 18em);
+    height: calc(100vh - 6em);
+    border-style: none;
+    overflow-x: auto;
+    overflow-y: scroll;
+}
+
     </style>
 
   </head>
@@ -73,7 +92,14 @@
 
       <h2>Welcome to My.Org</h2>
 
+      <!-- List of format characters: https://www.php.net/manual/en/datetime.format.php -->
       <div id="lottery-winners-latest" data-dateformat="jS M Y"></div>
+
+      <div id="lottery-signup">
+        <h4>Sign-up form</h4>
+        <!-- Use ?css=[my stylesheet URL] to override form styling as demonstrated here -->
+        <iframe src="https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/tickets.php'); ?>?css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
+      </div>
 
     </body>
 
