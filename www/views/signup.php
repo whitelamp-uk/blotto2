@@ -1,6 +1,6 @@
 <?php
 $v = www_signup_vars ();
-$titles = explode (',',BLOTTO_TITLES_WEB);
+$titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 ?>
     <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
@@ -42,7 +42,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <label for="email" class="hidden">Email address</label>
         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address" title="Email address" required />
 
-<?php if (BLOTTO_SIGNUP_VFY_EML): ?>
+<?php if (defn('BLOTTO_SIGNUP_VFY_EML',false)): ?>
         <label for="email_verify" class="hidden">Verify</label>
         <button data-verifytype="email">Send email</button>
         <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code" title="Email verification code" required />
@@ -54,7 +54,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <label for="mobile" class="hidden">Mobile number</label>
         <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" pattern="[0-9]{10,12}" required />
 
-<?php if (BLOTTO_SIGNUP_VFY_MOB): ?>
+<?php if (defn('BLOTTO_SIGNUP_VFY_MOB',false)): ?>
         <label for="mobile_verify" class="hidden">Verify</label>
         <button data-verifytype="mobile">Send SMS</button>
         <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code" title="Mobile number verification code" required />
@@ -210,7 +210,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
             <h3>GDPR Statement</h3>
 
-            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling or e-mailing us on <?php echo htmlspecialchars (BLOTTO_ADMIN_PHONE); ?> or <a href="mailto:<?php echo htmlspecialchars (BLOTTO_ADMIN_EMAIL); ?>"><?php echo htmlspecialchars (BLOTTO_ADMIN_EMAIL); ?></a></p>
+            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling <?php defn ('BLOTTO_ADMIN_PHONE'); ?> or e-mailing <a href="mailto:<?php defn ('BLOTTO_ADMIN_EMAIL'); ?>"><?php defn ('BLOTTO_ADMIN_EMAIL'); ?></a>.</p>
 
             <p>We will never sell your details on to anyone else.</p>
 
@@ -232,7 +232,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <div class="field">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
-          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (BLOTTO_SIGNUP_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (BLOTTO_SIGNUP_PRIVACY); ?>">privacy policy</a>.</label>
+          <label for="terms">I accept the <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_TERMS'); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_PRIVACY'); ?>">privacy policy</a>.</label>
         </div>
 
         <div class="field">

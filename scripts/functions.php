@@ -459,6 +459,16 @@ function dbs ( ) {
     return $dbs;
 }
 
+function defn ($name,$echo=true) {
+    if (!defined($name)) {
+        return false;
+    }
+    if ($echo) {
+        echo htmlspecialchars (constant($name));
+    }
+    return constant($name);
+}
+
 function dom_elements_by_class ($elmt,$class_name,&$elmts) {
     if (!$elmts) {
         $elmts          = [];
