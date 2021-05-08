@@ -12,6 +12,14 @@
     <script defer src="https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/winners.js'); ?>"></script>
     <style>
 
+#features {
+    position: absolute;
+    box-sizing: border-box;
+    left: 0;
+    top: 8em;
+    padding-left: 1em;
+}
+
 #lottery-results-latest-table,
 #lottery-winners-latest-table {
     margin-top:         1em;
@@ -65,20 +73,21 @@
   content: "£";
 }
 
+#lottery-signup-heading {
+    position: absolute;
+    left: 18em;
+    top: 0em;
+    width: calc(100vw - 18em);
+    margin: 0;
+}
+
 #lottery-signup {
     position: absolute;
     box-sizing: border-box;
     left: 18em;
-    top: 3em;
-}
-
-#lottery-signup iframe {
-    position: absolute;
-    box-sizing: border-box;
-    left: 0;
-    top: 3em;
+    top: 2em;
     width: calc(100vw - 18em);
-    height: calc(100vh - 6em);
+    height: calc(100vh - 10em);
     border-style: none;
     overflow-x: auto;
     overflow-y: scroll;
@@ -92,13 +101,21 @@
 
       <h2>Welcome to My.Org</h2>
 
-      <!-- List of format characters: https://www.php.net/manual/en/datetime.format.php -->
-      <div id="lottery-winners-latest" data-dateformat="jS M Y"></div>
+      <p>In order to add these features to your website, view this page&#039;s source code and simply copy/paste/tweak. Ask your administrator if you need any support.</p>
 
-      <div id="lottery-signup">
-        <h4>Sign-up form</h4>
-        <!-- Use ?css=[my stylesheet URL] to override form styling as demonstrated here -->
-        <iframe src="https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/tickets.php'); ?>?css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
+      <div id="features">
+
+        <!-- Latest results and latest winners -->
+        <!-- List of format characters: https://www.php.net/manual/en/datetime.format.php -->
+        <div id="lottery-winners-latest" data-dateformat="jS M Y"></div>
+
+        <h4 id="lottery-signup-heading">Sign-up form</h4>
+
+        <!-- Public sign-up of -->
+        <!-- Remove demo=1 in order to activate the sign-up form -->
+        <!-- Use css=[my stylesheet URL] to override form styling as demonstrated here -->
+        <iframe id="lottery-signup" src="https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/tickets.php'); ?>?demo=1&amp;css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
+
       </div>
 
     </body>
