@@ -2,7 +2,7 @@
 $v = www_signup_vars ();
 $titles = explode (',',BLOTTO_TITLES_WEB);
 ?>
-    <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
+    <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
 
       <a name="about"></a>
