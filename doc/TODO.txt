@@ -2,6 +2,20 @@
 THINGS TO DO
 ============
 
+Payment providers to consider:
+ - Adyen
+ - Amazon Pay*
+ - Apple Pay* (iOS only)
+ - Google Pay* (Android only)
+ - Opayo (formerly Sage Pay)
+ - Payoneer
+ - Visa Checkout*
+ - Worldpay
+
+* Has a user account (like Paypal)
+
+
 Consider impact of four day weekend 2-5 ~June 2022:
 https://www.bbc.co.uk/news/uk-54911550
+
 
