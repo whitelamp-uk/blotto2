@@ -9,7 +9,7 @@ if (!$v['draws']) {
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 ?>
 
-    <form data-maxamount="<?php echo intval ($org['signup_amount_cap']); ?>" class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
+    <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
 
       <a name="about"></a>
@@ -117,7 +117,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <div class="field radioset">
 
-          <label data-ppt="<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'.',''); ?>" class="requirements">Tickets cost £<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'-',','); ?> per draw</label>
+          <label data-ppt="<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'.',''); ?>" data-maxamount="<?php echo intval ($org['signup_amount_cap']); ?>" class="requirements">Tickets cost £<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'-',','); ?> per draw, maximum allowed purchase is £<?php echo number_format ($org['signup_amount_cap'],2,'-',','); ?></label>
 
 <?php foreach ($org['signup_ticket_options'] as $i): ?>
           <div>

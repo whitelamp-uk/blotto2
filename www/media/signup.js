@@ -64,7 +64,8 @@ function quantitiesHandle (evt) {
     cost2   = document.querySelector ('form.signup #signup-cost-confirm > output');
     ppt     = document.querySelector ('form.signup [data-ppt]');
     ppt     = 1 * ppt.dataset.ppt;
-    maxa    = 1 * evt.target.form.dataset.maxamount;
+    maxa    = document.querySelector ('form.signup [data-maxamount]');
+    maxa    = 1 * maxa.dataset.maxamount;
     maxd    = 1 * evt.target.dataset.maxdraws;
     tickets = 1 * evt.target.value;
     for (draw of draws) {

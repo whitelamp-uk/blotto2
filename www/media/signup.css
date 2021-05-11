@@ -51,7 +51,7 @@ form.signup label[for="dob"] {
     width: 17em;
 }
 form.signup label.requirements {
-    width: 29.5em;
+    max-width: 36em;
 }
 
 form.signup fieldset {
