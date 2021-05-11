@@ -3168,8 +3168,8 @@ function www_signup_vars ( ) {
     $dev_mode = defined('BLOTTO_DEV_MODE') && BLOTTO_DEV_MODE;
     $vars = array (
         'title'          => !$dev_mode ? '' : 'Mr',
-        'first_name'     => !$dev_mode ? '' : 'Mickey',
-        'last_name'      => !$dev_mode ? '' : 'Mouse',
+        'name_first'     => !$dev_mode ? '' : 'Mickey',
+        'name_last'      => !$dev_mode ? '' : 'Mouse',
         'dob'            => !$dev_mode ? '' : '1928-05-15',
         'postcode'       => !$dev_mode ? '' : 'W1A 1AA',
         'address_1'      => !$dev_mode ? '' : 'Broadcasting House',
@@ -3300,11 +3300,11 @@ function www_validate_signup (&$e=[],&$go=null) {
         set_once ($go,'about');
         $e[] = 'Title is required';
     }
-    if (!$_POST['first_name']) {
+    if (!$_POST['name_first']) {
         set_once ($go,'about');
         $e[] = 'First name is required';
     }
-    if (!$_POST['last_name']) {
+    if (!$_POST['name_last']) {
         set_once ($go,'about');
         $e[] = 'Last name is required';
     }

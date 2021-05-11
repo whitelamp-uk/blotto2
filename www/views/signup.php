@@ -27,11 +27,11 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <hr/>
 
-        <label for="first_name" class="hidden">First name</label>
-        <input type="text" id="first_name" name="first_name" value="<?php echo htmlspecialchars ($v['first_name']); ?>" placeholder="First name" title="First name" required />
+        <label for="name_first" class="hidden">First name</label>
+        <input type="text" id="name_first" name="name_first" value="<?php echo htmlspecialchars ($v['name_first']); ?>" placeholder="First name" title="First name" required />
 
-        <label for="last_name" class="hidden">Last name</label>
-        <input type="text" id="last_name" name="last_name" value="<?php echo htmlspecialchars ($v['last_name']); ?>" placeholder="Last name" title="Last name" required />
+        <label for="name_last" class="hidden">Last name</label>
+        <input type="text" id="name_last" name="name_last" value="<?php echo htmlspecialchars ($v['name_last']); ?>" placeholder="Last name" title="Last name" required />
 
         <hr/>
 
