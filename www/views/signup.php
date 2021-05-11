@@ -109,6 +109,8 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
       </fieldset>
 
+      <a name="requirements"></a>
+
       <fieldset>
 
         <legend>Ticket requirements</legend>
@@ -169,7 +171,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
       </fieldset>
 
-      <a name="gdpr"></a>
+      <a name="smallprint"></a>
 
       <fieldset>
 
@@ -195,7 +197,6 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
         </div>
 
       </fieldset>
-
 
       <fieldset>
 

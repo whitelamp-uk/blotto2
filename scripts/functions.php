@@ -3296,18 +3296,29 @@ function www_validate_signup (&$e=[],&$go=null) {
             $_POST[$key] = '';
         }
     }
-    if (!$_POST['title']) {
-        set_once ($go,'about');
-        $e[] = 'Title is required';
+    $required = [
+        'title'         => [ 'about',        'Title is required' ],
+        'name_first'    => [ 'about',        'First name is required' ],
+        'name_last'     => [ 'about',        'Last name is required' ],
+        'dob'           => [ 'about',        'Date of birth is required' ],
+        'postcode'      => [ 'address',      'postcode is required' ],
+        'address_1'     => [ 'address',      'Address is required' ],
+        'town'          => [ 'address',      'Town/city is required' ],
+        'quantity'      => [ 'requirements', 'Ticket requirements are needed' ],
+        'draws'         => [ 'requirements', 'Ticket requirements are needed' ],
+        'gdpr'          => [ 'smallprint',   'You must confirm that you have read the GDPR statement' ],
+        'terms'         => [ 'smallprint',   'You must agree to terms & conditions and the privacy policy' ],
+        'age'           => [ 'smallprint',   'You must be aged 18 or over to signup' ],
+        'email'         => [ 'contact',      'Email is required' ],
+        'mobile'        => [ 'contact',      'Mobile number is required'  ]
+    ];
+    foreach ($required as $field=>$details) {
+        if (!array_key_exists($field,$_POST) || !strlen($_POST[$field])) {
+            set_once ($go,$details[0]);
+            $e[]        = $details[1];
+        }
     }
-    if (!$_POST['name_first']) {
-        set_once ($go,'about');
-        $e[] = 'First name is required';
-    }
-    if (!$_POST['name_last']) {
-        set_once ($go,'about');
-        $e[] = 'Last name is required';
-    }
+    $org = org ();
     if ($_POST['dob']) {
         $dt             = new \DateTime ($_POST['dob']);
         if (!$dt) {
@@ -3323,33 +3334,19 @@ function www_validate_signup (&$e=[],&$go=null) {
             }
         }
     }
+    if (intval($_POST['quantity'])<1 || intval($_POST['draws'])<1) {
+        set_once ($go,'requirements');
+        $e[] = 'Ticket requirements are not valid';
+    }
     else {
-        set_once ($go,'about');
-        $e[] = 'Date of birth is required';
-    }
-    if (!$_POST['postcode']) {
-        set_once ($go,'address');
-        $e[] = 'Postcode is required';
-    }
-    if (!$_POST['address_1']) {
-        set_once ($go,'address');
-        $e[] = 'First line of address is required';
-    }
-    if (!$_POST['town']) {
-        set_once ($go,'address');
-        $e[] = 'Town/city is required';
-    }
-    if (!array_key_exists('gdpr',$_POST) || !$_POST['gdpr']) {
-        set_once ($go,'gdpr');
-        $e[] = 'You must confirm that you have read the GDPR statement';
-    }
-    if (!array_key_exists('terms',$_POST) || !$_POST['terms']) {
-        set_once ($go,'sign');
-        $e[] = 'You must agree to terms & conditions and the privacy policy';
-    }
-    if (!array_key_exists('age',$_POST) || !$_POST['age']) {
-        set_once ($go,'sign');
-        $e[] = 'You must be aged 18 or over to signup';
+        if (intval($_POST['quantity'])>$org['signup_ticket_cap']) {
+            set_once ($go,'requirements');
+            $e[] = 'Tickets are limited to a maximum of '.$org['signup_ticket_cap'];
+        }
+        if ($_POST['draws']*$_POST['quantity']*BLOTTO_TICKET_PRICE/100>$org['signup_amount_cap']) {
+            set_once ($go,'requirements');
+            $e[] = 'Purchases are limited to a maximum of £'.$org['signup_amount_cap'];
+        }
     }
     if ($_POST['email']) {
         if (BLOTTO_SIGNUP_VFY_EML) {
