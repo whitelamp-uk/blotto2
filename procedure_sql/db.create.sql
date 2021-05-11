@@ -90,7 +90,11 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_code` char(16) CHARACTER SET ascii NOT NULL,
   `zaffo_merchant_id` int(11) unsigned DEFAULT NULL,
-  `signup_sms_message` CHARACTER SET utf8 DEFAULT NULL,
+  `signup_amount_cap` mediumint(4) unsigned NOT NULL,
+  `signup_ticket_options` varchar(255) DEFAULT NULL,
+  `signup_draw_options` mediumtext DEFAULT NULL,
+  `signup_done_message` mediumtext DEFAULT NULL,
+  `signup_sms_message` mediumtext DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `org_code` (`org_code`),
   UNIQUE KEY `zaffo_merchant_id` (`zaffo_merchant_id`)

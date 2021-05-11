@@ -1,8 +1,15 @@
 <?php
 $v = www_signup_vars ();
-$titles = explode (',',BLOTTO_TITLES_WEB);
+if (!$v['quantity']) {
+    $v['quantity'] = 1;
+}
+if (!$v['draws']) {
+    $v['draws'] = 1;
+}
+$titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 ?>
-    <form class="signup" method="post" action="">
+
+    <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
 
       <a name="about"></a>
@@ -42,7 +49,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <label for="email" class="hidden">Email address</label>
         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address" title="Email address" required />
 
-<?php if (BLOTTO_SIGNUP_VFY_EML): ?>
+<?php if (defn('BLOTTO_SIGNUP_VFY_EML',false)): ?>
         <label for="email_verify" class="hidden">Verify</label>
         <button data-verifytype="email">Send email</button>
         <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code" title="Email verification code" required />
@@ -54,7 +61,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
         <label for="mobile" class="hidden">Mobile number</label>
         <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" pattern="[0-9]{10,12}" required />
 
-<?php if (BLOTTO_SIGNUP_VFY_MOB): ?>
+<?php if (defn('BLOTTO_SIGNUP_VFY_MOB',false)): ?>
         <label for="mobile_verify" class="hidden">Verify</label>
         <button data-verifytype="mobile">Send SMS</button>
         <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code" title="Mobile number verification code" required />
@@ -106,65 +113,29 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <legend>Ticket requirements</legend>
 
-        <div class="field">
+        <div class="field radioset">
 
-          <label class="requirements">Number of chances each weekly draw</label>
+          <label class="requirements">Tickets per draw</label>
 
-            <select name="quantity" id="quantity">
-              <?php
-              if(!$v['quantity']) {
-                $v['quantity'] = 1;
-              }
-              for ($i = 1; $i <= 10; $i++) {
-                echo '<option value="'.$i.'"';
-                if ($i == $v['quantity']) {
-                  echo " selected";
-                }
-                echo '>'.$i.'</option>';
-              }
-              ?>
-            </select>
-
-
-          <!-- div>
-            <input type="radio" name="quantity" id="quantity-1" value="1" <?php if(!$v['quantity'] || $v['quantity']==1): ?>checked<?php endif;?> />
-            <label for="quantity-1">1 chance for £4.34 monthly</label>
-          </div>
+<?php foreach ($org['signup_ticket_options'] as $i): ?>
           <div>
-            <input type="radio" name="quantity" id="quantity-2" value="2" <?php if($v['quantity']==2): ?>checked<?php endif;?> />
-            <label for="quantity-2">2 chances for £8.68 monthly</label>
-          </div -->
-
-
-        <div class="field">
-
-          <label class="requirements">Number of weekly draws</label>
-
-            <select name="draws" id="draws">
-              <?php
-              if(!$v['draws']) {
-                $v['draws'] = 1;
-              }
-              $max_weeks = intval(STRIPE_MAX_PAYMENT / $v['quantity']);
-              for ($i = 1; $i <= $max_weeks; $i++) {
-                echo '<option value="'.$i.'"';
-                if ($i == $v['draws']) {
-                  echo " selected";
-                }
-                echo '>'.$i.'</option>';
-              }
-              ?>
-            </select>
-
-
-          <!-- div>
-            <input type="radio" name="draws" id="draws-1" value="1" <?php if(!$v['draws'] || $v['draws']==1): ?>checked<?php endif;?> />
-            <label for="draws-1">1 draw</label>
+            <input type="radio" name="quantity" id="quantity-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if ($i==$v['quantity']): ?> checked <?php endif;?> />
+            <label for="quantity-<?php echo 1*$i; ?>"><?php echo 1*$i; ?> ticket<?php echo plural($i); ?></label>
           </div>
+<?php endforeach; ?>
+
+        </div>
+
+        <div class="field radioset">
+
+          <label class="requirements">Weekly draws</label>
+
+<?php foreach ($org['signup_draw_options'] as $i=>$label): ?>
           <div>
-            <input type="radio" name="draws" id="draws-2" value="2" <?php if($v['draws']==2): ?>checked<?php endif;?> />
-            <label for="draws-2">2 chances for £8.68 monthly</label>
-          </div -->
+            <input type="radio" name="draws" id="draws-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if($i==$v['draws']): ?>checked<?php endif;?> />
+            <label for="draws-<?php echo 1*$i; ?>"><?php echo htmlspecialchars ($label); ?></label>
+          </div>
+<?php endforeach; ?>
 
         </div>
 
@@ -176,22 +147,22 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <legend>Preferences</legend>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_1" <?php if ($v['pref_1']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by email?</label>
         </div>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_2" <?php if ($v['pref_2']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by SMS?</label>
         </div>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_3" <?php if ($v['pref_3']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by post?</label>
         </div>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_4" <?php if ($v['pref_4']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by telephone?</label>
         </div>
@@ -210,7 +181,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
             <h3>GDPR Statement</h3>
 
-            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling or e-mailing us on <?php echo htmlspecialchars (STRIPE_ADMIN_PHONE); ?> or <a href="mailto:<?php echo htmlspecialchars (STRIPE_ADMIN_EMAIL); ?>"><?php echo htmlspecialchars (STRIPE_ADMIN_EMAIL); ?></a></p>
+            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling <?php defn ('BLOTTO_ADMIN_PHONE'); ?> or e-mailing <a href="mailto:<?php defn ('BLOTTO_ADMIN_EMAIL'); ?>"><?php defn ('BLOTTO_ADMIN_EMAIL'); ?></a>.</p>
 
             <p>We will never sell your details on to anyone else.</p>
 
@@ -232,7 +203,7 @@ $titles = explode (',',BLOTTO_TITLES_WEB);
 
         <div class="field">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
-          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_TERMS); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars (STRIPE_PRIVACY); ?>">privacy policy</a>.</label>
+          <label for="terms">I accept the <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_TERMS'); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_PRIVACY'); ?>">privacy policy</a>.</label>
         </div>
 
         <div class="field">

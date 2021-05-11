@@ -50,26 +50,30 @@ define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
 
+/*
 
-// paypal-api with data-8.co.uk and Campaign Monitor dependencies
+// Global - Paypal
 define ( 'PAYPAL_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'PAYPAL_TABLE_COLLECTION', 'blotto_build_collection'   );
+define ( 'PAYPAL_CALLBACK_TO',      30          ); // Confirmation time-out
 
+// Global - RSM
+define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
+define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
+define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'      );
+define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'   );
+
+// Global - Stripe
 define ( 'STRIPE_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.json' );
-define ( 'STRIPE_CALLBACK_IPS_TO',  30 ); // seconds before giving up getting safe IPs
+define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up getting safe IPs
 
-define ( 'DATA8_USERNAME',          'development@burdenandburden.co.uk' );
-define ( 'DATA8_PASSWORD',          ''              );
-define ( 'DATA8_EMAIL_LEVEL',       'MX'            );
+// Global - all payment providers
+define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
+define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
+define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed'        );
+define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json' );
 
-define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
-define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
-define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'          );
-define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'       );
-
-define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44 );
-define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed' );
-define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json'   );
+*/
 
