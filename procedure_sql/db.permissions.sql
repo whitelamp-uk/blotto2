@@ -11,10 +11,28 @@ ON `{{BLOTTO_CONFIG_DB}}`.*
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
 
+
+GRANT UPDATE(`signup_amount_cap`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(`signup_ticket_options`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(`signup_draw_options`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(`signup_done_message`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
 GRANT UPDATE(`signup_sms_message`)
 ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
+
 
 GRANT SELECT
 ON `{{BLOTTO_TICKET_DB}}`.*

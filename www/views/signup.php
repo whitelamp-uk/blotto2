@@ -1,7 +1,14 @@
 <?php
 $v = www_signup_vars ();
+if (!$v['quantity']) {
+    $v['quantity'] = 1;
+}
+if (!$v['draws']) {
+    $v['draws'] = 1;
+}
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 ?>
+
     <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
 
@@ -106,65 +113,29 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <legend>Ticket requirements</legend>
 
-        <div class="field">
+        <div class="field radioset">
 
-          <label class="requirements">Number of chances each weekly draw</label>
+          <label class="requirements">Tickets per draw</label>
 
-            <select name="quantity" id="quantity">
-              <?php
-              if(!$v['quantity']) {
-                $v['quantity'] = 1;
-              }
-              for ($i = 1; $i <= 10; $i++) {
-                echo '<option value="'.$i.'"';
-                if ($i == $v['quantity']) {
-                  echo " selected";
-                }
-                echo '>'.$i.'</option>';
-              }
-              ?>
-            </select>
-
-
-          <!-- div>
-            <input type="radio" name="quantity" id="quantity-1" value="1" <?php if(!$v['quantity'] || $v['quantity']==1): ?>checked<?php endif;?> />
-            <label for="quantity-1">1 chance for £4.34 monthly</label>
-          </div>
+<?php foreach ($org['signup_ticket_options'] as $i): ?>
           <div>
-            <input type="radio" name="quantity" id="quantity-2" value="2" <?php if($v['quantity']==2): ?>checked<?php endif;?> />
-            <label for="quantity-2">2 chances for £8.68 monthly</label>
-          </div -->
-
-
-        <div class="field">
-
-          <label class="requirements">Number of weekly draws</label>
-
-            <select name="draws" id="draws">
-              <?php
-              if(!$v['draws']) {
-                $v['draws'] = 1;
-              }
-              $max_weeks = intval(BLOTTO_MAX_PAYMENT / $v['quantity']);
-              for ($i = 1; $i <= $max_weeks; $i++) {
-                echo '<option value="'.$i.'"';
-                if ($i == $v['draws']) {
-                  echo " selected";
-                }
-                echo '>'.$i.'</option>';
-              }
-              ?>
-            </select>
-
-
-          <!-- div>
-            <input type="radio" name="draws" id="draws-1" value="1" <?php if(!$v['draws'] || $v['draws']==1): ?>checked<?php endif;?> />
-            <label for="draws-1">1 draw</label>
+            <input type="radio" name="quantity" id="quantity-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if ($i==$v['quantity']): ?> checked <?php endif;?> />
+            <label for="quantity-<?php echo 1*$i; ?>"><?php echo 1*$i; ?> ticket<?php echo plural($i); ?></label>
           </div>
+<?php endforeach; ?>
+
+        </div>
+
+        <div class="field radioset">
+
+          <label class="requirements">Weekly draws</label>
+
+<?php foreach ($org['signup_draw_options'] as $i=>$label): ?>
           <div>
-            <input type="radio" name="draws" id="draws-2" value="2" <?php if($v['draws']==2): ?>checked<?php endif;?> />
-            <label for="draws-2">2 chances for £8.68 monthly</label>
-          </div -->
+            <input type="radio" name="draws" id="draws-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if($i==$v['draws']): ?>checked<?php endif;?> />
+            <label for="draws-<?php echo 1*$i; ?>"><?php echo htmlspecialchars ($label); ?></label>
+          </div>
+<?php endforeach; ?>
 
         </div>
 
@@ -176,22 +147,22 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <legend>Preferences</legend>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_1" <?php if ($v['pref_1']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by email?</label>
         </div>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_2" <?php if ($v['pref_2']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by SMS?</label>
         </div>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_3" <?php if ($v['pref_3']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by post?</label>
         </div>
 
-        <div class="field">
+        <div class="field checkbox">
           <input type="checkbox" name="pref_4" <?php if ($v['pref_4']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by telephone?</label>
         </div>

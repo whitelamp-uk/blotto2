@@ -1515,6 +1515,63 @@ function notify ($to,$subject,$message) {
     );
 }
 
+function org ( ) {
+    $c = connect (BLOTTO_CONFIG_DB);
+    $org_code = strtoupper (BLOTTO_ORG_USER);
+    $q = "
+      SELECT
+        *
+      FROM `blotto_org`
+      WHERE `org_code`='$org_code'
+    ";
+    try {
+        $org = $c->query ($q);
+        $org = $org->fetch_assoc ();
+        // Ticket options
+        $org['signup_ticket_cap'] = 0;
+        $tickets = [];
+        $options = explode (',',$org['signup_ticket_options']);
+        foreach ($options as $o) {
+            $o = intval ($o);
+            if ($o>0) {
+                if ($o>$org['signup_ticket_cap']) {
+                    $org['signup_ticket_cap'] = $o;
+                }
+                $tickets[] = $o;
+            }
+        }
+        $org['signup_ticket_options'] = $tickets;
+        // Draw options
+        $draws = [];
+        $options = explode ("\n",$org['signup_draw_options']);
+        foreach ($options as $o) {
+            $o = trim ($o);
+            if (!$o) {
+                continue;
+            }
+            $o = explode (' ',$o);
+            if (!count($o)) {
+                continue;
+            }
+            $i = intval (array_shift($o));
+            if ($i<=0) {
+                continue;
+            }
+            $o = trim (implode(' ',$o));
+            if (!$o) {
+                $o = "$i weekly draws";
+            }
+            $draws[$i] = $o;
+        }
+        $org['signup_draw_options'] = $draws;
+        return $org;
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+}
+
 function players_new (&$players,&$tickets,$oid=BLOTTO_ORG_ID,$db=null) {
     if (!$db) {
         $db = ['make'=>BLOTTO_MAKE_DB];

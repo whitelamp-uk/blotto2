@@ -80,6 +80,25 @@ body.unframed form.signup fieldset.finished {
 form.signup fieldset legend {
     padding-left: 0.6em;
     padding-right: 0.6em;
+    font-weight: bold;
+}
+
+form.signup div.field.checkbox input,
+form.signup div.field.radioset input {
+    margin: 0.5em 0 0.5em 0;
+}
+form.signup div.field.checkbox {
+    margin-left: 1.5em;
+}
+
+form.signup div.field.radioset {
+    margin: 1em 0 0.3em 1.5em;
+}
+form.signup div.field.radioset:first-of-type {
+    margin-top: 0.3em;
+}
+form.signup div.field.radioset > label {
+    margin-left: -0.8em;
 }
 
 form.signup fieldset.finished div {
@@ -167,9 +186,7 @@ form.signup select.data8-postcodelookup-list + div {
 form.signup input[type="radio"] {
     display: inline-block;
     position: relative;
-    top: 0.5em;
-    width: 1.5em;
-    height: 1.5em;
+    top: 0.2em;
 }
 
 form.signup input[type="radio"] + label {
