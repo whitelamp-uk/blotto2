@@ -4,6 +4,17 @@ function closeHandle (evt) {
     evt.target.parentElement.parentElement.removeChild (evt.target.parentElement);
 }
 
+function drawsHandle (evt) {
+    var cost,cost2,draw,draws,maxa,maxd,ppt,reduce,tickets,weeks;
+    tickets = 1 * evt.target.form.quantity.value;
+    cost    = document.querySelector ('form.signup #signup-cost > output');
+    cost2   = document.querySelector ('form.signup #signup-cost-confirm > output');
+    ppt     = document.querySelector ('form.signup [data-ppt]');
+    ppt     = 1 * ppt.dataset.ppt;
+    cost.textContent = (tickets*evt.target.value*ppt).toFixed (2);
+    cost2.textContent = cost.textContent;
+}
+
 function inputCorrect (evt) {
     if (!evt.target.name) {
         return;
@@ -43,6 +54,41 @@ function inputCorrect (evt) {
     if (['email'].includes(evt.target.name)) {
         evt.target.value        = evt.target.value.replace (' ','');
     }
+}
+
+function quantitiesHandle (evt) {
+    var cost,cost2,draw,draws,maxa,maxd,ppt,reduce,tickets,weeks;
+    weeks   = evt.target.form.draws;
+    draws   = document.querySelectorAll ('form.signup [name="draws"]');
+    cost    = document.querySelector ('form.signup #signup-cost > output');
+    cost2   = document.querySelector ('form.signup #signup-cost-confirm > output');
+    ppt     = document.querySelector ('form.signup [data-ppt]');
+    ppt     = 1 * ppt.dataset.ppt;
+    maxa    = 1 * evt.target.form.dataset.maxamount;
+    maxd    = 1 * evt.target.dataset.maxdraws;
+    tickets = 1 * evt.target.value;
+    for (draw of draws) {
+        if ((1*draw.value)>maxd) {
+            if (draw.checked) {
+                reduce = true;
+            }
+            draw.classList.add ('hidden');
+        }
+        else {
+            draw.classList.remove ('hidden');
+        }
+    }
+    if (reduce) {
+        for (draw of draws) {
+            if (draw.value>maxd) {
+                break;
+            }
+            draw.click ();
+        }
+        userMessage ('Number of draws is reduced because maximum purchase is £'+maxa);
+    }
+    cost.textContent = (tickets*weeks.value*ppt).toFixed (2);
+    cost2.textContent = cost.textContent;
 }
 
 function setDobInput ( ) {
@@ -94,7 +140,18 @@ async function postData (url='',data={}) {
 }
 
 function userMessage (msg) {
-    alert (msg);
+    var button,div,p;
+    div = document.createElement ('div');
+    div.classList.add ('error');
+    button = document.createElement ('button');
+    button.dataset.close = '';
+    button.addEventListener ('click',closeHandle);
+    div.appendChild (button);
+    p = document.createElement ('p');
+    p.textContent = msg;
+    div.appendChild (p);
+    section = document.querySelector ('section.signup');
+    section.appendChild (div);
 }
 
 function verifyHandle (evt) {
@@ -144,7 +201,7 @@ function verifyHandle (evt) {
 
 
 (function () {
-    var button,close,closes,input,inputs,verify,verifies;
+    var button,close,closes,draw,draws,input,inputs,quantity,quantities,verify,verifies;
     button = document.querySelector ('form.signup button[type="submit"]');
     if (button) {
         button.addEventListener ('click',submitInhibit);
@@ -167,6 +224,19 @@ function verifyHandle (evt) {
             verify.addEventListener ('click',verifyHandle);
         }
     }
+    quantities = document.querySelectorAll ('form.signup [name="quantity"]');
+    if (quantities.length > 0) {
+        for (quantity of quantities) {
+            quantity.addEventListener ('click',quantitiesHandle);
+        }
+    }
+    draws = document.querySelectorAll ('form.signup [name="draws"]');
+    if (draws.length > 0) {
+        for (draw of draws) {
+            draw.addEventListener ('click',drawsHandle);
+        }
+    }
+
     if (window.self==window.top) {
         document.body.classList.add ('unframed');
     }

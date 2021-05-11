@@ -9,7 +9,7 @@ if (!$v['draws']) {
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 ?>
 
-    <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
+    <form data-maxamount="<?php echo intval ($org['signup_amount_cap']); ?>" class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
 
       <a name="about"></a>
@@ -117,11 +117,11 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <div class="field radioset">
 
-          <label class="requirements">Tickets per draw</label>
+          <label data-ppt="<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'.',''); ?>" class="requirements">Tickets cost £<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'-',','); ?> per draw</label>
 
 <?php foreach ($org['signup_ticket_options'] as $i): ?>
           <div>
-            <input type="radio" name="quantity" id="quantity-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if ($i==$v['quantity']): ?> checked <?php endif;?> />
+            <input type="radio" name="quantity" data-maxdraws="<?php echo intval ($org['signup_amount_cap']/($i*BLOTTO_TICKET_PRICE/100)); ?>" id="quantity-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if ($i==$v['quantity']): ?> checked <?php endif;?> />
             <label for="quantity-<?php echo 1*$i; ?>"><?php echo 1*$i; ?> ticket<?php echo plural($i); ?></label>
           </div>
 <?php endforeach; ?>
@@ -130,7 +130,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <div class="field radioset">
 
-          <label class="requirements">Weekly draws</label>
+          <label class="requirements">Number of weekly draws</label>
 
 <?php foreach ($org['signup_draw_options'] as $i=>$label): ?>
           <div>
@@ -139,6 +139,10 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
           </div>
 <?php endforeach; ?>
 
+        </div>
+
+        <div id="signup-cost" class="signup-cost">
+          &pound;<output><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output>
         </div>
 
       </fieldset>
@@ -189,7 +193,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
           </div>
 
-          <div>
+          <div class="field checkbox">
             <input id="gdpr" type="checkbox" name="gdpr" <?php if($v['gdpr']): ?>checked<?php endif; ?> required />
             <label for="gdpr">I have read and understood the above.</label>
           </div>
@@ -202,12 +206,12 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <legend>Protecting your data</legend>
 
-        <div class="field">
+        <div class="field checkbox">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
           <label for="terms">I accept the <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_TERMS'); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_PRIVACY'); ?>">privacy policy</a>.</label>
         </div>
 
-        <div class="field">
+        <div class="field checkbox">
           <input id="age" type="checkbox" name="age" <?php if($v['age']): ?>checked<?php endif; ?> required />
           <label for="age">I confirm that I am aged 18 or over.</label>
         </div>
@@ -216,7 +220,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
       <fieldset>
 
-        <legend>Select payment method</legend>
+        <legend>Select payment method to pay <span id="signup-cost-confirm" class="signup-cost">&pound;<output><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output></span></legend>
 
 <?php foreach ($apis as $code=>$api): ?>
 
