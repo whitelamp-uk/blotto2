@@ -2235,7 +2235,7 @@ function set_once (&$var,$value) {
 
 function signup ($s,$ccc,$cref) {
     try {
-        $c = connect ();
+        $c = connect (BLOTTO_MAKE_DB);
         $c->query (
           "
             INSERT INTO `blotto_supporter` SET
@@ -2248,11 +2248,11 @@ function signup ($s,$ccc,$cref) {
              ,`client_ref`='$cref'
           "
         );
-        $sid = $c->lastInsertId ();
+        $sid = $c->insert_id;
         $c->query (
           "
             INSERT INTO `blotto_player` SET
-             ,`started`=DATE('{$s['created']}')
+              `started`=DATE('{$s['created']}')
              ,`supporter_id`=$sid
              ,`client_ref`='$cref'
              ,`chances`={$s['quantity']}
@@ -2263,8 +2263,8 @@ function signup ($s,$ccc,$cref) {
             INSERT INTO `blotto_contact` SET
               `supporter_id`=$sid
              ,`title`='{$s['title']}'
-             ,`name_first`='{$s['first_name']}'
-             ,`name_last`='{$s['last_name']}'
+             ,`name_first`='{$s['name_first']}'
+             ,`name_last`='{$s['name_last']}'
              ,`email`='{$s['email']}'
              ,`mobile`='{$s['mobile']}'
              ,`telephone`='{$s['telephone']}'
@@ -2353,10 +2353,11 @@ function tickets ($provider_code,$refno,$cref,$qty) {
     $org_id = BLOTTO_ORG_ID;
     $tickets = [];
     try {
-        $zo = connect (BLOTTO_MAKE_DB);
+        $zo = connect (BLOTTO_TICKET_DB);
         for ($i=0;$i<$qty;$i++) {
             while (1) {
                 $new = mt_rand (intval(BLOTTO_TICKET_MIN),intval(BLOTTO_TICKET_MAX));
+                $pad_length = strlen(BLOTTO_TICKET_MAX);
                 $new = str_pad ($new,$pad_length,'0',STR_PAD_LEFT);
                 if (in_array($new,$tickets)) {
                     // Already selected so try again
@@ -2382,7 +2383,7 @@ function tickets ($provider_code,$refno,$cref,$qty) {
                    ,`org_id`=$org_id
                    ,`mandate_provider`='$provider_code'
                    ,`dd_ref_no`=$refno
-                   ,`client_ref`=$cref
+                   ,`client_ref`='$cref'
                   ;
                 ";
                 $zo->query ($qi);
