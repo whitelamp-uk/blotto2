@@ -128,7 +128,7 @@ if (count($_POST)) {
             $file = $apis[$api_code]->file;
             $class = $apis[$api_code]->class;
             require $file;
-            $api = new $class (connect(BLOTTO_MAKE_DB));
+            $api = new $class (connect(BLOTTO_MAKE_DB),$org);
             $step = 2;
         }
         catch (Exception $e) {

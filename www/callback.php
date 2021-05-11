@@ -25,22 +25,13 @@ if (!array_key_exists($_GET['provider'],$apis)) {
     exit;
 }
 
-$org_code       = BLOTTO_ORG_ID;
-$msg            = null;
+$org            = null;
 $responded      = false;
 $class          = null;
 
 try {
     try {
         $zo     = connect (BLOTTO_CONFIG_DB);
-        $msg    = $zo->query (
-          "
-            SELECT
-              signup_sms_message AS `msg`
-            FROM `blotto_org`
-            WHERE `org_code`=$org_code
-          "
-        );
         $msg    = $msg->fetch_assoc()['msg'];
     }
     catch (\mysqli_sql_exception $e) {
@@ -51,9 +42,9 @@ try {
     $class      = $apis[$_GET['provider']]->class;
     require $file;
     // BLOTTO_MAKE_DB because data is permanent
-    $api        = new $class (connect(BLOTTO_MAKE_DB));
+    $api        = new $class (connect(BLOTTO_MAKE_DB),org());
     // $responded is boolean by reference
-    $api->callback ($msg,$responded);
+    $api->callback ($responded);
 }
 catch (\Exception $e) {
     if ($responded) {
