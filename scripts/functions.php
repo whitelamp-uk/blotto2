@@ -3108,6 +3108,7 @@ function www_logout ( ) {
 
 function www_pay_apis ( ) {
     $constants = get_defined_constants (true);
+    $apis = [];
     foreach ($constants['user'] as $name => $file) {
         if (!preg_match('<^BLOTTO_PAY_API_([A-Z]+)$>',$name,$matches)) {
             // Not an API class file
