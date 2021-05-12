@@ -142,7 +142,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
         </div>
 
         <div id="signup-cost" class="signup-cost">
-          &pound;<output><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output>
+          &pound;<output data-decsepchar="-"><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output>
         </div>
 
       </fieldset>
