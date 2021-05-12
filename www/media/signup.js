@@ -140,7 +140,7 @@ async function postData (url='',data={}) {
             body: JSON.stringify (data) // body data type must match "Content-Type" header
         }
     );
-//var text = await response.text (); console.log (text);
+//var text = await response.text (); console.log (text); return {};
     return response.json (); // parses JSON response into native JavaScript objects
 }
 
