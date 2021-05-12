@@ -30,14 +30,7 @@ $responded      = false;
 $class          = null;
 
 try {
-    try {
-        $zo     = connect (BLOTTO_CONFIG_DB);
-        $msg    = $msg->fetch_assoc()['msg'];
-    }
-    catch (\mysqli_sql_exception $e) {
-        error_log ($e->getMessage());
-        throw new \Exception ("Could not get SMS message from database");
-    }
+    // moved get sms message to where it's needed
     $file       = $apis[$_GET['provider']]->file;
     $class      = $apis[$_GET['provider']]->class;
     require $file;
