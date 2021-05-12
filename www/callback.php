@@ -30,7 +30,6 @@ $responded      = false;
 $class          = null;
 
 try {
-    // moved get sms message to where it's needed
     $file       = $apis[$_GET['provider']]->file;
     $class      = $apis[$_GET['provider']]->class;
     require $file;
