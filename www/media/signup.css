@@ -104,6 +104,9 @@ form.signup div.field.radioset input {
 form.signup div.field.radioset input.hidden {
     visibility: hidden;
 }
+form.signup div.field.radioset label.greyed {
+    color: #888888;
+}
 
 form.signup #signup-cost {
     display: block;

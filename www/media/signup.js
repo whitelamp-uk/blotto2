@@ -74,9 +74,13 @@ function quantitiesHandle (evt) {
                 reduce = true;
             }
             draw.classList.add ('hidden');
+            draw.nextElementSibling.classList.add ('greyed');
+            draw.nextElementSibling.removeAttribute ('for');
         }
         else {
             draw.classList.remove ('hidden');
+            draw.nextElementSibling.classList.remove ('greyed');
+            draw.nextElementSibling.setAttribute ('for',draw.id);
         }
     }
     if (reduce) {
