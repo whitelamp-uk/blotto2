@@ -18,48 +18,61 @@ session_start ();
 
 // Verification by JS fetch
 if (array_key_exists('verify',$_GET)) {
-    $error                      = $e_default;
-    $code                       = rand (1000,9999);
-    $response                   = new \stdClass ();
-    $request                    = json_decode (trim(file_get_contents('php://input')));
+    $code                               = rand (1000,9999);
+    $response                           = new \stdClass ();
+    $request                            = json_decode (trim(file_get_contents('php://input')));
     if (!$request) {
-        $response->e            = $error;
+        $response->e                    = $e_default;
     }
     elseif (property_exists($request,'email')) {
         if ($nonce=nonce_challenge('email',$request->nonce)) {
-            www_signup_verify_store ('email',$request->email,$code);
-            $result = campaign_monitor (
-                BLOTTO_SIGNUP_CM_ID,
-                $request->email,
-                $code
-            );
-            $response->result   = $result->http_status_code == 200;
-            $response->nonce    = $nonce;
+            if (www_signup_verify_store('email',$request->email,$code)) {
+                try {
+                    $result = campaign_monitor (
+                        BLOTTO_SIGNUP_CM_ID,
+                        $request->email,
+                        $code
+                    );
+                    $response->result   = $result->http_status_code == 200;
+                    $response->nonce    = $nonce;
+                }
+                catch (\Exception $e) {
+                    $response->e        = $e_default;
+                }
+            }
+            else {
+                $response->e            = $e_default;
+            }
         }
         else {
-            $response->e        = $error;
+            $response->e                = $e_default;
         }
     }
     elseif (property_exists($request,'mobile')) {
         if ($nonce=nonce_challenge('mobile',$request->nonce)) {
             if (www_signup_verify_store('mobile',$request->mobile,$code)) {
-                $response->result   = sms (
-                    $request->mobile,
-                    str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
-                    BLOTTO_SIGNUP_SMS_FROM
-                );
-                $response->nonce    = $nonce;
+                try {
+                    $response->result   = sms (
+                        $request->mobile,
+                        str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
+                        BLOTTO_SIGNUP_SMS_FROM
+                    );
+                    $response->nonce    = $nonce;
+                }
+                catch (\Exception $e) {
+                    $response->e        = $e_default;
+                }
             }
             else {
-                $response->e        = $error;
+                $response->e            = $e_default;
             }
         }
         else {
-            $response->e        = 'nonce';
+            $response->e                = 'nonce';
         }
     }
     else {
-        $response->e            = $error;
+        $response->e                    = $e_default;
     }
     header ('Content-Type: application/json');
     echo json_encode ($response,JSON_PRETTY_PRINT);
