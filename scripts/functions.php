@@ -2300,7 +2300,7 @@ function set_once (&$var,$value) {
     }
 }
 
-function signup ($s,$ccc,$cref) {
+function signup ($s,$ccc,$cref,$first_draw_close) {
     try {
         $c = connect (BLOTTO_MAKE_DB);
         $c->query (
@@ -2322,6 +2322,7 @@ function signup ($s,$ccc,$cref) {
               `started`=DATE('{$s['created']}')
              ,`supporter_id`=$sid
              ,`client_ref`='$cref'
+             ,`first_draw_close`='$first_draw_close'
              ,`chances`={$s['quantity']}
           "
         );
