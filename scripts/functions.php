@@ -3224,23 +3224,32 @@ function www_signup_verify_check ($type,$value,$code) {
 
 function www_signup_verify_store ($type,$value,$code) {
     $interval = BLOTTO_VERIFY_INTERVAL;
-    $c = connect ();
-    $c->query (
-        "
-          DELETE FROM `blotto_verification`
-          WHERE `created`<DATE_SUB(NOW(),INTERVAL $interval)
-             OR ( `type`='$type' AND `verify_value`='$value' )
-        "
-    );
-    $c->query (
-        "
-          INSERT INTO `blotto_verification`
-          SET
-            `type`='$type'
-           ,`verify_value`='$value'
-           ,`code`='$code'
-        "
-    );
+    if (!($c=connect())) {
+        return false;
+    }
+    try {
+        $c->query (
+            "
+              DELETE FROM `blotto_verification`
+              WHERE `created`<DATE_SUB(NOW(),INTERVAL $interval)
+                 OR ( `type`='$type' AND `verify_value`='$value' )
+            "
+        );
+        $c->query (
+            "
+              INSERT INTO `blotto_verification`
+              SET
+                `type`='$type'
+               ,`verify_value`='$value'
+               ,`code`='$code'
+            "
+        );
+        return true;
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+        return false;
+    }
 }
 
 function www_validate_email ($email,&$e) {

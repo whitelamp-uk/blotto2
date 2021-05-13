@@ -42,13 +42,17 @@ if (array_key_exists('verify',$_GET)) {
     }
     elseif (property_exists($request,'mobile')) {
         if ($nonce=nonce_challenge('mobile',$request->nonce)) {
-            www_signup_verify_store ('mobile',$request->mobile,$code);
-            $response->result   = sms (
-                $request->mobile,
-                str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
-                BLOTTO_SIGNUP_SMS_FROM
-            );
-            $response->nonce    = $nonce;
+            if (www_signup_verify_store('mobile',$request->mobile,$code)) {
+                $response->result   = sms (
+                    $request->mobile,
+                    str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
+                    BLOTTO_SIGNUP_SMS_FROM
+                );
+                $response->nonce    = $nonce;
+            }
+            else {
+                $response->e        = $error;
+            }
         }
         else {
             $response->e        = 'nonce';
