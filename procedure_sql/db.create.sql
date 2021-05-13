@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   `signup_amount_cap` mediumint(4) unsigned NOT NULL,
   `signup_ticket_options` varchar(255) DEFAULT NULL,
   `signup_draw_options` mediumtext DEFAULT NULL,
+  `signup_verify_sms_message` mediumtext DEFAULT NULL,
   `signup_done_message` mediumtext DEFAULT NULL,
   `signup_sms_message` mediumtext DEFAULT NULL,
   PRIMARY KEY (`id`),

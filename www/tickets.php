@@ -11,37 +11,6 @@ if (defined('VOODOOSMS') && VOODOOSMS) {
 }
 $e_default = 'Sorry something went wrong - please try later';
 $org = org ();
-/*
-ORG = Array
-(
-    [id] => 1
-    [org_code] => DBH
-    [zaffo_merchant_id] => 205
-    [signup_amount_cap] => 130
-    [signup_ticket_options] => Array
-        (
-            [0] => 1
-            [1] => 2
-            [2] => 3
-            [3] => 4
-            [4] => 5
-        )
-
-    [signup_draw_options] => Array
-        (
-            [1] => Just one week
-            [4] => A month
-            [8] => Two months
-            [12] => Three months
-            [26] => Six months
-            [52] => A year
-        )
-
-    [signup_done_message] => Thank you for your support. Your payment has been received and we will be in touch shortly,
-    [signup_sms_message] => Welcome {{First_Name}}, your ticket(s) {{Tickets}} first draw entry on {{First_Draw}}. Thanks for your support!
-    [signup_ticket_cap] => 5
-*/
-
 
 // Session
 session_start ();
@@ -76,7 +45,7 @@ if (array_key_exists('verify',$_GET)) {
             www_signup_verify_store ('mobile',$request->mobile,$code);
             $response->result   = sms (
                 $request->mobile,
-                "Please enter this verification code into the form: $code",
+                str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
                 BLOTTO_SIGNUP_SMS_FROM
             );
             $response->nonce    = $nonce;
