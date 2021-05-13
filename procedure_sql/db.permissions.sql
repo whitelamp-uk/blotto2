@@ -12,6 +12,22 @@ TO '{{BLOTTO_ADMIN_USER}}'
 ;
 
 
+GRANT UPDATE(`signup_cm_key`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(`signup_cm_id`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(`signup_cm_id_verify`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(`signup_cm_id_trigger`)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
 GRANT UPDATE(`signup_amount_cap`)
 ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
 TO '{{BLOTTO_ADMIN_USER}}'

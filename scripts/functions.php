@@ -75,14 +75,14 @@ function calculate ($start=null,$end=null) {
     return $results;
 }
 
-function campaign_monitor ($campaign_id,$to,$data) {
+function campaign_monitor ($key,$campaign_id,$to,$data) {
     if (!class_exists('\CS_REST_Transactional_SmartEmail')) {
         throw new \Exception ('Class \CS_REST_Transactional_SmartEmail not found');
         return false;
     }
     $cm         = new \CS_REST_Transactional_SmartEmail (
         $campaign_id,
-        array ('api_key' => CAMPAIGN_MONITOR_KEY)
+        ['api_key'=>$key]
     );
     return $cm->send (
         [

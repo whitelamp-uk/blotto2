@@ -29,12 +29,19 @@ if (array_key_exists('verify',$_GET)) {
             if (www_signup_verify_store('email',$request->email,$code)) {
                 try {
                     $result = campaign_monitor (
-                        BLOTTO_SIGNUP_CM_ID,
+                        $org['signup_cm_key'],
+                        $org['signup_cm_id_verify'],
                         $request->email,
                         $code
                     );
-                    $response->result   = $result->http_status_code == 200;
-                    $response->nonce    = $nonce;
+                    $ok = $result->http_status_code == 200;
+                    if ($ok) {
+                        $response->nonce = $nonce;
+                    }
+                    else {
+                        error_log (print_r($result,true));
+                        $response->e    = $e_default;
+                    }
                 }
                 catch (\Exception $e) {
                     $response->e        = $e_default;
@@ -53,6 +60,7 @@ if (array_key_exists('verify',$_GET)) {
             if (www_signup_verify_store('mobile',$request->mobile,$code)) {
                 try {
                     $response->result   = sms (
+                        $org,
                         $request->mobile,
                         str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
                         BLOTTO_SIGNUP_SMS_FROM
