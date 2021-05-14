@@ -190,7 +190,7 @@ function verifyHandle (evt) {
                             return;
                         }
                     }
-                    // This should not happen really
+                    // Usually a configuration problem
                     userMessage ('Sorry that failed - please try again');
                 }
                 else if (type=='email') {
