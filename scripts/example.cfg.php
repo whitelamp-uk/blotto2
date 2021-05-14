@@ -108,9 +108,7 @@ define ( 'STRIPE_DEV_MODE',         true        );
 define ( 'BLOTTO_DEV_MODE',         true        );
 define ( 'BLOTTO_ADMIN_EMAIL',      'help@my.biz'                           );
 define ( 'BLOTTO_ADMIN_PHONE',      '01 234 567 890'                        );
-define ( 'BLOTTO_SIGNUP_CM_ID',     ''          );
 define ( 'BLOTTO_SIGNUP_PRIVACY',   'https://my.biz/privacy'                );
-define ( 'BLOTTO_SIGNUP_SMS_FROM',  'SnowyMark' );
 define ( 'BLOTTO_SIGNUP_TERMS',     'https://my.biz/terms'                  );
 define ( 'BLOTTO_SIGNUP_VFY_EML',   true        ); // User must confirm email address
 define ( 'BLOTTO_SIGNUP_VFY_MOB',   false       ); // User must confirm phone number

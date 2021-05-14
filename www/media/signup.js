@@ -179,11 +179,11 @@ function verifyHandle (evt) {
     postData  ('./tickets.php?verify',post)
       . then (
             response => {
-//console.log (response);
                 if (response.nonce) {
                     nonce.value = response.nonce;
                 }
                 if (response.e) {
+                    console.log (response);
                     if (response.e=='nonce') {
                         if (confirm('This page has expired. Reload it now?')) {
                             window.location.href = './tickets.php';

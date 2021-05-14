@@ -2357,13 +2357,13 @@ function signup ($s,$ccc,$cref,$first_draw_close) {
     }
 }
 
-function sms ($to,$message,$from) {
-    if (!$to || !$message || !$from) {
+function sms ($org,$to,$message,&$diagnostic) {
+    if (!is_array($org) || !$to || !$message) {
         throw new \Exception ("Invalid parameters ('$to','$message','$from')");
         return false;
     }
     $sms        = new \SMS ();
-    return $sms->send ($to,$message,$from);
+    return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true) {

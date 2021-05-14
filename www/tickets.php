@@ -59,16 +59,17 @@ if (array_key_exists('verify',$_GET)) {
         if ($nonce=nonce_challenge('mobile',$request->nonce)) {
             if (www_signup_verify_store('mobile',$request->mobile,$code)) {
                 try {
-                    $response->result   = sms (
+                    $response->result = sms (
                         $org,
                         $request->mobile,
                         str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
-                        BLOTTO_SIGNUP_SMS_FROM
+                        $diagnostic
                     );
                     $response->nonce    = $nonce;
                 }
                 catch (\Exception $e) {
                     $response->e        = $e_default;
+//                    $response->diagnostic = $diagnostic->response;
                 }
             }
             else {
