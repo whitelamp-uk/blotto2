@@ -63,13 +63,13 @@ if (array_key_exists('verify',$_GET)) {
                         $org,
                         $request->mobile,
                         str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
-                        $diagnostic
+                        $sms_response
                     );
                     $response->nonce    = $nonce;
                 }
                 catch (\Exception $e) {
                     $response->e        = $e_default;
-//                    $response->diagnostic = $diagnostic->response;
+// $response->diagnostic = $sms_response;
                 }
             }
             else {
