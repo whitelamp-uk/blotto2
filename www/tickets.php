@@ -52,7 +52,7 @@ if (array_key_exists('verify',$_GET)) {
             }
         }
         else {
-            $response->e                = $e_default;
+            $response->e                = 'nonce';
         }
     }
     elseif (property_exists($request,'mobile')) {
@@ -65,11 +65,17 @@ if (array_key_exists('verify',$_GET)) {
                         str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
                         $sms_response
                     );
-                    $response->nonce    = $nonce;
+                    if ($response->result) {
+                        $response->nonce = $nonce;
+                    }
+                    else {
+                        $response->diagnostic = $sms_response;
+                        $response->e    = $e_default;
+                    }
                 }
                 catch (\Exception $e) {
+                    $response->diagnostic = $sms_response;
                     $response->e        = $e_default;
-// $response->diagnostic = $sms_response;
                 }
             }
             else {

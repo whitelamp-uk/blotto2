@@ -2359,7 +2359,7 @@ function signup ($s,$ccc,$cref,$first_draw_close) {
 
 function sms ($org,$to,$message,&$diagnostic) {
     if (!is_array($org) || !$to || !$message) {
-        throw new \Exception ("Invalid parameters ('$to','$message','$from')");
+        throw new \Exception ("Invalid parameters ('".gettype($org)."','$to','$message')");
         return false;
     }
     $sms        = new \SMS ();
