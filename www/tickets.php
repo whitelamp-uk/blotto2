@@ -32,9 +32,9 @@ if (array_key_exists('verify',$_GET)) {
                         $org['signup_cm_key'],
                         $org['signup_cm_id_verify'],
                         $request->email,
-                        $code
+                        [ 'Code' => $code ]
                     );
-                    $ok = $result->http_status_code == 200;
+                    $ok = $result->http_status_code == 202;
                     if ($ok) {
                         $response->nonce = $nonce;
                     }

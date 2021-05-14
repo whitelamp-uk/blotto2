@@ -3210,7 +3210,7 @@ function www_signup_verify_check ($type,$value,$code) {
           WHERE `created`<DATE_SUB(NOW(),INTERVAL $interval)
         "
     );
-    $c->query (
+    $r = $c->query (
         "
           SELECT `verify_value`
           FROM `blotto_verification`
@@ -3220,7 +3220,7 @@ function www_signup_verify_check ($type,$value,$code) {
           LIMIT 0,1
         "
     );
-    return $c->fetch_assoc() && true;
+    return $r->fetch_assoc() && true;
 }
 
 function www_signup_verify_store ($type,$value,$code) {
@@ -3361,7 +3361,7 @@ function www_validate_signup (&$e=[],&$go=null) {
     }
     if ($_POST['email']) {
         if (BLOTTO_SIGNUP_VFY_EML) {
-            if (!www_signup_verify_check('email',$_POST['email'],$_POST['verify_email'])) {
+            if (!www_signup_verify_check('email',$_POST['email'],$_POST['email_verify'])) {
                 set_once ($go,'contact');
                 $e[] = 'Email address is not verified';
             }
@@ -3372,7 +3372,7 @@ function www_validate_signup (&$e=[],&$go=null) {
     }
     if ($_POST['mobile']) {
         if (BLOTTO_SIGNUP_VFY_MOB) {
-            if (!www_signup_verify_check('mobile',$_POST['mobile'],$_POST['verify_mobile'])) {
+            if (!www_signup_verify_check('mobile',$_POST['mobile'],$_POST['mobile_verify'])) {
                 set_once ($go,'contact');
                 $e[] = 'Telephone number (mobile) is not verified';
             }
