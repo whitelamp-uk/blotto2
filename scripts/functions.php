@@ -3299,7 +3299,7 @@ function www_validate_phone ($number,$type,&$e) {
     return true;
 }
 
-function www_validate_signup (&$e=[],&$go=null) {
+function www_validate_signup ($org,&$e=[],&$go=null) {
     foreach ($_POST as $key => $value) {
         $_POST[$key] = trim($value);
         if (www_is_url($_POST[$key])) {
@@ -3360,7 +3360,7 @@ function www_validate_signup (&$e=[],&$go=null) {
         }
     }
     if ($_POST['email']) {
-        if (BLOTTO_SIGNUP_VFY_EML) {
+        if ($org['signup_verify_email']>0) {
             if (!www_signup_verify_check('email',$_POST['email'],$_POST['email_verify'])) {
                 set_once ($go,'contact');
                 $e[] = 'Email address is not verified';
@@ -3371,7 +3371,7 @@ function www_validate_signup (&$e=[],&$go=null) {
         }
     }
     if ($_POST['mobile']) {
-        if (BLOTTO_SIGNUP_VFY_MOB) {
+        if ($org['signup_verify_sms']>0) {
             if (!www_signup_verify_check('mobile',$_POST['mobile'],$_POST['mobile_verify'])) {
                 set_once ($go,'contact');
                 $e[] = 'Telephone number (mobile) is not verified';

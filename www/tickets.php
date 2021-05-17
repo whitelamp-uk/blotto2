@@ -123,7 +123,7 @@ if (count($_POST)) {
         $error[] = 'Please post the form again';
     }
 
-    elseif (www_validate_signup($error,$go)) { // both optional args passed by reference
+    elseif (www_validate_signup($org,$error,$go)) { // args 2 & 3 optional by reference
         $api = null;
         try {
             $file = $apis[$api_code]->file;

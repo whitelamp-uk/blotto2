@@ -49,7 +49,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
         <label for="email" class="hidden">Email address</label>
         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address" title="Email address" required />
 
-<?php if (defn('BLOTTO_SIGNUP_VFY_EML',false)): ?>
+<?php if ($org['signup_verify_email']>0): ?>
         <label for="email_verify" class="hidden">Verify</label>
         <button data-verifytype="email">Send email</button>
         <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code" title="Email verification code" required />
@@ -61,7 +61,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
         <label for="mobile" class="hidden">Mobile number</label>
         <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" pattern="[0-9]{10,12}" required />
 
-<?php if (defn('BLOTTO_SIGNUP_VFY_MOB',false)): ?>
+<?php if ($org['signup_verify_sms']>0): ?>
         <label for="mobile_verify" class="hidden">Verify</label>
         <button data-verifytype="mobile">Send SMS</button>
         <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code" title="Mobile number verification code" required />
@@ -187,7 +187,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
             <h3>GDPR Statement</h3>
 
-            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling <?php defn ('BLOTTO_ADMIN_PHONE'); ?> or e-mailing <a href="mailto:<?php defn ('BLOTTO_ADMIN_EMAIL'); ?>"><?php defn ('BLOTTO_ADMIN_EMAIL'); ?></a>.</p>
+            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling <?php echo htmlspecialchars ($org['admin_phone']); ?> or e-mailing <a href="mailto:<?php echo htmlspecialchars ($org['admin_email']); ?>"><?php echo htmlspecialchars ($org['admin_email']); ?></a>.</p>
 
             <p>We will never sell your details on to anyone else.</p>
 
@@ -208,7 +208,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <div class="field checkbox">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
-          <label for="terms">I accept the <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_TERMS'); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php defn ('BLOTTO_SIGNUP_PRIVACY'); ?>">privacy policy</a>.</label>
+          <label for="terms">I accept the <a target="_blank" href="<?php echo htmlspecialchars ($org['signup_url_terms']); ?>">terms &amp; conditions</a> and <a target="_blank" href="<?php echo htmlspecialchars ($org['signup_url_privacy']); ?>">privacy policy</a>.</label>
         </div>
 
         <div class="field checkbox">

@@ -81,8 +81,6 @@ define ( 'BLOTTO_PAY_API_PAYPAL_CLASS',     '\Blotto\Paypal\PayApi'         );
 define ( 'BLOTTO_PAY_API_PAYPAL_BUY',       true        ); // Provide integration
 define ( 'PAYPAL_EMAIL',            'paypal.account@my.domain'              );
 define ( 'PAYPAL_CODE',             'PYPL'      ); // CCC and Provider
-define ( 'PAYPAL_CMPLN_EML',        true        ); // Send completion message by email
-define ( 'PAYPAL_CMPLN_MOB',        false       ); // Send completion message by SMS
 define ( 'PAYPAL_ERROR_LOG',        false       );
 define ( 'PAYPAL_REFNO_OFFSET',     200000000   );
 define ( 'PAYPAL_DEV_MODE',         true        );
@@ -93,9 +91,6 @@ define ( 'BLOTTO_PAY_API_STRIPE_CLASS',     '\Blotto\Stripe\PayApi'         );
 define ( 'BLOTTO_PAY_API_STRIPE_BUY',       true        ); // Provide integration
 define ( 'STRIPE_INIT_FILE',        '/path/to/stripe-php-7.77.0/init.php'   );
 define ( 'STRIPE_CODE',             'STRP'      ); // CCC and Provider
-define ( 'STRIPE_CMPLN_EML_CM_ID',  ''          );
-define ( 'STRIPE_CMPLN_EML',        true        ); // Send completion message by email
-define ( 'STRIPE_CMPLN_MOB',        false       ); // Send completion message by SMS
 define ( 'STRIPE_ERROR_LOG',        false       );
 define ( 'STRIPE_REFNO_OFFSET',     100000000   );
 define ( 'STRIPE_DESCRIPTION',      'My Org Lottery'      );
@@ -106,12 +101,6 @@ define ( 'STRIPE_DEV_MODE',         true        );
 
 // Organisation - all payment providers
 define ( 'BLOTTO_DEV_MODE',         true        );
-define ( 'BLOTTO_ADMIN_EMAIL',      'help@my.biz'                           );
-define ( 'BLOTTO_ADMIN_PHONE',      '01 234 567 890'                        );
-define ( 'BLOTTO_SIGNUP_PRIVACY',   'https://my.biz/privacy'                );
-define ( 'BLOTTO_SIGNUP_TERMS',     'https://my.biz/terms'                  );
-define ( 'BLOTTO_SIGNUP_VFY_EML',   true        ); // User must confirm email address
-define ( 'BLOTTO_SIGNUP_VFY_MOB',   false       ); // User must confirm phone number
 define ( 'CAMPAIGN_MONITOR',        '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 define ( 'CAMPAIGN_MONITOR_KEY',    ''          );
 define ( 'DATA8_USERNAME',          ''          );
