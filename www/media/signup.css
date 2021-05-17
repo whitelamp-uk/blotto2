@@ -314,7 +314,7 @@ section.signup input[type="submit"] {
   text-decoration: none;
 }
 
-.hidden {
+#payment-form .hidden {
   display: none;
 }
 
