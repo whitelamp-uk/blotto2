@@ -303,12 +303,12 @@ section.signup input[type="submit"] {
   background: white;
 }
 
-.result-message {
+#payment-form .result-message {
   line-height: 22px;
   font-size: 16px;
 }
 
-.result-message a {
+#payment-form .result-message a {
   color: rgb(89, 111, 214);
   font-weight: 600;
   text-decoration: none;
