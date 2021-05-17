@@ -10,45 +10,7 @@ GRANT SELECT
 ON `{{BLOTTO_CONFIG_DB}}`.*
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
-
-
-GRANT UPDATE(`signup_cm_key`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_cm_id`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_cm_id_verify`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_cm_id_trigger`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_amount_cap`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_ticket_options`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_draw_options`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_verify_sms_message`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_done_message`)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-GRANT UPDATE(`signup_sms_message`)
+GRANT UPDATE
 ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
