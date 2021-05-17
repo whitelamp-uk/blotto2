@@ -90,6 +90,8 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_code` char(16) CHARACTER SET ascii NOT NULL,
   `zaffo_merchant_id` int(11) unsigned DEFAULT NULL,
+  `admin_email` varchar(255) CHARACTER SET ascii DEFAULT NULL,
+  `admin_phone` varchar(16) CHARACTER SET ascii DEFAULT NULL,
   `signup_verify_email` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `signup_verify_sms` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `signup_paid_email` tinyint(1) unsigned NOT NULL DEFAULT 0,
@@ -106,6 +108,8 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   `signup_done_message_ok` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `signup_done_message_fail` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `signup_sms_message` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `signup_url_privacy` varchar(255) CHARACTER SET ascii DEFAULT NULL,
+  `signup_url_terms` varchar(255) CHARACTER SET ascii DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `org_code` (`org_code`),
   UNIQUE KEY `zaffo_merchant_id` (`zaffo_merchant_id`)
