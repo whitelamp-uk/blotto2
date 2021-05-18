@@ -2300,7 +2300,7 @@ function set_once (&$var,$value) {
     }
 }
 
-function signup ($s,$ccc,$cref,$first_draw_close) {
+function signup ($org,$s,$ccc,$cref,$first_draw_close) {
     try {
         $c = connect (BLOTTO_MAKE_DB);
         $c->query (
@@ -2343,10 +2343,10 @@ function signup ($s,$ccc,$cref,$first_draw_close) {
              ,`county`='{$s['county']}'
              ,`postcode`='{$s['postcode']}'
              ,`dob`='{$s['dob']}'
-             ,`p0`='{$s['pref_1']}'
-             ,`p1`='{$s['pref_2']}'
-             ,`p2`='{$s['pref_3']}'
-             ,`p3`='{$s['pref_4']}'
+             ,`p{$org['pref_nr_email']}`='{$s['pref_email']}'
+             ,`p{$org['pref_nr_sms']}`='{$s['pref_sms']}'
+             ,`p{$org['pref_nr_post']}`='{$s['pref_post']}'
+             ,`p{$org['pref_nr_phone']}`='{$s['pref_phone']}'
           "
         );
         return true;
@@ -3181,10 +3181,10 @@ function www_signup_vars ( ) {
         'county'         => !$dev_mode ? '' : '',
         'quantity'       => !$dev_mode ? '' : '1',
         'draws'          => !$dev_mode ? '' : '1',
-        'pref_1'         => !$dev_mode ? '' : '',
-        'pref_2'         => !$dev_mode ? '' : 'on',
-        'pref_3'         => !$dev_mode ? '' : '',
-        'pref_4'         => !$dev_mode ? '' : '',
+        'pref_email'     => !$dev_mode ? '' : '',
+        'pref_sms'       => !$dev_mode ? '' : 'on',
+        'pref_post'      => !$dev_mode ? '' : '',
+        'pref_phone'     => !$dev_mode ? '' : '',
         'email'          => !$dev_mode ? '' : 'mm@disney.com',
         'email_verify'   => '',
         'mobile'         => !$dev_mode ? '' : '07890123456',
@@ -3464,4 +3464,10 @@ function www_winners ($format='Y-m-d') {
     return $winners;
 }
 
+function yes_or_no ($loose_value,$y=true,$n=false) {
+    if ($loose_value && !preg_match('<^0+(\.0+)?$>',$loose_value)) {
+        return $y;
+    }
+    return $n;
+}
 

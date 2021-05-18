@@ -154,22 +154,22 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
         <legend>Preferences</legend>
 
         <div class="field checkbox">
-          <input type="checkbox" name="pref_1" <?php if ($v['pref_1']): ?>checked <?php endif; ?> />
+          <input type="checkbox" name="pref_email" <?php if ($v['pref_email']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by email?</label>
         </div>
 
         <div class="field checkbox">
-          <input type="checkbox" name="pref_2" <?php if ($v['pref_2']): ?>checked <?php endif; ?> />
+          <input type="checkbox" name="pref_sms" <?php if ($v['pref_sms']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by SMS?</label>
         </div>
 
         <div class="field checkbox">
-          <input type="checkbox" name="pref_3" <?php if ($v['pref_3']): ?>checked <?php endif; ?> />
+          <input type="checkbox" name="pref_post" <?php if ($v['pref_post']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by post?</label>
         </div>
 
         <div class="field checkbox">
-          <input type="checkbox" name="pref_4" <?php if ($v['pref_4']): ?>checked <?php endif; ?> />
+          <input type="checkbox" name="pref_phone" <?php if ($v['pref_phone']): ?>checked <?php endif; ?> />
           <label class="field-label">Can we contact you by telephone?</label>
         </div>
 
