@@ -167,6 +167,10 @@ function verifyHandle (evt) {
         console.error ('<input name="'+type+'" /> not found');
         return;
     }
+    field.value = field.value.trim ();
+    if (!field.value) {
+        return;
+    }
     nonce = document.querySelector ('form.signup [name="nonce_'+type+'"]');
     if (!nonce) {
         console.error ('<input name="nonce_'+type+'" /> not found');
@@ -183,7 +187,7 @@ function verifyHandle (evt) {
                     nonce.value = response.nonce;
                 }
                 if (response.e) {
-                    console.log (response);
+                    console.error (response.eCode+': '+response.e);
                     if (response.e=='nonce') {
                         if (confirm('This page has expired. Reload it now?')) {
                             window.location.href = './tickets.php';
