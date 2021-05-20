@@ -10,11 +10,13 @@ $q = "
     `ccc`
    ,COUNT(`current_client_ref`) AS `imports`
    ,SUM(`cancelled`='') AS `retained`
+   ,SUM(`latest_mandate_frequency`='Single') AS `single`
   FROM (
     SELECT
       `ccc`
      ,`current_client_ref`
      ,`cancelled`
+     ,`latest_mandate_frequency`
     FROM `Supporters`
     GROUP BY `current_client_ref`
   ) AS `s`
@@ -22,6 +24,7 @@ $q = "
   ORDER BY `imports` DESC
   ;
 ";
+// TODO: add below the data from $row['single'] above - the count of one-off payments
 try {
     $cdo->datasets = [];
     $cdo->datasets[0] = new stdClass ();

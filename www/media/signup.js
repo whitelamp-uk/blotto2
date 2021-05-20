@@ -145,7 +145,7 @@ async function postData (url='',data={}) {
 }
 
 function userMessage (msg) {
-    var button,div,p;
+    var button,button2,div,p;
     div = document.createElement ('div');
     div.classList.add ('error');
     button = document.createElement ('button');
@@ -155,6 +155,11 @@ function userMessage (msg) {
     p = document.createElement ('p');
     p.textContent = msg;
     div.appendChild (p);
+    button2 = document.createElement ('button');
+    button2.classList.add ('ok');
+    button2.textContent = 'OK got it';
+    button2.addEventListener ('click',closeHandle);
+    div.appendChild (button2);
     section = document.querySelector ('section.signup');
     section.appendChild (div);
 }

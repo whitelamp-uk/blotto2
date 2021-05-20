@@ -14,12 +14,15 @@ $q = "
       SUBSTR(`m`.`Created`,1,7) AS `month`
      ,COUNT(`m`.`ClientRef`) AS `recruits`
     FROM `blotto_build_mandate` as `m`
+    -- One-off payments are not viewed as retentions
+    WHERE `m`.`Freq`!='Single'
     GROUP BY `month`
   ) AS `r`
   JOIN (
     SELECT
       SUBSTR(`cancelled_date`,1,7) AS `month`
      ,COUNT(DISTINCT `client_ref`) AS `cancellations`
+    -- One-off payments are not added to cancellations table
     FROM `Cancellations`
     GROUP BY `month`
   ) AS `c`

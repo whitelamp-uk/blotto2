@@ -62,7 +62,7 @@ chartRender (
     'bar',
     data3,
     {
-        title: 'Recent recruitment and cancellation',
+        title: 'Recent recruitment and cancellation (except one-off payments)',
         link: true,
         zero: true
     }

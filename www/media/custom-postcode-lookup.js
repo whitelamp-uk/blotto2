@@ -106,6 +106,9 @@
             container.show('fast');
             this.list.focus();
 
+            // Custom code to remove/override hard-wired style
+            container[0].setAttribute ('style','display:block');
+            container[0].querySelector('select').style.backgroundColor = 'rgb(200,200,255)';
         }
 
     };
@@ -126,4 +129,6 @@
             license: 'SmallUserFull'
         }
     ).show ();
+
+
 

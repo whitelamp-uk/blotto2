@@ -3,6 +3,13 @@ body {
     font-family: sans-serif;
 }
 
+
+section.signup div.error button,
+form.signup button {
+    border-radius:      0.2em;
+}
+
+
 section.signup div.error {
     position:           fixed;
     left:               30vw;
@@ -27,7 +34,18 @@ section.signup div.error button[data-close] {
     width:              2em;
     height:             2em;
 }
-
+section.signup button.ok {
+    display:            block;
+    margin-left:        calc(50% - 5em);
+    margin-right:       calc(50% - 5em);
+}
+section.signup input[type="button"],
+section.signup button.ok,
+form.signup button,
+section.signup select {
+    display: inline-block;
+    line-height: 1.8em;
+}
 
 
 
@@ -176,20 +194,15 @@ form.signup select[name="title"] {
 }
 
 form.signup div.data8-postcodelookup-dropdown {
-    display: none;
-    width: 0;
-    height: 0;
-    border-style: none;
-    border-width: 0;
 }
 
 form.signup select.data8-postcodelookup-list {
     position: fixed;
     display: block;
     left: 1em;
-    top: 1em;
+    top: 5em;
     width: calc(100vw - 3em);
-    height: 10em;
+    height: calc(100vh - 10em);
 }
 
 form.signup select.data8-postcodelookup-list option {
@@ -203,7 +216,7 @@ form.signup select.data8-postcodelookup-list + div {
     position: fixed;
     display: block;
     left: 1em;
-    top: 10em;
+    top: calc(100vh - 6em);
     width: calc(100vw - 3em);
     background-color: grey;
 }
@@ -215,13 +228,6 @@ form.signup input[type="radio"] {
 }
 
 form.signup input[type="radio"] + label {
-}
-
-section.signup input[type="button"],
-form.signup button,
-section.signup select {
-    height: 1.8em;
-    line-height: 1.8em;
 }
 
 section.signup input[type="text"],
