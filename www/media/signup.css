@@ -46,6 +46,11 @@ section.signup select {
     display: inline-block;
     line-height: 1.8em;
 }
+section.signup input[type="button"],
+section.signup button.ok,
+form.signup button {
+    background-color: rgb(200,200,255);
+}
 
 
 
