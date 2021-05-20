@@ -23,9 +23,11 @@ if (array_key_exists('verify',$_GET)) {
     $request                            = json_decode (trim(file_get_contents('php://input')));
     if (!$request) {
         $response->e                    = $e_default;
+        $response->eCode                = 101;
     }
     elseif (property_exists($request,'email')) {
         if ($nonce=nonce_challenge('email',$request->nonce)) {
+            $response->nonce = $nonce;
             if (www_signup_verify_store('email',$request->email,$code)) {
                 try {
                     $result = campaign_monitor (
@@ -35,28 +37,30 @@ if (array_key_exists('verify',$_GET)) {
                         [ 'Code' => $code ]
                     );
                     $ok = $result->http_status_code == 202;
-                    if ($ok) {
-                        $response->nonce = $nonce;
-                    }
-                    else {
+                    if (!$ok) {
                         error_log (print_r($result,true));
                         $response->e    = $e_default;
+                        $response->eCode = 102;
                     }
                 }
                 catch (\Exception $e) {
                     $response->e        = $e_default;
+                    $response->eCode    = 103;
                 }
             }
             else {
                 $response->e            = $e_default;
+                $response->eCode        = 104;
             }
         }
         else {
             $response->e                = 'nonce';
+            $response->eCode            = 105;
         }
     }
     elseif (property_exists($request,'mobile')) {
         if ($nonce=nonce_challenge('mobile',$request->nonce)) {
+            $response->nonce            = $nonce;
             if (www_signup_verify_store('mobile',$request->mobile,$code)) {
                 try {
                     $response->result = sms (
@@ -65,29 +69,31 @@ if (array_key_exists('verify',$_GET)) {
                         str_replace ('{{Code}}',$code,$org['signup_verify_sms_message']),
                         $sms_response
                     );
-                    if ($response->result) {
-                        $response->nonce = $nonce;
-                    }
-                    else {
+                    if (!$response->result) {
                         $response->diagnostic = $sms_response;
                         $response->e    = $e_default;
+                        $response->eCode = 111;
                     }
                 }
                 catch (\Exception $e) {
                     $response->diagnostic = $sms_response;
                     $response->e        = $e_default;
+                    $response->eCode    = 112;
                 }
             }
             else {
                 $response->e            = $e_default;
+                $response->eCode        = 113;
             }
         }
         else {
             $response->e                = 'nonce';
+            $response->eCode            = 114;
         }
     }
     else {
         $response->e                    = $e_default;
+        $response->eCode                = 115;
     }
     header ('Content-Type: application/json');
     echo json_encode ($response,JSON_PRETTY_PRINT);

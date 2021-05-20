@@ -1376,7 +1376,7 @@ function nonce_challenge ($name,$candidate) {
     // Change nonce for next contact
     nonce_set ($name);
     // Return the new nonce
-    return nonce($name);
+    return nonce ($name);
 }
 
 function nonce_init ( ) {
