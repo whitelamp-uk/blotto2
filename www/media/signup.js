@@ -4,6 +4,21 @@ function closeHandle (evt) {
     evt.target.parentElement.parentElement.removeChild (evt.target.parentElement);
 }
 
+function codeHandle (evt) {
+console.log (evt.target.classList);
+    evt.target.value = evt.target.value.replace (/\D/g,'');
+    if (evt.target.value.length>4) {
+        evt.target.value = evt.target.value.substring (0,4);
+    }
+    if (evt.target.value.length==4) {
+        evt.target.classList.remove ('eager');
+        evt.target.classList.add ('satisfied');
+        return;
+    }
+    evt.target.classList.remove ('satisfied');
+    evt.target.classList.add ('eager');
+}
+
 function drawsHandle (evt) {
     var cost,cost2,draw,draws,maxa,maxd,ppt,reduce,tickets,weeks;
     tickets = 1 * evt.target.form.quantity.value;
@@ -164,19 +179,31 @@ function userMessage (msg) {
     section.appendChild (div);
 }
 
+function verifiedInputHandle (evt) {
+    var button,code;
+    button          = evt.target.nextElementSibling.nextElementSibling;
+    button.disabled = false;
+    code            = button.nextElementSibling;
+    code.value      = '';
+    code.classList.remove ('eager');
+    code.classList.remove ('satisfied');
+    code.removeEventListener ('input',codeHandle);
+}
+
 function verifyHandle (evt) {
-    var field,nonce,post,type;
-    type = evt.target.dataset.verifytype;
-    field = document.querySelector ('form.signup [name="'+type+'"]');
+    var code,field,nonce,post,type;
+    type            = evt.target.dataset.verifytype;
+    field           = document.querySelector ('form.signup [name="'+type+'"]');
     if (!field) {
         console.error ('<input name="'+type+'" /> not found');
         return;
     }
-    field.value = field.value.trim ();
+    field.value     = field.value.trim ();
     if (!field.value) {
         return;
     }
-    nonce = document.querySelector ('form.signup [name="nonce_'+type+'"]');
+    code            = evt.target.nextElementSibling;
+    nonce           = document.querySelector ('form.signup [name="nonce_'+type+'"]');
     if (!nonce) {
         console.error ('<input name="nonce_'+type+'" /> not found');
         return;
@@ -185,37 +212,40 @@ function verifyHandle (evt) {
         nonce: nonce.value
     }
     post[field.name] = field.value;
-
     button = document.querySelector ('form.signup [name="verify_button_'+type+'"]');
     if (button) {
         button.disabled = true;
     }
-
-    postData  ('./tickets.php?verify',post)
-      . then (
-            response => {
-                if (response.nonce) {
-                    nonce.value = response.nonce;
-                }
-                if (response.e) {
-                    console.error (response.eCode+': '+response.e);
-                    if (response.e=='nonce') {
-                        if (confirm('This page has expired. Reload it now?')) {
-                            window.location.href = './tickets.php';
-                            return;
-                        }
-                    }
-                    // Usually a configuration problem
-                    userMessage ('Sorry that failed - please try again');
-                }
-                else if (type=='email') {
-                    userMessage ('An email containing a verification code has been sent to '+field.value);
-                }
-                else if (type=='mobile') {
-                    userMessage ('An SMS containing a verification code has been sent to '+field.value);
-                }
+    postData('./tickets.php?verify',post).then (
+        response => {
+            if (response.nonce) {
+                nonce.value = response.nonce;
             }
-        );
+            if (response.e) {
+                console.error (response.eCode+': '+response.e);
+                if (response.e=='nonce') {
+                    if (confirm('This page has expired. Reload it now?')) {
+                        window.location.href = './tickets.php';
+                        return;
+                    }
+                }
+                // Usually a configuration problem
+                userMessage ('Sorry that failed - please try again');
+                return;
+            }
+            if (type=='email') {
+                userMessage ('An email containing a verification code has been sent to '+field.value);
+            }
+            else if (type=='mobile') {
+                userMessage ('An SMS containing a verification code has been sent to '+field.value);
+            }
+            else {
+                // No other types at this time
+            }
+            code.classList.add ('eager');
+            code.addEventListener ('input',codeHandle);
+        }
+    );
 }
 
 
@@ -260,13 +290,13 @@ function verifyHandle (evt) {
     bve = document.querySelector ('form.signup [name="verify_button_email"]');
     ive = document.querySelector ('form.signup [name="email"]');
     if (bve && ive) {
-        ive.oninput = function() { bve.disabled = false; };
+        ive.addEventListener ('input',verifiedInputHandle); 
     }
 
     bvm = document.querySelector ('form.signup [name="verify_button_mobile"]');
     ivm = document.querySelector ('form.signup [name="mobile"]');
     if (bvm && ivm) {
-        ivm.oninput = function() { bvm.disabled = false; };
+        ivm.addEventListener ('input',verifiedInputHandle);
     }
 
     if (window.self==window.top) {

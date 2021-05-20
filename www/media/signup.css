@@ -53,7 +53,6 @@ form.signup button {
 }
 
 
-
 form.signup {
     padding-bottom: 2em;
     width: 100%;
@@ -224,6 +223,13 @@ form.signup select.data8-postcodelookup-list + div {
     top: calc(100vh - 6em);
     width: calc(100vw - 3em);
     background-color: grey;
+}
+
+form.signup input.eager {
+    background-color: rgb(255,191,0);
+}
+form.signup input.satisfied {
+    background-color: rgb(200,255,200);
 }
 
 form.signup input[type="radio"] {
