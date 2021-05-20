@@ -131,6 +131,8 @@ BEGIN
       GROUP BY `client_ref`
     )      AS `sdtk`
            ON `sdtk`.`client_ref`=`p`.`client_ref`
+    -- One-off payments do not need an ANL
+    WHERE `m`.`Freq`!='Single'
     GROUP BY `m`.`Provider`,`m`.`RefNo`
     ORDER BY `tickets_issued`,`ccc`,`ClientRef`
   ;

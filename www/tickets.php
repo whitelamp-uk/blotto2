@@ -10,6 +10,7 @@ if (defined('VOODOOSMS') && VOODOOSMS) {
     require VOODOOSMS;
 }
 $e_default = 'Sorry something went wrong - please try later';
+$e_default = 'Odd\'s bodkins! Please try later';
 $org = org ();
 
 // Session
@@ -220,16 +221,27 @@ window.location.href = '#<?php echo $go; ?>';
     }
 ?>
 
+<!--
 <?php if (count($error)): ?>
-        <div class="error">
-          <button data-close></button>
+      <div class="error">
+        <button data-close></button>
 <?php     foreach($error as $e): ?>
-          <p><?php echo htmlspecialchars ($e); ?></p>
+        <p><?php echo htmlspecialchars ($e); ?></p>
 <?php     endforeach; ?>
-        </div>
+      </div>
 <?php endif; ?>
+-->
 
     </section>
+
+<?php if (count($error)): ?>
+      <script defer>
+<?php     foreach($error as $e): ?>
+        setTimeout ('userMessage("<?php echo str_replace ("\"","\\\"",$e); ?>")',1000);
+<?php     endforeach; ?>
+      </script>
+<?php endif; ?>
+
   </body>
 
 </html>

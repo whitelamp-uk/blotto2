@@ -24,6 +24,7 @@ $q = "
     LEFT JOIN (
       SELECT
         `cm`.`ClientRef`
+       ,`cm`.`Freq`
        ,`cc`.`DateDue`
       FROM `blotto_build_mandate` AS `cm`
       LEFT JOIN `blotto_build_collection` AS `cc`
@@ -39,6 +40,7 @@ $q = "
     ) AS `cs`
       ON `cs`.`client_ref`=`s`.`client_ref`
     WHERE {{WHERE}}
+      AND `c`.`Freq`!='Single'
     GROUP BY `s`.`id`
   ) AS `m`
   GROUP BY `m`.`months`
