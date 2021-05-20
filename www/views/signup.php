@@ -51,7 +51,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
 <?php if ($org['signup_verify_email']>0): ?>
         <label for="email_verify" class="hidden">Verify</label>
-        <button data-verifytype="email">Send email</button>
+        <button data-verifytype="email" type="button">Send email</button>
         <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code" title="Email verification code" required />
         <input type="hidden" name="nonce_email" value="<?php echo nonce('email'); ?>" />
 <?php endif; ?>
@@ -63,7 +63,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
 <?php if ($org['signup_verify_sms']>0): ?>
         <label for="mobile_verify" class="hidden">Verify</label>
-        <button data-verifytype="mobile">Send SMS</button>
+        <button data-verifytype="mobile" type="button">Send SMS</button>
         <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code" title="Mobile number verification code" required />
         <input type="hidden" name="nonce_mobile" value="<?php echo nonce('mobile'); ?>" />
 <?php endif; ?>
