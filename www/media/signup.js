@@ -185,6 +185,12 @@ function verifyHandle (evt) {
         nonce: nonce.value
     }
     post[field.name] = field.value;
+
+    button = document.querySelector ('form.signup [name="verify_button_'+type+'"]');
+    if (button) {
+        button.disabled = true;
+    }
+
     postData  ('./tickets.php?verify',post)
       . then (
             response => {
@@ -215,7 +221,7 @@ function verifyHandle (evt) {
 
 
 (function () {
-    var button,close,closes,draw,draws,input,inputs,quantity,quantities,verify,verifies;
+    var button,bve,bvm,close,closes,draw,draws,input,inputs,ive,ivm,quantity,quantities,verify,verifies;
     button = document.querySelector ('form.signup button[type="submit"]');
     if (button) {
         button.addEventListener ('click',submitInhibit);
@@ -249,6 +255,18 @@ function verifyHandle (evt) {
         for (draw of draws) {
             draw.addEventListener ('click',drawsHandle);
         }
+    }
+
+    bve = document.querySelector ('form.signup [name="verify_button_email"]');
+    ive = document.querySelector ('form.signup [name="email"]');
+    if (bve && ive) {
+        ive.oninput = function() { bve.disabled = false; };
+    }
+
+    bvm = document.querySelector ('form.signup [name="verify_button_mobile"]');
+    ivm = document.querySelector ('form.signup [name="mobile"]');
+    if (bvm && ivm) {
+        ivm.oninput = function() { bvm.disabled = false; };
     }
 
     if (window.self==window.top) {
