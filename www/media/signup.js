@@ -172,7 +172,7 @@ function userMessage (msg) {
     div.appendChild (p);
     button2 = document.createElement ('button');
     button2.classList.add ('ok');
-    button2.textContent = 'OK got it';
+    button2.textContent = 'OK understood';
     button2.addEventListener ('click',closeHandle);
     div.appendChild (button2);
     section = document.querySelector ('section.signup');
