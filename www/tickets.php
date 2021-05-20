@@ -62,7 +62,7 @@ if (array_key_exists('verify',$_GET)) {
                     $response->result = sms (
                         $org,
                         $request->mobile,
-                        str_replace ($org['signup_verify_sms_message'],'{{Code}}',$code),
+                        str_replace ('{{Code}}',$code,$org['signup_verify_sms_message']),
                         $sms_response
                     );
                     if ($response->result) {
