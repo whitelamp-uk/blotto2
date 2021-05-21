@@ -201,12 +201,14 @@ form.signup div.data8-postcodelookup-dropdown {
 }
 
 form.signup select.data8-postcodelookup-list {
-    position: fixed;
     display: block;
+    position: fixed;
+    z-index: 10;
     left: 1em;
     top: 5em;
     width: calc(100vw - 3em);
     height: calc(100vh - 10em);
+    background-color: rgb(200,200,255);
 }
 
 form.signup select.data8-postcodelookup-list option {
