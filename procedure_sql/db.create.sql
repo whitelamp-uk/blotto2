@@ -23,6 +23,14 @@ USE `{{BLOTTO_CONFIG_DB}}`
 
 
 
+CREATE TABLE IF NOT EXISTS `_readme` (
+  `project` char(64),
+  `location` varchar(255) NOT NULL,
+  PRIMARY KEY (`project`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+INSERT IGNORE INTO `_readme` (`project`, `location`) VALUES
+('whitelamp-uk/blotto2', 'https://github.com/whitelamp-uk/blotto2.git');
+
 CREATE TABLE IF NOT EXISTS `blotto_bacs` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `requested_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -130,6 +138,14 @@ USE `{{BLOTTO_TICKET_DB}}`
 
 
 
+CREATE TABLE IF NOT EXISTS `_readme` (
+  `project` char(64),
+  `location` varchar(255) NOT NULL,
+  PRIMARY KEY (`project`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+INSERT IGNORE INTO `_readme` (`project`, `location`) VALUES
+('whitelamp-uk/blotto2', 'https://github.com/whitelamp-uk/blotto2.git');
+
 CREATE TABLE IF NOT EXISTS `blotto_ticket` (
   `number` char(16) CHARACTER SET ascii NOT NULL,
   `issue_date` date DEFAULT NULL,
@@ -150,6 +166,14 @@ CREATE TABLE IF NOT EXISTS `blotto_ticket` (
 USE `{{BLOTTO_RESULTS_DB}}`
 ;
 
+
+CREATE TABLE IF NOT EXISTS `_readme` (
+  `project` char(64),
+  `location` varchar(255) NOT NULL,
+  PRIMARY KEY (`project`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+INSERT IGNORE INTO `_readme` (`project`, `location`) VALUES
+('whitelamp-uk/blotto2', 'https://github.com/whitelamp-uk/blotto2.git');
 
 CREATE TABLE IF NOT EXISTS `blotto_result` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -175,6 +199,14 @@ USE `{{BLOTTO_MAKE_DB}}`
 
 SET foreign_key_checks=0;
 
+
+CREATE TABLE IF NOT EXISTS `_readme` (
+  `project` char(64),
+  `location` varchar(255) NOT NULL,
+  PRIMARY KEY (`project`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+INSERT IGNORE INTO `_readme` (`project`, `location`) VALUES
+('whitelamp-uk/blotto2', 'https://github.com/whitelamp-uk/blotto2.git');
 
 CREATE TABLE IF NOT EXISTS `blotto_entry` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
