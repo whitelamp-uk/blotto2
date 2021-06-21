@@ -112,5 +112,37 @@ To get a completion notification bell when running manually:
     # blotto.bash uses these magic runes to ring the bell:
     echo $'\a'
 
+Anonmymising data for demo
+==========================
+In the belief that the more realistic the data, the better the demo, 
+I've preserved as much as possible, as follows.
 
+Title (Mr / Mrs) is preserved; if it's gender neutral or absent then
+I've assigned them a gender in the correct proportions.  Names are drawn
+from a dataset of random but realistic full names - more Helens than
+Hermiones, a McGregor is more likely to be Cameron than a Smith.
 
+Email addresses are "first.last@fakeisp.com".  The first five digits of
+phone numbers are preserved (basically, area code) but the rest
+randomised (if they exist).
+
+The postcode district is preserved ("CB12") but the rest randomised.  A
+random streetname & town pair in the same district are assigned from an
+Ordnance Survey dataset (so "New Dover Road" occurs with a Canterbury
+postcode, not with an Aberdeen one), and a random house number.  County
+is preserved if given.  Obvs the postcode doesn't actually match the
+random streetname and is often not even a valid postcode.  Names don't 
+match - just as many McGregors in Canterbury as Aberdeen.
+
+Year of birth (if given) is preserved but the rest randomised.
+
+And obviously, sortcodes and account numbers are totally random.
+
+Data sources for anonmyisation
+==============================
+OS data is from here:
+https://osdatahub.os.uk/downloads/open/OpenNames
+and licensed like so:
+http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+Random names from here:
+https://britishsurnames.co.uk/random
