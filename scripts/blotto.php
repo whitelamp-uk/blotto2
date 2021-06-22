@@ -85,6 +85,7 @@ $file = array (
 // SQL instantiation
 $vars = array (
     'BLOTTO_ADMIN_USER'
+    'BLOTTO_ANONYMISER_DB'
    ,'BLOTTO_CANCEL_RULE'
    ,'BLOTTO_CC_NOTIFY'
    ,'BLOTTO_CONFIG_DB'

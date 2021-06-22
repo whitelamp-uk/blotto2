@@ -168,6 +168,7 @@ ldr="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_LOG_DIR         )"
 dfl="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_DUMP_FILE       )"
 sdr="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_CSV_DIR_S       )"
 pdr="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_PROOF_DIR       )"
+cra="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_CREATE_ANON_DB  )"
 dbm="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_MAKE_DB         )"
 dbo="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_DB              )"
 dbt="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_TICKET_DB       )"
@@ -223,6 +224,15 @@ then
     cat $tmp
     mariadb                                             < $tmp
     abort_on_error 1f $?
+fi
+if [ "$cra" ]
+then
+    echo "    Creating (if not exists) anonymisation (fake names) database"
+    /usr/bin/php $prg $sw "$cfg" sql db.create.anonymiser.sql  > $tmp
+    abort_on_error 1g $? $tmp
+    cat $tmp
+    mariadb                                             < $tmp
+    abort_on_error 1h $?
 fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 

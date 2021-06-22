@@ -19,9 +19,7 @@ if (!$zo) {
 
 echo "    Mangling demo make database ".BLOTTO_MAKE_DB."\n"; 
 
-$roadnames_db   = 'ordnance_survey';
-$roadnames_tb   = 'roadnames';
-$fakenames_db   = 'fake_names';
+$db   = BLOTTO_ANONYMISER_DB;
 $male_titles    = explode (',', BLOTTO_MALE_TITLES);
 $female_titles  = explode (',', BLOTTO_FEMALE_TITLES);
 $ngs_titles     = explode (',', BLOTTO_TITLES);
@@ -74,7 +72,7 @@ catch (\mysqli_sql_exception $e) {
 $q = "
   SELECT
     COUNT(*) AS `num`
-  FROM `$roadnames_db`.`$roadnames_tb`
+  FROM `$db`.`road_names`
 ";
 try {
     $res = $zo->query ($q);
@@ -88,7 +86,7 @@ catch (\mysqli_sql_exception $e) {
 $q = "
   SELECT
     COUNT(*) AS `num`
-  FROM `$fakenames_db`.`female_names`
+  FROM `$db`.`female_names`
 ";
 try {
     $res = $zo->query ($q);
@@ -102,7 +100,7 @@ catch (\mysqli_sql_exception $e) {
 $q = "
   SELECT
     COUNT(*) AS `num`
-  FROM `$fakenames_db`.`male_names`
+  FROM `$db`.`male_names`
 ";
 try {
     $res = $zo->query($q);
@@ -188,7 +186,7 @@ Warning: this old code does not allow for $prev['m_pr']
         }
 
         $rndid = rand(1, ${$nmpref.'mnames_num'});
-        $nq = "SELECT `name` FROM `$fakenames_db`.`".$nmpref."male_names` WHERE id =".$rndid;
+        $nq = "SELECT `name` FROM `$db`.`".$nmpref."male_names` WHERE id =".$rndid;
         try {
             $res = $zo->query ($nq);
             $name = $res->fetch_object()->name; 
@@ -236,16 +234,16 @@ Warning: this old code does not allow for $prev['m_pr']
         // Create new address and update contact. in practice if repeat, always same contact
         // If none found (e.g. Belfast) then repeat without where clause
 
-        $pcstub = trim(substr($cur['postcode'], 0, -3));
+        $pcstub = trim (substr($cur['postcode'],0,-3));
         $addr = null;
         $first = true;
         while (!$addr) {
             if ($first) {
-                $aq = "SELECT `roadname`, `town` FROM `ordnance_survey`.`roadnames` WHERE district = '".escm($pcstub)."' ORDER BY RAND() LIMIT 0,1";
+                $aq = "SELECT `roadname`, `town` FROM `$db`.`road_names` WHERE `district`='".escm($pcstub)."' ORDER BY RAND() LIMIT 0,1";
             }
             else {
                 $rndid = rand (1,$roads_num);
-                $aq = "SELECT `roadname`, `town` FROM `ordnance_survey`.`roadnames` WHERE id = ".$rndid;
+                $aq = "SELECT `roadname`, `town` FROM `$db`.`road_names` WHERE id = ".$rndid;
             }
             try {
                 $res = $zo->query($aq); 
@@ -254,7 +252,7 @@ Warning: this old code does not allow for $prev['m_pr']
                     break;
                 }
                 else {
-                $first = false;
+                    $first = false;
                 }
             }
             catch (\mysqli_sql_exception $e) {

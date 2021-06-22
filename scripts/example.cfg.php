@@ -1,6 +1,7 @@
 <?php
 
 // DEMO
+define ( 'BLOTTO_CREATE_ANON_DB', false ); // Inefficient to execute if exists
 define ( 'BLOTTO_DEMO',          true );
 
 // Global config
