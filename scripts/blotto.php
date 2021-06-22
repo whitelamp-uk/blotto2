@@ -38,6 +38,7 @@ $options = array (
 $file = array (
     "sql" => array (
         'BESPOKE'
+       ,'db.create.anonymiser.sql'
        ,'db.create.sql'
        ,'db.create.std.sql'
        ,'db.functions.sql'
