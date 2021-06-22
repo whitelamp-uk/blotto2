@@ -17,6 +17,7 @@ CREATE FUNCTION `cancelDate` (
  ,freq char(16) character set ascii
 ) RETURNS date DETERMINISTIC
 BEGIN
+  DECLARE cd date;
   IF Freq='Single' THEN
     -- Cancel date is always in the future (never treated as cancelled)
     RETURN DATE_ADD(CURDATE(),INTERVAL 1 YEAR)
@@ -24,7 +25,6 @@ BEGIN
   END IF
   ;
   -- cd = late by BLOTTO_CANCEL_RULE plus processing
-  DECLARE cd date;
   SET cd = DATE_ADD(DATE_ADD(d,INTERVAL 3 DAY),INTERVAL {{BLOTTO_CANCEL_RULE}});
   IF Freq='Annually' THEN
     -- Add another year
