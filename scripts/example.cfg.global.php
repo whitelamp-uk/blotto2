@@ -4,8 +4,8 @@
 define ( 'BLOTTO_UN',               '****'              );
 define ( 'BLOTTO_PW',               '********'          );
 define ( 'BLOTTO_ADMIN_USER',       'blotto'            );
+define ( 'BLOTTO_ANONYMISER_DB',    'blotto_anonymiser' );
 define ( 'BLOTTO_CONFIG_DB',        'blotto_config'     );
-define ( 'BLOTTO_ANONYMISER_DB',    'fake_names_2'      );
 define ( 'BLOTTO_UPLOAD_MAX_MB',    4                   );
 define ( 'BLOTTO_ROWS_PER_QRY',     1000                );
 define ( 'BLOTTO_BOGONS_MAX',       2000                );
