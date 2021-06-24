@@ -901,7 +901,7 @@ BEGIN
      ,IFNULL(`d`.`per_play`,'') AS `per_play`
      ,IFNULL(`d`.`balance`,0) AS `balance`
      ,IFNULL(`d`.`Active`,'') AS `active`
-     ,IFNULL(`d`.`Status`,'') AS `status`
+     ,IFNULL(IF(`d`.`Freq`='Single','SINGLE',`d`.`Status`),'') AS `status`
      ,IFNULL(`d`.`FailReason`,'') AS `fail_reason`
     FROM (
       SELECT
