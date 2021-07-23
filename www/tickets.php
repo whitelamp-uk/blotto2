@@ -10,7 +10,6 @@ if (defined('VOODOOSMS') && VOODOOSMS) {
     require VOODOOSMS;
 }
 $e_default = 'Sorry something went wrong - please try later';
-$e_default = 'Odd\'s bodkins! Please try later';
 $org = org ();
 
 // Session
