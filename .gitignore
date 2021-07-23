@@ -2,4 +2,5 @@
 *.sublime-workspace
 */*.sublime-workspace
 *.tmp
+**.cfg.js
 
