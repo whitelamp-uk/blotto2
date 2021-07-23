@@ -92,7 +92,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
         <hr/>
 
         <label for="address_2" class="hidden">Address line 2</label>
-        <input type="text" class="address-line" id="address_2" name="address_2" value="<?php echo htmlspecialchars ($v['address_2']); ?>" placeholder="Address line 2" title="Addres line 2" />
+        <input type="text" class="address-line" id="address_2" name="address_2" value="<?php echo htmlspecialchars ($v['address_2']); ?>" placeholder="Address line 2" title="Address line 2" />
 
         <hr/>
 
