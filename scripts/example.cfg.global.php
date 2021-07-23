@@ -71,7 +71,9 @@ define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.j
 define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up getting safe IPs
 
 // Global - all payment providers
+define ( 'CAMPAIGN_MONITOR',        '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
+define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed'        );
 define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json' );

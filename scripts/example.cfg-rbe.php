@@ -38,12 +38,3 @@ define ( 'BLOTTO_BELL',          ''                  );
 define ( 'BLOTTO_CANCEL_RULE',   '0 MONTH'           );
 define ( 'BLOTTO_CC_NOTIFY',     '0 MONTH'           ); 
 
-/*
-
-define ( 'CAMPAIGN_MONITOR',        '/path/to/createsend-php/csrest_transactional_smartemail.php' );
-define ( 'CAMPAIGN_MONITOR_KEY',    '' );
-
-define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php'        );
-
-*/
-
