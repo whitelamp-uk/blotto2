@@ -102,9 +102,11 @@ define ( 'STRIPE_DEV_MODE',         true        );
 
 // Organisation - all payment providers
 define ( 'BLOTTO_DEV_MODE',         true        );
+define ( 'CAMPAIGN_MONITOR',        '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 define ( 'DATA8_USERNAME',          ''          );
 define ( 'DATA8_PASSWORD',          ''          );
 define ( 'DATA8_COUNTRY',           'GB'        );
+define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
 
 */
 
