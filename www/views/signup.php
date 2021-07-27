@@ -117,7 +117,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <div class="field radioset">
 
-          <label data-ppt="<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'.',''); ?>" data-maxamount="<?php echo intval ($org['signup_amount_cap']); ?>" class="requirements">Tickets cost £<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'-',','); ?> per draw, maximum allowed purchase is £<?php echo number_format ($org['signup_amount_cap'],2,'-',','); ?></label>
+          <label data-ppt="<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'.',''); ?>" data-maxamount="<?php echo intval ($org['signup_amount_cap']); ?>" class="requirements">Tickets cost £<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'-',','); ?> per draw, maximum allowed purchase is &pound;<?php echo htmlspecialchars($org['signup_amount_cap']); ?></label>
 
 <?php foreach ($org['signup_ticket_options'] as $i): ?>
           <div>
