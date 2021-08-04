@@ -707,11 +707,24 @@ function draw ($draw_closed) {
 }
 
 function draw_first_asap ($first_collection_date) {
-    /*
-        Money received may be used in
-        a draw closing on the same day
-    */
-    return $first_collection_date;
+    // Money received may be used in a draw closing on
+    // the same day unless a delay is required for insurance
+    $draw_closes    = draw_upcoming ($first_collection_date);
+    if (!defined('BLOTTO_INSURE_DAYS') || BLOTTO_INSURE_DAYS<1) {
+        return $draw_closes;
+    }
+    $d1             = new \DateTime ($first_collection_date);
+    $d2             = new \DateTime ($draw_closes);
+    $days           = $d1->diff($d2)->format ('%r%a');
+    if ($days>=BLOTTO_INSURE_DAYS) {
+        return $draw_closes;
+    }
+    // If insurance is required by any prize and first
+    // collection date is within BLOTTO_INSURE_DAYS of
+    // draw close date, the first draw must be postponed
+    // by one draw
+    $d2->add (new \DateInterval('P1D'));
+    return draw_upcoming ($d2->format('Y-m-d'));
 }
 
 function draw_first_zaffo_model ($first_collection_date) {
