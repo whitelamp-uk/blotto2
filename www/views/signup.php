@@ -163,26 +163,26 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
       <fieldset>
 
-        <legend>Preferences</legend>
+        <legend>Contact preferences</legend>
 
         <div class="field checkbox">
           <input type="checkbox" name="pref_email" <?php if ($v['pref_email']): ?>checked <?php endif; ?> />
-          <label class="field-label">Can we contact you by email?</label>
+          <label class="field-label">Email</label>
         </div>
 
         <div class="field checkbox">
           <input type="checkbox" name="pref_sms" <?php if ($v['pref_sms']): ?>checked <?php endif; ?> />
-          <label class="field-label">Can we contact you by SMS?</label>
+          <label class="field-label">SMS</label>
         </div>
 
         <div class="field checkbox">
           <input type="checkbox" name="pref_post" <?php if ($v['pref_post']): ?>checked <?php endif; ?> />
-          <label class="field-label">Can we contact you by post?</label>
+          <label class="field-label">Post</label>
         </div>
 
         <div class="field checkbox">
           <input type="checkbox" name="pref_phone" <?php if ($v['pref_phone']): ?>checked <?php endif; ?> />
-          <label class="field-label">Can we contact you by telephone?</label>
+          <label class="field-label">Telephone</label>
         </div>
 
       </fieldset>
