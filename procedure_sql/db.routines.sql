@@ -816,6 +816,29 @@ BEGIN
   ALTER TABLE `Insurance_Summary`
   ADD PRIMARY KEY (`draw_close_date`)
   ;
+  -- Refresh export data for next transfer to insurer
+  CREATE TABLE IF NOT EXISTS `{{BLOTTO_TICKET_DB}}`.`Insurance_Export` (
+    `entry_urn` bigint(21) unsigned NOT NULL,
+    `draw_close_date` date DEFAULT NULL,
+    `player_urn` varchar(69) CHARACTER SET ascii DEFAULT NULL,
+    `ticket_number` varchar(18) CHARACTER SET ascii DEFAULT NULL,
+    PRIMARY KEY (`entry_urn`),
+    KEY `draw_close_date` (`draw_close_date`),
+    KEY `player_urn` (`player_urn`),
+    KEY `ticket_number` (`ticket_number`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+  ;
+  DELETE FROM `{{BLOTTO_TICKET_DB}}`.`Insurance_Export`
+  WHERE `player_urn` LIKE CONCAT(UPPER('{{BLOTTO_ORG_USER}}'),'-%')
+  ;
+  SET @latest = ( SELECT MAX(`draw_close_date`) FROM `Insurance` )
+  ;
+  INSERT INTO `{{BLOTTO_TICKET_DB}}`.`Insurance_Export`
+    SELECT
+      *
+    FROM `Insurance`
+    WHERE `draw_close_date`=@latest
+  ;
 END$$
 
 
