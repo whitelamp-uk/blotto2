@@ -115,6 +115,18 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
         <legend>Ticket requirements</legend>
 
+<?php if ($org['signup_dd_text']): ?>
+
+        <p><?php echo str_replace ("\n",'<br/>',htmlspecialchars($org['signup_dd_text'])); ?></p>
+
+<?php endif; ?>
+
+<?php if ($org['signup_dd_link']): ?>
+
+        <a class="dd" target="_top" href="<?php echo htmlspecialchars ($org['signup_dd_link']); ?>">Sign up by direct debit</a>
+
+<?php endif; ?>
+
         <div class="field radioset">
 
           <label data-ppt="<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'.',''); ?>" data-maxamount="<?php echo intval ($org['signup_amount_cap']); ?>" class="requirements">Tickets cost £<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'-',','); ?> per draw, maximum allowed purchase is &pound;<?php echo htmlspecialchars($org['signup_amount_cap']); ?></label>

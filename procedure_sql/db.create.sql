@@ -110,6 +110,8 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   `signup_cm_id_trigger` varchar(255) CHARACTER SET ascii DEFAULT NULL,
   `signup_amount_cap` mediumint(4) unsigned NOT NULL,
   `signup_ticket_options` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `signup_dd_text` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `signup_dd_link` varchar(255) CHARACTER SET ascii NOT NULL,
   `signup_draw_options` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `signup_sms_from` char(11) CHARACTER SET ascii DEFAULT NULL,
   `signup_verify_sms_message` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
