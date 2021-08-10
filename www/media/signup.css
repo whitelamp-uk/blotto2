@@ -6,11 +6,11 @@ body {
 
 section.signup div.error button,
 form.signup button,
-a.dd {
+form.signup a.dd {
     border-radius:      0.2em;
 }
 
-a.dd {
+form.signup a.dd {
     border-style:       solid;
     border-color:       black;
     border-width:       1px;
@@ -56,7 +56,7 @@ section.signup select {
 section.signup input[type="button"],
 section.signup button.ok,
 form.signup button,
-a.dd {
+form.signup a.dd {
     background-color: rgb(200,200,255);
 }
 
