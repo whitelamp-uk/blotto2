@@ -216,7 +216,7 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
       <fieldset>
 
-        <legend>Protecting your data</legend>
+        <legend>Please confirm</legend>
 
         <div class="field checkbox">
           <input id="terms" type="checkbox" name="terms" <?php if($v['terms']): ?>checked<?php endif; ?> required />
