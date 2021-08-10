@@ -14,6 +14,7 @@ form.signup a.dd,
 form.signup a.dd.active,
 form.signup a.dd.hover,
 form.signup a.dd.visited {
+    margin-bottom:      0.5em;
     border-style:       solid;
     border-color:       black;
     border-width:       1px;
