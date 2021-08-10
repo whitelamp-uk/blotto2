@@ -10,11 +10,15 @@ form.signup a.dd {
     border-radius:      0.2em;
 }
 
-form.signup a.dd {
+form.signup a.dd,
+form.signup a.dd.active,
+form.signup a.dd.hover,
+form.signup a.dd.visited {
     border-style:       solid;
     border-color:       black;
     border-width:       1px;
-
+    color:              black;
+    text-decoration:    none;
 }
 
 section.signup div.error {
