@@ -15,7 +15,7 @@ form.signup a.dd.active,
 form.signup a.dd.hover,
 form.signup a.dd.visited {
     display:            inline-block;
-    margin:             0 0 1.5em 0;
+    margin:             0 0 0.5em 0;
     border-style:       solid;
     border-color:       black;
     border-width:       1px;
