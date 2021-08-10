@@ -57,6 +57,7 @@ define ( 'BLOTTO_DAY_LAST',      null                );  // Last date due day
 //define ( 'BLOTTO_WIN_FIRST',     '2016-01-01'        );  // Only report wins/reconciliations on or after this date
 define ( 'BLOTTO_WEEK_ENDED',    5                   );  // Reports up to and including Friday
 define ( 'BLOTTO_DRAW_CLOSE_1',  '2016-07-08'        );  // First draw close for the game
+define ( 'BLOTTO_INSURE_DAYS',   1                   );  // Days before draw close to insure entries
 define ( 'BLOTTO_CC_NOTIFY',     '10 MONTH'          );  // MySQL interval notify CC of ticket changes
 // BLOTTO_PAY_DELAY and rsm-api's RSM_PAY_INTERVAL are both needed
 define ( 'BLOTTO_PAY_DELAY',     'P2D'               );  // From DateDue to credit "available" (DateInterval)
