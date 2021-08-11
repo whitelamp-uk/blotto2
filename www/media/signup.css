@@ -120,6 +120,16 @@ form.signup fieldset legend {
     font-weight: bold;
 }
 
+form.signup fieldset.gambling_commission p {
+    margin: 1.5em 1em 1em 1em;
+}
+
+form.signup fieldset.gambling_commission img {
+    margin: 1em 2em 0 2em;
+    width:  auto;
+    height: 2.5em;
+}
+
 form.signup div.field.checkbox {
     margin-left: 1.5em;
 }

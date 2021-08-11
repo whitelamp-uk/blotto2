@@ -230,6 +230,20 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 
       </fieldset>
 
+      <fieldset class="gambling_commission">
+
+        <legend>Problems with gambling?</legend>
+
+        <div>
+          <a target="_top" href="http://www.gamcare.org.uk/"><img src="./media/gamcare.svg"/></a>
+          <a target="_top" href="http://www.begambleaware.org.uk/"><img src="./media/be_gamble_aware.png"/></a>
+          <a target="_top" href="https://www.gamblingcommission.gov.uk/"><img src="./media/gambling_commission.svg"/></a>
+        </div>
+
+        <p>For GamCare telephone <a href="tel:08088020133">0808 8020 133</a></p>
+
+      </fieldset>
+
       <fieldset>
 
         <legend>Select payment method to pay <span id="signup-cost-confirm" class="signup-cost">&pound;<output><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output></span></legend>
