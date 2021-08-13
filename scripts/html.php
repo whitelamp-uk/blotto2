@@ -50,9 +50,39 @@ table#draw-summary-super tbody td:nth-of-type(2),
 table#draw-summary-super tbody td:nth-of-type(3) {
     text-align:         right;
 }
+div.invoice {
+    margin:  2em;
+    width: 40em;
+    font-family: 'arial','sans';
+}
+div.invoice table.invoice {
+    width:  100%;
+}
+#invoice-header {
+    text-align: center;
+}
+#invoice-header img {
+    width: 10em;
+    height: 5.1em;
+}
+#invoice-header address {
+    padding: 2em 0 3em 0;     
+    font-size: 0.8em;
+    font-style: normal;
+    color:  #797979;
+}
 #invoice-ref {
+    text-align: center;
+}
+#invoice-date {
 }
 #invoice-address {
+}
+#invoice-game {
+}
+#invoice-payout {
+}
+#invoice-terms {
 }
 .invoice-large {
     font-size:  1.6em;

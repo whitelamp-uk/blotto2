@@ -1389,7 +1389,7 @@ function invoice_render ($invoice,$output=true) {
     // Test object
     $invoice = '{
         "html_title" : "Invoice LOTDBH-2021-08-1",
-        "html_table_id" : "invoice-lottery",
+        "html_table_id" : "invoice-game",
         "date" : "2021-08-14",
         "reference" : "LOTDBH-2021-08-14",
         "address" : "Charity XYZ\n1 The Street\nTownsville\nAA1 1AA",
