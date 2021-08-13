@@ -1299,33 +1299,33 @@ function invoice_game ($draw_closed_date,$output=true) {
         $invoice->items[] = [
             "Advanced notification letters",
             $letters_anl,
-            number_format (BLOTTO_FEE_ANL/100,2)
+            number_format (BLOTTO_FEE_ANL/100,2,'.','')
         ];
         $invoice->items[] = [
             "Winner letters",
             $letters_win,
-            number_format (BLOTTO_FEE_WL/100,2)
+            number_format (BLOTTO_FEE_WL/100,2,'.','')
         ];
         $invoice->items[] = [
             "Email services",
             1,
-            number_format (BLOTTO_FEE_CM/100,2)
+            number_format (BLOTTO_FEE_CM/100,2,'.','')
         ];
         $invoice->items[] = [
             "Administration charge",
             1,
-            number_format (BLOTTO_FEE_ADMIN/100,2)
+            number_format (BLOTTO_FEE_ADMIN/100,2,'.','')
         ];
         $invoice->items[] = [
             "Ticket management fee",
             $tickets,
-            number_format ($tickets*BLOTTO_FEE_MANAGE/100,2)
+            number_format ($tickets*BLOTTO_FEE_MANAGE/100,2,'.','')
         ];
         if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS>0) {
             $invoice->items[] = [
                 "Ticket insurance fee",
                 $tickets,
-                number_format ($tickets*BLOTTO_FEE_INSURE/100,2)
+                number_format ($tickets*BLOTTO_FEE_INSURE/100,2,'.','')
             ];
         }
     }
@@ -1408,12 +1408,12 @@ function invoice_render ($invoice,$output=true) {
     // Calculate rows of data
     $invoice->totals = [ "Totals", "", "", 0, 0, 0 ];
     foreach ($invoice->items as $idx=>$item) {
-        $invoice->items[$idx][2] = number_format ($item[2],2);
-        $subtotal = number_format ($item[1]*$item[2],2);
+        $invoice->items[$idx][2] = number_format ($item[2],2,'.','');
+        $subtotal = number_format ($item[1]*$item[2],2,'.','');
         $invoice->totals[3] += $subtotal;
-        $tax = number_format (BLOTTO_TAX*$subtotal,2);
+        $tax = number_format (BLOTTO_TAX*$subtotal,2,'.','');
         $invoice->totals[4] += $tax;
-        $total = number_format ($subtotal+$tax,2);
+        $total = number_format ($subtotal+$tax,2,'.','');
         $invoice->totals[5] += $total;
         array_push ($invoice->items[$idx],$subtotal,$tax,$subtotal);
     }
