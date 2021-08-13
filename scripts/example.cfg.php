@@ -67,6 +67,7 @@ define ( 'BLOTTO_CREF_SPLITTER', '-'                 );  // Split mandate detect
 define ( 'BLOTTO_NO_CLAWBACK',   3                   );  // Used by early ticket reduction reporting
 define ( 'BLOTTO_CANCEL_RULE',   '2 MONTH'           );  // Used to define when a supporter has "cancelled"
 
+
 // rsm-api, an RSM payment class
 define ( 'BLOTTO_PAY_API_RSM',          '/some/path/to/rsm-api/PayApi.php'  );
 define ( 'BLOTTO_PAY_API_RSM_CLASS',    '\Blotto\Rsm\PayApi'                );
@@ -110,4 +111,14 @@ define ( 'DATA8_COUNTRY',           'GB'        );
 define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
 
 */
+
+
+// Fees
+define ( 'BLOTTO_FEE_LOADING',   '50:500,100:450,150:400,200:300,250' );
+define ( 'BLOTTO_FEE_ANL',        80                 );
+define ( 'BLOTTO_FEE_WL',         80                 );
+define ( 'BLOTTO_FEE_CM',         1131               );
+define ( 'BLOTTO_FEE_ADMIN',      4500               );
+define ( 'BLOTTO_FEE_MANAGE',     7                  );
+define ( 'BLOTTO_FEE_INSURE',     7                  );
 

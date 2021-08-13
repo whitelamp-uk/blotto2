@@ -50,7 +50,29 @@ table#draw-summary-super tbody td:nth-of-type(2),
 table#draw-summary-super tbody td:nth-of-type(3) {
     text-align:         right;
 }
-
+#invoice-ref {
+}
+#invoice-address {
+}
+.invoice-large {
+    font-size:  1.6em;
+    font-weight: bold;
+}
+.invoice-pre {
+    white-space: pre-line;
+    margin-left: 2em;
+}
+table.invoice tfoot {
+    font-weight: bold;
+}
+table.invoice td {
+    font-family: 'courier new';
+    text-align: right;
+}
+table.invoice td:nth-of-type(1) {
+    font-family: inherit;
+    text-align: left;
+}
     </style>
   </head>
   <body>

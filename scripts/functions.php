@@ -1210,6 +1210,230 @@ function html ($snippet,$title='Untitled',$output=true) {
     return $html;
 }
 
+function invoice ($invoice,$output=true) {
+    if ($output) {
+        require __DIR__.'/invoice.php';
+        return;
+    }
+    ob_start ();
+    require __DIR__.'/invoice.php';
+    $invoice = ob_get_contents ();
+    ob_end_clean ();
+    return $invoice;
+}
+
+function invoice_game ($draw_closed_date,$output=true) {
+    $code               = strtoupper (BLOTTO_ORG_USER);
+    $org                = org ();
+    $qs                 = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
+    try {
+        $zo             = connect (BLOTTO_MAKE_DB);
+        $date_draw      = $zo->query ($qs);
+        $date_draw      = $date_draw->fetch_assoc ();
+        $date_draw      = $date_draw['dt'];
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $invoice = new \stdClass ();
+    $invoice->html_title        = "Invoice LOT{$code}-{$date_draw}";
+    $invoice->html_table_id     = "invoice-game";
+    $invoice->date              = $date_draw;
+    $invoice->reference         = "WIN{$code}-{$draw_closed_date}";
+    $invoice->address           = $org['invoice_address'];
+    $invoice->description       = "Payout for draw closing {$draw_closed_date}";
+    $invoice->items             = [];
+    $invoice->terms             = $org['invoice_terms_game'];
+    if ($invoice->terms) {
+        try {
+            $qs = "
+              SELECT
+                COUNT(`id`) AS `tickets`
+              FROM `blotto_entry`
+              WHERE `draw_closed`='$draw_closed_date'
+            ";
+            $tickets = $zo->query ($qs);
+            $tickets = $tickets->fetch_assoc ();
+            $tickets = intval ($tickets['tickets']);
+            $qs = "
+              SELECT
+                DISTINCT `draw_closed` AS `previous`
+              FROM `blotto_entry`
+              WHERE `draw_closed`<'$draw_closed_date'
+              ORDER BY `draw_closed` DESC
+              LIMIT 0,1
+            ";
+            $previous = $zo->query ($qs);
+            $previous = $previous->fetch_assoc ();
+            $previous = $previous['previous'];
+            $qs = "
+              SELECT
+                COUNT(`ClientRef`) AS `letters_anl`
+              FROM `ANLs`
+              WHERE `tickets_issued`<='$draw_closed_date'
+                AND `tickets_issued`>'$previous'
+            ";
+            $letters_anl = $zo->query ($qs);
+            $letters_anl = $letters_anl->fetch_assoc ();
+            $letters_anl = $letters_anl['letters_anl'];
+            $qs = "
+              SELECT
+                COUNT(`ticket_number`) AS `letters_win`
+              FROM `Wins`
+              WHERE `draw_closed`='$draw_closed_date'
+            ";
+            $letters_win = $zo->query ($qs);
+            $letters_win = $letters_win->fetch_assoc ();
+            $letters_win = $letters_win['letters_win'];
+        }
+        catch (\mysqli_sql_exception $e) {
+            throw new \Exception ($qs."\n".$e->getMessage());
+            return false;
+        }
+        $invoice->items[] = [
+            "Loading fees",
+            $tickets,
+            loading_fee ($tickets)
+        ];
+        $invoice->items[] = [
+            "Advanced notification letters",
+            $letters_anl,
+            number_format (BLOTTO_FEE_ANL/100,2)
+        ];
+        $invoice->items[] = [
+            "Winner letters",
+            $letters_win,
+            number_format (BLOTTO_FEE_WL/100,2)
+        ];
+        $invoice->items[] = [
+            "Email services",
+            1,
+            number_format (BLOTTO_FEE_CM/100,2)
+        ];
+        $invoice->items[] = [
+            "Administration charge",
+            1,
+            number_format (BLOTTO_FEE_ADMIN/100,2)
+        ];
+        $invoice->items[] = [
+            "Ticket management fee",
+            $tickets,
+            number_format ($tickets*BLOTTO_FEE_MANAGE/100,2)
+        ];
+        if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS>0) {
+            $invoice->items[] = [
+                "Ticket insurance fee",
+                $tickets,
+                number_format ($tickets*BLOTTO_FEE_INSURE/100,2)
+            ];
+        }
+    }
+    return invoice_render ($invoice,$output);
+}
+
+function invoice_payout ($draw_closed_date,$output=true) {
+    $code               = strtoupper (BLOTTO_ORG_USER);
+    $org                = org ();
+    $qs                 = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
+    try {
+        $zo             = connect (BLOTTO_MAKE_DB);
+        $date_draw      = $zo->query ($qs);
+        $date_draw      = $date_draw->fetch_assoc ();
+        $date_draw      = $date_draw['dt'];
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $invoice = new \stdClass ();
+    $invoice->html_title        = "Invoice WIN{$code}-{$date_draw}";
+    $invoice->html_table_id     = "invoice-payout";
+    $invoice->date              = $date_draw;
+    $invoice->reference         = "WIN{$code}-{$draw_closed_date}";
+    $invoice->address           = $org['invoice_address'];
+    $invoice->description       = "Payout for draw closing {$draw_closed_date}";
+    $invoice->items             = [];
+    $invoice->terms             = $org['invoice_terms_payout'];
+    if ($invoice->terms) {
+        $qs = "
+          SELECT
+            `prize`
+           ,COUNT(`ticket_number`) AS `qty`
+           ,`winnings` AS `prize_value`
+          FROM `Wins`
+          WHERE `draw_closed`='$draw_closed_date'
+            AND `superdraw`='N'
+          GROUP BY `prize`
+          ORDER BY `winnings`
+          ;
+        ";
+        try {
+            $items = $zo->query ($qs);
+            while($item=$items->fetch_array(MYSQLI_NUM)) {
+                $invoice->items[] = $item;
+            }
+        }
+        catch (\mysqli_sql_exception $e) {
+            throw new \Exception ($qs."\n".$e->getMessage());
+            return false;
+        }
+    }
+    return invoice_render ($invoice,$output);
+}
+
+function invoice_render ($invoice,$output=true) {
+/*
+    // Test object
+    $invoice = '{
+        "html_title" : "Invoice LOTDBH-2021-08-1",
+        "html_table_id" : "invoice-lottery",
+        "date" : "2021-08-14",
+        "reference" : "LOTDBH-2021-08-14",
+        "address" : "Charity XYZ\n1 The Street\nTownsville\nAA1 1AA",
+        "description" : "Game costs draw closing 2021-08-13",
+        "items" : [
+          [ "Loading Fees", 0, 2.50 ],
+          [ "ANL Letters", 0, 0.80 ],
+          [ "Winners Letters", 6, 0.80 ],
+          [ "Email Client", 1, 11.31 ],
+          [ "Admin Charges", 1, 45.00 ],
+          [ "Management Charge", 4003, 0.07 ],
+          [ "Insurance", 4003, 0.07 ]
+        ],
+        "terms" : "Within 17 days"
+    }';
+    $invoice = json_decode ($invoice);
+*/
+    // Calculate rows of data
+    $invoice->totals = [ "Totals", "", "", 0, 0, 0 ];
+    foreach ($invoice->items as $idx=>$item) {
+        $invoice->items[$idx][2] = number_format ($item[2],2);
+        $subtotal = number_format ($item[1]*$item[2],2);
+        $invoice->totals[3] += $subtotal;
+        $tax = number_format (BLOTTO_TAX*$subtotal,2);
+        $invoice->totals[4] += $tax;
+        $total = number_format ($subtotal+$tax,2);
+        $invoice->totals[5] += $total;
+        array_push ($invoice->items[$idx],$subtotal,$tax,$subtotal);
+    }
+    $invoice->totals[3] = number_format ($invoice->totals[3],2);
+    $invoice->totals[4] = number_format ($invoice->totals[4],2);
+    $invoice->totals[5] = number_format ($invoice->totals[5],2);
+    $invoice->grand_total = [
+        "Total to be paid",
+        "",
+        BLOTTO_CURRENCY.number_format($invoice->totals[5],2),
+        "",
+        "",
+        ""
+    ];
+    // Generate an HTML invoice snippet
+    // NB invoice() calls table()
+    $snippet = invoice ($invoice,false);
+    return html ($snippet,$invoice->html_title,$output);
+}
+
 function is_https ( ) {
     if (php_sapi_name()=='cli') {
         return false;
@@ -1294,6 +1518,18 @@ function links_report ($fname,$number,$xhead) {
         $params .= '&amp;p'.$i.'='.htmlspecialchars($v);
     }
     require __DIR__.'/links_report.php';
+}
+
+function loading_fee ($qty) {
+    $defn           = explode (',',BLOTTO_FEE_LOADING);
+    $bulk_fee       = number_format (array_pop($defn)/100,2);
+    foreach ($defn as $range) {
+        $range      = explode (':',$range);
+        if ($range[0]>=$qty) {
+            return number_format ($range[1]/100,2);
+        }
+    }
+    return $bulk_fee;
 }
 
 function month_end_last ($format='Y-m-d',$date=null) {
@@ -2379,7 +2615,8 @@ function sms ($org,$to,$message,&$diagnostic) {
     return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
 }
 
-function table ($id,$class,$caption,$headings,$data,$output=true) {
+function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
+    // TODO: these inputs are now a mess and should become an object, $table
     if ($output) {
         require __DIR__.'/table.php';
         return;

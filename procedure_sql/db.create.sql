@@ -120,6 +120,9 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   `signup_sms_message` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `signup_url_privacy` varchar(255) CHARACTER SET ascii DEFAULT NULL,
   `signup_url_terms` varchar(255) CHARACTER SET ascii DEFAULT NULL,
+  `invoice_address` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+  `invoice_terms_game` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `invoice_terms_payout` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `org_code` (`org_code`),
   UNIQUE KEY `zaffo_merchant_id` (`zaffo_merchant_id`)

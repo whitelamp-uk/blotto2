@@ -1,5 +1,4 @@
 
-
 <table id="<?php echo htmlspecialchars($id); ?>" class="<?php echo htmlspecialchars($class); ?>">
 <?php if($caption): ?>
   <caption><?php echo htmlspecialchars($caption); ?></caption>
@@ -29,6 +28,16 @@
     <tr>
       <td colspan="<?php echo count($headings); ?>">No results</td>
     </tr>
+  </tfoot>
+<?php elseif($footings): ?>
+  <tfoot>
+<?php     foreach ($footings as $row): ?>
+    <tr>
+<?php         foreach ($row as $cell): ?>
+      <td><?php echo htmlspecialchars($cell); ?></td>
+<?php         endforeach; ?>
+    </tr>
+<?php     endforeach; ?>
   </tfoot>
 <?php endif; ?>
 </table>

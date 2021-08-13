@@ -51,6 +51,12 @@ define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
 
+define ( 'BLOTTO_BANK_NAME',        'My Lottery Account'    );
+define ( 'BLOTTO_BANK_SORT',        '01-02-03'              );
+define ( 'BLOTTO_BANK_ACNR',        '12345678'              );
+define ( 'BLOTTO_CURRENCY',         '£'             ); // GBP, £, USD, etc
+define ( 'BLOTTO_TAX',              0.20            ); // Sales tax as a decimal
+
 /*
 
 // Global - Paypal
