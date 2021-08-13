@@ -1295,7 +1295,7 @@ function invoice_game ($draw_closed_date,$output=true) {
         $invoice->items[] = [
             "Loading fees",
             $letters_anl,
-            loading_fee ($tickets)
+            loading_fee ($letters_anl)
         ];
         $invoice->items[] = [
             "Advanced notification letters",
