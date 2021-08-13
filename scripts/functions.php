@@ -1414,7 +1414,7 @@ function invoice_render ($invoice,$output=true) {
         $tax = number_format (BLOTTO_TAX*$subtotal,2,'.','');
         $invoice->totals[4] += $tax;
         $total = number_format ($subtotal+$tax,2,'.','');
-        $invoice->totals[5] += $total;
+        $invoice->totals[5] += $total + $tax;
         array_push ($invoice->items[$idx],$subtotal,$tax,$subtotal);
     }
     $invoice->totals[3] = number_format ($invoice->totals[3],2,'.','');
