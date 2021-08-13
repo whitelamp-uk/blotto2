@@ -1243,6 +1243,7 @@ function invoice_game ($draw_closed_date,$output=true) {
     $invoice->reference         = "WIN{$code}-{$draw_closed_date}";
     $invoice->address           = $org['invoice_address'];
     $invoice->description       = "Payout for draw closing {$draw_closed_date}";
+    $invoice->exempt            = false;
     $invoice->items             = [];
     $invoice->terms             = $org['invoice_terms_game'];
     if ($invoice->terms) {
@@ -1353,6 +1354,7 @@ function invoice_payout ($draw_closed_date,$output=true) {
     $invoice->reference         = "WIN{$code}-{$draw_closed_date}";
     $invoice->address           = $org['invoice_address'];
     $invoice->description       = "Payout for draw closing {$draw_closed_date}";
+    $invoice->exempt            = true;
     $invoice->items             = [];
     $invoice->terms             = $org['invoice_terms_payout'];
     if ($invoice->terms) {
@@ -1392,6 +1394,7 @@ function invoice_render ($invoice,$output=true) {
         "reference" : "LOTDBH-2021-08-14",
         "address" : "Charity XYZ\n1 The Street\nTownsville\nAA1 1AA",
         "description" : "Game costs draw closing 2021-08-13",
+        "exempt" : false,
         "items" : [
           [ "Loading Fees", 0, 2.50 ],
           [ "ANL Letters", 0, 0.80 ],
@@ -1411,7 +1414,10 @@ function invoice_render ($invoice,$output=true) {
         $invoice->items[$idx][2] = number_format ($item[2],2,'.','');
         $subtotal = number_format ($item[1]*$item[2],2,'.','');
         $invoice->totals[3] += $subtotal;
-        $tax = number_format (BLOTTO_TAX*$subtotal,2,'.','');
+        $tax = 0;
+        if (!$invoice->exempt) {
+            $tax = number_format (BLOTTO_TAX*$subtotal,2,'.','');
+        }
         $invoice->totals[4] += $tax;
         $total = number_format ($subtotal+$tax,2,'.','');
         $invoice->totals[5] += $total;
