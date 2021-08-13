@@ -578,32 +578,39 @@ then
     abort_on_error 30 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
+    echo "31. Generate missing invoices"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" exec invoices.php
+    abort_on_error 31 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
+
 fi
 
-echo "31. Generating dump file of make database at $dfl ..."
+echo "32. Generating dump file of make database at $dfl ..."
 start=$SECONDS
 if [ ! "$no_tidy" ]
 then
     echo "    Dropping construction stored procedures, functions and temporary tables from make database"
     /usr/bin/php $prg $sw "$cfg" sql db.routines.drop.sql > $tmp
-    abort_on_error 31a $? $tmp
+    abort_on_error 32a $? $tmp
     cat $tmp
     /usr/bin/php $prg $sw "$cfg" sql db.functions.drop.sql > $tmp
-    abort_on_error 31b $? $tmp
+    abort_on_error 32b $? $tmp
     cat $tmp
     /usr/bin/php $prg $sw "$cfg" sql db.tables.drop.sql > $tmp
-    abort_on_error 31c $? $tmp
+    abort_on_error 32c $? $tmp
     cat $tmp
     mariadb                                             < $tmp
-    abort_on_error 31d $?
+    abort_on_error 32d $?
 fi
 echo mysqldump --defaults-extra-file=$mda --routines $dbm '>' $dfl
 mysqldump --defaults-extra-file=$mda --routines $dbm    > $dfl
-abort_on_error 31e $?
+abort_on_error 32e $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "32. Recreate organisation database"
+echo "33. Recreate organisation database"
 if [ "$rehearse" ]
 then
     echo "    Rehearsal only - skipping"
@@ -612,54 +619,54 @@ else
     start=$SECONDS
     echo "    DROP DATABASE IF EXISTS $dbo;"
     mariadb                                           <<< "DROP DATABASE IF EXISTS $dbo;"
-    abort_on_error 32a $?
+    abort_on_error 33a $?
     echo "    CREATE DATABASE $dbo COLLATE 'utf8_general_ci';"
     mariadb                                           <<< "CREATE DATABASE $dbo COLLATE 'utf8_general_ci';"
-    abort_on_error 32b $?
+    abort_on_error 33b $?
     echo "    Importing from $dfl ..."
     mariadb $dbo                                        < $dfl
-    abort_on_error 32c $?
+    abort_on_error 33c $?
     if [ ! "$no_tidy" ]
     then
         echo "    Deleting $dfl"
         rm $dfl
-        abort_on_error 32d $?
+        abort_on_error 33d $?
     fi
     echo "    Completed in $(($SECONDS-$start)) seconds"
 fi
 
 
-echo "33. Grant organisation database permissions to admin user and organisation role"
+echo "34. Grant organisation database permissions to admin user and organisation role"
 if [ "$rehearse" ]
 then
     echo "    Rehearsal only - skipping"
 else
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" sql db.permissions.sql > $tmp
-    abort_on_error 33a $? $tmp
+    abort_on_error 34a $? $tmp
     cat $tmp
     mariadb                                             < $tmp
-    abort_on_error 33b $?
+    abort_on_error 34b $?
     /usr/bin/php $prg $sw "$cfg" sql db.permissions.reports.sql > $tmp
-    abort_on_error 33c $? $tmp
+    abort_on_error 34c $? $tmp
     cat $tmp
     mariadb                                             < $tmp
-    abort_on_error 33d $?
+    abort_on_error 34d $?
     if [ "$rbe" = "" ]
     then
         /usr/bin/php $prg $sw "$cfg" sql db.permissions.reports.standard.sql > $tmp
-        abort_on_error 33e $? $tmp
+        abort_on_error 34e $? $tmp
         cat $tmp
         mariadb                                         < $tmp
-        abort_on_error 33f $?
+        abort_on_error 34f $?
     fi
     if [ -f "$bpp" ]
     then
         echo "    Grant bespoke permissions"
         /usr/bin/php $prg $sw "$cfg" sql BESPOKE "$bpp" > $tmp
-        abort_on_error 33e $?
+        abort_on_error 34g $?
         mariadb                                         < $tmp
-        abort_on_error 33f $?
+        abort_on_error 34h $?
     fi
     echo "    Completed in $(($SECONDS-$start)) seconds"
 fi
@@ -667,14 +674,14 @@ fi
 if [ "$rbe" = "" ]
 then
 
-    echo "34. Cache slow front-end SQL"
+    echo "35. Cache slow front-end SQL"
     if [ "$rehearse" ]
     then
         echo "    Rehearsal only - skipping"
     else
         start=$SECONDS
         /usr/bin/php $prg $sw "$cfg" exec cache.php
-        abort_on_error 34 $?
+        abort_on_error 35 $?
         echo "    Completed in $(($SECONDS-$start)) seconds"
     fi
 
