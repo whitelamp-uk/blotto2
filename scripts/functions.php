@@ -1417,13 +1417,13 @@ function invoice_render ($invoice,$output=true) {
         $invoice->totals[5] += $total;
         array_push ($invoice->items[$idx],$subtotal,$tax,$subtotal);
     }
-    $invoice->totals[3] = number_format ($invoice->totals[3],2);
-    $invoice->totals[4] = number_format ($invoice->totals[4],2);
-    $invoice->totals[5] = number_format ($invoice->totals[5],2);
+    $invoice->totals[3] = number_format ($invoice->totals[3],2,'.','');
+    $invoice->totals[4] = number_format ($invoice->totals[4],2,'.','');
+    $invoice->totals[5] = number_format ($invoice->totals[5],2,'.','');
     $invoice->grand_total = [
         "Total to be paid",
         "",
-        BLOTTO_CURRENCY.number_format($invoice->totals[5],2),
+        BLOTTO_CURRENCY.number_format($invoice->totals[5],2,'.',''),
         "",
         "",
         ""
