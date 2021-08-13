@@ -381,6 +381,34 @@ while ($d=$ds->fetch_assoc()) {
             fwrite (STDERR,$e->getMessage()."\n");
             exit (112);
         }
+        try {
+            // Raise invoice for game services
+            if ($inv=invoice_game($draw->closed,false)) {
+                $file   = BLOTTO_DIR_INVOICE.'/';
+                $file  .= BLOTTO_ORG_USER.'_'.$draw_closed.'_game.html';
+                if (!file_exists($file)) {
+                    $fp = fopen ($file,'w');
+                    fwrite ($fp,$inv);
+                    fclose ($fp);
+                }
+            }
+            // Raise invoice (pass on cost) of paying out to winners
+            if ($inv=invoice_payout($draw->closed,false)) {
+                $file   = BLOTTO_DIR_INVOICE.'/';
+                $file  .= BLOTTO_ORG_USER.'_'.$draw_closed.'_payout.html';
+                if (!file_exists($file)) {
+                    $fp = fopen ($file,'w');
+                    fwrite ($fp,$inv);
+                    fclose ($fp);
+                }
+            }
+        }
+        catch (\Exception $e) {
+            fwrite (STDERR,$e->getMessage()."\n");
+// TODO: let this error cause an abort
+//            exit (113);
+        }
     }
+    
 }
 

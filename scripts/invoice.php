@@ -2,6 +2,7 @@
 <div class="invoice">
 
   <section id="invoice-header">
+<?php // TODO: this is branding code incorrectly inside blotto2.git ?>
     <img src="../logo-invoice.png" title="Fundraising Foundry" alt="Big C pouring liquid gold into the logo letters"/>
     <address>Unit 3 Saxon Way ⎮ Melbourn ⎮ Cambridgeshire ⎮ SG8 6DN</address>
   </section>

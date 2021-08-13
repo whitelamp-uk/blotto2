@@ -1408,6 +1408,10 @@ function invoice_render ($invoice,$output=true) {
     }';
     $invoice = json_decode ($invoice);
 */
+    if (!count($invoice->items)) {
+        // Tells the calling routine that no invoice should be raised
+        return false;
+    }
     // Calculate rows of data
     $invoice->totals = [ "Totals", "", "", 0, 0, 0 ];
     foreach ($invoice->items as $idx=>$item) {
