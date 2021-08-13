@@ -1320,13 +1320,13 @@ function invoice_game ($draw_closed_date,$output=true) {
         $invoice->items[] = [
             "Ticket management fee",
             $tickets,
-            number_format ($tickets*BLOTTO_FEE_MANAGE/100,2,'.','')
+            number_format (BLOTTO_FEE_MANAGE/100,2,'.','')
         ];
         if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS>0) {
             $invoice->items[] = [
                 "Ticket insurance fee",
                 $tickets,
-                number_format ($tickets*BLOTTO_FEE_INSURE/100,2,'.','')
+                number_format (BLOTTO_FEE_INSURE/100,2,'.','')
             ];
         }
     }
