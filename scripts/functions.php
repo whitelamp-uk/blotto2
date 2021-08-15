@@ -1421,7 +1421,7 @@ function invoice_render ($invoice,$output=true) {
             $tax_rate = $invoice->items[$idx][4];
         }
         $qty = intval ($item[1]);
-        $unit = number_format ($item[2],2,'.',''),
+        $unit = number_format ($item[2],2,'.','');
         $subtotal = number_format ($qty*$unit,2,'.','');
         $tax = number_format ($tax_rate*$subtotal,2,'.','');
         $total = number_format ($subtotal+$tax,2,'.','');
