@@ -53,6 +53,7 @@ define ( 'BLOTTO_OUTFILE',       '/tmp/blotto.abc.outfile.csv'          );
 define ( 'BLOTTO_TICKET_PRICE',  100                 );  // In pennies
 define ( 'BLOTTO_TICKETS_AUTO',  true                );
 define ( 'BLOTTO_WIN_FIRST',     '2016-01-01'        );  // Only report wins/reconciles on or after this date
+define ( 'BLOTTO_INVOICE_FIRST', '2021-08-13'        );  // Only generate invoices on or after this date
 define ( 'BLOTTO_DAY_FIRST',     '2016-01-01'        );  // First date due day
 define ( 'BLOTTO_DAY_LAST',      null                );  // Last date due day
 //define ( 'BLOTTO_WIN_FIRST',     '2016-01-01'        );  // Only report wins/reconciliations on or after this date

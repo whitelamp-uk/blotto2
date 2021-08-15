@@ -10,10 +10,16 @@ if (!$zo) {
     exit (101);
 }
 
+$first = '0000-00-00';
+if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
+    $first = BLOTTO_INVOICE_FIRST;
+}
+
 $qs = "
   SELECT
     DISTINCT `draw_closed`
   FROM `blotto_result`
+  WHERE `draw_closed`>='$first'
   ORDER BY `draw_closed`
   ;
 ";
