@@ -52,11 +52,12 @@ table#draw-summary-super tbody td:nth-of-type(3) {
 }
 div.invoice {
     margin:  2em;
-    width: 40em;
+    width: 50em;
     font-family: 'arial','sans';
 }
 div.invoice table.invoice {
     width:  100%;
+    font-size: 1.2em;
 }
 #invoice-header {
     text-align: center;
@@ -91,6 +92,9 @@ div.invoice table.invoice {
 .invoice-pre {
     white-space: pre-line;
     margin-left: 2em;
+}
+table.invoice caption {
+    font-size: 0.9em;
 }
 table.invoice tfoot {
     font-weight: bold;
