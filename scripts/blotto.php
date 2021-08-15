@@ -68,6 +68,7 @@ $file = array (
        ,'draws.php'
        ,'engine.php'
        ,'entries.php'
+       ,'invoices.php'
        ,'legends.php'
        ,'manual.php'
        ,'payment_fetch.php'
