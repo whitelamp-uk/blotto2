@@ -36,7 +36,7 @@ try {
         $file   = BLOTTO_DIR_INVOICE.'/';
         $file  .= BLOTTO_ORG_USER.'_'.$draw_closed.'_game.html';
         if (!file_exists($file)) {
-            if ($inv=invoice_game($draw->closed,false)) {
+            if ($inv=invoice_game($draw_closed,false)) {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$inv);
                 fclose ($fp);
@@ -46,7 +46,7 @@ try {
         $file   = BLOTTO_DIR_INVOICE.'/';
         $file  .= BLOTTO_ORG_USER.'_'.$draw_closed.'_payout.html';
         if (!file_exists($file)) {
-            if ($inv=invoice_payout($draw->closed,false)) {
+            if ($inv=invoice_payout($draw_closed,false)) {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$inv);
                 fclose ($fp);
