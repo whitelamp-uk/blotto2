@@ -1416,18 +1416,26 @@ function invoice_render ($invoice,$output=true) {
     // Calculate rows of data
     $invoice->totals = [ "Totals", "", "", 0, 0, 0 ];
     foreach ($invoice->items as $idx=>$item) {
-        $tax = BLOTTO_TAX;
+        $tax_rate = BLOTTO_TAX;
         if (array_key_exists(4,$invoice->items[$idx])) {
-            $tax = $invoice->items[$idx][4];
+            $tax_rate = $invoice->items[$idx][4];
         }
-        $invoice->items[$idx][2] = number_format ($item[2],2,'.','');
-        $subtotal = number_format ($item[1]*$item[2],2,'.','');
-        $invoice->totals[3] += $subtotal;
-        $tax = number_format ($tax,2,'.','');
-        $invoice->totals[4] += $tax;
+        $qty = intval ($item[1]);
+        $unit = number_format ($item[2],2,'.',''),
+        $subtotal = number_format ($qty*$unit,2,'.','');
+        $tax = number_format ($tax_rate*$subtotal,2,'.','');
         $total = number_format ($subtotal+$tax,2,'.','');
+        $invoice->totals[3] += $subtotal;
+        $invoice->totals[4] += $tax;
         $invoice->totals[5] += $total;
-        array_push ($invoice->items[$idx],$subtotal,$tax,$total);
+        $invoice->items[$idx] = [
+            $invoice->items[$idx][0],
+            $qty,
+            $unit,
+            $subtotal,
+            $tax,
+            $total
+        ];
     }
     $invoice->totals[3] = number_format ($invoice->totals[3],2,'.','');
     $invoice->totals[4] = number_format ($invoice->totals[4],2,'.','');
