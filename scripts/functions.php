@@ -1243,7 +1243,6 @@ function invoice_game ($draw_closed_date,$output=true) {
     $invoice->reference         = "LOT{$code}-{$draw_closed_date}";
     $invoice->address           = $org['invoice_address'];
     $invoice->description       = "Payout for draw closing {$draw_closed_date}";
-    $invoice->exempt            = false;
     $invoice->items             = [];
     $invoice->terms             = $org['invoice_terms_game'];
     if ($invoice->terms) {
@@ -1326,7 +1325,9 @@ function invoice_game ($draw_closed_date,$output=true) {
             $invoice->items[] = [
                 "Ticket insurance fee",
                 $tickets,
-                number_format (BLOTTO_FEE_INSURE/100,2,'.','')
+                number_format (BLOTTO_FEE_INSURE/100,2,'.',''),
+                "",
+                0
             ];
         }
     }
@@ -1354,7 +1355,6 @@ function invoice_payout ($draw_closed_date,$output=true) {
     $invoice->reference         = "WIN{$code}-{$draw_closed_date}";
     $invoice->address           = $org['invoice_address'];
     $invoice->description       = "Payout for draw closing {$draw_closed_date}";
-    $invoice->exempt            = true;
     $invoice->items             = [];
     $invoice->terms             = $org['invoice_terms_payout'];
     if ($invoice->terms) {
@@ -1363,6 +1363,8 @@ function invoice_payout ($draw_closed_date,$output=true) {
             `prize`
            ,COUNT(`ticket_number`) AS `qty`
            ,`winnings` AS `prize_value`
+           ,'' AS `blank`
+           ,'0.00' AS `sales_tax`
           FROM `Wins`
           WHERE `draw_closed`='$draw_closed_date'
             AND `superdraw`='N'
@@ -1394,7 +1396,6 @@ function invoice_render ($invoice,$output=true) {
         "reference" : "LOTDBH-2021-08-14",
         "address" : "Charity XYZ\n1 The Street\nTownsville\nAA1 1AA",
         "description" : "Game costs draw closing 2021-08-13",
-        "exempt" : false,
         "items" : [
           [ "Loading Fees", 0, 2.50 ],
           [ "ANL Letters", 0, 0.80 ],
@@ -1402,9 +1403,9 @@ function invoice_render ($invoice,$output=true) {
           [ "Email Client", 1, 11.31 ],
           [ "Admin Charges", 1, 45.00 ],
           [ "Management Charge", 4003, 0.07 ],
-          [ "Insurance", 4003, 0.07 ]
+          [ "Insurance", 4003, 0.07, '', 0 ]
         ],
-        "terms" : "Within 17 days"
+        "terms" : "Within 5 days"
     }';
     $invoice = json_decode ($invoice);
 */
@@ -1415,13 +1416,14 @@ function invoice_render ($invoice,$output=true) {
     // Calculate rows of data
     $invoice->totals = [ "Totals", "", "", 0, 0, 0 ];
     foreach ($invoice->items as $idx=>$item) {
+        $tax = BLOTTO_TAX;
+        if (array_key_exists(4,$invoice->items[$idx])) {
+            $tax = $invoice->items[$idx][4];
+        }
         $invoice->items[$idx][2] = number_format ($item[2],2,'.','');
         $subtotal = number_format ($item[1]*$item[2],2,'.','');
         $invoice->totals[3] += $subtotal;
-        $tax = '0.00';
-        if (!$invoice->exempt) {
-            $tax = number_format (BLOTTO_TAX*$subtotal,2,'.','');
-        }
+        $tax = number_format ($tax,2,'.','');
         $invoice->totals[4] += $tax;
         $total = number_format ($subtotal+$tax,2,'.','');
         $invoice->totals[5] += $total;
