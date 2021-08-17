@@ -3,7 +3,7 @@
 
         <?php 
         if (isset($_GET['invoice'])) {
-            $content = file_get_contents(BLOTTO_INVOICE_DIR.'/'.$_GET['invoice']);
+            $content = file_get_contents(BLOTTO_DIR_INVOICE.'/'.$_GET['invoice']);
             echo $content;
 
         } else {
