@@ -148,9 +148,9 @@ function chart ($number,$type) {
         return '';
     }
     $error          = [
-        'graph'         => "null; // See error log [$number]",
-        'table'         => "<dialog open>See PHP error log [$number]</dialog>",
-        'csv'           => "See error log [$number]"
+        'graph'         => "null; // See error log [n]",
+        'table'         => "<dialog open>See PHP error log [n]</dialog>",
+        'csv'           => "See error log [n]"
     ];
     $error          = $error[$type];
     $zo             = connect ();
@@ -164,7 +164,7 @@ function chart ($number,$type) {
     $file           = __DIR__.'/chart-'.str_pad($number,4,'0',STR_PAD_LEFT).'.php';
     if (!is_readable($file)) {
         error_log ("File '$file' is not readable");
-        return str_replace('[n]',"[1]",$error);
+        return str_replace('[n]',"[chart $number, error 1]",$error);
     }
     try {
         // Using parameters - $p, print a Chart Definition Object - $cdo
@@ -181,7 +181,7 @@ function chart ($number,$type) {
                 return $obj;
             }
             error_log ("Could not encode a sensible object");
-            return str_replace('[n]',"[2]",$error);
+            return str_replace('[n]',"[chart $number, error 2]",$error);
         }
         // Other types are array-based
         $data = chart2Array ($cdo);
@@ -205,7 +205,7 @@ function chart ($number,$type) {
     }
     catch (\Exception $e) {
         error_log ($e->getMessage());
-        return str_replace('[n]',"[4]",$error);
+        return str_replace('[n]',"[chart $number, error 3]",$error);
     }
 }
 
