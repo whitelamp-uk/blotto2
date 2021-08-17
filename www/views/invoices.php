@@ -1,7 +1,7 @@
 
     <section id="invoices" class="content">
 
-        <h2>List of invoices</h2>
+        <h2>Invoices</h2>
 
         <?php
         if (defined('BLOTTO_DIR_INVOICE')) {
@@ -9,11 +9,12 @@
           if (count($files>2)) {
             foreach ($files as $fn) {
               if ($fn != '.' && $fn != '..') {
-                echo '<a href="?invoice='.$fn.'" download="'.$fn.'">'.$fn.'</a><br>';
+                echo '<a class="invoice" href="?invoice='.$fn.'" download="'.$fn.'">'.$fn.'</a><br>';
+
               }
             }
           } else {
-            echo "No invoices found!";
+            echo "No invoices found";
           }
         } else {
           echo "Invoice directory not configured";
