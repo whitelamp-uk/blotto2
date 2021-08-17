@@ -112,7 +112,7 @@ function chartRender (canvasId,type,cdo,options) {
             cs = [];
             k = 0;
             colors:
-            while (1) {
+            while (c.length) {
                 for (j=0;j<c.length;j++) {
                     k++;
                     if (k>clrs) {
