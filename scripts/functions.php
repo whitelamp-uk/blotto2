@@ -148,9 +148,9 @@ function chart ($number,$type) {
         return '';
     }
     $error          = [
-        'graph'         => 'null; // See error log [$number]',
-        'table'         => '<dialog open>See PHP error log [$number]</dialog>',
-        'csv'           => 'See error log [$number]'
+        'graph'         => "null; // See error log [$number]",
+        'table'         => "<dialog open>See PHP error log [$number]</dialog>",
+        'csv'           => "See error log [$number]"
     ];
     $error          = $error[$type];
     $zo             = connect ();
