@@ -29,6 +29,7 @@ if (data1) {
             yratio: 1.3
         }
     );
+    console.log ('Rendered data1');
 }
       </script>
 
@@ -48,6 +49,7 @@ if (data2) {
             link: true
         }
     );
+    console.log ('Rendered data2');
 }
       </script>
 
@@ -72,6 +74,7 @@ if (data3) {
             zero: true
         }
     );
+    console.log ('Rendered data3');
 }
       </script>
 
@@ -92,6 +95,7 @@ if (data4) {
             zero: true
         }
     );
+    console.log ('Rendered data4');
 }
       </script>
 
@@ -115,6 +119,7 @@ if (data5) {
             noLegend: true
         }
     );
+    console.log ('Rendered data5');
 }
       </script>
 
@@ -136,6 +141,7 @@ if (data6) {
             noLegend: true
         }
     );
+    console.log ('Rendered data6');
 }
       </script>
 
@@ -157,6 +163,7 @@ if (data7) {
             link: true
         }
     );
+    console.log ('Rendered data7');
 }
       </script>
 
@@ -176,6 +183,7 @@ if (data8) {
             link: true
         }
     );
+    console.log ('Rendered data8');
 }
       </script>
 
