@@ -63,8 +63,10 @@ div.invoice table.invoice {
     text-align: center;
 }
 #invoice-header img {
+    /* Image now the right size...
     width: 10em;
     height: 5.1em;
+    */
 }
 #invoice-header address {
     padding: 2em 0 3em 0;     
