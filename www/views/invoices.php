@@ -9,7 +9,7 @@
           if (count($files>2)) {
             foreach ($files as $fn) {
               if ($fn != '.' && $fn != '..') {
-                echo '<a target="_blank" href="?invoice='.$fn.'">'.$fn.'</a><br>';
+                echo '<a href="?invoice='.$fn.'" download="'.$fn.'">'.$fn.'</a><br>';
               }
             }
           } else {
