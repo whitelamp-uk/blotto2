@@ -17,17 +17,19 @@
       </section>
       <script>
 var data1 = <?php echo chart (1,'graph'); ?>;
-chartRender (
-    'draw-activity',
-    'bar',
-    data1,
-    {
-        title: 'Recent draw activity to <?php echo month_end_last('d M Y'); ?>',
-        link: true,
-        zero: false,
-        yratio: 1.3
-    }
-);
+if (data1) {
+    chartRender (
+        'draw-activity',
+        'bar',
+        data1,
+        {
+            title: 'Recent draw activity to <?php echo month_end_last('d M Y'); ?>',
+            link: true,
+            zero: false,
+            yratio: 1.3
+        }
+    );
+}
       </script>
 
       <section id="chart2" class="chart right doughnut">
@@ -36,15 +38,17 @@ chartRender (
       </section>
       <script>
 var data2 = <?php echo chart (2,'graph'); ?>;
-chartRender (
-    'ticket-distribution',
-    'doughnut',
-    data2,
-    {
-        title: 'Tickets per player',
-        link: true
-    }
-);
+if (data2) {
+    chartRender (
+        'ticket-distribution',
+        'doughnut',
+        data2,
+        {
+            title: 'Tickets per player',
+            link: true
+        }
+    );
+}
       </script>
 
       <hr/>
@@ -57,16 +61,18 @@ chartRender (
       </section>
       <script>
 var data3 = <?php echo chart (3,'graph'); ?>;
-chartRender (
-    'recruitment',
-    'bar',
-    data3,
-    {
-        title: 'Recent recruitment and cancellation (except one-off payments)',
-        link: true,
-        zero: true
-    }
-);
+if (data3) {
+    chartRender (
+        'recruitment',
+        'bar',
+        data3,
+        {
+            title: 'Recent recruitment and cancellation (except one-off payments)',
+            link: true,
+            zero: true
+        }
+    );
+}
       </script>
 
       <section id="chart4" class="chart right">
@@ -75,16 +81,18 @@ chartRender (
       </section>
       <script>
 var data4 = <?php echo chart (3,'graph',true); ?>;
-chartRender (
-    'recruitment-cumulative',
-    'bar',
-    data4,
-    {
-        title: 'Cumulative recruitment and cancellation',
-        link: true,
-        zero: true
-    }
-);
+if (data4) {
+    chartRender (
+        'recruitment-cumulative',
+        'bar',
+        data4,
+        {
+            title: 'Cumulative recruitment and cancellation',
+            link: true,
+            zero: true
+        }
+    );
+}
       </script>
 
       <hr/>
@@ -95,17 +103,19 @@ chartRender (
       </section>
       <script>
 var data5 = <?php echo chart (4,'graph',1); ?>;
-chartRender (
-    'retention-playing',
-    'bar',
-    data5,
-    {
-        title: 'Ongoing direct debit retention to <?php echo htmlspecialchars(day_cancels_known('j M Y')); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
-        link: true,
-        zero: true,
-        noLegend: true
-    }
-);
+if (data5) {
+    chartRender (
+        'retention-playing',
+        'bar',
+        data5,
+        {
+            title: 'Ongoing direct debit retention to <?php echo htmlspecialchars(day_cancels_known('j M Y')); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
+            link: true,
+            zero: true,
+            noLegend: true
+        }
+    );
+}
       </script>
 
       <section id="chart6" class="chart right">
@@ -114,17 +124,19 @@ chartRender (
       </section>
       <script>
 var data6 = <?php echo chart (4,'graph',1,true); ?>;
-chartRender (
-    'retention-cancelled',
-    'bar',
-    data6,
-    {
-        title: 'Cancelled direct debit retention at <?php echo day_yesterday()->format ('j M Y'); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
-        link: true,
-        zero: true,
-        noLegend: true
-    }
-);
+if (data6) {
+    chartRender (
+        'retention-cancelled',
+        'bar',
+        data6,
+        {
+            title: 'Cancelled direct debit retention at <?php echo day_yesterday()->format ('j M Y'); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
+            link: true,
+            zero: true,
+            noLegend: true
+        }
+    );
+}
       </script>
 
       <hr/>
@@ -135,15 +147,17 @@ chartRender (
       </section>
       <script>
 var data7 = <?php echo chart (5,'graph',$since); ?>;
-chartRender (
-    'ccc-recent',
-    'doughnut',
-    data7,
-    {
-        title: "Canvassing company performance (imports <?php echo $since_text; ?>)",
-        link: true
-    }
-);
+if (data7) {
+    chartRender (
+        'ccc-recent',
+        'doughnut',
+        data7,
+        {
+            title: "Canvassing company performance (imports <?php echo $since_text; ?>)",
+            link: true
+        }
+    );
+}
       </script>
 
       <section id="chart8" class="chart right doughnut">
@@ -152,15 +166,17 @@ chartRender (
       </section>
       <script>
 var data8 = <?php echo chart (6,'graph'); ?>;
-chartRender (
-    'ccc-cumulative',
-    'doughnut',
-    data8,
-    {
-        title: "Canvassing company performance (cumulative import/retention)",
-        link: true
-    }
-);
+if (data8) {
+    chartRender (
+        'ccc-cumulative',
+        'doughnut',
+        data8,
+        {
+            title: "Canvassing company performance (cumulative import/retention)",
+            link: true
+        }
+    );
+}
       </script>
 
       <hr/>
@@ -173,15 +189,17 @@ chartRender (
       <script>
 var data9 = <?php // echo chart (5,'graph'); ?>;
 /*
-chartRender (
-    'retention-geographical',
-    'bar',
-    data9,
-    {
-        title: 'Retention (ppt) by postcode area',
-        link: true
-    }
-);
+if (data9) {
+    chartRender (
+        'retention-geographical',
+        'bar',
+        data9,
+        {
+            title: 'Retention (ppt) by postcode area',
+            link: true
+        }
+    );
+}
 */
       </script>
 
