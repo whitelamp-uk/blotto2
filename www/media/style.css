@@ -129,6 +129,23 @@ a.help {
     text-decoration:    none;
 }
 
+a.invoice {
+    display:            inline-block;
+    width:              20em;
+    margin:             0.3em;
+    border-style:       solid;
+    border-width:       2px;
+    border-radius:      0.3em;
+    border-color:       var(--blotto-color-bdr-button);
+    background-color:   var(--blotto-color-bgd-button);
+    padding:            0.1em 0.4em 0.1em 0.4em;
+    font-weight:        bold;
+    font-size:          var(--blotto-font-size-button-default);
+    text-align:         left;
+    text-decoration:    none;
+    color:              var(--blotto-color-fgd-button);
+}
+
 #built {
 }
 
@@ -354,10 +371,10 @@ form#change-supporter input {
     width:              30em;
 }
 
-#list button {
+#list button, a.invoice {
     color:              var(--blotto-color-fgd-button-lst);
 }
-#list button:hover {
+#list button:hover, a.invoice:hover {
     border-color:       var(--blotto-color-bdr-button);
     background-color:   var(--blotto-color-bgd-button);
     color:              var(--blotto-color-fgd-button-lst);
