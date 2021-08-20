@@ -1470,6 +1470,17 @@ function is_https ( ) {
     return true;
 }
 
+function invoice_serve ($file) {
+    if (!is_readable(BLOTTO_DIR_INVOICE.'/'.$file)) {
+        header ('Content-Type: text/plain');
+        echo "Sorry - could not find invoice $file\n";
+        return;
+    }
+    header ('Content-Type: text/html');
+    header ('Content-Disposition: attachment; filename="'.$file.'"');
+    echo file_get_contents (BLOTTO_DIR_INVOICE.'/'.$file);
+}
+
 function link_query ($target,$table,$date,$interval=null) {
     $datefields = array (
         'ANLs'             => 'tickets_issued',
