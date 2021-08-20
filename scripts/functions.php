@@ -1471,12 +1471,11 @@ function is_https ( ) {
 }
 
 function invoice_serve ($file) {
+    header ('Content-Type: text/html');
     if (!is_readable(BLOTTO_DIR_INVOICE.'/'.$file)) {
-        header ('Content-Type: text/plain');
-        echo "Sorry - could not find invoice $file\n";
+        echo "<html><body>Sorry - could not find invoice $file</body></html>";
         return;
     }
-    header ('Content-Type: text/html');
     header ('Content-Disposition: attachment; filename="'.$file.'"');
     echo file_get_contents (BLOTTO_DIR_INVOICE.'/'.$file);
 }
