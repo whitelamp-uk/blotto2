@@ -2,9 +2,8 @@
 <div class="invoice">
 
   <section id="invoice-header">
-<?php 
-require(__DIR__.'../../blotto-brand/logo/svg');
-?>
+
+    <?php require (__DIR__.'../www/view/logo-invoice.php'); ?>
 
     <address>Unit 3 Saxon Way ⎮ Melbourn ⎮ Cambridgeshire ⎮ SG8 6DN</address>
   </section>
