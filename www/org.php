@@ -94,6 +94,10 @@ elseif ($session=www_session($timestamp)) {
         echo update ();
         exit;
     }
+    // Invoice if that option
+    if ($opt=='invoice') {
+        invoice_serve ($_GET['invoice']);
+    }
 }
 else {
     $path = './?login';
@@ -117,7 +121,7 @@ function init ( ) {
         setTimeout ('init()',500);
         return;
     }
-<?php if(file_exists(BLOTTO_WWW_CONFIG.'.inhibit') || !$session || !count($_GET) || array_key_exists('P',$_GET) || strpos($_SERVER['QUERY_STRING'],'invoice=')===0): ?>
+<?php if(file_exists(BLOTTO_WWW_CONFIG.'.inhibit') || !$session || !count($_GET) || array_key_exists('P',$_GET)): ?>
 <?php     if($session && !file_exists(BLOTTO_WWW_CONFIG.'.inhibit')): ?>
 
     setFrame ('<?php echo $path; ?>');
