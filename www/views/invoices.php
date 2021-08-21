@@ -1,25 +1,33 @@
+<?php
+$files = [];
+if (defined('BLOTTO_DIR_INVOICE') && is_dir(BLOTTO_DIR_INVOICE)) {
+    $scan = scandir (BLOTTO_DIR_INVOICE, SCANDIR_SORT_DESCENDING);
+    foreach ($scan as $f) {
+        if ($f != '.' && $f != '..') {
+            $files[] = $f;
+        }
+    }
+}
+else {
+    $err = "Invoice directory not correctly configured";
+}
+?>
 
     <section id="invoices" class="content">
 
         <h2>Invoices</h2>
 
-        <?php
-        if (defined('BLOTTO_DIR_INVOICE')) {
-          $files = scandir(BLOTTO_DIR_INVOICE, SCANDIR_SORT_DESCENDING);
-          if (count($files>2)) {
-            foreach ($files as $fn) {
-              if ($fn != '.' && $fn != '..') {
-                echo '<a class="invoice" href="?invoice='.$fn.'" download="'.$fn.'">'.$fn.'</a><br>';
+<?php if (!count($files)): ?>
+          <p>No invoices found</p>
+<?php endif; ?>
 
-              }
-            }
-          } else {
-            echo "No invoices found";
-          }
-        } else {
-          echo "Invoice directory not configured";
-        }
-        ?>
+<?php foreach ($files as $f): ?>
+          <div>
+            <a class="invoice" onclick="window.unloadSuppress=true;return true" href="?invoice=<?php echo htmlspecialchars ($f); ?>">
+              <?php echo htmlspecialchars ($f); ?>
+            </a>
+          </div>
+<?php endforeach; ?>
 
     </section>
 
@@ -28,7 +36,6 @@
     <script>
 document.body.classList.add ('framed');
 window.top.menuActivate ('invoices');
-//window.updateHandle ('change-mandate');
     </script>
 
 

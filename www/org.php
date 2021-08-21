@@ -97,6 +97,7 @@ elseif ($session=www_session($timestamp)) {
     // Invoice if that option
     if ($opt=='invoice') {
         invoice_serve ($_GET['invoice']);
+        exit;
     }
 }
 else {
