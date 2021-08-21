@@ -3,7 +3,7 @@
 
   <section id="invoice-header">
 
-    <?php require (__DIR__.'/../www/view/logo-invoice.php'); ?>
+    <?php require (__DIR__.'/../www/views/logo-invoice.php'); ?>
 
     <address>Unit 3 Saxon Way ⎮ Melbourn ⎮ Cambridgeshire ⎮ SG8 6DN</address>
   </section>
