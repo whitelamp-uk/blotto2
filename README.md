@@ -10,16 +10,12 @@ For example Zaffo's lotto.de first six digits of Saturday Spiel77.
 
 # Draw closed date: 2021-02-19
 # Last character of level method (aka group): 6
-# Number to insert: 132435
+# Number to insert: 123456
 
 root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -m 2021-02-19 6 123456 /home/mark/blotto/config/mark.cfg.php
-Option: manual result insertion
-Temp file: /home/mark/blotto/config/../log/dbh/blotto.7119.tmp
-MANUAL. Insert results
-Building and executing SQL for crucible2_mark_dbh_make
-INSERT IGNORE INTO `blotto_result` (`draw_closed`,`draw_date`,`prize_level`,`number`) VALUES
-('2021-02-19','2021-02-20',1,'132435');
-That's all folks!
+
+If results are shared (eg DBH and SHC use crucible_ticket_zaffo.blotto_result) then it is only necessary to add the numbers using just one config.
+
 
 # To see rehearse by inspecting the insert SQL use one of:
 
