@@ -1471,6 +1471,7 @@ function is_https ( ) {
 }
 
 function invoice_serve ($file) {
+    header ('Cache-Control: no-cache');
     header ('Content-Type: text/html');
     if (!is_readable(BLOTTO_DIR_INVOICE.'/'.$file)) {
         echo "<html><body>Sorry - could not find invoice $file</body></html>";

@@ -183,9 +183,6 @@ elseif ($opt=='terms') {
 elseif ($opt=='invoices') {
     require __DIR__.'/views/invoices.php';
 }
-elseif ($opt=='invoice') {
-    require __DIR__.'/views/invoice.php';
-}
 elseif ($opt=='about') {
     require __DIR__.'/views/about.php';
 }
