@@ -38,6 +38,7 @@ define ( 'BLOTTO_DB',            'mylotto_abc'       );
 define ( 'BLOTTO_BELL',          ''                  );
 define ( 'BLOTTO_DIR_EXPORT',    '/home/blotto/export/abc'              );
 define ( 'BLOTTO_DIR_INVOICE',   '/home/blotto/invoice/abc'             );
+define ( 'BLOTTO_DIR_DRAW',      '/home/blotto/draw/abc'                );
 define ( 'BLOTTO_CSV_DIR_S',     '/home/sct/blotto/abc/supporters'      );
 define ( 'BLOTTO_CSV_DIR_M',     '/home/sct/blotto/abc/mandates'        );
 define ( 'BLOTTO_CSV_DIR_C',     '/home/sct/blotto/abc/collections'     );

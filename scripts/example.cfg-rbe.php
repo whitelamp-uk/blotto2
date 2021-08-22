@@ -21,6 +21,8 @@ define ( 'BLOTTO_MAKE_DB',       'mylotto_abc_def_make'                 );
 define ( 'BLOTTO_DUMP_FILE',     '/home/blotto/export/abc_def/dump.sql' );
 define ( 'BLOTTO_DB',            'mylotto_abc_def'                      );
 define ( 'BLOTTO_DIR_EXPORT',    '/home/blotto/export/abc_def'          );
+define ( 'BLOTTO_DIR_INVOICE',   '/home/blotto/invoice/abc'             );
+define ( 'BLOTTO_DIR_DRAW',      '/home/blotto/draw/abc'                );
 define ( 'BLOTTO_LOG_DIR',       '/home/blotto/log/abc_def'             );
 define ( 'BLOTTO_TICKET_DB',     'blotto_ticket_zaffo'                  );
 define ( 'BLOTTO_TICKET_MIN',    '000000'            );
