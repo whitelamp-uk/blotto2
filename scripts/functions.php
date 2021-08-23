@@ -760,7 +760,7 @@ function draw_report ($draw,$output=true) {
     return $draw_report;
 }
 
-function draw_report_serve ($draw_closed,$output=true) {
+function draw_report_render ($draw_closed,$output=true) {
     $code                   = strtoupper (BLOTTO_ORG_USER);
     $org                    = org ();
     $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed')) AS `dt`";
@@ -855,6 +855,17 @@ function draw_report_serve ($draw_closed,$output=true) {
     $snippet = draw_report ($draw,false);
     return html ($snippet,$draw->html_title,$output);
 
+}
+
+function draw_report_serve ($file) {
+    header ('Cache-Control: no-cache');
+    header ('Content-Type: text/html');
+    if (!is_readable(BLOTTO_DIR_DRAW.'/'.$file)) {
+        echo "<html><body>Sorry - could not find draw report $file</body></html>";
+        return;
+    }
+    header ('Content-Disposition: attachment; filename="'.$file.'"');
+    echo file_get_contents (BLOTTO_DIR_DRAW.'/'.$file);
 }
 
 function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
