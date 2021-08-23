@@ -760,7 +760,7 @@ function draw_report ($draw,$output=true) {
     return $draw_report;
 }
 
-function draw_report_render ($draw_closed,$output=true) {
+function draw_report_serve ($draw_closed,$output=true) {
     $code                   = strtoupper (BLOTTO_ORG_USER);
     $org                    = org ();
     $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed')) AS `dt`";
