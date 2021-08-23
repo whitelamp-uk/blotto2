@@ -777,7 +777,7 @@ function draw_report_render ($draw_closed,$output=true) {
     }
     $draw                   = new \stdClass ();
     $draw->date             = $date_draw;
-    $draw->html_title       = "Draw report WIN{$code}-{$date_draw}";
+    $draw->html_title       = "Draw report DRW{$code}-{$draw_closed}";
     $draw->reference        = "DRW{$code}-{$draw_closed}";
     $draw->description      = "Report for draw closing {$draw_closed}";
     $draw->results          = [];
@@ -860,11 +860,11 @@ function draw_report_render ($draw_closed,$output=true) {
 function draw_report_serve ($file) {
     header ('Cache-Control: no-cache');
     header ('Content-Type: text/html');
+    header ('Content-Disposition: attachment; filename="'.$file.'"');
     if (!is_readable(BLOTTO_DIR_DRAW.'/'.$file)) {
         echo "<html><body>Sorry - could not find draw report $file</body></html>";
         return;
     }
-    header ('Content-Disposition: attachment; filename="'.$file.'"');
     echo file_get_contents (BLOTTO_DIR_DRAW.'/'.$file);
 }
 
@@ -1574,6 +1574,17 @@ function invoice_render ($invoice,$output=true) {
     return html ($snippet,$invoice->html_title,$output);
 }
 
+function invoice_serve ($file) {
+    header ('Cache-Control: no-cache');
+    header ('Content-Type: text/html');
+    header ('Content-Disposition: attachment; filename="'.$file.'"');
+    if (!is_readable(BLOTTO_DIR_INVOICE.'/'.$file)) {
+        echo "<html><body>Sorry - could not find invoice $file</body></html>";
+        return;
+    }
+    echo file_get_contents (BLOTTO_DIR_INVOICE.'/'.$file);
+}
+
 function is_https ( ) {
     if (php_sapi_name()=='cli') {
         return false;
@@ -1588,17 +1599,6 @@ function is_https ( ) {
         return false;
     }
     return true;
-}
-
-function invoice_serve ($file) {
-    header ('Cache-Control: no-cache');
-    header ('Content-Type: text/html');
-    if (!is_readable(BLOTTO_DIR_INVOICE.'/'.$file)) {
-        echo "<html><body>Sorry - could not find invoice $file</body></html>";
-        return;
-    }
-    header ('Content-Disposition: attachment; filename="'.$file.'"');
-    echo file_get_contents (BLOTTO_DIR_INVOICE.'/'.$file);
 }
 
 function link_query ($target,$table,$date,$interval=null) {
