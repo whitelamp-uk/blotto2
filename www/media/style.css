@@ -371,7 +371,7 @@ form#change-supporter input {
     width:              30em;
 }
 
-#list button, a.invoice {
+#list button, a.draw-report, a.invoice {
     color:              var(--blotto-color-fgd-button-lst);
 }
 #list button:hover, a.invoice:hover {
