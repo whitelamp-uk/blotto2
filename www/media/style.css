@@ -129,7 +129,7 @@ a.help {
     text-decoration:    none;
 }
 
-a.draw, a.invoice {
+a.draw-report, a.invoice {
     display:            inline-block;
     width:              20em;
     margin:             0.3em;
