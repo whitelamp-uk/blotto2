@@ -50,28 +50,37 @@ table#draw-summary-super tbody td:nth-of-type(2),
 table#draw-summary-super tbody td:nth-of-type(3) {
     text-align:         right;
 }
+div.draw,
 div.invoice {
     margin:  2em;
     width: 50em;
     font-family: 'arial','sans';
 }
+div.draw table.draw {
+    margin:  2em 0 0 0;
+    font-size: 1.2em;
+}
 div.invoice table.invoice {
     width:  100%;
     font-size: 1.2em;
 }
+#draw-header,
 #invoice-header {
     text-align: center;
 }
+#draw-header svg,
 #invoice-header svg {
     width: 10em;
     height: 5.1em;
 }
+#draw-header address,
 #invoice-header address {
     padding: 2em 0 3em 0;     
     font-size: 0.8em;
     font-style: normal;
     color:  #797979;
 }
+#draw-ref,
 #invoice-ref {
     text-align: center;
 }
@@ -79,12 +88,17 @@ div.invoice table.invoice {
 }
 #invoice-address {
 }
+#draw-winnings {
+    float: right;
+    margin: 2em 0 0 0;
+}
 #invoice-game {
 }
 #invoice-payout {
 }
 #invoice-terms {
 }
+.draw-large,
 .invoice-large {
     font-size:  1.6em;
     font-weight: bold;
@@ -93,9 +107,14 @@ div.invoice table.invoice {
     white-space: pre-line;
     margin-left: 2em;
 }
+table.draw caption,
 table.invoice caption {
     font-size: 0.9em;
 }
+table.draw caption {
+    font-weight: bold;
+}
+table.draw tfoot,
 table.invoice tfoot {
     font-weight: bold;
 }
@@ -103,6 +122,7 @@ table.invoice td {
     font-family: 'courier new';
     text-align: right;
 }
+table.draw td,
 table.invoice td:nth-of-type(1) {
     font-family: inherit;
     text-align: left;

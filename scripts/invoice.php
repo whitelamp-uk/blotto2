@@ -3,9 +3,9 @@
 
   <section id="invoice-header">
 
-    <?php require (__DIR__.'/../www/views/logo-invoice.php'); ?>
+    <?php require __DIR__.'/../www/views/logo-invoice.php'; ?>
 
-    <address>Unit 3 Saxon Way ⎮ Melbourn ⎮ Cambridgeshire ⎮ SG8 6DN</address>
+    <address><?php require __DIR__.'/../www/views/address.php'; ?></address>
   </section>
 
   <section id="invoice-ref" class="invoice-large">Invoice <?php echo htmlspecialchars ($invoice->reference); ?></section>

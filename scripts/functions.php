@@ -748,6 +748,115 @@ function draw_first_zaffo_model ($first_collection_date) {
     return $fcd->format ('Y-m-d');
 }
 
+function draw_report ($draw,$output=true) {
+    if ($output) {
+        require __DIR__.'/draw.php';
+        return;
+    }
+    ob_start ();
+    require __DIR__.'/draw.php';
+    $draw_report = ob_get_contents ();
+    ob_end_clean ();
+    return $draw_report;
+}
+
+function draw_report_render ($draw_closed,$output=true) {
+    $code                   = strtoupper (BLOTTO_ORG_USER);
+    $org                    = org ();
+    $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed')) AS `dt`";
+    try {
+        $zo                 = connect (BLOTTO_MAKE_DB);
+        $date_draw          = $zo->query ($qs);
+        $date_draw          = $date_draw->fetch_assoc ();
+        $date_draw          = new \DateTime ($date_draw['dt']);
+        $date_draw          = $date_draw->format ('Y M d');
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $draw                   = new \stdClass ();
+    $draw->date             = $date_draw;
+    $draw->html_title       = "Draw report WIN{$code}-{$date_draw}";
+    $draw->reference        = "DRW{$code}-{$draw_closed}";
+    $draw->description      = "Report for draw closing {$draw_closed}";
+    $draw->results          = [];
+    $draw->wins             = [];
+    $draw->winners          = 0;
+    $draw->players          = 0;
+    $draw->tickets          = 0;
+    $draw->total            = 0;
+    $draw->entries          = [];
+    $results                = [];
+    foreach (prizes($draw_closed) as $p) {
+        if ($p['level_method']=='RAFF' || !is_array($p['results'])) {
+            continue;
+        }
+        foreach ($p['results'] as $r) {
+            if (!in_array($r,$results)) {
+                $draw->results[] = $r;
+            }
+        }
+    }
+    try {
+        $qs = "
+          SELECT
+            `winnings`
+           ,CONCAT(`title`,' ',`name_first`,' ',`name_last`)
+           ,`ticket_number`
+          FROM `Wins`
+          WHERE `draw_closed`='$draw_closed'
+          ;
+        ";
+        $wins = $zo->query ($qs);
+        while($win=$wins->fetch_array(MYSQLI_NUM)) {
+            $draw->winners++;
+            $draw->total   += $win[0];
+            $draw->wins[]   = $win;
+        }
+        $qs = "
+          SELECT
+            `draw_closed`
+           ,COUNT(`ticket_number`) AS `tickets`
+           ,COUNT(DISTINCT `client_ref`) AS `players`
+          FROM `blotto_entry`
+          WHERE `draw_closed`<='$draw_closed'
+          GROUP BY `draw_closed`
+          ORDER BY `draw_closed` DESC
+          LIMIT 0,2
+          ;
+        ";
+        $entries            = $zo->query ($qs);
+        $e                  = $entries->fetch_assoc ();
+        $draw->players      = number_format ($e['players']);
+        $draw->tickets      = number_format ($e['tickets']);
+        $e                  = $entries->fetch_assoc ();
+        $draw->players_prv  = number_format ($e['players']);
+        $draw->tickets_prv  = number_format ($e['tickets']);
+        $qs = "
+          SELECT
+            `ccc`
+           ,`supporters_entered`
+           ,`tickets_entered`
+          FROM `Draws_Summary`
+          WHERE `draw_closed`='$draw_closed'
+          ORDER BY `tickets_entered` DESC
+          ;
+        ";
+        $cccs = $zo->query ($qs);
+        while($ccc=$cccs->fetch_array(MYSQLI_NUM)) {
+            $draw->entries[] = $ccc;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $snippet = draw_report ($draw,false);
+    return html ($snippet,$draw->html_title,$output);
+
+}
+
 function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
     // Allow dow to be loose
     $dow            = intval($dow) %7;

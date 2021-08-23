@@ -19,6 +19,8 @@ $options       = array (
     'guide',
     'privacy',
     'terms',
+    'drawreports',
+    'drawreport',
     'invoices',
     'invoice',
     'about'
@@ -97,6 +99,11 @@ elseif ($session=www_session($timestamp)) {
     // Invoice if that option
     if ($opt=='invoice') {
         invoice_serve ($_GET['invoice']);
+        exit;
+    }
+    // Draw report if that option
+    if ($opt=='drawreport') {
+        draw_report_serve ($_GET['drawreport']);
         exit;
     }
 }
@@ -183,6 +190,9 @@ elseif ($opt=='terms') {
 }
 elseif ($opt=='invoices') {
     require __DIR__.'/views/invoices.php';
+}
+elseif ($opt=='drawreports') {
+    require __DIR__.'/views/draw_reports.php';
 }
 elseif ($opt=='about') {
     require __DIR__.'/views/about.php';
