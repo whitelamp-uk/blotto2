@@ -66,6 +66,7 @@ $file = array (
        ,'clone.php'
        ,'demo.php'
        ,'draws.php'
+       ,'draw_reports.php'
        ,'engine.php'
        ,'entries.php'
        ,'invoices.php'

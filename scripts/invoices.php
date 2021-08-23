@@ -70,7 +70,6 @@ try {
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
-// TODO: let this error cause an abort
-//            exit (103);
+    exit (103);
 }
 
