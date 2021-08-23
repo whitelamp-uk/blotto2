@@ -830,8 +830,14 @@ function draw_report_render ($draw_closed,$output=true) {
         $draw->players      = number_format ($e['players']);
         $draw->tickets      = number_format ($e['tickets']);
         $e                  = $entries->fetch_assoc ();
-        $draw->players_prv  = number_format ($e['players']);
-        $draw->tickets_prv  = number_format ($e['tickets']);
+        if ($e) {
+            $draw->players_prv  = number_format ($e['players']);
+            $draw->tickets_prv  = number_format ($e['tickets']);
+        }
+        else {
+            $draw->players_prv  = null;
+            $draw->tickets_prv  = null;
+        }
         $qs = "
           SELECT
             `ccc`

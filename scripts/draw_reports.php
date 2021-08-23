@@ -16,7 +16,13 @@ $qs = "
   SELECT
     `r`.`draw_closed`
    ,`w`.`ticket_number` IS NOT NULL AS `has_winners`
-  FROM `$rdb`.`blotto_result` AS `r`
+  FROM (
+    SELECT
+      DISTINCT `draw_closed`
+    FROM `blotto_entry`
+  ) AS `draws`
+  JOIN `$rdb`.`blotto_result` AS `r`
+    ON `r`.`draw_closed`=`draws`.`draw_closed`
   LEFT JOIN `Wins` AS `w`
          ON `w`.`draw_closed`=`r`.`draw_closed`
   GROUP BY `r`.`draw_closed`

@@ -19,6 +19,14 @@
         $draw->wins,
         true
     );
+    if ($draw->players_prv) {
+        $players = "$draw->players (last draw $draw->players_prv)";
+        $tickets = "$draw->tickets (last draw $draw->tickets_prv)";
+    }
+    else {
+        $players = $draw->players;
+        $tickets = $draw->tickets;
+    }
     $table = table (
         'draw-properties',
         'draw',
