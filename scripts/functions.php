@@ -777,7 +777,7 @@ function draw_report_render ($draw_closed,$output=true) {
     }
     $draw                   = new \stdClass ();
     $draw->date             = $date_draw;
-    $draw->html_title       = "Draw report DRW{$code}-{$draw_closed}";
+    $draw->html_title       = "Draw DRW{$code}-{$draw_closed}";
     $draw->reference        = "DRW{$code}-{$draw_closed}";
     $draw->description      = "Report for draw closing {$draw_closed}";
     $draw->results          = [];
