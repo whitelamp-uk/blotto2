@@ -787,13 +787,12 @@ function draw_report_render ($draw_closed,$output=true) {
     $draw->tickets          = 0;
     $draw->total            = 0;
     $draw->entries          = [];
-    $results                = [];
     foreach (prizes($draw_closed) as $p) {
         if ($p['level_method']=='RAFF' || !is_array($p['results'])) {
             continue;
         }
         foreach ($p['results'] as $r) {
-            if (!in_array($r,$results)) {
+            if (!in_array($r,$draw->results)) {
                 $draw->results[] = $r;
             }
         }
