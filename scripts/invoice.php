@@ -39,7 +39,7 @@
 
   <section id="invoice-payment-details">
     <h4>Bank details</h4>
-    <div class="invoice-pre"><?php echo htmlspecialchars (BLOTTO_BANK_NAME."\n".BLOTTO_BANK_SORT."\n".BLOTTO_BANK_ACNR); ?></div>
+    <div class="invoice-pre"><?php echo htmlspecialchars (BLOTTO_BANK_NAME."\n".BLOTTO_BANK_SORT."\n".BLOTTO_BANK_ACNR."\n".BLOTTO_TAX_REF); ?></div>
   </section>
 
 </div>

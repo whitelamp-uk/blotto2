@@ -56,6 +56,8 @@ define ( 'BLOTTO_BANK_SORT',        '01-02-03'              );
 define ( 'BLOTTO_BANK_ACNR',        '12345678'              );
 define ( 'BLOTTO_CURRENCY',         '£'             ); // GBP, £, USD, etc
 define ( 'BLOTTO_TAX',              0.20            ); // Sales tax as a decimal
+define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
+
 
 /*
 
@@ -69,6 +71,9 @@ define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php
 define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
 define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'      );
 define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'   );
+define ( 'RSM_FLC_TO_PERIODS',      '1:Monthly,3:Quarterly,6:Six Monthly,12:Annually' );
+
+
 
 // Global - Stripe
 define ( 'STRIPE_TABLE_MANDATE',    'blotto_build_mandate'      );
