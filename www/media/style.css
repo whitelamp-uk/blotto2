@@ -402,7 +402,7 @@ form#change-supporter input {
 #logo-company {
     position:           fixed;
     width:              auto;
-    height:             30px;
+    height:             var(--blotto-dims-logo-company-height);
     left:               1em;
     top:                0.92em;
 }
