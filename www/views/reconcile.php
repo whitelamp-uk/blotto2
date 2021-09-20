@@ -2,11 +2,12 @@
 $supersum   = "summary";
 $day1       = day_one(true)->format ('Y-m-d');
 $daye       = day_yesterday()->format ('Y-m-d');
+$dayy       = substr($daye,0,4).'-01-01';
 if (array_key_exists('from',$_GET)) {
     $from   = $_GET['from'];
 }
 else {
-    $from   = $day1;
+    $from   = $dayy;
 }
 if (array_key_exists('to',$_GET)) {
     $to     = $_GET['to'];
