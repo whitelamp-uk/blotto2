@@ -11,11 +11,11 @@
         </div>
       </form>
 
-      <img id="logo-blotto" src="./media/logo.png"/>
+      <img id="logo-login-form" src="./media/logo-login-form.png"/>
 
     </section>
 
-    <img id="logo-company" src="./media/logo-company.png"/>
+    <img id="logo-login" src="./media/logo-login.png"/>
     <img id="logo" src="./logo-org.png"/>
 
 

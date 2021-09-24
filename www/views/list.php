@@ -61,46 +61,38 @@ foreach ($months as $m=>$month) {
     <section id="list" class="content">
 
         <h2><?php echo htmlspecialchars($tables[$table]); ?></h2>
-        <span class="all-data-choices">
-          <button data-interval="all" data-date="<?php echo $latest; ?>">All data</button>
-          <div class="choices">
-            <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$latest)); ?>">View</button>
-            <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$latest)); ?>">CSV</button>
-          </div>
-          <form id="list-aux">
-            <h3>CSV options</h3>
-<?php if(in_array($table,['Cancellations','Supporters','Draws'])): ?>
-            <input type="radio" name="group_by_ticket_number" value="0" checked /><label>1 row/ticket</label>
-            <input type="radio" name="group_by_ticket_number" value="1" /><label>1 row/member</label>
-            &nbsp; &nbsp;
-<?php endif; ?>
-            <input type="checkbox" name="excel_leading_zero" /><label>Excel-friendly &apos;012</label>
-          </form>
-        </span>
+
+        <div class="row">
+          <button class="col1 subtitle" data-interval="all" data-date="<?php echo $latest; ?>">All data</button>
+          <span class="col2 choices">
+            <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$m,'P1M')); ?>">View</button>
+            <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$m,'P1M')); ?>">CSV</button>
+          </span>
+        </div>
 
 <?php foreach($dates as $m=>$days): ?>
 <?php     if(count($days)): ?>
 <?php         $mlabel = date('Y M',strtotime($m)); ?>
-        <div class="month">
-          <h3><?php echo htmlspecialchars($mlabel); ?></h3>
-          <span class="month-choices">
-            <button data-interval="month" data-date="<?php echo $m; ?>"><?php echo htmlspecialchars($mlabel); ?></button>
-            <div class="choices">
+        <div class="row month">
+          <h3 class="col1"><?php echo htmlspecialchars($mlabel); ?></h3>
+          <span class="col2 month-choices">
+            <button data-interval="month" data-date="<?php echo $m; ?>">Month</button>
+            <span class="choices">
               <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$m,'P1M')); ?>">View</button>
               <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$m,'P1M')); ?>">CSV</button>
-            </div>
+            </span>
           </span>
-          <div class="fridays">
+          <span class="col3 fridays">
 <?php         foreach($days as $f): ?>
             <span class="friday">
               <button data-interval="week" data-date="<?php echo $f; ?>"><?php echo $f; ?></button>
-              <div class="choices">
+              <span class="choices">
                 <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$f,'P7D')); ?>">View</button>
                 <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$f,'P7D')); ?>">CSV</button>
-              </div>
+              </span>
             </span>
 <?php         endforeach; ?>
-          </div>
+          </span>
         </div>
 <?php     endif; ?>
 <?php endforeach; ?>

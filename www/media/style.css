@@ -11,6 +11,17 @@ body {
     height:             100%;
 }
 
+h2 {
+    font-family:        var(--blotto-dfn-fnt-title);
+    font-weight:        var(--blotto-dfn-fwt-title);
+}
+
+h3 {
+    font-family:        var(--blotto-dfn-fnt-subtitle);
+    font-weight:        var(--blotto-dfn-fwt-subtitle);
+}
+
+
 body.unloading {
     background-image:   var(--blotto-url-wait);
     background-repeat:  no-repeat;
@@ -39,11 +50,13 @@ h2, h3, caption {
 }
 
 h2 {
-    font-size:          var(--blotto-dfn-fsz-h2);
+    font-size:          var(--blotto-dfn-fsz-title);
+    font-weght:         var(--blotto-dfn-fwt-title);
 }
 
 h3, caption {
-    font-size:          var(--blotto-dfn-fsz-h3);
+    font-size:          var(--blotto-dfn-fsz-subtitle);
+    font-weight:        var(--blotto-dfn-fwt-subtitle);
 }
 
 table {
@@ -86,7 +99,7 @@ button, input[type="submit"] {
     border-color:       var(--blotto-color-bdr-button);
     background-color:   var(--blotto-color-bgd-button);
     color:              var(--blotto-color-fgd-button);
-    font-weight:        bold;
+    font-weight:        var(--blotto-dfn-fwt-default);
 }
 
 button[data-close] {
@@ -154,13 +167,14 @@ a.draw-report, a.invoice {
     margin:             0.4em 0 0.4em 0.4em;
     border-style:       solid;
     border-width:       1px;
+    border-color:       var(--blotto-color-bdr-layout);
     width:              calc(100% - 0.6em - 2px);
-    height:             2.6em;
-    padding:            0.55em 0.5em 0 8em;
+    height:             var(--blotto-dims-header-height);
+    padding:            var(--blotto-dims-header-nudge) 0.5em 0 8em;
     text-align:         right;
 }
 
-#options a, button, #reconcile input[type="submit"] {
+button, #reconcile input[type="submit"] {
     margin:             0 0 0 0.05em;
     border-style:       solid;
     border-width:       2px;
@@ -173,16 +187,27 @@ a.draw-report, a.invoice {
 
 #options a {
     display:            inline-block;
-    margin-bottom:      0.3em;
-    border-color:       var(--blotto-color-bdr-button);
+    margin:             0 0 0.3em 0.05em;
+    border-style:       solid;
+    border-width:       2px;
+    border-radius:      0.3em;
+    border-color:       var(--blotto-color-bdr-button-opt);
     background-color:   var(--blotto-color-bgd-button);
-    color:              var(--blotto-color-fgd-button);
-    font-weight:        bold;
+    padding:            0.1em 0.4em 0.1em 0.4em;
+    font-family:        var(--blotto-dfn-fnt-header);
+    font-weight:        var(--blotto-dfn-fwt-header);
+    font-size:          var(--blotto-dfn-fsz-header);
+    text-align:         center;
+    text-decoration:    none;
+    color:              var(--blotto-color-fgd-button-opt);
 }
 #options a:hover {
-    border-color:       var(--blotto-color-bdr-button);
+    border-color:       var(--blotto-color-bdr-button-opt);
     background-color:   var(--blotto-color-bgd-button);
     color:              var(--blotto-color-fgd-button-opt-hvr);
+}
+#options a.active {
+    cursor:             default;
 }
 #options a.active, #options a.active:hover, #options a#logout {
     border-color:       var(--blotto-color-bdr-button-opt-acv);
@@ -190,7 +215,7 @@ a.draw-report, a.invoice {
     color:              var(--blotto-color-fgd-button-opt-acv);
 }
 #options a.active, #options a.active:hover {
-    border-color:       var(--blotto-color-bdr-button-opt-avh);
+    border-color:       var(--blotto-color-bdr-button-opt-acv);
 }
 #options a#logout:hover {
     border-color:       var(--blotto-color-bdr-button-lgt-hvr);
@@ -202,8 +227,9 @@ a.draw-report, a.invoice {
     margin:             0 0 0 0.4em;
     border-style:       solid;
     border-width:       1px;
+    border-color:       var(--blotto-color-bdr-layout);
     width:              calc(100% - 0.6em - 2px);
-    height:             calc(100vh - 6.4em - 6px);
+    height:             calc(100vh - var(--blotto-dims-header-height) - 3.8em - 6px);
     overflow-y:         scroll;
 }
 
@@ -212,9 +238,10 @@ a.draw-report, a.invoice {
     margin:             0.2em 0 0 0.4em;
     border-style:       solid;
     border-width:       1px;
+    border-color:       var(--blotto-color-bdr-layout);
     width:              calc(100% - 0.6em - 2px);
     height:             2.6em;
-    padding:            0.5em 0.8em 0 18em;
+    padding:            0.2em 0.8em 0 18em;
     text-align:         left;
 }
 
@@ -223,7 +250,8 @@ a.draw-report, a.invoice {
     display:            inline-block;
     margin:             0 0.3em 0 0;
     padding:            0.4em;
-    font-size:          0.8em;
+    font-size:          var(--blotto-dfn-fsz-footer);
+    font-weight:        var(--blotto-dfn-fwt-footer);
     text-decoration:    none;
     color:              var(--blotto-color-fgd-lk-aux);
 }
@@ -391,25 +419,28 @@ form#change-supporter input {
     bottom:             0.55em;
 }
 
+#logo-login-form {
+    position:           fixed;
+    left:               1em;
+    top:                calc(50vh - 21px);
+    width:              auto;
+    height:             34px;
+}
+
+#logo-login {
+    position:           fixed;
+    width:              auto;
+    height:             var(--blotto-dims-logo-login-height);
+    left:               1em;
+    top:                var(--blotto-dims-logo-login-top);
+}
+
 #logo-blotto {
     position:           fixed;
     width:              auto;
-    height:             34px;
+    height:             var(--blotto-dims-logo-blotto-height);
     left:               1em;
-    top:                0.92em;
-}
-
-#logo-company {
-    position:           fixed;
-    width:              auto;
-    height:             var(--blotto-dims-logo-company-height);
-    left:               1em;
-    top:                0.92em;
-}
-
-#login #logo-blotto {
-    left:               1em;
-    top:                calc(50vh - 21px);
+    top:                var(--blotto-dims-logo-blotto-top);
 }
 
 .blink {
@@ -443,25 +474,13 @@ form#change-supporter input {
 
 .content > h2 {
     box-sizing:         border-box;
-    margin:             0 0 0.5em 0;
+    margin:             0 0 1em 0;
     padding:            0;
-}
-
-#list h2 {
-    margin-left:        3.6em;
 }
 
 h3 {
     margin-top:         0.5em;
     margin-bottom:      0.5em;
-}
-
-#list h3 {
-    margin:             0 0 0 5em;
-    padding:            0;
-}
-#list h3:first-of-type {
-    margin-top:         1.2em;
 }
 
 form#list-aux {
@@ -487,92 +506,58 @@ form#list-aux label {
     font-size:         var(--blotto-font-size-form-group-by);
 }
 
+
+#list h2 {
+    margin-bottom:      1.4em;
+}
+#list .row {
+    display:            block;
+    margin:             1em 0 1em 0;
+}
+#list .row button {
+    margin:             0;
+}
+#list .row > *, #list .row > .col3 > * {
+    display:            inline-block;
+    text-align:         center;
+}
+#list .row > .col3 {
+    display:            inline;
+}
+#list .row > *, #list .row > .col3 > * {
+    width:              var(--blotto-dims-column-spacing);
+}
+#list .row > .choices > button[data-go] {
+    font-size:          1em;
+    padding:            0;
+}
+#list .subtitle, #list .row > h3 {
+    display:            inline-block;
+    padding:            0;
+    font-family:        var(--blotto-dfn-fnt-subtitle);
+    font-size:          var(--blotto-dfn-fsz-subtitle);
+    font-weight:        var(--blotto-dfn-fwt-subtitle);
+    text-align:         left;
+    width:              calc(var(--blotto-dims-column-spacing) - 2.8em);
+}
+#list .row > .col1.subtitle {
+    margin-left:        -1em;
+    padding-left:       1em;
+    width:              calc(var(--blotto-dims-column-spacing) - 1.8em);
+}
+#list .row.month button[data-date] + .choices {
+    position:           relative;
+    display:            inline-block;
+    left:               0;
+    top:                0;
+    width:              6em;
+    text-align:         center;
+}
+
 #list .choices button {
+    cursor:             pointer;
     font-size:          var(--blotto-font-size-button-choices);
     padding:            0.1em 0.2em 0.1em 0.2em;
-}
-
-#list .all-data-choices {
-    position:           absolute;
-    z-index:            1;
-    left:               1.85em;
-    top:                1.85em;
-}
-
-#list .all-data-choices > button {
-    width:              6em;
-    white-space:        nowrap;
-}
-
-#list .all-data-choices .choices button {
-    position:           absolute;
-    z-index:            2;
-    top:                1.75em;
-}
-
-#list .all-data-choices .choices button[data-go="view"] {
-    left:               0.55em;
-}
-
-#list .all-data-choices .choices button[data-go="pull"] {
-    left:               4em;
-}
-
-.month {
-    position:           relative;
-}
-
-#list .month-choices {
-    position:           absolute;
-    z-index:            1;
-    left:               -0.2em;
-    top:                0.35em;
-}
-
-#list .month-choices button[data-interval="month"] {
-    position:           absolute;
-    z-index:            1;
-    left:               0;
-    top:                -0.8em;
-    width:              6em;
-    white-space:        nowrap;
-}
-
-#list .month-choices .choices button {
-    position:           absolute;
-    z-index:            2;
-    top:                0.8em;
-}
-
-#list .month-choices .choices button[data-go="view"] {
-    left:               0.6em;
-}
-
-#list .month-choices .choices button[data-go="pull"] {
-    left:               4.1em;
-}
-
-.fridays {
-    position:           absolute;
-    z-index:            1;
-    left:               16.7em;
-    top:                -0.35em;
-}
-
-.friday {
-    position:           relative;
-}
-
-#list .friday .choices {
-    position:           absolute;
-    z-index:            2;
-    left:               0.5em;
-    top:                1.15em;
-}
-
-.choices a {
-    display:            block;
-    z-index:            1000;
 }
 
 .lottery-number {
