@@ -10,4 +10,5 @@ define ( 'BLOTTO_WWW_SESSION_MINUTES',  15                                      
 define ( 'BLOTTO_WWW_ROWS_MAX_VIEW',    2500                                                );
 define ( 'BLOTTO_WWW_ROWS_MAX_PULL',    100000                                              );
 define ( 'BLOTTO_WWW_FACEBOOK_ID',      null                                                );
+define ( 'BLOTTO_WWW_IFRAME_SOURCES',   '\'self\' https://dbhc.org.uk http://dbhc.org.uk'   );
 
