@@ -208,8 +208,9 @@ button, #reconcile input[type="submit"] {
 }
 #options a.active {
     cursor:             default;
+    text-decoration:    var(--blotto-text-decor-header-acv);
 }
-#options a.active, #options a.active:hover, #options a#logout {
+#options a.active, #options a.active:hover {
     border-color:       var(--blotto-color-bdr-button-opt-acv);
     background-color:   var(--blotto-color-bgd-button-opt-acv);
     color:              var(--blotto-color-fgd-button-opt-acv);
@@ -217,9 +218,15 @@ button, #reconcile input[type="submit"] {
 #options a.active, #options a.active:hover {
     border-color:       var(--blotto-color-bdr-button-opt-acv);
 }
+#options a#logout {
+    border-color:       var(--blotto-color-bdr-button-opt-acv);
+    background-color:   var(--blotto-color-bdr-button-lgt);
+    color:              var(--blotto-color-fgd-button-opt-acv);
+}
 #options a#logout:hover {
     border-color:       var(--blotto-color-bdr-button-lgt-hvr);
     background-color:   var(--blotto-color-bgd-button-lgt-hvr);
+    color:              var(--blotto-color-fgd-button-lgt-hvr);
 }
 
 #frame {
@@ -263,6 +270,7 @@ button, #reconcile input[type="submit"] {
 
 #footer a.active {
     color:              var(--blotto-color-fgd-lk-aux-acv);
+    text-decoration:    var(--blotto-text-decor-footer-acv);
 }
 
 #login {
@@ -308,7 +316,7 @@ button, #reconcile input[type="submit"] {
 
 form.login {
     text-align:         center;
-    padding:            1.9em 0 0 0;
+    padding:            1.9em 0 5em 0;
 }
 
 form.login input {
@@ -320,6 +328,11 @@ form.login input {
     padding-top:        0.3em;
     padding-bottom:     0.3em;
     text-align:         center;
+}
+
+form.login .usr input, form.login .pwd input {
+    border-color:       var(--blotto-color-bdr-login-input);
+    background-color:   var(--blotto-color-bgd-login-input);
 }
 
 form.login .pwd {
@@ -421,7 +434,7 @@ form#change-supporter input {
 
 #logo-login-form {
     position:           fixed;
-    left:               1em;
+    left:               5.65em;
     top:                calc(50vh - 21px);
     width:              auto;
     height:             34px;
@@ -468,8 +481,8 @@ form#change-supporter input {
 }
 
 .content {
-    padding:            2em;
-    width:              calc(100% - 4em);
+    padding:            2em 2em 2em var(--blotto-content-margin-left);
+    width:              calc(100% - 2em - var(--blotto-content-margin-left));
 }
 
 .content > h2 {
@@ -513,6 +526,9 @@ form#list-aux label {
 #list .row {
     display:            block;
     margin:             1em 0 1em 0;
+}
+#list .row:nth-child(2n+0) {
+    background-color:   var(--blotto-color-bgd-list-stripe);
 }
 #list .row button {
     margin:             0;
