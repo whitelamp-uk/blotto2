@@ -31,7 +31,7 @@ var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
 
     <section id="reconcile" class="content">
 
-      <h2>Reconciliation</h2>
+      <h2>Summary data</h2>
 
       <form method="get" action="./">
         <input type="hidden" name="reconcile" />

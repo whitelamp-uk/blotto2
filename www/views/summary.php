@@ -9,7 +9,7 @@
 
     <section id="visual" class="content">
 
-      <h2>Summary</h2>
+      <h2>Summary graphs</h2>
 
       <section id="chart1" class="chart left">
         <?php echo links_report ('recent_draw_activity',1,'Month'); ?>
