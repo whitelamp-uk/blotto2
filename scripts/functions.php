@@ -1485,16 +1485,25 @@ function invoice_payout ($draw_closed_date,$output=true) {
     if ($invoice->terms) {
         $qs = "
           SELECT
-            `prize`
-           ,COUNT(`ticket_number`) AS `qty`
-           ,`winnings` AS `prize_value`
+            `Wins`.`prize`
+           ,COUNT(`Wins`.`ticket_number`) AS `qty`
+           ,`Wins`.`winnings` AS `prize_value`
            ,'' AS `blank`
            ,'0.00' AS `sales_tax`
           FROM `Wins`
-          WHERE `draw_closed`='$draw_closed_date'
-            AND `superdraw`='N'
-          GROUP BY `prize`
-          ORDER BY `winnings`
+          JOIN `blotto_entry` AS `e`
+            ON `e`.`draw_closed`=`Wins`.`draw_closed`
+           AND `e`.`ticket_number`=`Wins`.`ticket_number`
+          JOIN `blotto_winner` AS `w`
+            ON `w`.`entry_id`=`e`.`id`
+          JOIN `blotto_prize` AS `p`
+            ON `p`.`level`=`w`.`prize_level`
+           AND `p`.`starts`=`w`.`prize_starts`
+          WHERE `Wins`.`draw_closed`='$draw_closed_date'
+            AND `Wins`.`superdraw`='N'
+            AND `p`.`insure`=0
+          GROUP BY `Wins`.`prize`
+          ORDER BY `Wins`.`winnings`
           ;
         ";
         try {
