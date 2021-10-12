@@ -58,7 +58,7 @@ var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
 table (
     'reconciliation',
     'summary',
-    'Reconciliation from '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
+    'Reconciliation '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
     null,
     calculate ($from,$to)
 );
@@ -86,8 +86,8 @@ linkCsv ('reconciliation');
 table (
     'draw-summary',
     'summary',
-    'Draw summary from '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
-    ['Draw close date','CCC','Supporters','Tickets'],
+    'Draw summary '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
+    ['Draw closed','CCC','Supporters','Tickets'],
     draws ($from,$to)
 );
 ?>
@@ -116,7 +116,7 @@ linkCsv ('draw-summary');
 table (
     'draw-summary-super',
     'summary-super',
-    'Draw '.$supersum.' from '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
+    'Draw '.$supersum.' '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
     ['Draw close date','Supporters','Tickets'],
     draws_super ($from,$to)
 );

@@ -751,21 +751,21 @@ form#list-aux label {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
 }
 
-
-
 #reconcile .reconcile {
-    margin-top:         1em;
-    width:              30em;
+    margin:             1em 0 3em 0;
+    text-align:         center;
 }
 
-#reconcile-table-draw-summary tbody td:nth-of-type(3),
-#reconcile-table-draw-summary tbody td:nth-of-type(4) {
-    text-align:         right;
+#reconcile .reconcile table {
+    margin:             0 auto 0 auto;
+    text-align:         left;
+    width:              24em;
+    white-space:        nowrap;
 }
 
-#reconcile-table-draw-summary-super tbody td:nth-of-type(2),
-#reconcile-table-draw-summary-super tbody td:nth-of-type(3) {
-    text-align:         right;
+#reconcile .reconcile caption {
+    text-align:         center;
+    overflow:           visible;
 }
 
 #reconcile-table-reconcile tbody tr:nth-of-type(1),
@@ -781,6 +781,22 @@ form#list-aux label {
 #reconcile-table-reconcile tbody td:nth-of-type(1),
 #reconcile-table-reconcile tbody td:nth-of-type(3):first-letter {
     text-transform:     uppercase;
+}
+#reconcile-table-reconcile tbody td:nth-of-type(1) {
+    width:              3em;
+}
+#reconcile-table-reconcile tbody td:nth-of-type(2) {
+    width:              6em;
+}
+
+#reconcile-table-draw-summary tbody td:nth-of-type(3),
+#reconcile-table-draw-summary tbody td:nth-of-type(4) {
+    text-align:         right;
+}
+
+#reconcile-table-draw-summary-super tbody td:nth-of-type(2),
+#reconcile-table-draw-summary-super tbody td:nth-of-type(3) {
+    text-align:         right;
 }
 
 #system-info {
