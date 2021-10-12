@@ -661,32 +661,8 @@ form#list-aux label {
 
 
 .chart {
-    margin-bottom:      4em;
-    width:              25em;
-    margin-left:        3em;
-    margin-right:       0;
-}
-
-.chart.doughnut {
-    margin-bottom:      -2em;
-    width:              20em;
-}
-
-.chart.left {
-    float:              left;
-}
-
-.chart.left.doughnut {
-    margin-left:        5.5em;
-}
-
-.chart.right {
-    float:              right;
-    margin-right:       3em;
-}
-
-.chart.right.doughnut {
-    margin-right:       5.5em;
+    margin:             0 auto 8em auto;
+    width:              42em;
 }
 
 
