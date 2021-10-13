@@ -9,7 +9,7 @@
         </div>
       </form>
 
-      <img id="logo-login-form" src="./media/logo.png"/>
+      <img id="logo-login-form" src="./media/logo-login-form.png"/>
 
     </section>
 
