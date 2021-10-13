@@ -61,7 +61,7 @@ get_args () {
         shift
         if [[ "$sws" == "-"* ]]
         then
-            if    [[ "$sws" == *"c"* ]]
+            if [[ "$sws" == *"c"* ]]
             then
                 echo  "Option: clone from another DB"
                 aux="1"
@@ -69,7 +69,7 @@ get_args () {
                 shift
             fi
 
-            if    [[ "$sws" == *"m"* ]]
+            if [[ "$sws" == *"m"* ]]
             then
                 echo  "Option: manual result insertion"
                 aux="1"
@@ -81,7 +81,7 @@ get_args () {
                 shift
                 shift
             fi
-            if    [[ "$sws" == *"n"* ]]
+            if [[ "$sws" == *"n"* ]]
             then
                 echo  "Option: no tidying"
                 no_tidy="1"
@@ -200,8 +200,8 @@ if [ "$manual" ]
 then
     echo "MANUAL. Insert results"
     start=$SECONDS
-echo /usr/bin/php $prg $sw "$cfg" exec manual.php $draw_closed $prize_group $manual_number
-    /usr/bin/php $prg $sw "$cfg" exec manual.php $draw_closed $prize_group $manual_number
+    echo /usr/bin/php $prg $sw "$cfg" exec manual.php $draw_closed $prize_group $manual_number
+         /usr/bin/php $prg $sw "$cfg" exec manual.php $draw_closed $prize_group $manual_number
     abort_on_error MANUAL $?
     finish_up
     exit

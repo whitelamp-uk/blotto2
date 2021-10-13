@@ -17,6 +17,7 @@ $qs = "
    ,COUNT(`p`.`id` IS NULL) AS `missing`
    ,COUNT(`p`.`chances` IS NULL)-COUNT(`p`.`id` IS NULL) AS `no_chances`
    ,COUNT(`p`.`started` IS NULL OR `p`.`started`='0000-00-00')-COUNT(`p`.`id` IS NULL) AS `no_start_date`
+   ,GROUP_CONCAT(`m`.`ClientRef`) AS `refs`
   FROM `blotto_build_mandate` AS `m`
   LEFT JOIN `blotto_player` AS `p`
     ON `p`.`client_ref`=`m`.`ClientRef`
