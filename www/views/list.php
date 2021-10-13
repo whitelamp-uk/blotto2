@@ -60,6 +60,16 @@ foreach ($months as $m=>$month) {
 
     <section id="list" class="content">
 
+          <form id="list-aux">
+            <h3>CSV options</h3>
+<?php if(in_array($table,['Cancellations','Supporters','Draws'])): ?>
+            <input type="radio" name="group_by_ticket_number" value="0" checked /><label>1 row/ticket</label>
+            <input type="radio" name="group_by_ticket_number" value="1" /><label>1 row/member</label>
+            &nbsp; &nbsp;
+<?php endif; ?>
+            <input type="checkbox" name="excel_leading_zero" /><label>Excel-friendly &apos;012</label>
+          </form>
+
         <h2><?php echo htmlspecialchars($tables[$table]); ?></h2>
 
         <div class="row">
