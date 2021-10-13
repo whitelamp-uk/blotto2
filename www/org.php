@@ -147,6 +147,7 @@ function init ( ) {
     </script>
 
     <link rel="stylesheet" href="./media/style.css" />
+    <link rel="stylesheet" href="./media/override.css" />
 
   </head>
 

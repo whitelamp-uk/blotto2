@@ -596,49 +596,53 @@ form#list-aux label {
     padding:            0.2em 0.5em 0.2em 0.5em;
 }
 
+.wait button {
+    margin-top:         0.4em;
+}
+
 @keyframes fadeout {
-    from { opacity:    1.0; }
-      5% { opacity:    0.5; }
-     10% { opacity:    1.0; }
-     15% { opacity:    0.5; }
-     20% { opacity:    1.0; }
-     75% { opacity:    1.0; }
-      to { opacity:    0.0; }
+    from { opacity:     1.0; }
+      5% { opacity:     0.5; }
+     10% { opacity:     1.0; }
+     15% { opacity:     0.5; }
+     20% { opacity:     1.0; }
+     75% { opacity:     1.0; }
+      to { opacity:     0.0; }
 }
 
 .negative {
-    color:             var(--blotto-color-fgd-negative-nr);
+    color:              var(--blotto-color-fgd-negative-nr);
 }
 
 .msg {
-    font-weight:       bold;
-    background-color:  var(--blotto-color-bgd-message-msg);
-    color:             var(--blotto-color-fgd-message);
+    font-weight:        bold;
+    background-color:   var(--blotto-color-bgd-message-msg);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .err {
-    background-color:  var(--blotto-color-bgd-message-err);
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-err);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .wrn {
-    background-color:  var(--blotto-color-bgd-message-wrn);
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-wrn);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .ok {
-    background-color:  var(--blotto-color-bgd-message-ok);
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-ok);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .changed, .changed tr, .changed th, .changed td {
-    background-color:  var(--blotto-color-bgd-message-wrn) !important;
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-wrn) !important;
+    color:              var(--blotto-color-fgd-message);
 }
 
 .updated, .updated tr, .updated th, .updated td {
-    background-color:  var(--blotto-color-bgd-message-ok) !important;
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-ok) !important;
+    color:              var(--blotto-color-fgd-message);
 }
 
 @keyframes slideup {
@@ -735,7 +739,7 @@ form#list-aux label {
 #reconcile .reconcile table {
     margin:             0 auto 0 auto;
     text-align:         left;
-    width:              24em;
+    width:              26em;
     white-space:        nowrap;
 }
 
