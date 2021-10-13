@@ -29,12 +29,12 @@ try {
     $errors = $zo->query ($qs);
     $errors = $errors->fetch_assoc ();
     if ($errors['total']) {
-      fwrite (STDERR,"    ".$errors['total']." player errors:\n");
-      fwrite (STDERR,"    ".$errors['missing']." mandates are missing a player\n");
-      fwrite (STDERR,"    ".$errors['no_chances']." players have no chances\n");
-      fwrite (STDERR,"    ".$errors['no_start_date']." players have no start date\n");
-      fwrite (STDERR,$qs);
-      exit (102);
+        fwrite (STDERR,"    ".$errors['total']." player errors:\n");
+        fwrite (STDERR,"    ".$errors['missing']." mandates are missing a player\n");
+        fwrite (STDERR,"    ".$errors['no_chances']." players have no chances\n");
+        fwrite (STDERR,"    ".$errors['no_start_date']." players have no start date\n");
+        fwrite (STDERR,$qs);
+        exit (102);
     }
 }
 catch (\mysqli_sql_exception $e) {
