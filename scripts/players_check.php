@@ -13,10 +13,13 @@ if (!$zo) {
 // Final players check
 $qs = "
   SELECT
-    `p`.`id`
-  FROM `blotto_player` AS `p`
-  JOIN `blotto_build_mandate` AS `m`
-    ON `m`.`ClientRef`=`p`.`client_ref`
+    COUNT(`m`.`RefNo`) AS `total`
+   ,COUNT(`p`.`id` IS NULL) AS `missing`
+   ,COUNT(`p`.`chances` IS NULL)-COUNT(`p`.`id` IS NULL) AS `no_chances`
+   ,COUNT(`p`.`started` IS NULL OR `p`.`started`='0000-00-00')-COUNT(`p`.`id` IS NULL) AS `no_start_date`
+  FROM `blotto_build_mandate` AS `m`
+  LEFT JOIN `blotto_player` AS `p`
+    ON `p`.`client_ref`=`m`.`ClientRef`
   WHERE `p`.`chances` IS NULL
      OR `p`.`started` IS NULL
      OR `p`.`started`='0000-00-00'
@@ -24,8 +27,13 @@ $qs = "
 ";
 try {
     $errors = $zo->query ($qs);
-    if ($errors->num_rows) {
-      fwrite (STDERR,$qs.$errors->num_rows." errors!\n");
+    $errors = $errors->fetch_assoc ();
+    if ($errors['total']) {
+      fwrite (STDERR,"    ".$errors['total']." player errors:\n");
+      fwrite (STDERR,"    ".$errors['missing']." mandates are missing a player\n");
+      fwrite (STDERR,"    ".$errors['no_chances']." players have no chances\n");
+      fwrite (STDERR,"    ".$errors['no_start_date']." players have no start date\n");
+      fwrite (STDERR,$qs);
       exit (102);
     }
 }
