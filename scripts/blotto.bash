@@ -45,6 +45,7 @@ finish_up () {
 }
 
 get_args () {
+    cfg=""
     aux=""
     sw=""
     clone=""
@@ -55,6 +56,7 @@ get_args () {
     do
         if [ $# -lt 2 ]
         then
+            cfg="$1"
             return
         fi
         sws="$1"
@@ -68,7 +70,6 @@ get_args () {
                 clone="$1"
                 shift
             fi
-
             if [[ "$sws" == *"m"* ]]
             then
                 echo  "Option: manual result insertion"
@@ -97,24 +98,6 @@ get_args () {
     done
 }
 
-get_cfg () {
-    cfg=""
-    while [ 1 ]
-    do
-        if [ $# -lt 2 ]
-        then
-            if [ "$args" ]
-            then
-                get_args $args
-            fi
-            cfg="$1"
-            return
-        fi
-        args="$args $1"
-        shift
-    done
-}
-
 # User
 
 if [ "$UID" != "0" ]
@@ -125,7 +108,7 @@ fi
 
 
 # Arguments
-get_cfg "$@"
+get_args "$@"
 if [ ! "$cfg" ]
 then
     echo "/bin/bash $0 [-options] path_to_config_file"
@@ -152,7 +135,6 @@ then
     echo "Config file \"$cfg\" is not usable"
     exit 105
 fi
-
 
 # Tidy
 
