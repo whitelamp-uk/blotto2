@@ -53,28 +53,32 @@ try {
     $check = $zo->query ($qs);
     while ($c=$check->fetch_assoc()) {
         if (str_replace(' ','',$c['ClientRef'])=='') {
-            fwrite (STDERR,"ClientRef column is compulsory\n");
+            fwrite (STDERR,"`tmp_supporter`.`ClientRef` is compulsory - $ccc\n");
             exit (103);
         }
 /*
+
+TODO: Some attempt to sanity check formats and values
+by something based roughly on the theme below.
+
         if (str_replace(' ','',$c['FirstName'])=='') {
-            fwrite(STDERR, "First name column is compulsory\n");
+            fwrite(STDERR, "`tmp_supporter`.`FirstName` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['LastName'])=='') {
-            fwrite(STDERR, "Last name column is compulsory\n");
+            fwrite(STDERR, "`tmp_supporter`.`LastName` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['AddressLine1'])=='') {
-            fwrite(STDERR, "Address line 1 column is compulsory\n");
+            fwrite(STDERR, "`tmp_supporter`.`AddressLine1` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['Town'])=='') {
-            fwrite(STDERR, "Town column is compulsory\n");
+            fwrite(STDERR, "`tmp_supporter`.`Town` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['Postcode'])=='') {
-            fwrite(STDERR, "Postcode column is compulsory\n");
+            fwrite(STDERR, "`tmp_supporter`.`Postcode` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
 */
@@ -227,10 +231,6 @@ ALTER TABLE `blotto_contact`
 DROP INDEX IF EXISTS `search_idx`
 ;
 ";
-
-// TODO: This is too weak.
-// There should be at least some attempt to sanity check formats and values.
-
 
 $qs = "
   SELECT
