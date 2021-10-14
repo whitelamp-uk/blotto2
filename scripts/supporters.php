@@ -53,7 +53,7 @@ try {
     $check = $zo->query ($qs);
     while ($c=$check->fetch_assoc()) {
         if (str_replace(' ','',$c['ClientRef'])=='') {
-            fwrite (STDERR,"`tmp_supporter`.`ClientRef` is compulsory - $ccc\n");
+            fwrite (STDERR,"Supporter import: `tmp_supporter`.`ClientRef` is compulsory - $ccc\n");
             exit (103);
         }
 /*
@@ -61,24 +61,28 @@ try {
 TODO: Some attempt to sanity check formats and values
 by something based roughly on the theme below.
 
+Actually soon both import.supporter.sql and this script
+must be rewritten as per https://www.whitelamp.com/flc/
+
+
         if (str_replace(' ','',$c['FirstName'])=='') {
-            fwrite(STDERR, "`tmp_supporter`.`FirstName` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`FirstName` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['LastName'])=='') {
-            fwrite(STDERR, "`tmp_supporter`.`LastName` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`LastName` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['AddressLine1'])=='') {
-            fwrite(STDERR, "`tmp_supporter`.`AddressLine1` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`AddressLine1` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['Town'])=='') {
-            fwrite(STDERR, "`tmp_supporter`.`Town` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`Town` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['Postcode'])=='') {
-            fwrite(STDERR, "`tmp_supporter`.`Postcode` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`Postcode` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
 */
