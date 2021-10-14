@@ -228,6 +228,9 @@ DROP INDEX IF EXISTS `search_idx`
 ;
 ";
 
+// TODO: This is too weak.
+// There should be at least some attempt to sanity check formats and values.
+
 
 $qs = "
   SELECT
@@ -293,15 +296,14 @@ if (!$count) {
     try {
         $rows = $zo->query ($qs);
         $rows = $rows->fetch_assoc ()['rows'];
-        fwrite (STDERR,"For $ccc, table `tmp_supporter` has $rows rows\n");
-        if (!$rows) {
-            fwrite (STDERR,"For $ccc, table `tmp_supporter` was totally empty\n");
-            exit (118);
+        fwrite (STDERR,"$rows of data found for $ccc\n");
+        if ($rows<5) {
+            fwrite (STDERR,"WARNING: very little data was found for $ccc\n");
         }
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (119);
+        exit (118);
     }
 }
 
