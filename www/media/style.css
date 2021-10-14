@@ -372,7 +372,7 @@ form#change-supporter {
     height:             calc(100vh - 1em);
     border-style:       solid;
     border-width:       1px;
-    border-color:       var(--blotto-color-bdr-table);
+    border-color:       var(--blotto-color-gold-lo);
     background-color:   var(--blotto-dfn-clr-white);
     overflow-x:         auto;
     overflow-y:         scroll;
@@ -380,6 +380,11 @@ form#change-supporter {
 form#change-mandate.active,
 form#change-supporter.active {
     display:            block;
+}
+
+form#change-mandate button,
+form#change-supporter button {
+    border-color:       var(--blotto-color-gold-lo);
 }
 
 form#change-mandate button.form-close,
