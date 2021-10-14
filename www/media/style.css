@@ -175,7 +175,7 @@ a.draw-report, a.invoice {
     text-align:         right;
 }
 
-button, #reconcile input[type="submit"] {
+button, input[type="submit"] {
     margin:             0 0 0 0.05em;
     border-style:       solid;
     border-width:       2px;
@@ -732,6 +732,10 @@ form#list-aux label {
 .chart-bar-20,
 .chart-bar-24 {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
+}
+
+#reconcile > form {
+    position: fixed;
 }
 
 #reconcile .reconcile {
