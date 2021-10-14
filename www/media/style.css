@@ -5,6 +5,7 @@
 
 body {
     margin:             0;
+    background-color:   var(--blotto-color-bgd-body);
     padding:            0;
     font-family:        var(--blotto-dfn-fnt-default);
     font-size:          var(--blotto-dfn-fsz-default);
@@ -497,14 +498,16 @@ h3 {
 }
 
 form#list-aux {
-    position:          fixed;   
-    right:             2em;
-    top:               1.8em;
-    border-style:      solid;
-    border-width:      1px;
-    border-color:      var(--blotto-color-bdr-form-options);
-    padding:           0.1em 0.3em 0.1em 0.3em;
-    white-space:       nowrap;
+    position:           fixed;
+    z-index:            100;
+    right:              2em;
+    top:                1.8em;
+    border-style:       solid;
+    border-width:       1px;
+    border-color:       var(--blotto-color-bdr-form-options);
+    background-color:   var(--blotto-color-bgd-body);
+    padding:            0.1em 0.3em 0.1em 0.3em;
+    white-space:        nowrap;
 }
 
 form#list-aux h3:first-of-type {
