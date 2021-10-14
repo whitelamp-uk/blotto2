@@ -35,8 +35,8 @@ body.unloading * {
 }
 
 textarea {
-    width:              50em;
-    height:             15em;
+    width:              60vw;
+    height:             24em;
 }
 
 hr {
@@ -794,7 +794,9 @@ form#list-aux label {
     font-size:          1.1em;
     float:              right;
 }
-
+#support table tr:nth-child(3) td:nth-child(2) {
+    padding-right:      0;
+}
 
 @media screen and (max-width: 1200px) {
     #options {
