@@ -158,6 +158,10 @@ if ($argv[3]=='import.supporter.sql') {
         exit (0);
     }
     define ('BLOTTO_CSV_S',$argv[4].'/'.$m[0]);
+    if (!filesize(BLOTTO_CSV_S)) {
+        fwrite (STDERR,"File '".BLOTTO_CSV_S."' is empty - skipping ".$argv[3]."\n");
+        exit (0);
+    }
 }
 else if ($argv[3]=='import.mandate.sql' || $argv[3]=='import.collection.sql') {
     exec (str_replace('{{DIR}}',BLOTTO_CSV_DIR_M,BLOTTO_EXEC_LAST_FILE),$m);
