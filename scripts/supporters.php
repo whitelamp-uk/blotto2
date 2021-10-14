@@ -293,6 +293,7 @@ if (!$count) {
     try {
         $rows = $zo->query ($qs);
         $rows = $rows->fetch_assoc ()['rows'];
+        fwrite (STDERR,"For $ccc, table `tmp_supporter` has $rows rows\n");
         if (!$rows) {
             fwrite (STDERR,"For $ccc, table `tmp_supporter` was totally empty\n");
             exit (118);
