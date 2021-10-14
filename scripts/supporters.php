@@ -283,6 +283,27 @@ catch (\mysqli_sql_exception $e) {
 
 echo "-- COUNT: $count supporters from $ccc --\n\n";
 
+if (!$count) {
+    $qs = "
+      SELECT
+        COUNT(*) AS `rows`
+      FROM `tmp_supporter`
+      ;
+    ";
+    try {
+        $rows = $zo->query ($qs);
+        $rows = $rows->fetch_assoc ()['rows'];
+        if (!$rows) {
+            fwrite (STDERR,"For $ccc, table `tmp_supporter` was totally empty\n");
+            exit (118);
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+        exit (119);
+    }
+}
+
 echo "
 CREATE FULLTEXT INDEX `search_idx`
   ON `blotto_contact` (
