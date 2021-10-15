@@ -2235,7 +2235,7 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
     $request->params->n             = $num_of_nums;
     $request->params->replacement   = $reuse;
 /*
-// Change BLOTTO_TRNG_API_URL and uncomment when random.org can support GBP
+// This is the new API whcich will not be used in the foreseeable future
     $request->params->licenseData   = new \stdClass ();
     $request->params->licenseData->maxPayoutValue = new \stdClass ();
     $request->params->licenseData->maxPayoutValue->currency = 'GBP';

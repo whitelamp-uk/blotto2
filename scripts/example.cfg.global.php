@@ -27,8 +27,11 @@ define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
 
 define ( 'BLOTTO_TRNG_API',         'random.org'                                );
-define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/4/invoke'  );
-define ( 'BLOTTO_TRNG_API_VERSION', '2.0'                                       );
+define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/2/invoke'  );
+define ( 'BLOTTO_TRNG_API_VERSION', '2.0'               );
+// This will not get used for the foreseeable future; we are sticking with the old API / licence
+//define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/4/invoke'  );
+//define ( 'BLOTTO_TRNG_API_VERSION', '4.0'               );
 define ( 'BLOTTO_TRNG_API_HEADER',  'Content-Type: application/json'            );
 define ( 'BLOTTO_TRNG_API_METHOD',  'generateSignedIntegers'                    );
 define ( 'BLOTTO_TRNG_API_KEY',     'f45a0115-67da-43e4-88aa-93866bb553a6'      );
