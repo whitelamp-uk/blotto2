@@ -666,7 +666,7 @@ function draw ($draw_closed) {
     $draw->manual           = false;
     $draw->results          = [];
     $draw->groups           = [];
-    $manual_groups          = [];
+    $draw->manual_groups    = [];
     foreach ($draw->prizes as $level=>$p) {
         // Raffles
         if ($p['level_method']=='RAFF') {
@@ -684,7 +684,7 @@ function draw ($draw_closed) {
         if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
             $draw->manual   = $group;
             // If a level is manual, the whole group is manual
-            array_push ($manual_groups,$group);
+            array_push ($draw->manual_groups,$group);
         }
         if ($p['results']) {
              $draw->results[$group] = true;
@@ -699,7 +699,7 @@ function draw ($draw_closed) {
         if ($p['level_method']=='RAFF') {
             continue;
         }
-        if (in_array($p['group'],$manual_groups)) {
+        if (in_array($p['group'],$draw->manual_groups)) {
             $draw->prizes[$level]['results_manual'] = 1;
         }
     }
