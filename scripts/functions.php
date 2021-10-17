@@ -681,12 +681,14 @@ function draw ($draw_closed) {
         if ($p['insure']) {
             array_push ($draw->insure,$level);
         }
-        if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
+        if ($p['results_manual']) {
+            // If any prize level is manual
+            // and without a bespoke function,
+            // both group and draw are manual
             $draw->manual   = $group;
-            // If a level is manual, the whole group is manual
             array_push ($draw->manual_groups,$group);
         }
-        if ($p['results']) {
+        if (count($p['results'])) {
              $draw->results[$group] = true;
         }
         if (!array_key_exists($group,$draw->groups)) {
@@ -2187,6 +2189,9 @@ function prizes ($date) {
     while ($p=$ps->fetch_assoc()) {
         if ($p['results']) {
             $p['results'] = explode (',',$p['results']);
+        }
+        else {
+            $p['results'] = [];
         }
         $p['group']             = null;
         if ($p['level_method']!='RAFF') {
