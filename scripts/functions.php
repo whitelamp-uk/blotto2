@@ -681,14 +681,10 @@ function draw ($draw_closed) {
         if ($p['insure']) {
             array_push ($draw->insure,$level);
         }
-//echo "PING\n";
-//echo "Results: ".count($p['results'])."\n";
-//echo "Prize is manual: ".$p['results_manual']."\n";
-//echo "Prize function: ".$p['function_name']."\n";
-        if (count($p['results'])==0 && $p['results_manual'] && !$p['function_name']) {
-//echo "PING PONG!\n";
-            // If any prize level lacks results and is manual,
-            // both the group and the whole draw are manual
+        if ($p['results_manual']) {
+            // If any prize level is manual
+            // and without a bespoke function,
+            // both group and draw are manual
             $draw->manual   = $group;
             array_push ($draw->manual_groups,$group);
         }
