@@ -1,7 +1,7 @@
 <?php
 $files = [];
 if (defined('BLOTTO_DIR_INVOICE') && is_dir(BLOTTO_DIR_INVOICE)) {
-    $scan = scandir (BLOTTO_DIR_INVOICE, SCANDIR_SORT_DESCENDING);
+    $scan = scandir (BLOTTO_DIR_INVOICE.'/', SCANDIR_SORT_DESCENDING);
     foreach ($scan as $f) {
         if ($f != '.' && $f != '..') {
             $files[] = $f;
