@@ -115,6 +115,9 @@ define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
 
 */
 
+// Stannp snail-mail service
+define ( 'BLOTTO_STANNP_PREFIX',  'ABC'              );
+define ( 'STANNP_EROR_LOG',       false              );
 
 // Fees
 define ( 'BLOTTO_FEE_LOADING',   '50:500,100:450,150:400,200:300,250' );

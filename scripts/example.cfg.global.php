@@ -62,6 +62,11 @@ define ( 'BLOTTO_TAX',              0.20            ); // Sales tax as a decimal
 define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
 
 
+// Stannp snail-mail service
+define ( 'BLOTTO_STANNP',           '/home/blotto/stannp/Stannp.class.php'      );
+define ( 'BLOTTO_STANNP_COUNTRY',   'GB'        );
+
+
 /*
 
 // Global - Paypal
