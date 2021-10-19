@@ -2785,10 +2785,10 @@ function sms ($org,$to,$message,&$diagnostic) {
     return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
 }
 
-function stannp_fields_merge (&$array2d,&$refs=[],$group_id,$ref_key) {
+function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
     foreach ($array2d as $i=>$row) {
         $refs[]                         = $row[$ref_key];
-        $array2d[$i]['group_id']        = $group_id;
+        $array2d[$i]['group_id']        = null;
         $array2d[$i]['on_duplicate']    = 'ignore';
         $array2d[$i]['firstname']       = $row['name_first'];
         $array2d[$i]['lastname']        = $row['name_last'];
