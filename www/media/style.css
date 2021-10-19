@@ -427,7 +427,7 @@ form#change-supporter input {
     background-color:   var(--blotto-color-bgd-button);
     color:              var(--blotto-color-fgd-button-lst);
 }
-#list button.active, #list button.active:hover {
+#list .month button.active, #list .month button.active:hover {
     border-color:       var(--blotto-color-bdr-button-lst-acv);
     background-color:   var(--blotto-color-bgd-button-lst-acv);
     color:              var(--blotto-color-fgd-button-lst-acv);
