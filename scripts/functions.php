@@ -2785,6 +2785,21 @@ function sms ($org,$to,$message,&$diagnostic) {
     return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
 }
 
+function stannp_fields_merge (&$array2d,&$refs=[],$group_id,$ref_key) {
+    foreach ($array2d as $i=>$row) {
+        $refs[]                         = $row[$ref_key];
+        $array2d[$i]['group_id']        = $group_id;
+        $array2d[$i]['on_duplicate']    = 'ignore';
+        $array2d[$i]['firstname']       = $row['name_first'];
+        $array2d[$i]['lastname']        = $row['name_last'];
+        $array2d[$i]['address1']        = $row['address_1'];
+        $array2d[$i]['address2']        = trim ($row['address_2'].' '.$row['$address_3']);
+        $array2d[$i]['city']            = $row['town'];
+        // $array2d[$i]['postcode'] is already present
+        $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
+    }
+}
+
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
     // TODO: these inputs are now a mess and should become an object, $table
     if ($output) {
