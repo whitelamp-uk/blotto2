@@ -306,11 +306,13 @@ CREATE TABLE IF NOT EXISTS `blotto_winner` (
   `prize_level` int(11) unsigned DEFAULT NULL,
   `prize_starts` date NULL,
   `amount` int(11) unsigned NOT NULL,
+  `letter_batch_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `entry_id_number` (`entry_id`,`number`),
   KEY `entry_id` (`entry_id`),
   KEY `number` (`number`),
-  KEY `amount` (`amount`)
+  KEY `amount` (`amount`),
+  KEY `letter_batch_ref` (`letter_batch_ref`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 

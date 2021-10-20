@@ -80,12 +80,14 @@ CREATE TABLE IF NOT EXISTS `blotto_player` (
   `supporter_id` int(11) unsigned DEFAULT NULL,
   `client_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   `first_draw_close` date DEFAULT NULL,
+  `letter_batch_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   `chances` int(11) unsigned DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `client_ref` (`client_ref`),
   UNIQUE KEY `supporter_id_started` (`supporter_id`,`started`),
   KEY `supporter_id` (`supporter_id`),
+  KEY `letter_batch_ref` (`letter_batch_ref`),
   KEY `created` (`created`),
   CONSTRAINT `blotto_player_ibfk_1` FOREIGN KEY (`supporter_id`) REFERENCES `blotto_supporter` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
