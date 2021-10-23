@@ -2883,15 +2883,29 @@ function stannp_mail ($type) {
 function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
     foreach ($array2d as $i=>$row) {
         $refs[]                         = $row[$ref_key];
+        // Stannp required fields
         $array2d[$i]['group_id']        = null;
         $array2d[$i]['on_duplicate']    = 'ignore';
         $array2d[$i]['firstname']       = $row['name_first'];
         $array2d[$i]['lastname']        = $row['name_last'];
         $array2d[$i]['address1']        = $row['address_1'];
-        $array2d[$i]['address2']        = trim ($row['address_2'].' '.$row['$address_3']);
+        $array2d[$i]['address2']        = $row['address_2'];
+        $array2d[$i]['address3']        = $row['$address_3'];
         $array2d[$i]['city']            = $row['town'];
-        // $array2d[$i]['postcode'] is already present
+        // `postcode` is already present
         $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
+        // blotto references
+        // `ClientRef` and `client_ref` are the same thing
+        if (array_key_exists('ClientRef',$row)) {
+            $array2d[$i]['client_ref']  = $row['ClientRef'];
+        }
+        elseif (array_key_exists('client_ref',$row)) {
+            $array2d[$i]['ClientRef']  = $row['client_ref'];
+        }
+        else {
+            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
+            return false;
+        }
     }
 }
 
