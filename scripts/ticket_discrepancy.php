@@ -56,11 +56,11 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
 
     $crl = curl_init ();
     curl_setopt_array ($crl,$options);
-    $chk = curl_exec ($crl);
+    $chk = trim (curl_exec($crl));
     curl_close ($c);
 
-    if (trim($chk)!=$cks) {
-        fwrite (STDERR,"Checksum discrepancy between $csu and $csf\n");
+    if ($chk!=$cks) {
+        fwrite (STDERR,"Checksum discrepancy between $csu=$chk and $csf=$cks\n");
         exit (104);
     }
 
