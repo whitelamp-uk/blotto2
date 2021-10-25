@@ -48,6 +48,7 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
         CURLOPT_POST            => 0,
         CURLOPT_HEADER          => 0,
         CURLOPT_URL             => $csu,
+        CURLOPT_SSL_VERIFYPEER  => false,
         CURLOPT_FRESH_CONNECT   => 1,
         CURLOPT_RETURNTRANSFER  => 1,
         CURLOPT_FORBID_REUSE    => 1,
@@ -57,11 +58,15 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
     $crl = curl_init ();
     curl_setopt_array ($crl,$options);
     $chk = trim (curl_exec($crl));
-    curl_close ($c);
-
+    curl_close ($crl);
+    if (!$chk) {
+        fwrite (STDERR,"Checksum could not be fetched with cURL from $csu\n");
+        fwrite (STDERR,"cURL error: #".curl_errno($crl)." ".curl_error($crl)."\n");
+        exit (104);
+    }
     if ($chk!=$cks) {
         fwrite (STDERR,"Checksum discrepancy between $csu=$chk and $csf=$cks\n");
-        exit (104);
+        exit (105);
     }
 
 }
@@ -120,7 +125,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (105);
+    exit (106);
 }
 
 if ($c=count($players)) {
@@ -128,6 +133,6 @@ if ($c=count($players)) {
     echo $qs;
     print_r ($players);
     fwrite (STDERR,"$c players have ticket discrepancies (see log)\n");
-    exit (106);
+    exit (107);
 }
 
