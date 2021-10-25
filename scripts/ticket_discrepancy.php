@@ -14,7 +14,10 @@ if (!$zo) {
     exit (101);
 }
 
-$qc = "CHECKSUM TABLE `$tdb`.`blotto_ticket` EXTENDED";
+$qc = "
+  CHECKSUM TABLE `$tdb`.`blotto_ticket` EXTENDED;
+";
+echo $qc;
 try {
     $cks = $zo->query ($qc);
     $cks = $cks->fetch_assoc()['Checksum'];
@@ -32,7 +35,7 @@ catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
     exit (103);
 }
-tee ("    Ticket pool checksum $cks written to $csf\n");
+tee ("    Ticket pool `$tdb`.`blotto_ticket` checksum $cks written to $csf\n");
 
 
 if (defined('BLOTTO_TICKET_CHKSUM')) {
