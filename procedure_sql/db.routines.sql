@@ -80,6 +80,7 @@ BEGIN
      ,`m`.`Amount`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`Created`),'%d/%m/%Y') AS `Created`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`StartDate`),'%d/%m/%Y') AS `StartDate`
+     ,`p`.`letter_batch_ref`
     FROM `blotto_build_mandate` AS `m`
     LEFT JOIN (
       SELECT
@@ -99,6 +100,7 @@ BEGIN
        ,`ic`.`postcode`
        ,`ic`.`country`
        ,`ip`.`client_ref`
+       ,IFNULL(`ip`.`letter_batch_ref`,'') AS `letter_batch_ref`
       FROM `blotto_player` AS `ip`
       JOIN `blotto_supporter` AS `is`
         ON `is`.`id`=`ip`.`supporter_id`
@@ -1855,6 +1857,7 @@ BEGIN
      ,`s`.`fail_reason`
      ,`s`.`latest_mandate_frequency`
      ,`s`.`latest_mandate_amount`
+     ,IFNULL(`w`.`letter_batch_ref`,'') AS `letter_batch_ref`
     FROM `blotto_winner` AS `w`
     JOIN `blotto_entry` AS `e`
       ON `e`.`id`=`w`.`entry_id`
@@ -1918,6 +1921,8 @@ BEGIN
      ,`s`.`fail_reason`
      ,`s`.`latest_mandate_frequency`
      ,`s`.`latest_mandate_amount`
+    -- SUPER WINNERS GET LETTER INSTEAD FROM SUPER GAME
+     ,'' AS `letter_batch_ref`
     FROM `blotto_super_winner` AS `w`
     JOIN `blotto_super_entry` AS `e`
       ON `e`.`id`=`w`.`entry_id`
