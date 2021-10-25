@@ -60,7 +60,8 @@ $file = array (
        ,'results.export.sql'
     ),
     "exec" => array (
-        'bogons.php'
+        'anls.php'
+       ,'bogons.php'
        ,'cache.php'
        ,'changes.php'
        ,'clone.php'
@@ -80,6 +81,7 @@ $file = array (
        ,'supporters.php'
        ,'ticket_discrepancy.php'
        ,'tickets.php'
+       ,'wins.php'
 // INTERIM:
        ,'superdraw_export.php'
     )
