@@ -1844,7 +1844,8 @@ function notarisation ($file) {
         throw new \Exception ("Could not create TSA query file '$tsq'");
         return false;
     }
-    $cmd        = 'curl -H "Content-Type: application/timestamp-query" ';
+    echo "Notarisation using ".BLOTTO_TSA_URL."\n";
+    $cmd        = 'curl -kH "Content-Type: application/timestamp-query" ';
     $cmd       .= " --silent --show-error "; // suppress progress bar but allow errors.  NB order of flags is important!
     $cmd       .= " --data-binary '@".$tsq."' ";
     $cmd       .= escapeshellarg(BLOTTO_TSA_URL)." > ".$tsr;
@@ -2785,57 +2786,54 @@ function sms ($org,$to,$message,&$diagnostic) {
     return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
 }
 
-function stannp_mail ($type) {
+function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
+    foreach ($array2d as $i=>$row) {
+        $refs[]                         = $row[$ref_key];
+        // Stannp required fields
+        $array2d[$i]['group_id']        = null;
+        $array2d[$i]['on_duplicate']    = 'ignore';
+        // Stannp address window
+        //     https://dash.stannp.com/designer/mailpiece/A4
+        //     Select "A blank canvas"
+        $array2d[$i]['full_name']       = $row['title'].' '.$row['name_first'].' '.$row['name_last'];
+        $array2d[$i]['job_title']       = '';
+        $array2d[$i]['company']         = '';
+        $array2d[$i]['address1']        = $row['address_1'];
+        $array2d[$i]['address2']        = $row['address_2'];
+        $array2d[$i]['address3']        = $row['$address_3'];
+        $array2d[$i]['city']            = $row['town'];
+        // Country is not given in the blank canvas which is odd
+        // So it is here anyway just in case
+        $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
+        // `postcode` has the same name in blottoland
+        // `barcode` is for Royal mail use and should not be given
+        // Player refs `ClientRef`/`client_ref` interchangeable
+        if (array_key_exists('ClientRef',$row)) {
+            $array2d[$i]['client_ref']  = $row['ClientRef'];
+        }
+        elseif (array_key_exists('client_ref',$row)) {
+            $array2d[$i]['ClientRef']  = $row['client_ref'];
+        }
+        else {
+            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
+            return false;
+        }
+    }
+    return true;
+}
+
+function stannp_mail ($name,$sql,$template_id,$table,$ref_key) {
     if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
         // API is not active
         return ['items'=>0];
     }
-    if (!in_array($type,['anl','win'])) {
-        throw new \Exception ('stannp_mail() type can only be "anl" or "win"');
-        return false;
-    }
-    $name = gethostname().'-'.BLOTTO_STANNP_PREFIX;
-    if ($type=='anl') {
-        $earliest       = BLOTTO_STANNP_FROM_ANL;
-        $q = "
-          SELECT
-            `a`.*
-          FROM `ANLs` AS `a`
-          JOIN `blotto_player` AS `p`
-            ON `p`.`letter_status` IS NULL
-           AND `p`.`ClientRef`=`a`.`client_ref`
-          WHERE `a`.`tickets_issued`>='$earliest'
-          ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
-        ";
-        $name          .= '-ANLs-';
-        $template_id    = BLOTTO_STANNP_TPL_ANL;
-        $ref_key        = 'ClientRef';
-    }
-    else {
-        $earliest       = BLOTTO_STANNP_FROM_WIN;
-        $q = "
-          SELECT
-            `bw`.`entry_id`
-           ,`w`.*
-          FROM `Wins` AS `w`
-          JOIN `blotto_entry` AS `e`
-            ON `e`.`draw_closed`=`w`.`draw_closed`
-           AND `e`.`ticket_number`=`w`.`ticket_number`
-          JOIN `blotto_winner` AS `bw`
-            ON `bw`.`letter_status` IS NULL
-           AND `bw`.`entry_id`=`e`.`id`
-          WHERE `w`.`draw_closed`>='$earliest'
-          ORDER BY `w`.`draw_closed`,`w`.`winnings` DESC,`ticket_number`
-        ";
-        $name          .= '-Winners-';
-        $template_id    = BLOTTO_STANNP_TPL_WIN;
-        $ref_key        = 'entry_id';
-    }
-    $name              .= date ('Y-m-d--H:i:s');
+    $name  = gethostname().'-'.$name;
+    $name .= '-'.BLOTTO_STANNP_PREFIX;
+    $name .= date ('Y-m-d--H:i:s');
     $recipients = [];
     $c = connect ();
     try {
-        $rows = $c->query ($q);
+        $rows = $c->query ($sql);
         while ($r=$rows->fetch_assoc) {
             $recipients[] = $r;
         }
@@ -2853,14 +2851,8 @@ function stannp_mail ($type) {
     $stannp = new \Whitelamp\Stannp ();
     $campaign = $stannp->campaign_create ($name,$template_id,$recipients);
     // Record success
-    if ($type=='anl') {
-        $table = 'blotto_player';
-    }
-    else {
-        $table = 'blotto_winner';
-    }
     $name = $c->escape_string ($name);
-    $q = "
+    $sql = "
       UPDATE `$table`
       SET
         `letter_batch_ref`='$name'
@@ -2869,44 +2861,49 @@ function stannp_mail ($type) {
       );
     ";
     try {
-        $update = $c->query ($q);
+        $update = $c->query ($sql);
     }
     catch (\mysqli_sql_exception $e) {
         throw new \Exception (
-            'Stannp batch was sent successfully but an SQL exception followed it: '.$e->getMessage()."\n".print_r($campaign,true).$q
+            'Stannp batch was sent successfully but an SQL exception followed it: '.$e->getMessage()."\n".print_r($campaign,true).$sql
         );
         return false;
     }
     return $campaign;
 }
 
-function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
-    foreach ($array2d as $i=>$row) {
-        $refs[]                         = $row[$ref_key];
-        // Stannp required fields
-        $array2d[$i]['group_id']        = null;
-        $array2d[$i]['on_duplicate']    = 'ignore';
-        $array2d[$i]['firstname']       = $row['name_first'];
-        $array2d[$i]['lastname']        = $row['name_last'];
-        $array2d[$i]['address1']        = $row['address_1'];
-        $array2d[$i]['address2']        = $row['address_2'];
-        $array2d[$i]['address3']        = $row['$address_3'];
-        $array2d[$i]['city']            = $row['town'];
-        // `postcode` is already present
-        $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
-        // blotto references
-        // `ClientRef` and `client_ref` are the same thing
-        if (array_key_exists('ClientRef',$row)) {
-            $array2d[$i]['client_ref']  = $row['ClientRef'];
-        }
-        elseif (array_key_exists('client_ref',$row)) {
-            $array2d[$i]['ClientRef']  = $row['client_ref'];
-        }
-        else {
-            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
-            return false;
-        }
-    }
+function stannp_mail_anls ( ) {
+    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $q = "
+      SELECT
+        `a`.*
+      FROM `ANLs` AS `a`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`letter_status` IS NULL
+       AND `p`.`ClientRef`=`a`.`client_ref`
+      WHERE `a`.`tickets_issued`>='$earliest'
+      ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
+    ";
+    return stannp_mail ('ANLs',$q,BLOTTO_STANNP_TPL_ANL,'blotto_player','ClientRef');
+}
+
+function stannp_mail_wins ( ) {
+    $earliest = BLOTTO_STANNP_FROM_WIN;
+    $q = "
+      SELECT
+        `bw`.`entry_id`
+       ,`w`.*
+      FROM `Wins` AS `w`
+      JOIN `blotto_entry` AS `e`
+        ON `e`.`draw_closed`=`w`.`draw_closed`
+       AND `e`.`ticket_number`=`w`.`ticket_number`
+      JOIN `blotto_winner` AS `bw`
+        ON `bw`.`letter_status` IS NULL
+       AND `bw`.`entry_id`=`e`.`id`
+      WHERE `w`.`draw_closed`>='$earliest'
+      ORDER BY `w`.`draw_closed`,`w`.`winnings`,`ticket_number`
+    ";
+    return stannp_mail ('Wins',$sql,BLOTTO_STANNP_TPL_WIN,'blotto_winner','entry_id');
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
