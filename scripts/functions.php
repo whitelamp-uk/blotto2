@@ -2829,9 +2829,8 @@ function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
         // API is not active
         return ['recipients'=>0];
     }
-    $name  = gethostname().'-'.$name;
-    $name .= '-'.BLOTTO_STANNP_PREFIX;
-    $name .= '-'.date ('Y-m-d--H:i:s');
+    $pfx = BLOTTO_STANNP_PREFIX.'-'.gethostname();
+    $name = $pfx.'-'.$name.'-'.date('Y-m-d--H:i:s');
     // Transform arrays by reference
     stannp_fields_merge ($recipients,$ref_key,$refs);
     // Do it
