@@ -2786,7 +2786,7 @@ function sms ($org,$to,$message,&$diagnostic) {
     return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
 }
 
-function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
+function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
     foreach ($array2d as $i=>$row) {
         // Player refs `ClientRef`/`client_ref` interchangeable
         if (array_key_exists('ClientRef',$row)) {
@@ -2824,7 +2824,7 @@ function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
     return true;
 }
 
-function stannp_mail ($name,$sql,$ref_key,$template_id,$update_table,$update_ref_key) {
+function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
     if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
         // API is not active
         return ['recipients'=>0];
@@ -2832,46 +2832,11 @@ function stannp_mail ($name,$sql,$ref_key,$template_id,$update_table,$update_ref
     $name  = gethostname().'-'.$name;
     $name .= '-'.BLOTTO_STANNP_PREFIX;
     $name .= '-'.date ('Y-m-d--H:i:s');
-    $recipients = [];
-    $c = connect ();
-    try {
-        $rows = $c->query ($sql);
-        while ($r=$rows->fetch_assoc()) {
-            $recipients[] = $r;
-        }
-    }
-    catch (\mysqli_sql_exception $e) {
-        throw new \Exception ($e->getMessage());
-        return false;
-    }
-    if (!count($recipients)) {
-        return ['recipients'=>0];
-    }
     // Transform arrays by reference
-    stannp_fields_merge ($recipients,$refs,$ref_key);
+    stannp_fields_merge ($recipients,$ref_key,$refs);
     // Do it
     $stannp = new \Whitelamp\Stannp ();
-    $campaign = $stannp->campaign_create ($name,$template_id,$recipients);
-    // Record success
-    $name = $c->escape_string ($name);
-    $sql = "
-      UPDATE `$update_table`
-      SET
-        `letter_batch_ref`='$name'
-      WHERE `$update_ref_key` IN (
-        '".implode("','",$refs)."'
-      );
-    ";
-    try {
-        $update = $c->query ($sql);
-    }
-    catch (\mysqli_sql_exception $e) {
-        throw new \Exception (
-            'Stannp batch was sent successfully but an SQL exception followed it: '.$e->getMessage()."\n".print_r($campaign,true).$sql
-        );
-        return false;
-    }
-    return $campaign;
+    return $stannp->campaign_create ($name,$template_id,$recipients);
 }
 
 function stannp_mail_anls ( ) {
@@ -2886,11 +2851,48 @@ function stannp_mail_anls ( ) {
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
     ";
-    return stannp_mail (
-        'ANLs', $q, 'ClientRef',
-        BLOTTO_STANNP_TPL_ANL,
-        'blotto_player', 'client_ref'
-    );
+    $recipients = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    try {
+        $rows = $c->query ($q);
+        while ($r=$rows->fetch_assoc()) {
+            $recipients[] = $r;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($recipients)) {
+        return ['recipients'=>0];
+    }
+    $batch = stannp_mail ($recipients, 'ANLs', BLOTTO_STANNP_TPL_ANL,'ClientRef',$refs);
+    if (!$batch['recipients']) {
+        return $batch;
+    }
+    $name = $c->escape_string ($batch['name']);
+    $q = "
+      UPDATE `blotto_player` AS `p_in`
+      JOIN `ANLs` AS `p_out`
+        ON `p_out`.`ClientRef`=`p_in`.`client_ref`
+      SET
+        `p_in`.`letter_batch_ref`='$name'
+       ,`p_out`.`letter_batch_ref`='$name'
+      WHERE `p_in`.`client_ref` IN (
+        '".implode("','",$refs)."'
+      );
+    ";
+    echo $q;
+    try {
+        $c->query ($q);
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception (
+            'Stannp batch was sent successfully but an SQL exception followed it: '.$e->getMessage()."\n".print_r($batch,true).$q
+        );
+        return false;
+    }
+    return $batch;
 }
 
 function stannp_mail_wins ( ) {
@@ -2909,11 +2911,48 @@ function stannp_mail_wins ( ) {
       WHERE `w`.`draw_closed`>='$earliest'
       ORDER BY `w`.`draw_closed`,`w`.`winnings`,`ticket_number`
     ";
-    return stannp_mail (
-        'Wins', $q, 'entry_id',
-        BLOTTO_STANNP_TPL_WIN,
-        'blotto_winner', 'entry_id'
-    );
+    $recipients = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    try {
+        $rows = $c->query ($q);
+        while ($r=$rows->fetch_assoc()) {
+            $recipients[] = $r;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($recipients)) {
+        return ['recipients'=>0];
+    }
+    $batch = stannp_mail ($recipients, 'Wins', BLOTTO_STANNP_TPL_WIN,'entry_id',$refs);
+    if (!$batch['recipients']) {
+        return $batch;
+    }
+    $name = $c->escape_string ($batch['name']);
+    $q = "
+      UPDATE `blotto_winner` AS `w_in`
+      JOIN `Wins` AS `w_out`
+        ON `w_out`.`entry_id`=`w_in`.`entry_id`
+      SET
+        `w_in`.`letter_batch_ref`='$name'
+       ,`w_out`.`letter_batch_ref`='$name'
+      WHERE `w_in`.`entry_id` IN (
+        ".implode(",",$refs)."
+      );
+    ";
+    echo $q;
+    try {
+        $c->query ($q);
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception (
+            'Stannp batch was sent successfully but an SQL exception followed it: '.$e->getMessage()."\n".print_r($batch,true).$q
+        );
+        return false;
+    }
+    return $batch;
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
