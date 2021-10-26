@@ -3,6 +3,7 @@
 require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
+require BLOTTO_STANNP_CLASS;
 
 
 try {

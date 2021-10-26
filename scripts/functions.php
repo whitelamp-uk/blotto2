@@ -2800,7 +2800,7 @@ function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
         $array2d[$i]['company']         = '';
         $array2d[$i]['address1']        = $row['address_1'];
         $array2d[$i]['address2']        = $row['address_2'];
-        $array2d[$i]['address3']        = $row['$address_3'];
+        $array2d[$i]['address3']        = $row['address_3'];
         $array2d[$i]['city']            = $row['town'];
         // Country is not given in the blank canvas which is odd
         // So it is here anyway just in case
