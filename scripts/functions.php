@@ -2880,7 +2880,7 @@ function stannp_mail_anls ( ) {
       FROM `ANLs` AS `a`
       JOIN `blotto_player` AS `p`
         ON `p`.`letter_batch_ref` IS NULL
-       AND `p`.`ClientRef`=`a`.`client_ref`
+       AND `p`.`client_ref`=`a`.`ClientRef`
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
     ";
