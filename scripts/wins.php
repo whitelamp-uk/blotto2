@@ -10,7 +10,9 @@ try {
     if (defined('BLOTTO_STANNP') && BLOTTO_STANNP) {
         // Stannp API is active
         tee ("Sending winner letters using Stannp\n");
-        stannp_mail_wins ();
+        $results = stannp_mail_wins ();
+        print_r ($results);
+        tee ("{$results['items']} mailpieces\n");
     }
     else {
         tee ("No postal API is active for winner letters\n");
