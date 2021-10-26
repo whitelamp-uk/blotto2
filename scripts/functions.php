@@ -2822,14 +2822,14 @@ function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
     return true;
 }
 
-function stannp_mail ($name,$sql,$template_id,$table,$ref_key) {
+function stannp_mail ($name,$sql,$ref_key,$template_id,$update_table,$update_ref_key) {
     if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
         // API is not active
         return ['items'=>0];
     }
     $name  = gethostname().'-'.$name;
     $name .= '-'.BLOTTO_STANNP_PREFIX;
-    $name .= date ('Y-m-d--H:i:s');
+    $name .= '-'.date ('Y-m-d--H:i:s');
     $recipients = [];
     $c = connect ();
     try {
@@ -2853,10 +2853,10 @@ function stannp_mail ($name,$sql,$template_id,$table,$ref_key) {
     // Record success
     $name = $c->escape_string ($name);
     $sql = "
-      UPDATE `$table`
+      UPDATE `$update_table`
       SET
         `letter_batch_ref`='$name'
-      WHERE `$ref_key` IN (
+      WHERE `$update_ref_key` IN (
         '".implode("','",$refs)."'
       );
     ";
@@ -2884,7 +2884,11 @@ function stannp_mail_anls ( ) {
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
     ";
-    return stannp_mail ('ANLs',$q,BLOTTO_STANNP_TPL_ANL,'blotto_player','ClientRef');
+    return stannp_mail (
+        'ANLs', $q, 'ClientRef',
+        BLOTTO_STANNP_TPL_ANL,
+        'blotto_player', 'client_ref'
+    );
 }
 
 function stannp_mail_wins ( ) {
@@ -2903,7 +2907,11 @@ function stannp_mail_wins ( ) {
       WHERE `w`.`draw_closed`>='$earliest'
       ORDER BY `w`.`draw_closed`,`w`.`winnings`,`ticket_number`
     ";
-    return stannp_mail ('Wins',$sql,BLOTTO_STANNP_TPL_WIN,'blotto_winner','entry_id');
+    return stannp_mail (
+        'Wins', $q, 'entry_id',
+        BLOTTO_STANNP_TPL_WIN,
+        'blotto_winner', 'entry_id'
+    );
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
