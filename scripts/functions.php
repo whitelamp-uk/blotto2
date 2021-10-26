@@ -2834,7 +2834,7 @@ function stannp_mail ($name,$sql,$template_id,$table,$ref_key) {
     $c = connect ();
     try {
         $rows = $c->query ($sql);
-        while ($r=$rows->fetch_assoc) {
+        while ($r=$rows->fetch_assoc()) {
             $recipients[] = $r;
         }
     }
