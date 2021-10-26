@@ -2827,7 +2827,7 @@ function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
 function stannp_mail ($name,$sql,$ref_key,$template_id,$update_table,$update_ref_key) {
     if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
         // API is not active
-        return ['items'=>0];
+        return ['recipients'=>0];
     }
     $name  = gethostname().'-'.$name;
     $name .= '-'.BLOTTO_STANNP_PREFIX;
@@ -2845,7 +2845,7 @@ function stannp_mail ($name,$sql,$ref_key,$template_id,$update_table,$update_ref
         return false;
     }
     if (!count($recipients)) {
-        return ['items'=>0];
+        return ['recipients'=>0];
     }
     // Transform arrays by reference
     stannp_fields_merge ($recipients,$refs,$ref_key);

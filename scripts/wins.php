@@ -12,7 +12,7 @@ try {
         tee ("Sending winner letters using Stannp\n");
         $results = stannp_mail_wins ();
         print_r ($results);
-        tee ("{$results['items']} mailpieces\n");
+        tee ("{$results['recipients']} mailpieces\n");
     }
     else {
         tee ("No postal API is active for winner letters\n");
