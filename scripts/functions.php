@@ -2933,11 +2933,14 @@ function stannp_mail_wins ( ) {
     $name = $c->escape_string ($batch['name']);
     $q = "
       UPDATE `blotto_winner` AS `w_in`
-      JOIN `Wins` AS `w_out`
-        ON `w_out`.`entry_id`=`w_in`.`entry_id`
+      JOIN `WinsAdmin` AS `w_out_1`
+        ON `w_out_1`.`entry_id`=`w_in`.`entry_id`
+      JOIN `Wins` AS `w_out_2`
+        ON `w_out_2`.`entry_id`=`w_in`.`entry_id`
       SET
         `w_in`.`letter_batch_ref`='$name'
-       ,`w_out`.`letter_batch_ref`='$name'
+       ,`w_out_1`.`letter_batch_ref`='$name'
+       ,`w_out_2`.`letter_batch_ref`='$name'
       WHERE `w_in`.`entry_id` IN (
         ".implode(",",$refs)."
       );
