@@ -2879,7 +2879,7 @@ function stannp_mail_anls ( ) {
         `a`.*
       FROM `ANLs` AS `a`
       JOIN `blotto_player` AS `p`
-        ON `p`.`letter_status` IS NULL
+        ON `p`.`letter_batch_ref` IS NULL
        AND `p`.`ClientRef`=`a`.`client_ref`
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
@@ -2898,7 +2898,7 @@ function stannp_mail_wins ( ) {
         ON `e`.`draw_closed`=`w`.`draw_closed`
        AND `e`.`ticket_number`=`w`.`ticket_number`
       JOIN `blotto_winner` AS `bw`
-        ON `bw`.`letter_status` IS NULL
+        ON `bw`.`letter_batch_ref` IS NULL
        AND `bw`.`entry_id`=`e`.`id`
       WHERE `w`.`draw_closed`>='$earliest'
       ORDER BY `w`.`draw_closed`,`w`.`winnings`,`ticket_number`
