@@ -2788,10 +2788,23 @@ function sms ($org,$to,$message,&$diagnostic) {
 
 function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
     foreach ($array2d as $i=>$row) {
+        // Player refs `ClientRef`/`client_ref` interchangeable
+        if (array_key_exists('ClientRef',$row)) {
+            $array2d[$i]['client_ref']  = $row['ClientRef'];
+            $array2d[$i]['ref_id']      = $array2d[$i]['client_ref'];
+        }
+        elseif (array_key_exists('client_ref',$row)) {
+            $array2d[$i]['ClientRef']  = $row['client_ref'];
+            $array2d[$i]['ref_id']      = $array2d[$i]['ClientRef'];
+        }
+        else {
+            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
+            return false;
+        }
         $refs[]                         = $row[$ref_key];
         // Stannp required fields
         $array2d[$i]['group_id']        = null;
-        $array2d[$i]['on_duplicate']    = 'ignore';
+        $array2d[$i]['on_duplicate']    = 'update';
         // Stannp address window
         //     https://dash.stannp.com/designer/mailpiece/A4
         //     Select "A blank canvas"
@@ -2807,17 +2820,6 @@ function stannp_fields_merge (&$array2d,&$refs=[],$ref_key) {
         $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
         // `postcode` has the same name in blottoland
         // `barcode` is for Royal mail use and should not be given
-        // Player refs `ClientRef`/`client_ref` interchangeable
-        if (array_key_exists('ClientRef',$row)) {
-            $array2d[$i]['client_ref']  = $row['ClientRef'];
-        }
-        elseif (array_key_exists('client_ref',$row)) {
-            $array2d[$i]['ClientRef']  = $row['client_ref'];
-        }
-        else {
-            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
-            return false;
-        }
     }
     return true;
 }
