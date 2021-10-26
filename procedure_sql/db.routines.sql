@@ -1922,8 +1922,8 @@ BEGIN
      ,`s`.`fail_reason`
      ,`s`.`latest_mandate_frequency`
      ,`s`.`latest_mandate_amount`
-    -- SUPER WINNERS GET LETTER INSTEAD FROM SUPER GAME
-     ,`s`.`entry_id`
+    -- SUPER WINNERS GET LETTER FROM SUPER GAME INSTEAD
+     ,'' AS `entry_id`
      ,'' AS `letter_batch_ref`
     FROM `blotto_super_winner` AS `w`
     JOIN `blotto_super_entry` AS `e`
