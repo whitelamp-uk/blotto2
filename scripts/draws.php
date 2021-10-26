@@ -138,6 +138,7 @@ while ($d=$ds->fetch_assoc()) {
         }
         if ($bail) {
             // Bail without an error (no more draws, continue build)
+            tee ("    Bailing without error from draw result engine at {$draw->closed}\n");
             exit (0);
         }
         if (!$quiet) {
@@ -389,4 +390,6 @@ while ($d=$ds->fetch_assoc()) {
     }
     
 }
+
+tee ("    Finished with draw result engine\n");
 

@@ -9,13 +9,13 @@ require BLOTTO_STANNP_CLASS;
 try {
     if (defined('BLOTTO_STANNP') && BLOTTO_STANNP) {
         // Stannp API is active
-        tee ("Sending ANLs using Stannp\n");
+        tee ("    Sending ANLs using Stannp\n");
         $results = stannp_mail_anls ();
+        tee ("      {$results['recipients']} mailpieces\n");
         print_r ($results);
-        tee ("{$results['recipients']} mailpieces\n");
     }
     else {
-        tee ("No postal API is active for ANLs\n");
+        tee ("    No postal API is active for ANLs\n");
     }
 }
 catch (\Exception $e) {
