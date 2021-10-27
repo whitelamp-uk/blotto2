@@ -2850,6 +2850,7 @@ function stannp_mail_anls ( ) {
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
     ";
+    echo $q;
     $recipients = [];
     $c = connect (BLOTTO_MAKE_DB);
     try {
@@ -2910,6 +2911,7 @@ function stannp_mail_wins ( ) {
       WHERE `w`.`draw_closed`>='$earliest'
       ORDER BY `w`.`draw_closed`,`w`.`winnings`,`ticket_number`
     ";
+    echo $q;
     $recipients = [];
     $c = connect (BLOTTO_MAKE_DB);
     try {
