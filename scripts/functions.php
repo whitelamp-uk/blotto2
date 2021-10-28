@@ -2815,8 +2815,8 @@ function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
         $array2d[$i]['address2']        = $row['address_2'];
         $array2d[$i]['address3']        = $row['address_3'];
         $array2d[$i]['city']            = $row['town'];
-        // Country is not given in the blank canvas which is odd
-        // So it is here anyway just in case
+        // Country is not given in the blank mailpiece draft.
+        // Which is odd - so here it is anyway just in case
         $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
         // `postcode` has the same name in blottoland
         // `barcode` is for Royal mail use and should not be given
@@ -2829,12 +2829,14 @@ function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
         // API is not active
         return ['recipients'=>0];
     }
-    $pfx = BLOTTO_STANNP_PREFIX.'-'.gethostname();
-    $name = $pfx.'-'.$name.'-'.date('Y-m-d--H:i:s');
-    // Transform arrays by reference
+    $prefix = BLOTTO_STANNP_PREFIX.'-'.gethostname().'-'.$name.'-';
+    $name = $prefix.date('Y-m-d--H:i:s');
+    // Transform arrays by reference (arguments above)
     stannp_fields_merge ($recipients,$ref_key,$refs);
     // Do it
     $stannp = new \Whitelamp\Stannp ();
+    $stannp->recipients_redact ($prefix,true);
+    // Return value is just a summary
     return $stannp->campaign_create ($name,$template_id,$recipients);
 }
 
