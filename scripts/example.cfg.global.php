@@ -66,6 +66,8 @@ define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
 define ( 'BLOTTO_STANNP',           '/home/blotto/stannp/Stannp.class.php'      );
 define ( 'BLOTTO_STANNP_COUNTRY',   'GB'        );
 define ( 'STANNP_TIMEOUT',          60          );
+// Minimum length of left-match to campaign names for redaction limiting
+define ( 'STANNP_REDACT_SCOPE_LEN', 4           );
 
 
 /*
