@@ -2835,6 +2835,9 @@ function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
     stannp_fields_merge ($recipients,$ref_key,$refs);
     // Do it
     $stannp = new \Whitelamp\Stannp ();
+    // Get status values
+    $recipients = $stannp->status ($name);
+    // Redact recipients where mailpieces are delivered
     $stannp->recipients_redact ($prefix,true);
     // Return value is just a summary
     return $stannp->campaign_create ($name,$template_id,$recipients);
@@ -2959,6 +2962,147 @@ function stannp_mail_wins ( ) {
         return false;
     }
     return $batch;
+}
+
+function stannp_status ($batch_names) {
+    $refs = [];
+    if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
+        // API is not active
+        return $refs;
+    }
+    $stannp = new \Whitelamp\Stannp ();
+    foreach ($batch_names as $campaign_name) {
+        $refs[$campaign_name] = [];
+        $recipients = $stannp->campaign ($campaign_name) ['recipient_list'];
+        foreach ($recipients as $r) {
+            if (!array_key_exists($r['mailpiece_status'],$refs)) {
+                $refs[$r['mailpiece_status']] = [];
+            }
+            $refs[$r['mailpiece_status']][] = $r['ref_id'];
+        }
+    }
+    return $refs;
+}
+
+function stannp_status_anls ( ) {
+    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $q = "
+      SELECT
+        DISTINCT `p`.`letter_batch_ref` AS `batch`
+      FROM `ANLs` AS `a`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`client_ref`=`a`.`ClientRef`
+      WHERE `a`.`tickets_issued`>='$earliest'
+        AND (`p`.`letter_status`!='delivered' OR `p`.`letter_status` IS NULL)
+      ORDER BY `p`.`letter_batch_ref`
+    ";
+    echo $q;
+    $batches = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    try {
+        $rows = $c->query ($q);
+        while ($row=$rows->fetch_assoc()) {
+            $batches[] = $row['batch'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($batches)) {
+        return;
+    }
+    $refs = stannp_status ($batches);
+    foreach ($refs as $status=>$crefs) {
+        $status = $c->escape_string ($status);
+        foreach ($crefs as $i=>$ref) {
+            $crefs[$i] = $c->escape_string ($ref);
+        }
+        $q = "
+          UPDATE `blotto_player` AS `p_in`
+          JOIN `ANLs` AS `p_out`
+            ON `p_out`.`ClientRef`=`p_in`.`client_ref`
+          SET
+            `p_in`.`letter_status`='$status'
+           ,`p_out`.`letter_status`='$status'
+          WHERE `p_in`.`client_ref` IN (
+            '".implode("','",$crefs)."'
+          );
+        ";
+        echo $q;
+        try {
+            $c->query ($q);
+        }
+        catch (\mysqli_sql_exception $e) {
+            throw new \Exception ($e->getMessage()."\n");
+            return false;
+        }
+    }
+    return true;
+}
+
+function stannp_status_wins ( ) {
+    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $q = "
+      SELECT
+        DISTINCT `w`.`letter_batch_ref` AS `batch`
+      FROM `Wins` AS `w`
+      JOIN `blotto_entry` AS `e`
+        ON `e`.`draw_closed`=`w`.`draw_closed`
+       AND `e`.`ticket_number`=`w`.`ticket_number`
+      JOIN `blotto_winner` AS `bw`
+        ON `bw`.`letter_batch_ref` IS NULL
+       AND `bw`.`entry_id`=`e`.`id`
+      WHERE `w`.`draw_closed`>='$earliest'
+        AND (`w`.`letter_status`!='delivered' OR `w`.`letter_status` IS NULL)
+      ORDER BY `w`.`letter_batch_ref`
+    ";
+    echo $q;
+    $batches = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    try {
+        $rows = $c->query ($q);
+        while ($row=$rows->fetch_assoc()) {
+            $batches[] = $row['batch'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($batches)) {
+        return;
+    }
+    $refs = stannp_status ($batches);
+    foreach ($refs as $status=>$crefs) {
+        $status = $c->escape_string ($status);
+        foreach ($crefs as $i=>$ref) {
+            $crefs[$i] = $c->escape_string ($ref);
+        }
+        $q = "
+          UPDATE `blotto_winner` AS `w_in`
+          JOIN `WinsAdmin` AS `w_out_1`
+            ON `w_out_1`.`entry_id`=`w_in`.`entry_id`
+          JOIN `Wins` AS `w_out_2`
+            ON `w_out_2`.`entry_id`=`w_in`.`entry_id`
+          SET
+            `w_in`.`letter_status`='$status'
+           ,`w_out_1`.`letter_status`='$status'
+           ,`w_out_2`.`letter_status`='$status'
+          WHERE `w_out_1`.`client_ref` IN (
+            ".implode(",",$crefs)."
+          );
+        ";
+        echo $q;
+        try {
+            $c->query ($q);
+        }
+        catch (\mysqli_sql_exception $e) {
+            throw new \Exception ($e->getMessage()."\n");
+            return false;
+        }
+    }
+    return true;
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {

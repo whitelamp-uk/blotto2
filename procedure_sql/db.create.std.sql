@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `blotto_player` (
   `client_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   `first_draw_close` date DEFAULT NULL,
   `letter_batch_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
+  `letter_status` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   `chances` int(11) unsigned DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
