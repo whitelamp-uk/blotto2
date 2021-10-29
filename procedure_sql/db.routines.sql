@@ -80,7 +80,8 @@ BEGIN
      ,`m`.`Amount`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`Created`),'%d/%m/%Y') AS `Created`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`StartDate`),'%d/%m/%Y') AS `StartDate`
-     ,`p`.`letter_batch_ref`
+     ,IFNULL(`p`.`letter_batch_ref`,'') AS `letter_batch_ref`
+     ,IFNULL(`w`.`letter_status`,'') AS `letter_status`
     FROM `blotto_build_mandate` AS `m`
     LEFT JOIN (
       SELECT
@@ -1860,6 +1861,7 @@ BEGIN
      ,`w`.`entry_id`
      ,DATE_FORMAT(drawOnOrAfter(`e`.`draw_closed`),'%a %D %b %Y') AS `draw_date`
      ,IFNULL(`w`.`letter_batch_ref`,'') AS `letter_batch_ref`
+     ,IFNULL(`w`.`letter_status`,'') AS `letter_status`
     FROM `blotto_winner` AS `w`
     JOIN `blotto_entry` AS `e`
       ON `e`.`id`=`w`.`entry_id`
