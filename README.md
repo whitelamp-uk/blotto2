@@ -14,7 +14,7 @@ For example Zaffo's lotto.de first six digits of Saturday Spiel77.
 
 root>$ /bin/bash /home/mark/blotto/blotto2/scripts/blotto.bash -m 2021-02-19 6 123456 /home/mark/blotto/config/mark.cfg.php
 
-If results are shared (eg DBH and SHC use crucible_ticket_zaffo.blotto_result) then it is only necessary to add the numbers using just one config.
+If results are shared (eg DBH and SHC used to share crucible_ticket_zaffo.blotto_result) then it is only necessary to add the numbers once using any of config files.
 
 
 # To see rehearse by inspecting the insert SQL use one of:
