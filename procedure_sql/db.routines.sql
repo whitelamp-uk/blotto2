@@ -1930,6 +1930,7 @@ BEGIN
      ,'' AS `entry_id`
      ,'' AS `draw_date`
      ,'' AS `letter_batch_ref`
+     ,'' AS `letter_status`
     FROM `blotto_super_winner` AS `w`
     JOIN `blotto_super_entry` AS `e`
       ON `e`.`id`=`w`.`entry_id`
