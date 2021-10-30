@@ -80,8 +80,8 @@ BEGIN
      ,`m`.`Amount`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`Created`),'%d/%m/%Y') AS `Created`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`StartDate`),'%d/%m/%Y') AS `StartDate`
-     ,IFNULL(`p`.`letter_batch_ref`,'') AS `letter_batch_ref`
-     ,IFNULL(`p`.`letter_status`,'') AS `letter_status`
+     ,`p`.`letter_batch_ref`
+     ,`p`.`letter_status`
     FROM `blotto_build_mandate` AS `m`
     LEFT JOIN (
       SELECT
