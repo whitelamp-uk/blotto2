@@ -102,6 +102,7 @@ BEGIN
        ,`ic`.`country`
        ,`ip`.`client_ref`
        ,IFNULL(`ip`.`letter_batch_ref`,'') AS `letter_batch_ref`
+       ,IFNULL(`ip`.`letter_status`,'') AS `letter_status`
       FROM `blotto_player` AS `ip`
       JOIN `blotto_supporter` AS `is`
         ON `is`.`id`=`ip`.`supporter_id`
