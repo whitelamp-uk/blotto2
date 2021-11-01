@@ -55,15 +55,6 @@ if (array_key_exists('logout',$_GET)) {
 // Authenticate if a request
 if (array_key_exists('auth',$_POST)) {
     www_auth (BLOTTO_DB,$timestamp,$err,$msg);
-    try {
-        www_letter_status_refresh ();
-    }
-    catch (\Exception $e) {
-        error_log ($e->getMessage());
-    }
-    catch (\mysqli_sql_exception $e) {
-        error_log ($e->getMessage());
-    }
 }
 
 
