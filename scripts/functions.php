@@ -2835,10 +2835,6 @@ function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
     stannp_fields_merge ($recipients,$ref_key,$refs);
     // Do it
     $stannp = new \Whitelamp\Stannp ();
-    // Get status values
-    $recipients = $stannp->status ($name);
-    // Redact recipients where mailpieces are delivered
-    $stannp->recipients_redact ($prefix,true);
     // Return value is just a summary
     return $stannp->campaign_create ($name,$template_id,$recipients);
 }
