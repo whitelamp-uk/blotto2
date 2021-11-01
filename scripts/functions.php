@@ -2980,22 +2980,25 @@ function stannp_status ($batch_names) {
     return $refs;
 }
 
-function stannp_status_anls ( ) {
+function stannp_status_anls ($live=false) {
     $earliest = BLOTTO_STANNP_FROM_ANL;
+    $batches = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    if ($live) {
+        $c_live = connect (BLOTTO_DB);
+    }
     $q = "
       SELECT
         DISTINCT `p`.`letter_batch_ref` AS `batch`
-      FROM `ANLs` AS `a`
-      JOIN `blotto_player` AS `p`
-        ON `p`.`letter_batch_ref` IS NOT NULL
-       AND `p`.`client_ref`=`a`.`ClientRef`
-      WHERE `a`.`tickets_issued`>='$earliest'
+      FROM `blotto_player` AS `p`
+      JOIN `ANLs` AS `a`
+        ON `p`.`client_ref`=`a`.`ClientRef`
+       AND `a`.`tickets_issued`>='$earliest'
+      WHERE `p`.`letter_batch_ref` IS NOT NULL
         AND (`p`.`letter_status`!='delivered' OR `p`.`letter_status` IS NULL)
-      ORDER BY `p`.`letter_batch_ref`
+      ORDER BY `batch`
     ";
-    echo $q;
-    $batches = [];
-    $c = connect (BLOTTO_MAKE_DB);
+//    echo $q;
     try {
         $rows = $c->query ($q);
         while ($row=$rows->fetch_assoc()) {
@@ -3009,8 +3012,11 @@ function stannp_status_anls ( ) {
     if (!count($batches)) {
         return;
     }
-    $refs = stannp_status ($batches);
-    foreach ($refs as $status=>$crefs) {
+    $statuses = stannp_status ($batches);
+    if (count($statuses) && $live){
+        $c_live = connect (BLOTTO_DB);
+    }
+    foreach ($statuses as $status=>$crefs) {
         $status = $c->escape_string ($status);
         foreach ($crefs as $i=>$ref) {
             $crefs[$i] = $c->escape_string ($ref);
@@ -3029,6 +3035,10 @@ function stannp_status_anls ( ) {
         echo $q;
         try {
             $c->query ($q);
+            if ($c_live) {
+                // Make the data web accessible right now
+                $c_live->query ($q);
+            }
         }
         catch (\mysqli_sql_exception $e) {
             throw new \Exception ($e->getMessage()."\n");
@@ -3038,25 +3048,24 @@ function stannp_status_anls ( ) {
     return true;
 }
 
-function stannp_status_wins ( ) {
+function stannp_status_wins ($live=false) {
     $earliest = BLOTTO_STANNP_FROM_ANL;
+    $batches = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    // Get winners
     $q = "
       SELECT
         DISTINCT `w`.`letter_batch_ref` AS `batch`
-      FROM `Wins` AS `w`
+      FROM `blotto_winner` AS `w`
       JOIN `blotto_entry` AS `e`
-        ON `e`.`draw_closed`=`w`.`draw_closed`
-       AND `e`.`ticket_number`=`w`.`ticket_number`
-      JOIN `blotto_winner` AS `bw`
-        ON `bw`.`letter_batch_ref` IS NOT NULL
-       AND `bw`.`entry_id`=`e`.`id`
-      WHERE `w`.`draw_closed`>='$earliest'
+        ON `e`.`id`=`w`.`entry_id`
+       AND `e`.`draw_closed`>='$earliest'
+      WHERE `w`.`letter_batch_ref` IS NOT NULL
         AND (`w`.`letter_status`!='delivered' OR `w`.`letter_status` IS NULL)
-      ORDER BY `w`.`letter_batch_ref`
+      ORDER BY `batch`
+      ;
     ";
     echo $q;
-    $batches = [];
-    $c = connect (BLOTTO_MAKE_DB);
     try {
         $rows = $c->query ($q);
         while ($row=$rows->fetch_assoc()) {
@@ -3070,8 +3079,12 @@ function stannp_status_wins ( ) {
     if (!count($batches)) {
         return;
     }
-    $refs = stannp_status ($batches);
-    foreach ($refs as $status=>$crefs) {
+    // Get statuses
+    $statuses = stannp_status ($batches);
+    if (count($statuses) && $live){
+        $c_live = connect (BLOTTO_DB);
+    }
+    foreach ($statuses as $status=>$crefs) {
         $status = $c->escape_string ($status);
         foreach ($crefs as $i=>$ref) {
             $crefs[$i] = $c->escape_string ($ref);
@@ -3093,6 +3106,10 @@ function stannp_status_wins ( ) {
         echo $q;
         try {
             $c->query ($q);
+            if ($c_live) {
+                // Make the data web accessible right now
+                $c_live->query ($q);
+            }
         }
         catch (\mysqli_sql_exception $e) {
             throw new \Exception ($e->getMessage()."\n");
@@ -3788,6 +3805,7 @@ function www_auth ($db,&$time,&$err,&$msg) {
     setcookie ('blotto_dbn',BLOTTO_DB,0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_key',pwd2cookie($_POST['pw']),0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_usr',$_POST['un'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
+    www_letter_status_refresh ();
     array_push ($msg,'Welcome, '.$_POST['un'].', to '.BLOTTO_ORG_NAME.' lottery system');
     return true;
 }
@@ -3824,6 +3842,21 @@ function www_get_address ( ) {
 
 function www_is_url ($str) {
     return preg_match ('<^https?://>',$str);
+}
+
+function www_letter_status_refresh ( ) {
+    $log = "";
+    ob_start ();
+    try {
+        stannp_status_anls (true);
+        stannp_status_wins (true);
+    }
+    catch (\Exception $e) {
+        $log = $e->getMessage()."\n";
+    }
+    $log = ob_get_contents().$log;
+    ob_end_clean ();
+    // error_log ($log);
 }
 
 function www_logout ( ) {
