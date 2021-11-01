@@ -2991,7 +2991,8 @@ function stannp_status_anls ( ) {
         DISTINCT `p`.`letter_batch_ref` AS `batch`
       FROM `ANLs` AS `a`
       JOIN `blotto_player` AS `p`
-        ON `p`.`client_ref`=`a`.`ClientRef`
+        ON `p`.`letter_batch_ref` IS NOT NULL
+       AND `p`.`client_ref`=`a`.`ClientRef`
       WHERE `a`.`tickets_issued`>='$earliest'
         AND (`p`.`letter_status`!='delivered' OR `p`.`letter_status` IS NULL)
       ORDER BY `p`.`letter_batch_ref`
@@ -3051,7 +3052,7 @@ function stannp_status_wins ( ) {
         ON `e`.`draw_closed`=`w`.`draw_closed`
        AND `e`.`ticket_number`=`w`.`ticket_number`
       JOIN `blotto_winner` AS `bw`
-        ON `bw`.`letter_batch_ref` IS NULL
+        ON `bw`.`letter_batch_ref` IS NOT NULL
        AND `bw`.`entry_id`=`e`.`id`
       WHERE `w`.`draw_closed`>='$earliest'
         AND (`w`.`letter_status`!='delivered' OR `w`.`letter_status` IS NULL)
