@@ -61,6 +61,9 @@ if (array_key_exists('auth',$_POST)) {
     catch (\Exception $e) {
         error_log ($e->getMessage());
     }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+    }
 }
 
 
