@@ -3016,33 +3016,35 @@ function stannp_status_anls ($live=false) {
     if (count($statuses) && $live){
         $c_live = connect (BLOTTO_DB);
     }
-    foreach ($statuses as $status=>$crefs) {
-        $status = $c->escape_string ($status);
-        foreach ($crefs as $i=>$ref) {
-            $crefs[$i] = $c->escape_string ($ref);
-        }
-        $q = "
-          UPDATE `blotto_player` AS `p_in`
-          JOIN `ANLs` AS `p_out`
-            ON `p_out`.`ClientRef`=`p_in`.`client_ref`
-          SET
-            `p_in`.`letter_status`='$status'
-           ,`p_out`.`letter_status`='$status'
-          WHERE `p_in`.`client_ref` IN (
-            '".implode("','",$crefs)."'
-          );
-        ";
-        echo $q;
-        try {
-            $c->query ($q);
-            if ($c_live) {
-                // Make the data web accessible right now
-                $c_live->query ($q);
+    foreach ($statuses as $batch=>$refs) {
+        foreach ($refs as $status=>$crefs) {
+            $status = $c->escape_string ($status);
+            foreach ($crefs as $i=>$ref) {
+                $crefs[$i] = $c->escape_string ($ref);
             }
-        }
-        catch (\mysqli_sql_exception $e) {
-            throw new \Exception ($e->getMessage()."\n");
-            return false;
+            $q = "
+              UPDATE `blotto_player` AS `p_in`
+              JOIN `ANLs` AS `p_out`
+                ON `p_out`.`ClientRef`=`p_in`.`client_ref`
+              SET
+                `p_in`.`letter_status`='$status'
+               ,`p_out`.`letter_status`='$status'
+              WHERE `p_in`.`client_ref` IN (
+                '".implode("','",$crefs)."'
+              );
+            ";
+            echo $q;
+            try {
+                $c->query ($q);
+                if ($c_live) {
+                    // Make the data web accessible right now
+                    $c_live->query ($q);
+                }
+            }
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage()."\n");
+                return false;
+            }
         }
     }
     return true;
@@ -3084,36 +3086,38 @@ function stannp_status_wins ($live=false) {
     if (count($statuses) && $live){
         $c_live = connect (BLOTTO_DB);
     }
-    foreach ($statuses as $status=>$crefs) {
-        $status = $c->escape_string ($status);
-        foreach ($crefs as $i=>$ref) {
-            $crefs[$i] = $c->escape_string ($ref);
-        }
-        $q = "
-          UPDATE `blotto_winner` AS `w_in`
-          JOIN `WinsAdmin` AS `w_out_1`
-            ON `w_out_1`.`entry_id`=`w_in`.`entry_id`
-          JOIN `Wins` AS `w_out_2`
-            ON `w_out_2`.`entry_id`=`w_in`.`entry_id`
-          SET
-            `w_in`.`letter_status`='$status'
-           ,`w_out_1`.`letter_status`='$status'
-           ,`w_out_2`.`letter_status`='$status'
-          WHERE `w_out_1`.`client_ref` IN (
-            ".implode(",",$crefs)."
-          );
-        ";
-        echo $q;
-        try {
-            $c->query ($q);
-            if ($c_live) {
-                // Make the data web accessible right now
-                $c_live->query ($q);
+    foreach ($statuses as $batch=>$refs) {
+        foreach ($refs as $status=>$crefs) {
+            $status = $c->escape_string ($status);
+            foreach ($crefs as $i=>$ref) {
+                $crefs[$i] = $c->escape_string ($ref);
             }
-        }
-        catch (\mysqli_sql_exception $e) {
-            throw new \Exception ($e->getMessage()."\n");
-            return false;
+            $q = "
+              UPDATE `blotto_winner` AS `w_in`
+              JOIN `WinsAdmin` AS `w_out_1`
+                ON `w_out_1`.`entry_id`=`w_in`.`entry_id`
+              JOIN `Wins` AS `w_out_2`
+                ON `w_out_2`.`entry_id`=`w_in`.`entry_id`
+              SET
+                `w_in`.`letter_status`='$status'
+               ,`w_out_1`.`letter_status`='$status'
+               ,`w_out_2`.`letter_status`='$status'
+              WHERE `w_out_1`.`client_ref` IN (
+                ".implode(",",$crefs)."
+              );
+            ";
+            echo $q;
+            try {
+                $c->query ($q);
+                if ($c_live) {
+                    // Make the data web accessible right now
+                    $c_live->query ($q);
+                }
+            }
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage()."\n");
+                return false;
+            }
         }
     }
     return true;
