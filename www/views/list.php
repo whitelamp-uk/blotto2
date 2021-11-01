@@ -19,7 +19,7 @@ $last       = false;
 $dates      = [];
 
 
-if ($table='ANLs' || $table=='Wins') {
+if ($table=='ANLs' || $table=='Wins') {
     www_letter_status_refresh ();
 }
 if ($table=='Insurance') {
