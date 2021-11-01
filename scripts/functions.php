@@ -3103,7 +3103,7 @@ function stannp_status_wins ($live=false) {
                ,`w_out_1`.`letter_status`='$status'
                ,`w_out_2`.`letter_status`='$status'
               WHERE `w_out_1`.`client_ref` IN (
-                '".implode("','",$crefs)."''
+                '".implode("','",$crefs)."'
               );
             ";
             echo $q;
