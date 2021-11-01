@@ -2972,9 +2972,9 @@ function stannp_status ($batch_names) {
         $recipients = $stannp->campaign ($campaign_name) ['recipient_list'];
         foreach ($recipients as $r) {
             if (!array_key_exists($r['mailpiece_status'],$refs)) {
-                $refs[$r['mailpiece_status']] = [];
+                $refs[$campaign_name][$r['mailpiece_status']] = [];
             }
-            $refs[$r['mailpiece_status']][] = $r['ref_id'];
+            $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
         }
     }
     return $refs;
