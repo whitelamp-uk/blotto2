@@ -203,3 +203,7 @@ a, a:visited {
     margin-bottom:     0.5em;
 }
 
+/* TEMPORARY - DO NOT COMMIT! */
+#content form .scrollable #table tbody {
+        filter: blur(0.15em);
+}
