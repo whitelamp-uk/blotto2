@@ -13,19 +13,26 @@ if (!$zo) {
 // Final players check
 $qs = "
   SELECT
-    `p`.`id`
-  FROM `blotto_player` AS `p`
-  JOIN `blotto_build_mandate` AS `m`
-    ON `m`.`ClientRef`=`p`.`client_ref`
+    `c`.`ClientRef`
+   ,COUNT(`c`.`DateDue`) AS `payments`
+   ,SUM(`c`.`PaidAmount`) AS `paid`
+   ,`p`.`id` AS `player_id`
+   ,`p`.`chances`
+   ,`p`.`started`
+  FROM `blotto_build_collection` AS `c`
+  LEFT JOIN `blotto_player` AS `p`
+    ON `c`.`ClientRef`=`p`.`client_ref`
   WHERE `p`.`chances` IS NULL
      OR `p`.`started` IS NULL
      OR `p`.`started`='0000-00-00'
+  GROUP BY `c`.`RefNo`
   ;
 ";
 try {
     $errors = $zo->query ($qs);
     if ($errors->num_rows) {
-      fwrite (STDERR,$qs.$errors->num_rows." errors!\n");
+      fwrite (STDERR,$errors->num_rows." players have errors!\n");
+      fwrite (STDERR,$qs);
       exit (102);
     }
 }

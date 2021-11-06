@@ -103,6 +103,7 @@ if (array_key_exists('verify',$_GET)) {
 
 // Make this sign-and-pay page available for use in a charity website's iframe
 header ('Access-Control-Allow-Origin: *');
+header ('Content-Security-Policy: frame-ancestors '.BLOTTO_WWW_IFRAME_SOURCES);
 //print_r($_POST);
 $apis = www_pay_apis ();
 //print_r ($apis);
@@ -219,17 +220,6 @@ window.location.href = '#<?php echo $go; ?>';
         $api->start ($error);
     }
 ?>
-
-<!--
-<?php if (count($error)): ?>
-      <div class="error">
-        <button data-close></button>
-<?php     foreach($error as $e): ?>
-        <p><?php echo htmlspecialchars ($e); ?></p>
-<?php     endforeach; ?>
-      </div>
-<?php endif; ?>
--->
 
     </section>
 

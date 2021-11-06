@@ -19,6 +19,9 @@ $last       = false;
 $dates      = [];
 
 
+if ($table=='ANLs' || $table=='Wins') {
+    www_letter_status_refresh ();
+}
 if ($table=='Insurance') {
     $day2   = new DateTime ();
     $day2->add (new DateInterval('P7D'));
@@ -60,13 +63,23 @@ foreach ($months as $m=>$month) {
 
     <section id="list" class="content">
 
+          <form id="list-aux">
+            <h3>CSV options</h3>
+<?php if(in_array($table,['Cancellations','Supporters','Draws'])): ?>
+            <input type="radio" name="group_by_ticket_number" value="0" checked /><label>1 row/ticket</label>
+            <input type="radio" name="group_by_ticket_number" value="1" /><label>1 row/member</label>
+            &nbsp; &nbsp;
+<?php endif; ?>
+            <input type="checkbox" name="excel_leading_zero" /><label>Excel-friendly &apos;012</label>
+          </form>
+
         <h2><?php echo htmlspecialchars($tables[$table]); ?></h2>
 
         <div class="row">
           <button class="col1 subtitle" data-interval="all" data-date="<?php echo $latest; ?>">All data</button>
           <span class="col2 choices">
-            <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$m,'P1M')); ?>">View</button>
-            <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$m,'P1M')); ?>">CSV</button>
+            <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$latest)); ?>">View</button>
+            <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$latest)); ?>">CSV</button>
           </span>
         </div>
 

@@ -20,11 +20,12 @@ else {
 
 function adminer_object ( ) {
     include_once "/var/www/adminer/plugins/plugin.php";
-    include_once "/var/www/adminer/plugins/frames.php";
-    include_once "/var/www/adminer/plugins/unloading.php";
-    $plugins = array (
-        new AdminerFrames, new AdminerUnloading
-    );
+    include_once "/var/www/adminer/plugins/adminer-frames.php";
+    include_once "/var/www/adminer/plugins/adminer-unloading.php";
+    $plugins = [
+        new AdminerFrames,
+        new AdminerUnloading
+    ];
     class AdminerCustomization extends AdminerPlugin {
         function loginForm() {
             require __DIR__.'/adminer.login.php';

@@ -110,18 +110,35 @@ while ($d=$ds->fetch_assoc()) {
         $bail       = false;
         if ($now<$draw->time) {
             $bail = true;
-            fwrite (STDERR,"Bail before {$draw->closed} - must wait until {$draw->time}\n");
+            fwrite (STDERR,"WARNING: bail before {$draw->closed} - must wait until {$draw->time}\n");
         }
         if (count($draw->insure) && !$d['insured']) {
             $bail   = true;
-            fwrite (STDERR,"Bail before {$draw->closed} - prize".plural(count($draw->insure))." ".implode(', ',$draw->insure)." insurance requirement\n");
+            fwrite (STDERR,"WARNING: bail before {$draw->closed} - prize".plural(count($draw->insure))." ".implode(', ',$draw->insure)." insurance requirement\n");
         }
-        if ($draw->manual) {
-            $bail   = true;
-            fwrite (STDERR,"Bail before {$draw->closed} - manual prize group {$draw->manual} has no results - see README.md 'Manually inserting external number-matches'\n");
+        if ($draw->manual && count($draw->results)==0) {
+            foreach ($draw->prizes as $level=>$p) {
+                if ($p['function_name']) {
+                    try {
+                        // Run the manual results function for this prize level
+                        prize_function ($draw->prizes[$level],$draw->closed);
+                        $draw->results[$level] = true;
+                    }
+                    catch (\Exception $e) {
+                        fwrite (STDERR,"Prize $level' for {$draw->closed} = ".print_r($p,true));
+                        fwrite (STDERR,$draw->closed.' '.$e->getMessage()."\n");
+                        exit (106);
+                    }
+                }
+            }
+            if (count($draw->results)==0) {
+                $bail   = true;
+                fwrite (STDERR,"Warning bail before {$draw->closed} - manual prize group {$draw->manual} has no results - see README.md 'Manually inserting external number-matches'\n");
+             }
         }
         if ($bail) {
             // Bail without an error (no more draws, continue build)
+            tee ("    Bailing without error from draw result engine at {$draw->closed}\n");
             exit (0);
         }
         if (!$quiet) {
@@ -173,17 +190,6 @@ while ($d=$ds->fetch_assoc()) {
             }
         }
         elseif ($p['results_manual']) {
-            if (!$p['results']) {
-                try {
-                    // Run the manual results function for this prize level
-                    prize_function ($p,$draw->closed);
-                }
-                catch (\Exception $e) {
-                    fwrite (STDERR,"Prize {$p['level']} for {$draw->closed} = ".print_r($p,true));
-                    fwrite (STDERR,$draw->closed.' '.$e->getMessage()."\n");
-                    exit (106);
-                }
-            }
             // Manuals are number-matches and number-matches only have one match per prize level
             $manuals[$p['group']] = $p['results'][0];
             $manualmatchprizes[$p['level']] = $p;
@@ -384,4 +390,6 @@ while ($d=$ds->fetch_assoc()) {
     }
     
 }
+
+tee ("    Finished with draw result engine\n");
 

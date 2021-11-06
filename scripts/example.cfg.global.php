@@ -27,8 +27,11 @@ define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
 
 define ( 'BLOTTO_TRNG_API',         'random.org'                                );
-define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/4/invoke'  );
-define ( 'BLOTTO_TRNG_API_VERSION', '2.0'                                       );
+define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/2/invoke'  );
+define ( 'BLOTTO_TRNG_API_VERSION', '2.0'               );
+// This will not get used for the foreseeable future; we are sticking with the old API / licence
+//define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/4/invoke'  );
+//define ( 'BLOTTO_TRNG_API_VERSION', '4.0'               );
 define ( 'BLOTTO_TRNG_API_HEADER',  'Content-Type: application/json'            );
 define ( 'BLOTTO_TRNG_API_METHOD',  'generateSignedIntegers'                    );
 define ( 'BLOTTO_TRNG_API_KEY',     'f45a0115-67da-43e4-88aa-93866bb553a6'      );
@@ -57,6 +60,14 @@ define ( 'BLOTTO_BANK_ACNR',        '12345678'              );
 define ( 'BLOTTO_CURRENCY',         '£'             ); // GBP, £, USD, etc
 define ( 'BLOTTO_TAX',              0.20            ); // Sales tax as a decimal
 define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
+
+
+// Stannp snail-mail service
+define ( 'BLOTTO_STANNP',           '/home/blotto/stannp/Stannp.class.php'      );
+define ( 'BLOTTO_STANNP_COUNTRY',   'GB'        );
+define ( 'STANNP_TIMEOUT',          60          );
+// Minimum length of left-match to campaign names for redaction limiting
+define ( 'STANNP_REDACT_SCOPE_LEN', 4           );
 
 
 /*

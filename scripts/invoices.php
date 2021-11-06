@@ -10,6 +10,11 @@ if (!$zo) {
     exit (101);
 }
 
+if (!is_dir(BLOTTO_DIR_INVOICE)) {
+    fwrite (STDERR,"Draw report directory BLOTTO_DIR_INVOICE=".BLOTTO_DIR_INVOICE." does not exist\n");
+    exit (102);
+}
+
 $rdb = BLOTTO_RESULTS_DB;
 
 $first = '0000-00-00';
@@ -39,7 +44,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (102);
+    exit (103);
 }
 
 try {
@@ -70,6 +75,6 @@ try {
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
-    exit (103);
+    exit (104);
 }
 

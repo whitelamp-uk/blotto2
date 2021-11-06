@@ -3,6 +3,9 @@
 require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
+if (defined('BLOTTO_STANNP') && BLOTTO_STANNP) {
+    require BLOTTO_STANNP_CLASS;
+}
 
 $options       = array (
     'wait',
@@ -147,6 +150,7 @@ function init ( ) {
     </script>
 
     <link rel="stylesheet" href="./media/style.css" />
+    <link rel="stylesheet" href="./media/override.css" />
 
   </head>
 

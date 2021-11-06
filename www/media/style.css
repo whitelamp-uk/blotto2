@@ -5,6 +5,7 @@
 
 body {
     margin:             0;
+    background-color:   var(--blotto-color-bgd-body);
     padding:            0;
     font-family:        var(--blotto-dfn-fnt-default);
     font-size:          var(--blotto-dfn-fsz-default);
@@ -34,8 +35,8 @@ body.unloading * {
 }
 
 textarea {
-    width:              50em;
-    height:             15em;
+    width:              60vw;
+    height:             24em;
 }
 
 hr {
@@ -93,13 +94,6 @@ tbody tr:nth-child(even), tfoot tr {
 
 tfoot td {
     text-align:         center;
-}
-
-button, input[type="submit"] {
-    border-color:       var(--blotto-color-bdr-button);
-    background-color:   var(--blotto-color-bgd-button);
-    color:              var(--blotto-color-fgd-button);
-    font-weight:        var(--blotto-dfn-fwt-default);
 }
 
 button[data-close] {
@@ -174,15 +168,19 @@ a.draw-report, a.invoice {
     text-align:         right;
 }
 
-button, #reconcile input[type="submit"] {
+button, input[type="submit"] {
     margin:             0 0 0 0.05em;
     border-style:       solid;
     border-width:       2px;
     border-radius:      0.3em;
+    border-color:       var(--blotto-color-bdr-button);
+    background-color:   var(--blotto-color-bgd-button);
     padding:            0.1em 0.4em 0.1em 0.4em;
-    font-size:          var(--blotto-font-size-button-default);
     text-align:         center;
     text-decoration:    none;
+    color:              var(--blotto-color-fgd-button);
+    font-size:          var(--blotto-font-size-button-default);
+    font-weight:        var(--blotto-dfn-fwt-default);
 }
 
 #options a {
@@ -208,8 +206,9 @@ button, #reconcile input[type="submit"] {
 }
 #options a.active {
     cursor:             default;
+    text-decoration:    var(--blotto-text-decor-header-acv);
 }
-#options a.active, #options a.active:hover, #options a#logout {
+#options a.active, #options a.active:hover {
     border-color:       var(--blotto-color-bdr-button-opt-acv);
     background-color:   var(--blotto-color-bgd-button-opt-acv);
     color:              var(--blotto-color-fgd-button-opt-acv);
@@ -217,9 +216,15 @@ button, #reconcile input[type="submit"] {
 #options a.active, #options a.active:hover {
     border-color:       var(--blotto-color-bdr-button-opt-acv);
 }
+#options a#logout {
+    border-color:       var(--blotto-color-bdr-button-opt-acv);
+    background-color:   var(--blotto-color-bdr-button-lgt);
+    color:              var(--blotto-color-fgd-button-opt-acv);
+}
 #options a#logout:hover {
     border-color:       var(--blotto-color-bdr-button-lgt-hvr);
     background-color:   var(--blotto-color-bgd-button-lgt-hvr);
+    color:              var(--blotto-color-fgd-button-lgt-hvr);
 }
 
 #frame {
@@ -263,6 +268,7 @@ button, #reconcile input[type="submit"] {
 
 #footer a.active {
     color:              var(--blotto-color-fgd-lk-aux-acv);
+    text-decoration:    var(--blotto-text-decor-footer-acv);
 }
 
 #login {
@@ -308,7 +314,7 @@ button, #reconcile input[type="submit"] {
 
 form.login {
     text-align:         center;
-    padding:            1.9em 0 0 0;
+    padding:            1.9em 0 5em 0;
 }
 
 form.login input {
@@ -322,18 +328,25 @@ form.login input {
     text-align:         center;
 }
 
+form.login .usr input, form.login .pwd input {
+    border-color:       var(--blotto-color-bdr-login-input);
+    background-color:   var(--blotto-color-bgd-login-input);
+}
+
 form.login .pwd {
     position:           relative;
 }
 
 form.login .pwd [name="auth"] {
     position:           absolute;
-    right:              calc(50vw - 8.45em + 1px);
-    top:                1px;
+    right:              calc(50vw - 8.25em + 1px);
+    top:                0;
     display:            block;
+    margin:             0;
     box-sizing:         border-box;
     border-radius:      0;
-    border-width:       0;
+    border-width:       1px;
+    border-color:       var(--blotto-color-bgd-button-lgn);
     width:              calc(2.5em - 2px);
     height:             calc(2.5em - 2px);
     background-color:   var(--blotto-color-bgd-button-lgn);
@@ -341,7 +354,9 @@ form.login .pwd [name="auth"] {
     background-repeat:  no-repeat;
     background-size:    20%;
     background-position: center;
+    padding:            0;
     color:              transparent;
+    font-size:          0.75em;
 }
 form.login .pwd [name="auth"]:hover {
     background-color:   var(--blotto-color-bgd-button-lgn-hvr);
@@ -357,14 +372,19 @@ form#change-supporter {
     height:             calc(100vh - 1em);
     border-style:       solid;
     border-width:       1px;
-    border-color:       var(--blotto-color-bdr-table);
-    background-color:   var(--blotto-dfn-clr-white);
+    border-color:       var(--blotto-color-bdr-popup);
+    background-color:   var(--blotto-color-bgd-body);
     overflow-x:         auto;
     overflow-y:         scroll;
 }
 form#change-mandate.active,
 form#change-supporter.active {
     display:            block;
+}
+
+form#change-mandate button,
+form#change-supporter button {
+    border-color:       var(--blotto-color-bdr-popup);
 }
 
 form#change-mandate button.form-close,
@@ -407,7 +427,7 @@ form#change-supporter input {
     background-color:   var(--blotto-color-bgd-button);
     color:              var(--blotto-color-fgd-button-lst);
 }
-#list button.active, #list button.active:hover {
+#list .month button.active, #list .month button.active:hover {
     border-color:       var(--blotto-color-bdr-button-lst-acv);
     background-color:   var(--blotto-color-bgd-button-lst-acv);
     color:              var(--blotto-color-fgd-button-lst-acv);
@@ -421,7 +441,7 @@ form#change-supporter input {
 
 #logo-login-form {
     position:           fixed;
-    left:               1em;
+    left:               5.65em;
     top:                calc(50vh - 21px);
     width:              auto;
     height:             34px;
@@ -468,8 +488,8 @@ form#change-supporter input {
 }
 
 .content {
-    padding:            2em;
-    width:              calc(100% - 4em);
+    padding:            2em 2em 2em var(--blotto-content-margin-left);
+    width:              calc(100% - 2em - var(--blotto-content-margin-left));
 }
 
 .content > h2 {
@@ -484,14 +504,16 @@ h3 {
 }
 
 form#list-aux {
-    position:          fixed;   
-    right:             1em;
-    top:               2.8em;
-    border-style:      solid;
-    border-width:      1px;
-    border-color:      var(--blotto-color-bdr-form-options);
-    padding:           0.1em 0.3em 0.1em 0.3em;
-    white-space:       nowrap;
+    position:           fixed;
+    z-index:            100;
+    right:              2em;
+    top:                1.8em;
+    border-style:       solid;
+    border-width:       1px;
+    border-color:       var(--blotto-color-bdr-form-options);
+    background-color:   var(--blotto-color-bgd-body);
+    padding:            0.1em 0.3em 0.1em 0.3em;
+    white-space:        nowrap;
 }
 
 form#list-aux h3:first-of-type {
@@ -513,6 +535,9 @@ form#list-aux label {
 #list .row {
     display:            block;
     margin:             1em 0 1em 0;
+}
+#list .row:nth-child(2n+0) {
+    background-color:   var(--blotto-color-bgd-list-stripe);
 }
 #list .row button {
     margin:             0;
@@ -580,49 +605,53 @@ form#list-aux label {
     padding:            0.2em 0.5em 0.2em 0.5em;
 }
 
+.wait button {
+    margin-top:         0.4em;
+}
+
 @keyframes fadeout {
-    from { opacity:    1.0; }
-      5% { opacity:    0.5; }
-     10% { opacity:    1.0; }
-     15% { opacity:    0.5; }
-     20% { opacity:    1.0; }
-     75% { opacity:    1.0; }
-      to { opacity:    0.0; }
+    from { opacity:     1.0; }
+      5% { opacity:     0.5; }
+     10% { opacity:     1.0; }
+     15% { opacity:     0.5; }
+     20% { opacity:     1.0; }
+     75% { opacity:     1.0; }
+      to { opacity:     0.0; }
 }
 
 .negative {
-    color:             var(--blotto-color-fgd-negative-nr);
+    color:              var(--blotto-color-fgd-negative-nr);
 }
 
 .msg {
-    font-weight:       bold;
-    background-color:  var(--blotto-color-bgd-message-msg);
-    color:             var(--blotto-color-fgd-message);
+    font-weight:        bold;
+    background-color:   var(--blotto-color-bgd-message-msg);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .err {
-    background-color:  var(--blotto-color-bgd-message-err);
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-err);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .wrn {
-    background-color:  var(--blotto-color-bgd-message-wrn);
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-wrn);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .ok {
-    background-color:  var(--blotto-color-bgd-message-ok);
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-ok);
+    color:              var(--blotto-color-fgd-message);
 }
 
 .changed, .changed tr, .changed th, .changed td {
-    background-color:  var(--blotto-color-bgd-message-wrn) !important;
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-wrn) !important;
+    color:              var(--blotto-color-fgd-message);
 }
 
 .updated, .updated tr, .updated th, .updated td {
-    background-color:  var(--blotto-color-bgd-message-ok) !important;
-    color:             var(--blotto-color-fgd-message);
+    background-color:   var(--blotto-color-bgd-message-ok) !important;
+    color:              var(--blotto-color-fgd-message);
 }
 
 @keyframes slideup {
@@ -645,32 +674,8 @@ form#list-aux label {
 
 
 .chart {
-    margin-bottom:      4em;
-    width:              25em;
-    margin-left:        3em;
-    margin-right:       0;
-}
-
-.chart.doughnut {
-    margin-bottom:      -2em;
-    width:              20em;
-}
-
-.chart.left {
-    float:              left;
-}
-
-.chart.left.doughnut {
-    margin-left:        5.5em;
-}
-
-.chart.right {
-    float:              right;
-    margin-right:       3em;
-}
-
-.chart.right.doughnut {
-    margin-right:       5.5em;
+    margin:             0 auto 8em auto;
+    width:              42em;
 }
 
 
@@ -735,21 +740,25 @@ form#list-aux label {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
 }
 
-
+#reconcile > form {
+    position: fixed;
+}
 
 #reconcile .reconcile {
-    margin-top:         1em;
-    width:              30em;
+    margin:             1em 0 3em 0;
+    text-align:         center;
 }
 
-#reconcile-table-draw-summary tbody td:nth-of-type(3),
-#reconcile-table-draw-summary tbody td:nth-of-type(4) {
-    text-align:         right;
+#reconcile .reconcile table {
+    margin:             0 auto 0 auto;
+    text-align:         left;
+    width:              26em;
+    white-space:        nowrap;
 }
 
-#reconcile-table-draw-summary-super tbody td:nth-of-type(2),
-#reconcile-table-draw-summary-super tbody td:nth-of-type(3) {
-    text-align:         right;
+#reconcile .reconcile caption {
+    text-align:         center;
+    overflow:           visible;
 }
 
 #reconcile-table-reconcile tbody tr:nth-of-type(1),
@@ -766,6 +775,22 @@ form#list-aux label {
 #reconcile-table-reconcile tbody td:nth-of-type(3):first-letter {
     text-transform:     uppercase;
 }
+#reconcile-table-reconcile tbody td:nth-of-type(1) {
+    width:              3em;
+}
+#reconcile-table-reconcile tbody td:nth-of-type(2) {
+    width:              6em;
+}
+
+#reconcile-table-draw-summary tbody td:nth-of-type(3),
+#reconcile-table-draw-summary tbody td:nth-of-type(4) {
+    text-align:         right;
+}
+
+#reconcile-table-draw-summary-super tbody td:nth-of-type(2),
+#reconcile-table-draw-summary-super tbody td:nth-of-type(3) {
+    text-align:         right;
+}
 
 #system-info {
     float: right;
@@ -779,7 +804,9 @@ form#list-aux label {
     font-size:          1.1em;
     float:              right;
 }
-
+#support table tr:nth-child(3) td:nth-child(2) {
+    padding-right:      0;
+}
 
 @media screen and (max-width: 1200px) {
     #options {

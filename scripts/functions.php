@@ -569,11 +569,6 @@ function download_csv ( ) {
             array_push ($data,"IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')");
             continue;
         }
-        if ($gp && $fn['Field']=='ticket_number') {
-            array_push ($headings,"'ticket_numbers' AS `ticket_numbers`");
-            array_push ($data,"IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')");
-            continue;
-        }
         array_push ($headings,"'{$fn['Field']}' AS `{$fn['Field']}`");
         array_push ($data,"IFNULL(`{$fn['Field']}`,'')");
     }
@@ -666,7 +661,7 @@ function draw ($draw_closed) {
     $draw->manual           = false;
     $draw->results          = [];
     $draw->groups           = [];
-    $manual_groups          = [];
+    $draw->manual_groups    = [];
     foreach ($draw->prizes as $level=>$p) {
         // Raffles
         if ($p['level_method']=='RAFF') {
@@ -681,12 +676,14 @@ function draw ($draw_closed) {
         if ($p['insure']) {
             array_push ($draw->insure,$level);
         }
-        if ($p['results_manual'] && !$p['results'] && !$p['function_name']) {
+        if ($p['results_manual']) {
+            // If any prize level is manual
+            // and without a bespoke function,
+            // both group and draw are manual
             $draw->manual   = $group;
-            // If a level is manual, the whole group is manual
-            array_push ($manual_groups,$group);
+            array_push ($draw->manual_groups,$group);
         }
-        if ($p['results']) {
+        if (count($p['results'])) {
              $draw->results[$group] = true;
         }
         if (!array_key_exists($group,$draw->groups)) {
@@ -699,7 +696,7 @@ function draw ($draw_closed) {
         if ($p['level_method']=='RAFF') {
             continue;
         }
-        if (in_array($p['group'],$manual_groups)) {
+        if (in_array($p['group'],$draw->manual_groups)) {
             $draw->prizes[$level]['results_manual'] = 1;
         }
     }
@@ -1485,16 +1482,25 @@ function invoice_payout ($draw_closed_date,$output=true) {
     if ($invoice->terms) {
         $qs = "
           SELECT
-            `prize`
-           ,COUNT(`ticket_number`) AS `qty`
-           ,`winnings` AS `prize_value`
+            `Wins`.`prize`
+           ,COUNT(`Wins`.`ticket_number`) AS `qty`
+           ,`Wins`.`winnings` AS `prize_value`
            ,'' AS `blank`
            ,'0.00' AS `sales_tax`
           FROM `Wins`
-          WHERE `draw_closed`='$draw_closed_date'
-            AND `superdraw`='N'
-          GROUP BY `prize`
-          ORDER BY `winnings`
+          JOIN `blotto_entry` AS `e`
+            ON `e`.`draw_closed`=`Wins`.`draw_closed`
+           AND `e`.`ticket_number`=`Wins`.`ticket_number`
+          JOIN `blotto_winner` AS `w`
+            ON `w`.`entry_id`=`e`.`id`
+          JOIN `blotto_prize` AS `p`
+            ON `p`.`level`=`w`.`prize_level`
+           AND `p`.`starts`=`w`.`prize_starts`
+          WHERE `Wins`.`draw_closed`='$draw_closed_date'
+            AND `Wins`.`superdraw`='N'
+            AND `p`.`insure`=0
+          GROUP BY `Wins`.`prize`
+          ORDER BY `Wins`.`winnings`
           ;
         ";
         try {
@@ -1833,7 +1839,8 @@ function notarisation ($file) {
         throw new \Exception ("Could not create TSA query file '$tsq'");
         return false;
     }
-    $cmd        = 'curl -H "Content-Type: application/timestamp-query" ';
+    echo "Notarisation using ".BLOTTO_TSA_URL."\n";
+    $cmd        = 'curl -kH "Content-Type: application/timestamp-query" ';
     $cmd       .= " --silent --show-error "; // suppress progress bar but allow errors.  NB order of flags is important!
     $cmd       .= " --data-binary '@".$tsq."' ";
     $cmd       .= escapeshellarg(BLOTTO_TSA_URL)." > ".$tsr;
@@ -2179,6 +2186,9 @@ function prizes ($date) {
         if ($p['results']) {
             $p['results'] = explode (',',$p['results']);
         }
+        else {
+            $p['results'] = [];
+        }
         $p['group']             = null;
         if ($p['level_method']!='RAFF') {
             $p['length']        = substr ($p['level_method'],0,1);
@@ -2226,7 +2236,7 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
     $request->params->n             = $num_of_nums;
     $request->params->replacement   = $reuse;
 /*
-// Change BLOTTO_TRNG_API_URL and uncomment when random.org can support GBP
+// This is the new API whcich will not be used in the foreseeable future
     $request->params->licenseData   = new \stdClass ();
     $request->params->licenseData->maxPayoutValue = new \stdClass ();
     $request->params->licenseData->maxPayoutValue->currency = 'GBP';
@@ -2769,6 +2779,343 @@ function sms ($org,$to,$message,&$diagnostic) {
     }
     $sms        = new \SMS ();
     return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
+}
+
+function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
+    foreach ($array2d as $i=>$row) {
+        // Player refs `ClientRef`/`client_ref` interchangeable
+        if (array_key_exists('ClientRef',$row)) {
+            $array2d[$i]['client_ref']  = $row['ClientRef'];
+            $array2d[$i]['ref_id']      = $array2d[$i]['client_ref'];
+        }
+        elseif (array_key_exists('client_ref',$row)) {
+            $array2d[$i]['ClientRef']  = $row['client_ref'];
+            $array2d[$i]['ref_id']      = $array2d[$i]['ClientRef'];
+        }
+        else {
+            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
+            return false;
+        }
+        $refs[]                         = $row[$ref_key];
+        // Stannp required fields
+        $array2d[$i]['group_id']        = null;
+        $array2d[$i]['on_duplicate']    = 'update';
+        // Stannp address window
+        //     https://dash.stannp.com/designer/mailpiece/A4
+        //     Select "A blank canvas"
+        $array2d[$i]['full_name']       = $row['title'].' '.$row['name_first'].' '.$row['name_last'];
+        $array2d[$i]['job_title']       = '';
+        $array2d[$i]['company']         = '';
+        $array2d[$i]['address1']        = $row['address_1'];
+        $array2d[$i]['address2']        = $row['address_2'];
+        $array2d[$i]['address3']        = $row['address_3'];
+        $array2d[$i]['city']            = $row['town'];
+        // Country is not given in the blank mailpiece draft.
+        // Which is odd - so here it is anyway just in case
+        $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
+        // `postcode` has the same name in blottoland
+        // `barcode` is for Royal mail use and should not be given
+    }
+    return true;
+}
+
+function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
+    if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
+        // API is not active
+        return ['recipients'=>0];
+    }
+    $prefix = BLOTTO_STANNP_PREFIX.'-'.gethostname().'-'.$name.'-';
+    $name = $prefix.date('Y-m-d--H:i:s');
+    // Transform arrays by reference (arguments above)
+    stannp_fields_merge ($recipients,$ref_key,$refs);
+    // Do it
+    $stannp = new \Whitelamp\Stannp ();
+    // Return value is just a summary
+    return $stannp->campaign_create ($name,$template_id,$recipients);
+}
+
+function stannp_mail_anls ( ) {
+    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $q = "
+      SELECT
+        `a`.*
+      FROM `ANLs` AS `a`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`letter_batch_ref` IS NULL
+       AND `p`.`client_ref`=`a`.`ClientRef`
+      WHERE `a`.`tickets_issued`>='$earliest'
+      ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
+    ";
+    echo $q;
+    $recipients = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    try {
+        $rows = $c->query ($q);
+        while ($r=$rows->fetch_assoc()) {
+            $recipients[] = $r;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($recipients)) {
+        return ['recipients'=>0];
+    }
+    $batch = stannp_mail ($recipients, 'ANLs', BLOTTO_STANNP_TPL_ANL,'ClientRef',$refs);
+    if (!$batch['recipients']) {
+        return $batch;
+    }
+    $name = $c->escape_string ($batch['name']);
+    $q = "
+      UPDATE `blotto_player` AS `p_in`
+      JOIN `ANLs` AS `p_out`
+        ON `p_out`.`ClientRef`=`p_in`.`client_ref`
+      SET
+        `p_in`.`letter_batch_ref`='$name'
+       ,`p_out`.`letter_batch_ref`='$name'
+      WHERE `p_in`.`client_ref` IN (
+        '".implode("','",$refs)."'
+      );
+    ";
+    echo $q;
+    try {
+        $c->query ($q);
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception (
+            'Stannp batch was sent successfully but an SQL exception followed it: '.$e->getMessage()."\n".print_r($batch,true).$q
+        );
+        return false;
+    }
+    return $batch;
+}
+
+function stannp_mail_wins ( ) {
+    $earliest = BLOTTO_STANNP_FROM_WIN;
+    $q = "
+      SELECT
+        `bw`.`entry_id`
+       ,`w`.*
+      FROM `Wins` AS `w`
+      JOIN `blotto_entry` AS `e`
+        ON `e`.`draw_closed`=`w`.`draw_closed`
+       AND `e`.`ticket_number`=`w`.`ticket_number`
+      JOIN `blotto_winner` AS `bw`
+        ON `bw`.`letter_batch_ref` IS NULL
+       AND `bw`.`entry_id`=`e`.`id`
+      WHERE `w`.`draw_closed`>='$earliest'
+      ORDER BY `w`.`draw_closed`,`w`.`winnings`,`ticket_number`
+    ";
+    echo $q;
+    $recipients = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    try {
+        $rows = $c->query ($q);
+        while ($r=$rows->fetch_assoc()) {
+            $recipients[] = $r;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($recipients)) {
+        return ['recipients'=>0];
+    }
+    $batch = stannp_mail ($recipients, 'Wins', BLOTTO_STANNP_TPL_WIN,'entry_id',$refs);
+    if (!$batch['recipients']) {
+        return $batch;
+    }
+    $name = $c->escape_string ($batch['name']);
+    $q = "
+      UPDATE `blotto_winner` AS `w_in`
+      JOIN `WinsAdmin` AS `w_out_1`
+        ON `w_out_1`.`entry_id`=`w_in`.`entry_id`
+      JOIN `Wins` AS `w_out_2`
+        ON `w_out_2`.`entry_id`=`w_in`.`entry_id`
+      SET
+        `w_in`.`letter_batch_ref`='$name'
+       ,`w_out_1`.`letter_batch_ref`='$name'
+       ,`w_out_2`.`letter_batch_ref`='$name'
+      WHERE `w_in`.`entry_id` IN (
+        ".implode(",",$refs)."
+      );
+    ";
+    echo $q;
+    try {
+        $c->query ($q);
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception (
+            'Stannp batch was sent successfully but an SQL exception followed it: '.$e->getMessage()."\n".print_r($batch,true).$q
+        );
+        return false;
+    }
+    return $batch;
+}
+
+function stannp_status ($batch_names) {
+    $refs = [];
+    if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
+        // API is not active
+        return $refs;
+    }
+    $stannp = new \Whitelamp\Stannp ();
+    foreach ($batch_names as $campaign_name) {
+        $refs[$campaign_name] = [];
+        $recipients = $stannp->campaign ($campaign_name) ['recipient_list'];
+        foreach ($recipients as $r) {
+            if (!array_key_exists($r['mailpiece_status'],$refs[$campaign_name])) {
+                $refs[$campaign_name][$r['mailpiece_status']] = [];
+            }
+            $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
+        }
+    }
+    return $refs;
+}
+
+function stannp_status_anls ($live=false) {
+    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $batches = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    if ($live) {
+        $c_live = connect (BLOTTO_DB);
+    }
+    $q = "
+      SELECT
+        DISTINCT `p`.`letter_batch_ref` AS `batch`
+      FROM `blotto_player` AS `p`
+      JOIN `ANLs` AS `a`
+        ON `p`.`client_ref`=`a`.`ClientRef`
+       AND `a`.`tickets_issued`>='$earliest'
+      WHERE `p`.`letter_batch_ref` IS NOT NULL
+        AND (`p`.`letter_status`!='delivered' OR `p`.`letter_status` IS NULL)
+      ORDER BY `batch`
+    ";
+//    echo $q;
+    try {
+        $rows = $c->query ($q);
+        while ($row=$rows->fetch_assoc()) {
+            $batches[] = $row['batch'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($batches)) {
+        return;
+    }
+    $statuses = stannp_status ($batches);
+    if (count($statuses) && $live){
+        $c_live = connect (BLOTTO_DB);
+    }
+    foreach ($statuses as $batch=>$refs) {
+        foreach ($refs as $status=>$crefs) {
+            $status = $c->escape_string ($status);
+            foreach ($crefs as $i=>$ref) {
+                $crefs[$i] = $c->escape_string ($ref);
+            }
+            $q = "
+              UPDATE `blotto_player` AS `p_in`
+              JOIN `ANLs` AS `p_out`
+                ON `p_out`.`ClientRef`=`p_in`.`client_ref`
+              SET
+                `p_in`.`letter_status`='$status'
+               ,`p_out`.`letter_status`='$status'
+              WHERE `p_in`.`client_ref` IN (
+                '".implode("','",$crefs)."'
+              );
+            ";
+            echo $q;
+            try {
+                $c->query ($q);
+                if ($c_live) {
+                    // Make the data web accessible right now
+                    $c_live->query ($q);
+                }
+            }
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage()."\n");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function stannp_status_wins ($live=false) {
+    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $batches = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    // Get winners
+    $q = "
+      SELECT
+        DISTINCT `w`.`letter_batch_ref` AS `batch`
+      FROM `blotto_winner` AS `w`
+      JOIN `blotto_entry` AS `e`
+        ON `e`.`id`=`w`.`entry_id`
+       AND `e`.`draw_closed`>='$earliest'
+      WHERE `w`.`letter_batch_ref` IS NOT NULL
+        AND (`w`.`letter_status`!='delivered' OR `w`.`letter_status` IS NULL)
+      ORDER BY `batch`
+      ;
+    ";
+    echo $q;
+    try {
+        $rows = $c->query ($q);
+        while ($row=$rows->fetch_assoc()) {
+            $batches[] = $row['batch'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($batches)) {
+        return;
+    }
+    // Get statuses
+    $statuses = stannp_status ($batches);
+    if (count($statuses) && $live){
+        $c_live = connect (BLOTTO_DB);
+    }
+    foreach ($statuses as $batch=>$refs) {
+        foreach ($refs as $status=>$crefs) {
+            $status = $c->escape_string ($status);
+            foreach ($crefs as $i=>$ref) {
+                $crefs[$i] = $c->escape_string ($ref);
+            }
+            $q = "
+              UPDATE `blotto_winner` AS `w_in`
+              JOIN `WinsAdmin` AS `w_out_1`
+                ON `w_out_1`.`entry_id`=`w_in`.`entry_id`
+              JOIN `Wins` AS `w_out_2`
+                ON `w_out_2`.`entry_id`=`w_in`.`entry_id`
+              SET
+                `w_in`.`letter_status`='$status'
+               ,`w_out_1`.`letter_status`='$status'
+               ,`w_out_2`.`letter_status`='$status'
+              WHERE `w_out_1`.`client_ref` IN (
+                '".implode("','",$crefs)."'
+              );
+            ";
+            echo $q;
+            try {
+                $c->query ($q);
+                if ($c_live) {
+                    // Make the data web accessible right now
+                    $c_live->query ($q);
+                }
+            }
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage()."\n");
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
@@ -3495,6 +3842,21 @@ function www_is_url ($str) {
     return preg_match ('<^https?://>',$str);
 }
 
+function www_letter_status_refresh ( ) {
+    $log = "";
+    ob_start ();
+    try {
+        stannp_status_anls (true);
+        stannp_status_wins (true);
+    }
+    catch (\Exception $e) {
+        $log = $e->getMessage()."\n";
+    }
+    $log = ob_get_contents().$log;
+    ob_end_clean ();
+    // error_log ($log);
+}
+
 function www_logout ( ) {
     if (!isset($_SESSION)) {
         www_session_start ();
@@ -3572,34 +3934,62 @@ function www_session_start () {
     session_start();
 }
 
+function www_signup_dates (&$e) {
+    $e = false;
+    $dates = [];
+    if (array_key_exists('d',$_GET)) {
+        $c = connect ();
+        foreach (explode(',',$_GET['d']) AS $d) {
+            try {
+                $d = new \DateTime (trim($d));
+            }
+            catch (\Exception $e) {
+                $e = "'$d' is not a valid date to pass";
+                return false;
+            }
+            $draw_closed = $d->format ('Y-m-d');
+            try {
+                $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
+                $dates[$draw_closed] = new \DateTime ($rs->fetch_assoc()['draw_date']);
+            }
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage());
+                return false;
+            }
+        }
+    }
+    return $dates;
+}
+
 function www_signup_vars ( ) {
     $dev_mode = defined('BLOTTO_DEV_MODE') && BLOTTO_DEV_MODE;
     $vars = array (
-        'title'          => !$dev_mode ? '' : 'Mr',
-        'name_first'     => !$dev_mode ? '' : 'Mickey',
-        'name_last'      => !$dev_mode ? '' : 'Mouse',
-        'dob'            => !$dev_mode ? '' : '1928-05-15',
-        'postcode'       => !$dev_mode ? '' : 'W1A 1AA',
-        'address_1'      => !$dev_mode ? '' : 'Broadcasting House',
-        'address_2'      => !$dev_mode ? '' : '',
-        'address_3'      => !$dev_mode ? '' : '',
-        'town'           => !$dev_mode ? '' : 'London',
-        'county'         => !$dev_mode ? '' : '',
-        'quantity'       => !$dev_mode ? '' : '1',
-        'draws'          => !$dev_mode ? '' : '1',
-        'pref_email'     => !$dev_mode ? '' : '',
-        'pref_sms'       => !$dev_mode ? '' : 'on',
-        'pref_post'      => !$dev_mode ? '' : '',
-        'pref_phone'     => !$dev_mode ? '' : '',
-        'email'          => !$dev_mode ? '' : 'mm@latter.org',
-        'email_verify'   => '',
-        'mobile'         => !$dev_mode ? '' : '07890309286',
-        'mobile_verify'  => '',
-        'telephone'      => !$dev_mode ? '' : '01234567890',
-        'gdpr'           => !$dev_mode ? '' : 'on',
-        'terms'          => !$dev_mode ? '' : 'on',
-        'age'            => !$dev_mode ? '' : 'on',
-        'signed'         => !$dev_mode ? '' : '',
+        'title'              => !$dev_mode ? '' : 'Mr',
+        'name_first'         => !$dev_mode ? '' : 'Mickey',
+        'name_last'          => !$dev_mode ? '' : 'Mouse',
+        'dob'                => !$dev_mode ? '' : '1928-05-15',
+        'postcode'           => !$dev_mode ? '' : 'W1A 1AA',
+        'address_1'          => !$dev_mode ? '' : 'Broadcasting House',
+        'address_2'          => !$dev_mode ? '' : '',
+        'address_3'          => !$dev_mode ? '' : '',
+        'town'               => !$dev_mode ? '' : 'London',
+        'county'             => !$dev_mode ? '' : '',
+        'collection_date'    => !$dev_mode ? '' : '2024-12-25',
+        'quantity'           => !$dev_mode ? '' : '1',
+        'draws'              => !$dev_mode ? '' : '1',
+        'pref_email'         => !$dev_mode ? '' : '',
+        'pref_sms'           => !$dev_mode ? '' : 'on',
+        'pref_post'          => !$dev_mode ? '' : '',
+        'pref_phone'         => !$dev_mode ? '' : '',
+        'email'              => !$dev_mode ? '' : 'mm@latter.org',
+        'email_verify'       => '',
+        'mobile'             => !$dev_mode ? '' : '07890309286',
+        'mobile_verify'      => '',
+        'telephone'          => !$dev_mode ? '' : '01234567890',
+        'gdpr'               => !$dev_mode ? '' : 'on',
+        'terms'              => !$dev_mode ? '' : 'on',
+        'age'                => !$dev_mode ? '' : 'on',
+        'signed'             => !$dev_mode ? '' : '',
     );
     foreach ($_POST as $k=>$v) {
         $vars[$k] = $v;
@@ -3714,20 +4104,21 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
         }
     }
     $required = [
-        'title'         => [ 'about',        'Title is required' ],
-        'name_first'    => [ 'about',        'First name is required' ],
-        'name_last'     => [ 'about',        'Last name is required' ],
-        'dob'           => [ 'about',        'Date of birth is required' ],
-        'postcode'      => [ 'address',      'postcode is required' ],
-        'address_1'     => [ 'address',      'Address is required' ],
-        'town'          => [ 'address',      'Town/city is required' ],
-        'quantity'      => [ 'requirements', 'Ticket requirements are needed' ],
-        'draws'         => [ 'requirements', 'Ticket requirements are needed' ],
-        'gdpr'          => [ 'smallprint',   'You must confirm that you have read the GDPR statement' ],
-        'terms'         => [ 'smallprint',   'You must agree to terms & conditions and the privacy policy' ],
-        'age'           => [ 'smallprint',   'You must be aged 18 or over to signup' ],
-        'email'         => [ 'contact',      'Email is required' ],
-        'mobile'        => [ 'contact',      'Mobile number is required'  ]
+        'title'             => [ 'about',        'Title is required' ],
+        'name_first'        => [ 'about',        'First name is required' ],
+        'name_last'         => [ 'about',        'Last name is required' ],
+        'dob'               => [ 'about',        'Date of birth is required' ],
+        'postcode'          => [ 'address',      'postcode is required' ],
+        'address_1'         => [ 'address',      'Address is required' ],
+        'town'              => [ 'address',      'Town/city is required' ],
+        'collection_date'   => [ 'requirements', 'First draw date is required' ],
+        'quantity'          => [ 'requirements', 'Ticket requirements are needed' ],
+        'draws'             => [ 'requirements', 'Ticket requirements are needed' ],
+        'gdpr'              => [ 'smallprint',   'You must confirm that you have read the GDPR statement' ],
+        'terms'             => [ 'smallprint',   'You must agree to terms & conditions and the privacy policy' ],
+        'age'               => [ 'smallprint',   'You must be aged 18 or over to signup' ],
+        'email'             => [ 'contact',      'Email is required' ],
+        'mobile'            => [ 'contact',      'Mobile number is required'  ]
     ];
     foreach ($required as $field=>$details) {
         if (!array_key_exists($field,$_POST) || !strlen($_POST[$field])) {

@@ -4,10 +4,14 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
     exit (101);
+}
+
+if (!is_dir(BLOTTO_DIR_DRAW)) {
+    fwrite (STDERR,"Draw report directory BLOTTO_DIR_DRAW=".BLOTTO_DIR_DRAW." does not exist\n");
+    exit (102);
 }
 
 $rdb = BLOTTO_RESULTS_DB;
@@ -39,7 +43,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (102);
+    exit (103);
 }
 
 try {
@@ -58,6 +62,6 @@ try {
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
-    exit (103);
+    exit (104);
 }
 

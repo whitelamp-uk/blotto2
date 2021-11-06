@@ -93,9 +93,10 @@ try {
             $super[$p['db']['frontend']] = [];
         }
         $crf        = escm ($p['ClientRef']);
+        $rno        = escm ($p['RefNo']);
         for ($i=0;$i<$p['qty'];$i++) {
             $tkt    = array_shift ($tickets);
-            echo "INSERT INTO `blotto_ticket` SET `org_id`={$p['org_id']},`mandate_provider`='{$p['Provider']}',`client_ref`='$crf',`issue_date`=@today,`number`='{$tkt}';\n";
+            echo "INSERT INTO `blotto_ticket` SET `org_id`={$p['org_id']},`mandate_provider`='{$p['Provider']}',`dd_ref_no`='$rno',`client_ref`='$crf',`issue_date`=@today,`number`='{$tkt}';\n";
             if (defined('BLOTTO_RBE_DBS')) {
                 $super[$p['db']['make']][$tkt] = $crf;
                 $super[$p['db']['frontend']][$tkt] = $crf;

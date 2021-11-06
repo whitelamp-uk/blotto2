@@ -9,7 +9,7 @@
 
     <section id="visual" class="content">
 
-      <h2>Summary</h2>
+      <h2>Summary graphs</h2>
 
       <section id="chart1" class="chart left">
         <?php echo links_report ('recent_draw_activity',1,'Month'); ?>
@@ -52,8 +52,6 @@ if (data2) {
     console.log ('Rendered data2');
 }
       </script>
-
-      <hr/>
 
 <?php if (!defined('BLOTTO_RBE_ORGS')): ?>
 
@@ -99,8 +97,6 @@ if (data4) {
 }
       </script>
 
-      <hr/>
-
       <section id="chart5" class="chart left">
         <?php echo links_report ('retention_of_ongoing_direct_debits',4,'Duration (months)',1); ?>
         <canvas id="retention-playing"></canvas>
@@ -145,28 +141,6 @@ if (data6) {
 }
       </script>
 
-      <hr/>
-
-      <section id="chart7" class="chart left doughnut">
-        <?php echo links_report ('ccc_performance_recent',5,'CCC',3); ?>
-        <canvas id="ccc-recent"></canvas>
-      </section>
-      <script>
-var data7 = <?php echo chart (5,'graph',$since); ?>;
-if (data7) {
-    chartRender (
-        'ccc-recent',
-        'doughnut',
-        data7,
-        {
-            title: "Canvassing company performance (imports <?php echo $since_text; ?>)",
-            link: true
-        }
-    );
-    console.log ('Rendered data7');
-}
-      </script>
-
       <section id="chart8" class="chart right doughnut">
         <?php echo links_report ('ccc_performance_cumulative',6,'CCC'); ?>
         <canvas id="ccc-cumulative"></canvas>
@@ -187,7 +161,25 @@ if (data8) {
 }
       </script>
 
-      <hr/>
+      <section id="chart7" class="chart left doughnut">
+        <?php echo links_report ('ccc_performance_recent',5,'CCC',3); ?>
+        <canvas id="ccc-recent"></canvas>
+      </section>
+      <script>
+var data7 = <?php echo chart (5,'graph',$since); ?>;
+if (data7) {
+    chartRender (
+        'ccc-recent',
+        'doughnut',
+        data7,
+        {
+            title: "Canvassing company performance (imports <?php echo $since_text; ?>)",
+            link: true
+        }
+    );
+    console.log ('Rendered data7');
+}
+      </script>
 
 <!--
       <section id="chart9" class="chart left">
@@ -211,7 +203,6 @@ if (data9) {
 */
       </script>
 
-      <hr/>
 -->
 
 <?php endif; ?>
