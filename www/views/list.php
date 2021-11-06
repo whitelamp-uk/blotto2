@@ -78,8 +78,8 @@ foreach ($months as $m=>$month) {
         <div class="row">
           <button class="col1 subtitle" data-interval="all" data-date="<?php echo $latest; ?>">All data</button>
           <span class="col2 choices">
-            <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$m)); ?>">View</button>
-            <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$m)); ?>">CSV</button>
+            <button data-go="view" data-url="<?php echo htmlspecialchars(link_query('adminer',$table,$latest)); ?>">View</button>
+            <button data-go="pull" data-url="<?php echo htmlspecialchars(link_query('download',$table,$latest)); ?>">CSV</button>
           </span>
         </div>
 
