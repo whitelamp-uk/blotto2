@@ -569,11 +569,6 @@ function download_csv ( ) {
             array_push ($data,"IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')");
             continue;
         }
-        if ($gp && $fn['Field']=='ticket_number') {
-            array_push ($headings,"'ticket_numbers' AS `ticket_numbers`");
-            array_push ($data,"IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')");
-            continue;
-        }
         array_push ($headings,"'{$fn['Field']}' AS `{$fn['Field']}`");
         array_push ($data,"IFNULL(`{$fn['Field']}`,'')");
     }
@@ -3939,34 +3934,62 @@ function www_session_start () {
     session_start();
 }
 
+function www_signup_dates (&$e) {
+    $e = false;
+    $dates = [];
+    if (array_key_exists('d',$_GET)) {
+        $c = connect ();
+        foreach (explode(',',$_GET['d']) AS $d) {
+            try {
+                $d = new \DateTime (trim($d));
+            }
+            catch (\Exception $e) {
+                $e = "'$d' is not a valid date to pass";
+                return false;
+            }
+            $draw_closed = $d->format ('Y-m-d');
+            try {
+                $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
+                $dates[$draw_closed] = new \DateTime ($rs->fetch_assoc()['draw_date']);
+            }
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage());
+                return false;
+            }
+        }
+    }
+    return $dates;
+}
+
 function www_signup_vars ( ) {
     $dev_mode = defined('BLOTTO_DEV_MODE') && BLOTTO_DEV_MODE;
     $vars = array (
-        'title'          => !$dev_mode ? '' : 'Mr',
-        'name_first'     => !$dev_mode ? '' : 'Mickey',
-        'name_last'      => !$dev_mode ? '' : 'Mouse',
-        'dob'            => !$dev_mode ? '' : '1928-05-15',
-        'postcode'       => !$dev_mode ? '' : 'W1A 1AA',
-        'address_1'      => !$dev_mode ? '' : 'Broadcasting House',
-        'address_2'      => !$dev_mode ? '' : '',
-        'address_3'      => !$dev_mode ? '' : '',
-        'town'           => !$dev_mode ? '' : 'London',
-        'county'         => !$dev_mode ? '' : '',
-        'quantity'       => !$dev_mode ? '' : '1',
-        'draws'          => !$dev_mode ? '' : '1',
-        'pref_email'     => !$dev_mode ? '' : '',
-        'pref_sms'       => !$dev_mode ? '' : 'on',
-        'pref_post'      => !$dev_mode ? '' : '',
-        'pref_phone'     => !$dev_mode ? '' : '',
-        'email'          => !$dev_mode ? '' : 'mm@latter.org',
-        'email_verify'   => '',
-        'mobile'         => !$dev_mode ? '' : '07890309286',
-        'mobile_verify'  => '',
-        'telephone'      => !$dev_mode ? '' : '01234567890',
-        'gdpr'           => !$dev_mode ? '' : 'on',
-        'terms'          => !$dev_mode ? '' : 'on',
-        'age'            => !$dev_mode ? '' : 'on',
-        'signed'         => !$dev_mode ? '' : '',
+        'title'              => !$dev_mode ? '' : 'Mr',
+        'name_first'         => !$dev_mode ? '' : 'Mickey',
+        'name_last'          => !$dev_mode ? '' : 'Mouse',
+        'dob'                => !$dev_mode ? '' : '1928-05-15',
+        'postcode'           => !$dev_mode ? '' : 'W1A 1AA',
+        'address_1'          => !$dev_mode ? '' : 'Broadcasting House',
+        'address_2'          => !$dev_mode ? '' : '',
+        'address_3'          => !$dev_mode ? '' : '',
+        'town'               => !$dev_mode ? '' : 'London',
+        'county'             => !$dev_mode ? '' : '',
+        'collection_date'    => !$dev_mode ? '' : '2024-12-25',
+        'quantity'           => !$dev_mode ? '' : '1',
+        'draws'              => !$dev_mode ? '' : '1',
+        'pref_email'         => !$dev_mode ? '' : '',
+        'pref_sms'           => !$dev_mode ? '' : 'on',
+        'pref_post'          => !$dev_mode ? '' : '',
+        'pref_phone'         => !$dev_mode ? '' : '',
+        'email'              => !$dev_mode ? '' : 'mm@latter.org',
+        'email_verify'       => '',
+        'mobile'             => !$dev_mode ? '' : '07890309286',
+        'mobile_verify'      => '',
+        'telephone'          => !$dev_mode ? '' : '01234567890',
+        'gdpr'               => !$dev_mode ? '' : 'on',
+        'terms'              => !$dev_mode ? '' : 'on',
+        'age'                => !$dev_mode ? '' : 'on',
+        'signed'             => !$dev_mode ? '' : '',
     );
     foreach ($_POST as $k=>$v) {
         $vars[$k] = $v;
@@ -4081,20 +4104,21 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
         }
     }
     $required = [
-        'title'         => [ 'about',        'Title is required' ],
-        'name_first'    => [ 'about',        'First name is required' ],
-        'name_last'     => [ 'about',        'Last name is required' ],
-        'dob'           => [ 'about',        'Date of birth is required' ],
-        'postcode'      => [ 'address',      'postcode is required' ],
-        'address_1'     => [ 'address',      'Address is required' ],
-        'town'          => [ 'address',      'Town/city is required' ],
-        'quantity'      => [ 'requirements', 'Ticket requirements are needed' ],
-        'draws'         => [ 'requirements', 'Ticket requirements are needed' ],
-        'gdpr'          => [ 'smallprint',   'You must confirm that you have read the GDPR statement' ],
-        'terms'         => [ 'smallprint',   'You must agree to terms & conditions and the privacy policy' ],
-        'age'           => [ 'smallprint',   'You must be aged 18 or over to signup' ],
-        'email'         => [ 'contact',      'Email is required' ],
-        'mobile'        => [ 'contact',      'Mobile number is required'  ]
+        'title'             => [ 'about',        'Title is required' ],
+        'name_first'        => [ 'about',        'First name is required' ],
+        'name_last'         => [ 'about',        'Last name is required' ],
+        'dob'               => [ 'about',        'Date of birth is required' ],
+        'postcode'          => [ 'address',      'postcode is required' ],
+        'address_1'         => [ 'address',      'Address is required' ],
+        'town'              => [ 'address',      'Town/city is required' ],
+        'collection_date'   => [ 'requirements', 'First draw date is required' ],
+        'quantity'          => [ 'requirements', 'Ticket requirements are needed' ],
+        'draws'             => [ 'requirements', 'Ticket requirements are needed' ],
+        'gdpr'              => [ 'smallprint',   'You must confirm that you have read the GDPR statement' ],
+        'terms'             => [ 'smallprint',   'You must agree to terms & conditions and the privacy policy' ],
+        'age'               => [ 'smallprint',   'You must be aged 18 or over to signup' ],
+        'email'             => [ 'contact',      'Email is required' ],
+        'mobile'            => [ 'contact',      'Mobile number is required'  ]
     ];
     foreach ($required as $field=>$details) {
         if (!array_key_exists($field,$_POST) || !strlen($_POST[$field])) {

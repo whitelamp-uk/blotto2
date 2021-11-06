@@ -7,7 +7,15 @@ if (!$v['draws']) {
     $v['draws'] = 1;
 }
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
+$first_draw_dates = www_signup_dates ($date_error);
 ?>
+
+<?php if($date_error): ?>
+    <div class="error">
+      <button data-close></button>
+      <p><?php echo htmlspecialchars ($date_error); ?></p>
+    </div>
+<?php endif; ?>
 
     <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
@@ -124,6 +132,35 @@ $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 <?php if ($org['signup_dd_link']): ?>
 
         <a class="dd" target="_top" href="<?php echo htmlspecialchars ($org['signup_dd_link']); ?>">Sign up by direct debit</a>
+
+<?php endif; ?>
+
+<?php if($count=count($first_draw_dates)): ?>
+
+        <div class="field radioset">
+
+<?php   if($count>1): ?>
+          <label class="requirements">First draw date</label>
+<?php   endif; ?>
+
+<?php   foreach ($first_draw_dates as $draw_closed=>$day): ?>
+<?php     if($count==1): ?>
+            <input type="hidden" name="collection_date" id="collection_date-<?php echo htmlspecialchars ($draw_closed); ?>" value="<?php echo htmlspecialchars ($draw_closed); ?>" />
+            <label><strong>Purchase tickets to start playing in the draw on <?php echo $day->format('l jS F Y'); ?></strong></label>
+<?php     else: ?>
+          <div>
+            <input type="radio" name="collection_date" id="collection_date-<?php echo htmlspecialchars ($draw_closed); ?>" value="<?php echo htmlspecialchars ($draw_closed); ?>" <?php if($draw_closed==$v['collection_date']): ?>checked<?php endif;?> />
+            <label for="draws-<?php echo 1*$i; ?>"><?php echo $day->format('l jS F Y'); ?></label>
+          </div>
+<?php     endif; ?>
+<?php   endforeach; ?>
+
+        </div>
+
+<?php else: ?>
+
+        <input type="hidden" name="collection_date" value="<?php echo date('Y-m-d'); ?>" />
+        <p>Purchase tickets to start playing in the next available draw</p>
 
 <?php endif; ?>
 

@@ -221,17 +221,6 @@ window.location.href = '#<?php echo $go; ?>';
     }
 ?>
 
-<!--
-<?php if (count($error)): ?>
-      <div class="error">
-        <button data-close></button>
-<?php     foreach($error as $e): ?>
-        <p><?php echo htmlspecialchars ($e); ?></p>
-<?php     endforeach; ?>
-      </div>
-<?php endif; ?>
--->
-
     </section>
 
 <?php if (count($error)): ?>
