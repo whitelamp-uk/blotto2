@@ -74,6 +74,7 @@ $file = array (
        ,'legends.php'
        ,'manual.php'
        ,'payment_fetch.php'
+       ,'payment_mandate.php'
        ,'players.php'
        ,'players_check.php'
        ,'players_update.php'
