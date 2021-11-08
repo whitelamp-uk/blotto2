@@ -83,7 +83,7 @@ BEGIN
      ,`p`.`letter_batch_ref`
      ,`p`.`letter_status`
     FROM `blotto_build_mandate` AS `m`
-    LEFT JOIN (
+    JOIN (
       SELECT
         `is`.`canvas_code`
        ,`is`.`projected_first_draw_close`
