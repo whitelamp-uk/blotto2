@@ -1344,29 +1344,63 @@ function invoice ($invoice,$output=true) {
     return $invoice;
 }
 
-function invoice_game ($draw_closed_date,$output=true) {
-    $code               = strtoupper (BLOTTO_ORG_USER);
-    $org                = org ();
-    $qs                 = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
+function invoice_custom ($ref,$output=true) {
+    $code                   = strtoupper (BLOTTO_ORG_USER);
+    $org                    = org ();
+    $qs = "
+      SELECT
+        *
+      FROM `blotto_invoice` AS `i`
+      GROUP BY `Wins`.`prize`
+      ORDER BY `Wins`.`winnings`
+      ;
+    ";
     try {
-        $zo             = connect (BLOTTO_MAKE_DB);
-        $date_draw      = $zo->query ($qs);
-        $date_draw      = $date_draw->fetch_assoc ();
-        $date_draw      = $date_draw['dt'];
+        $zo                 = connect (BLOTTO_MAKE_DB);
+        $items              = $zo->query ($qs);
+        while($item=$items->fetch_array(MYSQLI_NUM)) {
+            $invoice->items[] = $item;
+        }
     }
     catch (\mysqli_sql_exception $e) {
         throw new \Exception ($qs."\n".$e->getMessage());
         return false;
     }
-    $invoice = new \stdClass ();
-    $invoice->html_title        = "Invoice LOT{$code}-{$date_draw}";
-    $invoice->html_table_id     = "invoice-game";
-    $invoice->date              = $date_draw;
-    $invoice->reference         = "LOT{$code}-{$draw_closed_date}";
-    $invoice->address           = $org['invoice_address'];
-    $invoice->description       = "Payout for draw closing {$draw_closed_date}";
-    $invoice->items             = [];
-    $invoice->terms             = $org['invoice_terms_game'];
+    $invoice                = new \stdClass ();
+    $invoice->html_title    = "Invoice {$code}-{$ref}";
+    $invoice->html_table_id = "invoice-custom";
+    $invoice->date          = $date_draw;
+    $invoice->reference     = "WIN{$code}-{$draw_closed_date}";
+    $invoice->address       = $org['invoice_address'];
+    $invoice->description   = "Payout for draw closing {$draw_closed_date}";
+    $invoice->items         = [];
+    $invoice->terms         = $org['invoice_terms_payout'];
+    return invoice_render ($invoice,$output);
+}
+
+function invoice_game ($draw_closed_date,$output=true) {
+    $code                   = strtoupper (BLOTTO_ORG_USER);
+    $org                    = org ();
+    $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
+    try {
+        $zo                 = connect (BLOTTO_MAKE_DB);
+        $date_draw          = $zo->query ($qs);
+        $date_draw          = $date_draw->fetch_assoc ();
+        $date_draw          = $date_draw['dt'];
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $invoice                = new \stdClass ();
+    $invoice->html_title    = "Invoice LOT{$code}-{$date_draw}";
+    $invoice->html_table_id = "invoice-game";
+    $invoice->date          = $date_draw;
+    $invoice->reference     = "LOT{$code}-{$draw_closed_date}";
+    $invoice->address       = $org['invoice_address'];
+    $invoice->description   = "Payout for draw closing {$draw_closed_date}";
+    $invoice->items         = [];
+    $invoice->terms         = $org['invoice_terms_game'];
     if ($invoice->terms) {
         try {
             $qs = "
@@ -1375,9 +1409,9 @@ function invoice_game ($draw_closed_date,$output=true) {
               FROM `blotto_entry`
               WHERE `draw_closed`='$draw_closed_date'
             ";
-            $tickets = $zo->query ($qs);
-            $tickets = $tickets->fetch_assoc ();
-            $tickets = intval ($tickets['tickets']);
+            $tickets        = $zo->query ($qs);
+            $tickets        = $tickets->fetch_assoc ();
+            $tickets        = intval ($tickets['tickets']);
             $qs = "
               SELECT
                 DISTINCT `draw_closed` AS `previous`
@@ -1386,9 +1420,9 @@ function invoice_game ($draw_closed_date,$output=true) {
               ORDER BY `draw_closed` DESC
               LIMIT 0,1
             ";
-            $previous = $zo->query ($qs);
-            $previous = $previous->fetch_assoc ();
-            $previous = $previous['previous'];
+            $previous       = $zo->query ($qs);
+            $previous       = $previous->fetch_assoc ();
+            $previous       = $previous['previous'];
             $qs = "
               SELECT
                 COUNT(`ClientRef`) AS `letters_anl`
@@ -1396,18 +1430,18 @@ function invoice_game ($draw_closed_date,$output=true) {
               WHERE `tickets_issued`<='$draw_closed_date'
                 AND `tickets_issued`>'$previous'
             ";
-            $letters_anl = $zo->query ($qs);
-            $letters_anl = $letters_anl->fetch_assoc ();
-            $letters_anl = $letters_anl['letters_anl'];
+            $letters_anl    = $zo->query ($qs);
+            $letters_anl    = $letters_anl->fetch_assoc ();
+            $letters_anl    = $letters_anl['letters_anl'];
             $qs = "
               SELECT
                 COUNT(`ticket_number`) AS `letters_win`
               FROM `Wins`
               WHERE `draw_closed`='$draw_closed_date'
             ";
-            $letters_win = $zo->query ($qs);
-            $letters_win = $letters_win->fetch_assoc ();
-            $letters_win = $letters_win['letters_win'];
+            $letters_win    = $zo->query ($qs);
+            $letters_win    = $letters_win->fetch_assoc ();
+            $letters_win    = $letters_win['letters_win'];
         }
         catch (\mysqli_sql_exception $e) {
             throw new \Exception ($qs."\n".$e->getMessage());
@@ -1457,28 +1491,28 @@ function invoice_game ($draw_closed_date,$output=true) {
 }
 
 function invoice_payout ($draw_closed_date,$output=true) {
-    $code               = strtoupper (BLOTTO_ORG_USER);
-    $org                = org ();
-    $qs                 = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
+    $code                   = strtoupper (BLOTTO_ORG_USER);
+    $org                    = org ();
+    $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
     try {
-        $zo             = connect (BLOTTO_MAKE_DB);
-        $date_draw      = $zo->query ($qs);
-        $date_draw      = $date_draw->fetch_assoc ();
-        $date_draw      = $date_draw['dt'];
+        $zo                 = connect (BLOTTO_MAKE_DB);
+        $date_draw          = $zo->query ($qs);
+        $date_draw          = $date_draw->fetch_assoc ();
+        $date_draw          = $date_draw['dt'];
     }
     catch (\mysqli_sql_exception $e) {
         throw new \Exception ($qs."\n".$e->getMessage());
         return false;
     }
     $invoice = new \stdClass ();
-    $invoice->html_title        = "Invoice WIN{$code}-{$date_draw}";
-    $invoice->html_table_id     = "invoice-payout";
-    $invoice->date              = $date_draw;
-    $invoice->reference         = "WIN{$code}-{$draw_closed_date}";
-    $invoice->address           = $org['invoice_address'];
-    $invoice->description       = "Payout for draw closing {$draw_closed_date}";
-    $invoice->items             = [];
-    $invoice->terms             = $org['invoice_terms_payout'];
+    $invoice->html_title    = "Invoice WIN{$code}-{$date_draw}";
+    $invoice->html_table_id = "invoice-payout";
+    $invoice->date          = $date_draw;
+    $invoice->reference     = "WIN{$code}-{$draw_closed_date}";
+    $invoice->address       = $org['invoice_address'];
+    $invoice->description   = "Payout for draw closing {$draw_closed_date}";
+    $invoice->items         = [];
+    $invoice->terms         = $org['invoice_terms_payout'];
     if ($invoice->terms) {
         $qs = "
           SELECT
@@ -2797,10 +2831,7 @@ function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
             return false;
         }
         $refs[]                         = $row[$ref_key];
-        // Stannp required fields
-        $array2d[$i]['group_id']        = null;
-        $array2d[$i]['on_duplicate']    = 'update';
-        // Stannp address window
+        // Stannp address window (ie compulsory fields)
         //     https://dash.stannp.com/designer/mailpiece/A4
         //     Select "A blank canvas"
         $array2d[$i]['full_name']       = $row['title'].' '.$row['name_first'].' '.$row['name_last'];
@@ -2813,8 +2844,14 @@ function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
         // Country is not given in the blank mailpiece draft.
         // Which is odd - so here it is anyway just in case
         $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
-        // `postcode` has the same name in blottoland
-        // `barcode` is for Royal mail use and should not be given
+        // `postcode` has the same name in blottoland so needs no transformation
+        // Remove undesirable fields (consider GDPR for example)
+        $undesirable = explode (',',BLOTTO_STANNP_RM_FIELDS);
+        foreach ($undesirable as $u) {
+            if (array_key_exists($u,$row)) {
+                unset ($array2d[$i][$u]);
+            }
+        }
     }
     return true;
 }
