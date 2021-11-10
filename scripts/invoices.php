@@ -16,6 +16,11 @@ if (!is_dir(BLOTTO_DIR_INVOICE)) {
 }
 
 $rdb = BLOTTO_RESULTS_DB;
+$cdb = BLOTTO_CONFIG_DB;
+
+
+
+// Draw and payout invoices
 
 $first = '0000-00-00';
 if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
@@ -69,6 +74,53 @@ try {
                     fwrite ($fp,$inv);
                     fclose ($fp);
                 }
+            }
+        }
+    }
+}
+catch (\Exception $e) {
+    fwrite (STDERR,$e->getMessage()."\n");
+    exit (104);
+}
+
+
+
+// Custom invoices
+
+$qs = "
+  SELECT
+    `i`.*
+   ,`o`.`invoice_address` AS `address`
+  FROM `$cdb`.`blotto_invoice` AS `i`
+  JOIN `$cdb`.`blotto_org` AS `o`
+    ON `o`.`org_code`=`i`.`org_code`
+  WHERE `i`.`raised` IS NOT NULL
+  ORDER BY `i`.`id`
+  ;
+";
+
+$customs = [];
+try {
+    $is = $zo->query ($qs);
+    while ($i=$is->fetch_assoc()) {
+        $customs[] = $i;
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (105);
+}
+
+try {
+    foreach ($customs as $custom) {
+        // Raise custom invoice
+        $file   = BLOTTO_DIR_INVOICE.'/';
+        $file  .= BLOTTO_ORG_USER.'_'.$custom['raised'].'_'.$custom['type'].'.html';
+        if (!file_exists($file)) {
+            if ($inv=invoice_custom($custom,false)) {
+                $fp = fopen ($file,'w');
+                fwrite ($fp,$inv);
+                fclose ($fp);
             }
         }
     }

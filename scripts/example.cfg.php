@@ -79,6 +79,7 @@ define ( 'RSM_PASSWORD',                '**********'                        );
 define ( 'RSM_ERROR_LOG',               false                               );
 define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'   );
 
+
 /*
 
 // Organisation - Paypal
@@ -115,11 +116,16 @@ define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
 
 */
 
+
 // Stannp snail-mail service
-define ( 'BLOTTO_STANNP_PREFIX',      'ABC'          );
-define ( 'STANNP_EROR_LOG',           false          );
-define ( 'BLOTTO_STANNP_FROM_ANL',    '2021-10-25'   );
-define ( 'BLOTTO_STANNP_FROM_WIN',    '2021-10-25'   );
+define ( 'BLOTTO_STANNP',           false           );
+define ( 'BLOTTO_STANNP_PREFIX',    'ABC'           );
+define ( 'BLOTTO_STANNP_TPL_ANL',   123             );
+define ( 'BLOTTO_STANNP_TPL_WIN',   123             );
+define ( 'BLOTTO_STANNP_FROM_ANL',  '2021-10-25'    );
+define ( 'BLOTTO_STANNP_FROM_WIN',  '2021-10-25'    );
+define ( 'STANNP_ERROR_LOG',        true            );
+
 
 // Fees
 define ( 'BLOTTO_FEE_LOADING',   '50:500,100:450,150:400,200:300,250' );

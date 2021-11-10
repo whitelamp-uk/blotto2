@@ -1344,37 +1344,27 @@ function invoice ($invoice,$output=true) {
     return $invoice;
 }
 
-function invoice_custom ($ref,$output=true) {
-    $code                   = strtoupper (BLOTTO_ORG_USER);
-    $org                    = org ();
-    $qs = "
-      SELECT
-        *
-      FROM `blotto_invoice` AS `i`
-      GROUP BY `Wins`.`prize`
-      ORDER BY `Wins`.`winnings`
-      ;
-    ";
-    try {
-        $zo                 = connect (BLOTTO_MAKE_DB);
-        $items              = $zo->query ($qs);
-        while($item=$items->fetch_array(MYSQLI_NUM)) {
-            $invoice->items[] = $item;
-        }
-    }
-    catch (\mysqli_sql_exception $e) {
-        throw new \Exception ($qs."\n".$e->getMessage());
-        return false;
-    }
+function invoice_custom ($inv,$output=true) {
     $invoice                = new \stdClass ();
-    $invoice->html_title    = "Invoice {$code}-{$ref}";
+    foreach ($inv as $k=>$v) {
+        $invoice->$k        = $v;
+    }
+    $invoice->html_title    = "Invoice {$ref}";
     $invoice->html_table_id = "invoice-custom";
-    $invoice->date          = $date_draw;
-    $invoice->reference     = "WIN{$code}-{$draw_closed_date}";
-    $invoice->address       = $org['invoice_address'];
-    $invoice->description   = "Payout for draw closing {$draw_closed_date}";
-    $invoice->items         = [];
-    $invoice->terms         = $org['invoice_terms_payout'];
+    $invoice->date          = $invoice->raised;
+    $invoice->reference     = "CST{$invoice->org_code}-{$invoice->type}-{$invoice->raised}";
+    $subtotal               = $invoice->item_quantity * $invoice->item_unit_price;
+    $tax                    = $subtotal * $invoice->item_tax_percent / 100;
+    $invoice->items         = [
+        [
+            $invoice->item_text,
+            $invoice->item_quantity,
+            number_format ($invoice->item_unit_price,2,'.',','),
+            number_format ($subtotal,2,'.',','),
+            number_format ($tax,2,'.',','),
+            number_format ($subtotal+$tax,2,'.',',')
+        ]
+    ];
     return invoice_render ($invoice,$output);
 }
 
