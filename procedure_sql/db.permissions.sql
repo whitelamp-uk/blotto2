@@ -10,7 +10,54 @@ GRANT SELECT
 ON `{{BLOTTO_CONFIG_DB}}`.*
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
-GRANT UPDATE
+GRANT INSERT ON `{{BLOTTO_CONFIG_DB}}`.`blotto_invoice`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(
+  `org_code`
+ ,`type`
+ ,`raised`
+ ,`terms`
+ ,`description`
+ ,`item_text`
+ ,`item_quantity`
+ ,`item_unit_price`
+ ,`item_tax_percent`
+)
+ON `{{BLOTTO_CONFIG_DB}}`.`blotto_invoice`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+GRANT UPDATE(
+  `admin_email`
+ ,`admin_phone`
+ ,`signup_verify_email`
+ ,`signup_verify_sms`
+ ,`signup_paid_email`
+ ,`signup_paid_sms`
+ ,`pref_nr_email`
+ ,`pref_nr_sms`
+ ,`pref_nr_post`
+ ,`pref_nr_phone`
+ ,`signup_cm_key`
+ ,`signup_cm_id`
+ ,`signup_cm_id_verify`
+ ,`signup_cm_id_trigger`
+ ,`signup_ticket_options`
+ ,`signup_amount_cap`
+ ,`signup_dd_text`
+ ,`signup_dd_link`
+ ,`signup_draw_options`
+ ,`signup_sms_from`
+ ,`signup_verify_sms_message`
+ ,`signup_done_message_ok`
+ ,`signup_done_message_fail`
+ ,`signup_sms_message`
+ ,`signup_url_privacy`
+ ,`signup_url_terms`
+ ,`invoice_address`
+ ,`invoice_terms_game`
+ ,`invoice_terms_payout`
+)
 ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
