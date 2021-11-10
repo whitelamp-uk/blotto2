@@ -56,7 +56,7 @@ try {
     foreach ($draws as $draw) {
         // Raise invoice for game services
         $file   = BLOTTO_DIR_INVOICE.'/';
-        $file  .= BLOTTO_ORG_USER.'_'.$draw['draw_closed'].'_game.html';
+        $file  .= strtolower(BLOTTO_ORG_USER).'_'.$draw['draw_closed'].'_game.html';
         if (!file_exists($file)) {
             if ($inv=invoice_game($draw['draw_closed'],false)) {
                 $fp = fopen ($file,'w');
@@ -67,7 +67,7 @@ try {
         // Raise invoice (pass on cost) of paying out to winners
         if ($draw['has_winners']) {
             $file   = BLOTTO_DIR_INVOICE.'/';
-            $file  .= BLOTTO_ORG_USER.'_'.$draw['draw_closed'].'_payout.html';
+            $file  .= strtolower(BLOTTO_ORG_USER).'_'.$draw['draw_closed'].'_payout.html';
             if (!file_exists($file)) {
                 if ($inv=invoice_payout($draw['draw_closed'],false)) {
                     $fp = fopen ($file,'w');
@@ -116,7 +116,9 @@ try {
     foreach ($customs as $custom) {
         // Raise custom invoice
         $file   = BLOTTO_DIR_INVOICE.'/';
-        $file  .= BLOTTO_ORG_USER.'_'.strtoupper($custom['type']).'_'.$custom['raised'].'.html';
+        $file  .= strtolower (
+            BLOTTO_ORG_USER.'_'.$custom['raised'].'_'.strtoupper($custom['type']).'.html'
+        );
         if (!file_exists($file)) {
             if ($inv=invoice_custom($custom,false)) {
                 $fp = fopen ($file,'w');

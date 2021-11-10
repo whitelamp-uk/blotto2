@@ -1349,20 +1349,19 @@ function invoice_custom ($inv,$output=true) {
     foreach ($inv as $k=>$v) {
         $invoice->$k        = $v;
     }
-    $invoice->html_title    = "Invoice {$ref}";
+    $invoice->html_title    = "Invoice {$invoice->type} {$invoice->raised}";
     $invoice->html_table_id = "invoice-custom";
     $invoice->date          = $invoice->raised;
-    $invoice->reference     = "CST{$invoice->org_code}-{$invoice->type}-{$invoice->raised}";
-    $subtotal               = $invoice->item_quantity * $invoice->item_unit_price;
-    $tax                    = $subtotal * $invoice->item_tax_percent / 100;
+    $invoice->reference     = strtoupper (
+        "CST{$invoice->org_code}-{$invoice->type}-{$invoice->raised}"
+    );
     $invoice->items         = [
         [
             $invoice->item_text,
             $invoice->item_quantity,
-            number_format ($invoice->item_unit_price,2,'.',','),
-            number_format ($subtotal,2,'.',','),
-            number_format ($tax,2,'.',','),
-            number_format ($subtotal+$tax,2,'.',',')
+            $invoice->item_unit_price,
+            '',
+            $invoice->item_tax_percent / 100
         ]
     ];
     return invoice_render ($invoice,$output);
