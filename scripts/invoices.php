@@ -116,7 +116,7 @@ try {
     foreach ($customs as $custom) {
         // Raise custom invoice
         $file   = BLOTTO_DIR_INVOICE.'/';
-        $file  .= BLOTTO_ORG_USER.'_'.$custom['type'].'_'.$custom['raised'].'.html';
+        $file  .= BLOTTO_ORG_USER.'_'.strtoupper($custom['type']).'_'.$custom['raised'].'.html';
         if (!file_exists($file)) {
             if ($inv=invoice_custom($custom,false)) {
                 $fp = fopen ($file,'w');
