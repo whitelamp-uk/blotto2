@@ -95,6 +95,7 @@ $qs = "
   JOIN `$cdb`.`blotto_org` AS `o`
     ON `o`.`org_code`=`i`.`org_code`
   WHERE `i`.`raised` IS NOT NULL
+    AND `i`.`raised`<=CURDATE()
   ORDER BY `i`.`id`
   ;
 ";
