@@ -15,13 +15,12 @@ if (!is_dir(BLOTTO_DIR_INVOICE)) {
     exit (102);
 }
 
-$rdb = BLOTTO_RESULTS_DB;
-$cdb = BLOTTO_CONFIG_DB;
-
 
 
 // Draw and payout invoices
 
+$rdb = BLOTTO_RESULTS_DB;
+$cdb = BLOTTO_CONFIG_DB;
 $first = '0000-00-00';
 if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
     $first = BLOTTO_INVOICE_FIRST;
@@ -87,6 +86,8 @@ catch (\Exception $e) {
 
 // Custom invoices
 
+$org_code = strtoupper (BLOTTO_ORG_USER);
+
 $qs = "
   SELECT
     `i`.*
@@ -96,6 +97,7 @@ $qs = "
     ON `o`.`org_code`=`i`.`org_code`
   WHERE `i`.`raised` IS NOT NULL
     AND `i`.`raised`<=CURDATE()
+    AND UPPER(`i`.`org_code`)='$org_code'
   ORDER BY `i`.`id`
   ;
 ";
