@@ -79,13 +79,33 @@ CREATE FULLTEXT INDEX `search_idx`
   )
 ;
 
+CREATE TABLE IF NOT EXISTS `blotto_invoice` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `org_code` char(16) CHARACTER SET ascii NOT NULL,
+  `type` char(16) CHARACTER SET ascii NOT NULL,
+  `raised` date DEFAULT NULL,
+  `terms` tinytext COLLATE utf8_unicode_ci NOT NULL,
+  `description` tinytext COLLATE utf8_unicode_ci NOT NULL,
+  `item_text` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `item_quantity` int(11) unsigned NOT NULL,
+  `item_unit_price` decimal(8,2) NOT NULL,
+  `item_tax_percent` decimal(9,1) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_code_type_raised` (`org_code`,`type`,`raised`),
+  KEY `org_code` (`org_code`),
+  CONSTRAINT `blotto_invoice_org` FOREIGN KEY (`org_code`) REFERENCES `blotto_org` (`org_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+;
+
+
 CREATE TABLE IF NOT EXISTS `blotto_level` (
   `config_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `level` char(4) CHARACTER SET ascii NOT NULL,
   `comments` varchar(64) NOT NULL,
   PRIMARY KEY (`config_id`),
   UNIQUE KEY `level` (`level`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
 
 INSERT IGNORE INTO `blotto_level` (`config_id`, `level`, `comments`) VALUES
 (1, '6LR6', 'Match 6 of 6 numbers left or right'),
@@ -126,7 +146,8 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `org_code` (`org_code`),
   UNIQUE KEY `zaffo_merchant_id` (`zaffo_merchant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
 
 INSERT IGNORE INTO `blotto_org`
 SET
