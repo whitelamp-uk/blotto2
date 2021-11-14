@@ -96,6 +96,10 @@ $now                = date ('Y-m-d H:i:s');
 $amounts            = [];
 register_shutdown_function ('finish_up');
 while ($d=$ds->fetch_assoc()) {
+    if (!$quiet) {
+        echo "Draw = ";
+        print_r ($d);
+    }
     if ($d['won']) {
         // Assume full draw process is done
         if (!$quiet) {
@@ -106,6 +110,10 @@ while ($d=$ds->fetch_assoc()) {
     try {
         // Draw object with current prizes keyed by level
         $draw       = draw ($d['draw_closed']);
+        if (!$quiet) {
+            echo "Draw = ";
+            print_r ($draw);
+        }
         // Draw time, insurance and manual result checks
         $bail       = false;
         if ($now<$draw->time) {

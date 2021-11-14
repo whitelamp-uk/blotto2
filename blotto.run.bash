@@ -93,7 +93,15 @@ cd "$wd"
 # Report script run time
 echo "Script run time = $(($SECONDS-$start)) seconds"
 
+
+# Report log location again
+echo "Lots more detail in log file: $ldir/$lfil"
+
+
+# Draw a line
+echo "----------------"
+
+
 # Exit with main script exit status
 exit $err
-
 
