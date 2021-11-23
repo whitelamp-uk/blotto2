@@ -325,38 +325,41 @@ then
         cat $tmp
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-
         echo "    10. Create supporter temp table"
         start=$SECONDS
         mariadb                                             < $tmp
         abort_on_error 10 $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-
-        echo "    11. Generate supporter insert SQL in $sps-$dir.log"
+        echo "    11a. Generate supporter insert SQL in $sps-$dir.log"
         start=$SECONDS
         /usr/bin/php $prg $sw "$cfg" exec supporters.php $dir > "$sps-$dir.log"
         abort_on_error 11a $?
+        echo "        Completed in $(($SECONDS-$start)) seconds"
+        echo "    11b. Generate mandates"
+        /usr/bin/php $prg $sw "$cfg" exec payment_mandate.php
+        abort_on_error 11b $?
+        echo "        Completed in $(($SECONDS-$start)) seconds"
         if [ "$no_tidy" ]
         then
             echo "        Renaming table tmp_supporter to tmp_supporter_$dir"
             mariadb $dbm                                  <<< "DROP TABLE IF EXISTS tmp_supporter_$dir;"
-            abort_on_error 11b $?
-            mariadb $dbm                                  <<< "RENAME TABLE tmp_supporter TO tmp_supporter_$dir;"
             abort_on_error 11c $?
+            mariadb $dbm                                  <<< "RENAME TABLE tmp_supporter TO tmp_supporter_$dir;"
+            abort_on_error 11d $?
         else
             echo "        Dropping table tmp_supporter"
             mariadb $dbm                                  <<< "DROP TABLE tmp_supporter;"
-            abort_on_error 11d $?
+            abort_on_error 11e $?
         fi
         echo "        Completed in $(($SECONDS-$start)) seconds"
-
 
         echo "    12. Insert supporters from $sps-$dir.log"
         start=$SECONDS
         mariadb                                             < "$sps-$dir.log"
         abort_on_error 12 $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
+
 
     done
 
