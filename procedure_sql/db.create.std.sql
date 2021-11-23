@@ -74,6 +74,89 @@ CREATE TABLE IF NOT EXISTS `blotto_contact` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
+CREATE TABLE IF NOT EXISTS `blotto_crm_campaign` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `handle` varchar(64) CHARACTER SET ascii NOT NULL,
+  `restrictions` varchar(64) CHARACTER SET ascii NOT NULL,
+  `schedule_date` char(10) CHARACTER SET ascii NOT NULL COMMENT 'Non-digit = repeat eg yyyy-mm-08',
+  `schedule_time` time DEFAULT '12:00:00',
+  `letter_status` char(8) CHARACTER SET ascii NOT NULL DEFAULT 'Drafting',
+  `letter_template_ref` char(64) CHARACTER SET ascii NOT NULL COMMENT 'Eg Stannp template ID',
+  `letter_auto_approve` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `letter_auto_book` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `email_status` char(8) CHARACTER SET ascii NOT NULL DEFAULT 'Drafting',
+  `email_template_ref` char(64) CHARACTER SET ascii NOT NULL COMMENT 'Eg Campaign Monitor ID',
+  `sms_status` char(8) CHARACTER SET ascii NOT NULL DEFAULT 'Drafting',
+  `sms_template` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Dear {name_first}, ...',
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `letter_status` (`letter_status`),
+  KEY `email_status` (`email_status`),
+  KEY `sms_status` (`sms_status`),
+  CONSTRAINT `blotto_crm_campaign_letter_status` FOREIGN KEY (`letter_status`) REFERENCES `blotto_crm_status` (`status`),
+  CONSTRAINT `blotto_crm_campaign_email_status` FOREIGN KEY (`email_status`) REFERENCES `blotto_crm_status` (`status`),
+  CONSTRAINT `blotto_crm_campaign_sms_status` FOREIGN KEY (`sms_status`) REFERENCES `blotto_crm_status` (`status`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+;
+-- TEST DATA
+-- INSERT INTO `blotto_crm_campaign` (`id`, `handle`, `restrictions`, `schedule`, `letter_status`, `letter_template_ref`, `letter_auto_approve`, `letter_auto_book`, `email_status`, `email_template_ref`, `sms_status`, `sms_template`, `created`, `updated`) VALUES
+-- (1, 'christmas-email',  'WHERE (1)',  'YYYY-12-24 11:00:00',  'Drafting', '', 0,  0,  'Running',  '03d77082-cf2c-4240-56a8-5e32ca9093f0', 'Drafting', '', '2021-11-06 21:39:42',  '2021-11-06 23:04:53'),
+-- (2, 'birthday-sms', 'WHERE (4) AND NOT (2)',  'YYYY-MM-DD 16:45:00',  'Drafting', '', 0,  0,  'Drafting', '', 'Running',  'Hi {name_first}, we hope you have a great birthday tomorrow!', '2021-11-06 21:44:23',  '2021-11-06 23:05:11')
+-- ;
+
+CREATE TABLE IF NOT EXISTS `blotto_crm_job` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `campaign_id` int(11) unsigned NOT NULL,
+  `type` char(8) CHARACTER SET ascii NOT NULL,
+  `time_scheduled` datetime DEFAULT NULL,
+  `job_ref` varchar(64) CHARACTER SET ascii NOT NULL,
+  `job_status` char(16) CHARACTER SET ascii NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `campaign_id` (`campaign_id`),
+  CONSTRAINT `blotto_crm_job_campaign` FOREIGN KEY (`campaign_id`) REFERENCES `blotto_crm_campaign` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+;
+-- TEST DATA
+-- INSERT INTO `blotto_crm_job` (`id`, `campaign_id`, `type`, `time_scheduled`, `job_ref`, `job_status`, `created`, `updated`) VALUES
+-- (1, 1,  'email',  '2020-12-24 11:00:00',  '', 'complete', '2021-11-06 23:30:09',  NULL),
+-- (2, 2,  'sms',  '2020-12-24 16:45:00',  '', 'complete', '2021-11-06 23:30:59',  NULL),
+-- (3, 2,  'sms',  '2020-12-25 16:45:00',  '', 'complete', '2021-11-06 23:31:20',  NULL),
+-- (4, 2,  'sms',  '2020-12-26 16:45:00',  '', 'complete', '2021-11-06 23:31:34',  NULL)
+-- ;
+
+CREATE TABLE IF NOT EXISTS `blotto_crm_restriction` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
+  `sql_clause` tinytext CHARACTER SET ascii NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+  COMMENT='Use `s` for `Supporters` columns and `u` for `Updates` columns'
+;
+INSERT IGNORE INTO `blotto_crm_restriction` (`id`, `name`, `sql_clause`) VALUES
+(1, 'Active supporters',  '`s`.`active`=\'ACTIVE\''),
+(2, 'Inactive supporters',  '`s`.`active`=\'DEAD\''),
+(3, 'Birthday today', '`s`.`dob` LIKE CONCAT(\r\n  \'____\'\r\n ,SUBSTR(\r\n    CURDATE()\r\n   ,5,6\r\n  )\r\n)'),
+(4, 'Birthday tomorrow',  '`s`.`dob` LIKE CONCAT(\r\n  \'____\'\r\n ,SUBSTR(\r\n    DATE_ADD(\r\n      CURDATE()\r\n     ,INTERVAL 1 DAY)\r\n   ,5,6\r\n  )\r\n)')
+;
+
+CREATE TABLE IF NOT EXISTS `blotto_crm_status` (
+  `status` char(16) CHARACTER SET ascii NOT NULL,
+  `caution` mediumtext COLLATE utf8_unicode_ci NOT NULL,
+  `description` mediumtext COLLATE utf8_unicode_ci NOT NULL,
+  `allowed_statuses` tinytext CHARACTER SET armscii8 NOT NULL,
+  PRIMARY KEY (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+;
+INSERT IGNORE INTO `blotto_crm_status` (`status`, `caution`, `description`, `allowed_statuses`) VALUES
+('Complete',  'The campaign will be irreversibly terminated.',  'This campaign has been terminated.', ''),
+('Drafting',  'The campaign will not run while in drafting mode.',  'Run when ready and tested.', 'Running'),
+('Revising',  'The campaign will stop running for modification.', 'The campaign is under revision.',  'Running\r\nComplete'),
+('Running', 'The campaign will be made live.',  'The campaign is now running.', 'Revising\r\nComplete')
+;
+
 CREATE TABLE IF NOT EXISTS `blotto_player` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `started` date DEFAULT NULL,

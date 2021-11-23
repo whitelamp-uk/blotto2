@@ -51,6 +51,7 @@ define ( 'BLOTTO_CSV_FORCE_DELIM',  'BLOTTO '       ); // see csv()
 define ( 'BLOTTO_CSV_DELIMITER',    ','             ); // see download_csv()
 define ( 'BLOTTO_CSV_ENCLOSER',     '"'             ); // see download_csv()
 define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
+define ( 'BLOTTO_PREFERENCES_SEP',  '::'            ); // see supporters.php
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
 

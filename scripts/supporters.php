@@ -20,11 +20,10 @@ if (!$zo) {
 
 // TEMPORARY CODE TO FILL HOLES IN canvas_agent_ref
 $qu = "
-  UPDATE `blotto_supporter` as `s`
-  JOIN `tmp_supporter` AS `tmp`
-    ON `tmp`.`ClientRef`=`s`.`client_ref`
-  SET `s`.`canvas_agent_ref`=`tmp`.`AgentRef`
-  WHERE `s`.`canvas_agent_ref` IS NULL
+  UPDATE `blotto_supporter`
+  SET `canvas_agent_ref`=SUBSTR(`client_ref`,3,4)
+  WHERE `canvas_agent_ref` IS NULL
+     OR `canvas_agent_ref`=''
 ";
 try {
     $zo->query ($qu);
@@ -247,32 +246,63 @@ $qs = "
   ;
 ";
 try {
-    $new = $zo->query ($qs);
-    $count      = 0;
+    $new            = $zo->query ($qs);
+    $count          = 0;
     while ($s=$new->fetch_assoc()) {
-        $cd     = esc ($s['Nominated']);
-        $sg     = esc ($s['Signed']);
-        $ap     = esc ($s['Approved']);
-        $cv     = esc ($s['CanvasRef']);
-        $cr     = esc ($s['ClientRef']);
-        $tt     = esc ($s['Title']);
-        $nf     = esc ($s['FirstName']);
-        $nl     = esc ($s['LastName']);
-        $em     = esc ($s['Email']);
-        $mb     = esc ($s['Mobile']);
-        $tl     = esc (str_replace('-',' ',$s['Telephone']));
-        $a1     = esc ($s['AddressLine1']);
-        $a2     = esc ($s['AddressLine2']);
-        $a3     = esc ($s['AddressLine3']);
-        $tn     = esc ($s['Town']);
-        $cn     = esc ($s['County']);
-        $pc     = esc ($s['Postcode']);
-        $cy     = esc ($s['Country']);
-        for ($i=0;$i<10;$i++) {
-            ${'p'.$i} = esc ($s['P'.$i]);
+        $cd         = esc ($s['Approved']);
+        $sg         = esc ($s['Signed']);
+        $ap         = esc ($s['Approved']);
+        $ca         = '';
+        $cv         = '';
+        if (trim($s['SysEx'])) {
+            // blotto currently has two sysex messages beyond the FLC standard
+            // using a JSON object with two properties
+            $sx     = null;
+            try {
+                $sx = json_decode ($s['SysEx']);
+            }
+            catch (\Exception $e) {
+                fwrite (STDERR,$e->getMessage()."\n");
+                exit (117);
+            }
+            if (property_exists($se,'cc_agent_ref')) {
+                $ca = esc ($sx->cc_agent_ref);
+            }
+            if (property_exists($se,'cc_ref')) {
+                $cv = esc ($sx->cc_ref);
+            }
         }
-        echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`canvas_code`,`canvas_ref`,`client_ref`) VALUES\n";
-        echo "  ('$cd','$sg','$ap','$ccc','$cv','$cr');\n";
+        $cr         = esc ($s['ClientRef']);
+        $tt         = esc ($s['Title']);
+        if (in_array($s['EasternOrder'],['','0','N','n'])) {
+            $nf     = esc ($s['NamesGiven']);
+            $nl     = esc ($s['NamesFamily']);
+        }
+        else {
+            $nf     = esc ($s['NamesFamily']);
+            $nl     = esc ($s['NamesGiven']);
+        }
+        $em         = esc ($s['Email']);
+        $mb         = esc (str_replace('-',' ',$s['Mobile']));
+        $tl         = esc (str_replace('-',' ',$s['Telephone']));
+        $a1         = esc (trim($s['AddressLine1']));
+        $a2         = esc (trim($s['AddressLine2']));
+        $a3         = esc (trim($s['AddressLine3']));
+        $tn         = esc (trim($s['Town']));
+        $cn         = esc (trim($s['County']));
+        $pc         = esc (trim($s['Postcode']));
+        $cy         = esc (trim($s['Country']));
+        $ps         = explode (BLOTTO_PREFERENCES_SEP,trim($s['Preferences']));
+        for ($i=0;$i<10;$i++) {
+            if (array_key_exists($i,$ps)) {
+                ${'p'.$i} = esc (trim($ps[$i]));
+            }
+            else {
+                ${'p'.$i} = '';
+            }
+        }
+        echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`canvas_code`,`canvas_agent_ref`,`canvas_ref`,`client_ref`) VALUES\n";
+        echo "  ('$cd','$sg','$ap','$ccc','$ca','$cv','$cr');\n";
         echo "SET @sid = LAST_INSERT_ID();\n";
         echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
         echo "  (@sid,'$cr');\n\n";
@@ -285,7 +315,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (117);
+    exit (118);
 }
 
 echo "-- COUNT: $count supporters from $ccc --\n\n";
@@ -307,7 +337,7 @@ if (!$count) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (118);
+        exit (119);
     }
 }
 

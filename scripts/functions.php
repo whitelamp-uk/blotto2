@@ -249,6 +249,45 @@ function clientref_advance ($cref) {
     return implode (BLOTTO_CREF_SPLITTER,$cref);
 }
 
+function collection_startdate ($today,$payday) {
+    // Calculating from today, complying with DD rules
+    // 1 day to collect created mandate from RSM
+    // 1 day for printing and dispatch
+    // 2 days in case its a weekend
+    // 2 days for 2nd class delivery
+    // 10 days after delivery
+    $dt = new \DateTime ();
+    $dt->add (new \DateInterval('P16D'));
+    if ($dow && $dt->format('w')!=$dow) {
+        // ANLs only weekly so add more days
+        for ($i=0;$i<6;$i++) {
+            $dt->add (new \DateInterval('P1D'));
+            if ($dt->format('w')==$dow) {
+                break;
+            }
+        }
+    }
+    if (intval($dt->format('j'))>28) {
+        // End of month so add more days
+        for ($i=0;$i<3;$i++) {
+            $dt->add (new \DateInterval('P1D'));
+            if (intval($dt->format('j'))==1) {
+                break;
+            }
+        }
+    }
+    if ($pd=intval($payday)) {
+        // Day of month specified so add more days
+        for ($i=0;$i<28;$i++) {
+            if (intval($dt->format('j'))==$pd) {
+                break;
+            }
+            $dt->add (new \DateInterval('P1D'));
+        }
+    }
+    return $dt->format ('Y-m-d');
+}
+
 function connect ($db=BLOTTO_DB,$un=BLOTTO_UN,$pw=BLOTTO_PW,$temp=false,$auth=false) {
     global $Co;
     mysqli_report (MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
