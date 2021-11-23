@@ -34,7 +34,7 @@
         null,
         [
             [ "Date:", $draw->date ],
-            [ "Winning number".plural(count($draw->results)).":", implode(', ',$draw->results) ],
+            [ "Number match(es):", implode(', ',$draw->results) ],
             [ "Winners:", $draw->winners ],
             [ "Payout:", htmlspecialchars(BLOTTO_CURRENCY).number_format($draw->total,2) ],
             [ "Players:", $players ],
