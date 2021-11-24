@@ -59,11 +59,13 @@ $file = array (
        ,'payment.update.sql'
        ,'results.export.sql'
     ),
+
     "exec" => array (
         'anls.php'
        ,'bogons.php'
        ,'cache.php'
        ,'changes.php'
+       ,'changes_email.php'
        ,'clone.php'
        ,'demo.php'
        ,'draws.php'

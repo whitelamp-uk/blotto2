@@ -25,6 +25,8 @@ define ( 'BLOTTO_EMAIL_TO',         'support@mysite.co.uk'                      
 define ( 'BLOTTO_EMAIL_WINS_ON',    true                );
 define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      );
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
+define ( 'BLOTTO_TMP_DIR',          '/tmp'              );
+
 
 define ( 'BLOTTO_TRNG_API',         'random.org'                                );
 define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/2/invoke'  );

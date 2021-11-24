@@ -1756,6 +1756,46 @@ function loading_fee ($qty) {
     return $bulk_fee;
 }
 
+function mail_attachments ($to,$subject,$message,$files) {
+    if (!is_array($files) || !count($files)) {
+        throw new \Exception ('No file attachments given');
+        return false;
+    }
+    $attach             = [];
+    foreach ($files as $file) {
+        if (!is_readable($file)) {
+            throw new \Exception ('File "$file" is not readable');
+            return false;
+        }
+        $file_size      = filesize ($file);
+        $fp             = fopen ($file,'r');
+        $content        = fread ($fp,$file_size);
+        fclose ($fp);
+        $attach[$file]  = chunk_split (base64_encode($content));
+    }
+    $uid                = md5 (uniqid(time()));
+     // Additional headers
+    $hdr                = "From: ".BLOTTO_EMAIL_FROM.PHP_EOL;
+    $hdr               .= "MIME-Version: 1.0".PHP_EOL;
+    $hdr               .= "Content-Type: multipart/mixed; boundary=\"".$uid."\"".PHP_EOL;
+    $hdr               .= "This is a multi-part message in MIME format.".PHP_EOL;
+    // Plain text
+    $str                = "--".$uid.PHP_EOL;
+    $str               .= "Content-type:text/plain; charset=iso-8859-1".PHP_EOL;
+    $str               .= "Content-Transfer-Encoding: 7bit".PHP_EOL;
+    $str               .= $message.PHP_EOL;
+    foreach ($attach as $file=>$content) {
+        // Attachment
+        $str           .= "--".$uid.PHP_EOL;
+        $str           .= "Content-Type: text/csv; name=\"".basename($file)."\"".PHP_EOL;
+        $str           .= "Content-Transfer-Encoding: base64".PHP_EOL;
+        $str           .= "Content-Disposition: attachment; filename=\"".basename($file)."\"".PHP_EOL.PHP_EOL;
+        $str           .= $content.PHP_EOL;
+    }
+    $str               .= "--".$uid."--";
+    mail ($to,$subject,$str,$hdr);
+}
+
 function month_end_last ($format='Y-m-d',$date=null) {
     $date = new DateTime ($date);
     $date->modify ('last day of previous month');

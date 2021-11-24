@@ -161,6 +161,7 @@ bpf="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_FNC )"
 bpu="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_UPD )"
 bpp="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_PRM )"
 mda="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_MYSQLDUMP_AUTH  )"
+emc="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_EMAIL_CCC       )"
 nxt="$( /usr/bin/php  "$drp/exec.php"    "$cfg"  draw_upcoming          )"
 tmp="$ldr/blotto.$$.tmp"
 sps="$ldr/blotto.supporters.sql.last"
@@ -550,6 +551,11 @@ then
     echo "    CALL changes();"
     mariadb $dbm                                          <<< "CALL changes();"
     abort_on_error 29c $?
+    if [ "$emc" ]
+    then
+        /usr/bin/php $prg $sw "$cfg" exec changes_email.php Mon
+        abort_on_error 29d $?
+    fi
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
