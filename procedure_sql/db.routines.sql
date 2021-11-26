@@ -80,6 +80,7 @@ BEGIN
      ,`m`.`Amount`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`Created`),'%d/%m/%Y') AS `Created`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`StartDate`),'%d/%m/%Y') AS `StartDate`
+     ,DATE_FORMAT(`m`.`StartDate`,'%a %D %b %Y') AS `projected_first_collection`
      ,`p`.`letter_batch_ref`
      ,`p`.`letter_status`
     FROM `blotto_build_mandate` AS `m`
