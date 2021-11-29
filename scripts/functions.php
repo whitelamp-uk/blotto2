@@ -2338,7 +2338,7 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
     $request->params->n             = $num_of_nums;
     $request->params->replacement   = $reuse;
 /*
-// This is the new API whcich will not be used in the foreseeable future
+// This is the new API which will not be used in the foreseeable future
     $request->params->licenseData   = new \stdClass ();
     $request->params->licenseData->maxPayoutValue = new \stdClass ();
     $request->params->licenseData->maxPayoutValue->currency = 'GBP';
