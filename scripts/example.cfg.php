@@ -68,7 +68,6 @@ define ( 'BLOTTO_PAY_DELAY',     'P2D'               );  // From DateDue to cred
 
 define ( 'BLOTTO_CREF_MATCH',    '^[A-z0-9_]+$'      );  // Original supporter reference restriction
 define ( 'BLOTTO_CREF_SPLITTER', '-'                 );  // Split mandate detection character sequence
-define ( 'BLOTTO_NO_CLAWBACK',   3                   );  // Used by early ticket reduction reporting
 define ( 'BLOTTO_CANCEL_RULE',   '2 MONTH'           );  // Used to define when a supporter has "cancelled"
 
 
