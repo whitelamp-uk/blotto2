@@ -3185,8 +3185,8 @@ function territory_permitted ($postcode,&$areas=null) {
     // BLOTTO_TERRITORIES_CSV can be:
     // UK [everywhere is default],
     // GB, BT, JE, GY, IM
-    $areas = BLOTTO_TERRITORIES_CSV;
-    if (!$pcs) {
+    $areas = SSS_TERRITORIES_CSV;
+    if (!$areas) {
         return true;
     }
     $areas = explode (',',$areas);
@@ -3199,6 +3199,7 @@ function territory_permitted ($postcode,&$areas=null) {
             if (in_array($area,$areas)) {
                 return true;
             }
+            // Specific postcode so not GB
             $gb = false;
         }
     }
