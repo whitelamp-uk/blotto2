@@ -86,10 +86,6 @@ must be rewritten as per https://www.whitelamp.com/flc/
         }
 */
 
-        if (!territory_permitted($c['Postcode'],$areas)) {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`Postcode` is outside territory '$areas' - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -254,6 +250,10 @@ try {
     $new            = $zo->query ($qs);
     $count          = 0;
     while ($s=$new->fetch_assoc()) {
+        if (!territory_permitted($s['Postcode'],$areas)) {
+            fwrite(STDERR, "`Postcode` is outside territory '$areas' - $ccc - {$s['ClientRef']}\n");
+            exit (115);
+        }
         $cd         = esc ($s['Approved']);
         $sg         = esc ($s['Signed']);
         $ap         = esc ($s['Approved']);
@@ -268,7 +268,7 @@ try {
             }
             catch (\Exception $e) {
                 fwrite (STDERR,$e->getMessage()."\n");
-                exit (117);
+                exit (116);
             }
             if (property_exists($se,'cc_agent_ref')) {
                 $ca = esc ($sx->cc_agent_ref);
@@ -320,7 +320,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (118);
+    exit (117);
 }
 
 echo "-- COUNT: $count supporters from $ccc --\n\n";
@@ -342,7 +342,7 @@ if (!$count) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (119);
+        exit (118);
     }
 }
 
