@@ -3181,6 +3181,33 @@ function tee ($str) {
     fwrite (STDERR,$str);
 }
 
+function territory_permitted ($postcode) {
+    // BLOTTO_TERRITORIES_CSV can be:
+    // UK [everywhere is default],
+    // GB, BT, JE, GY, IM
+    $areas = BLOTTO_TERRITORIES_CSV;
+    if (!$pcs) {
+        return true;
+    }
+    $areas = explode (',',$areas);
+    if (in_array('UK',$areas)) {
+        return true;
+    }
+    $gb = true;
+    foreach (['BT','GY','IM','JE'] as $area) {
+        if (strpos($postcode,$area)===0) {
+            if (in_array($area,$areas)) {
+                return true;
+            }
+            $gb = false;
+        }
+    }
+    if (in_array('GB',$areas) && $gb) {
+        return true;
+    }
+    return false;
+}
+
 function tidy_addr ($str) {
     $str        = ucwords ($str,"'- ");
     while (strpos($str,'  ')!==false) {

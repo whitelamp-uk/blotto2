@@ -27,7 +27,9 @@ define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
 define ( 'BLOTTO_TMP_DIR',          '/tmp'              );
 
-
+// Postcodes are processed on the assumption they are UK - so territory options
+// are one or more of UK (default), GB, BT, JE, GY, IM
+define ( 'BLOTTO_TERRITORIES_CSV',  'GB'                                        );
 define ( 'BLOTTO_TRNG_API',         'random.org'                                );
 define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/2/invoke'  );
 define ( 'BLOTTO_TRNG_API_VERSION', '2.0'               );
