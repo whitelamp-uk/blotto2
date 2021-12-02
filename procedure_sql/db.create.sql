@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_code` char(16) CHARACTER SET ascii NOT NULL,
   `zaffo_merchant_id` int(11) unsigned DEFAULT NULL,
+  `territories_csv` char(64) COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'GB' COMMENT 'Comma-separated, no spaces, any of UK,GB,BT,GY,IM,JE',
   `admin_email` varchar(255) CHARACTER SET ascii DEFAULT NULL,
   `admin_phone` varchar(16) CHARACTER SET ascii DEFAULT NULL,
   `signup_verify_email` tinyint(1) unsigned NOT NULL DEFAULT 0,

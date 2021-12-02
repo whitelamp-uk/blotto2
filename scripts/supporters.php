@@ -85,6 +85,11 @@ must be rewritten as per https://www.whitelamp.com/flc/
             exit (103);
         }
 */
+
+        if (!territory_permitted($c['Postcode'],$areas)) {
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`Postcode` is outside territory '$areas' - $ccc - {$c['ClientRef']}\n");
+            exit (103);
+        }
     }
 }
 catch (\mysqli_sql_exception $e) {

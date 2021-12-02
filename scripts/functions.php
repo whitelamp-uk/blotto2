@@ -3181,7 +3181,7 @@ function tee ($str) {
     fwrite (STDERR,$str);
 }
 
-function territory_permitted ($postcode) {
+function territory_permitted ($postcode,&$areas=null) {
     // BLOTTO_TERRITORIES_CSV can be:
     // UK [everywhere is default],
     // GB, BT, JE, GY, IM
@@ -4175,6 +4175,10 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
         }
     }
     $org = org ();
+    if ($_POST['postcode'] && !territory_permitted($postcode)) {
+        set_once ($go,'about');
+        $e[]        = 'Sorry - we are not allowed to sell lottery tickets to your address';
+    }
     if ($_POST['dob']) {
         $dt             = new \DateTime ($_POST['dob']);
         if (!$dt) {
