@@ -4257,6 +4257,7 @@ function www_winners ($format='Y-m-d') {
         SELECT
           MAX(`draw_closed`) AS `dc`
         FROM `Wins`
+        WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
       ) AS `last`
         ON `last`.`dc`=`w`.`draw_closed`
       ORDER BY `winnings` DESC, `ticket_number`
@@ -4265,7 +4266,7 @@ function www_winners ($format='Y-m-d') {
         $ws = connect()->query ($q);
     }
     catch (\mysqli_sql_exception $e) {
-        error_log ('www_winners(): '.$e->getMessage());
+        error_log ($e->getMessage());
         return $winners;
     }
     while ($w=$ws->fetch_assoc()) {
