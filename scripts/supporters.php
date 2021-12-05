@@ -130,7 +130,7 @@ $qs = "
 try {
     $check = $zo->query ($qs);
     if ($check->fetch_assoc()) {
-        fwrite (STDERR,"Client reference ".$c['ClientRef']." contains illegal characters\n");
+        fwrite (STDERR,"Client reference '".$c['ClientRef']."' contains illegal characters\n");
         exit (107);
     }
 }
@@ -173,7 +173,7 @@ $qs = "
 try {
     $check = $zo->query ($qs);
     if ($check->fetch_assoc()) {
-        fwrite (STDERR,"Mobile number ".$c['Mobile']." is illegal\n");
+        fwrite (STDERR,"Mobile number '".$c['Mobile']."' is illegal\n");
         exit (111);
     }
 }
@@ -195,7 +195,7 @@ $qs = "
 try {
     $check = $zo->query ($qs);
     if ($check->fetch_assoc()) {
-        fwrite(STDERR, "Telephone number ".$c['Telephone']." is illegal\n");
+        fwrite(STDERR, "Telephone number '".$c['Telephone']."' is illegal\n");
         exit (113);
     }
 }
