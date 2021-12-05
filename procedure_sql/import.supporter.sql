@@ -22,6 +22,7 @@ CREATE TABLE `tmp_supporter` (
   `Approved` varchar(255) CHARACTER SET ascii NOT NULL,
   `Created` varchar(255) CHARACTER SET ascii NOT NULL,
   `Tickets` varchar(255) CHARACTER SET ascii NOT NULL,
+  `Title` varchar(255) CHARACTER SET ascii NOT NULL,
   `NamesGiven` varchar(255) NOT NULL,
   `NamesFamily` varchar(255) NOT NULL,
   `EasternOrder` char(1) CHARACTER SET ascii NOT NULL,
