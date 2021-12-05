@@ -129,7 +129,7 @@ $qs = "
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
+    if ($c=$check->fetch_assoc()) {
         fwrite (STDERR,"Client reference '".$c['ClientRef']."' contains illegal characters\n");
         exit (107);
     }
@@ -150,7 +150,7 @@ $qs = "
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
+    if ($c=$check->fetch_assoc()) {
         fwrite (STDERR,"Client reference ".$c['ClientRef']." contains the reserved character sequence '$splitter' \n");
         exit (109);
     }
@@ -173,7 +173,7 @@ $qs = "
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
+    if ($c=$check->fetch_assoc()) {
         fwrite (STDERR,"Mobile number '".$c['Mobile']."' is illegal for ".$c['ClientRef']."\n");
         exit (111);
     }
@@ -196,7 +196,7 @@ $qs = "
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
+    if ($c=$check->fetch_assoc()) {
         fwrite(STDERR, "Telephone number '".$c['Telephone']."' is illegal for ".$c['ClientRef']."\n");
         exit (113);
     }
