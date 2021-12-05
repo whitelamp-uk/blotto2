@@ -1,4 +1,5 @@
 
+
     // inheriting from data8.postcodeLookupButton
 
     if (typeof(blotto)=='undefined') {
@@ -15,6 +16,19 @@
     data8.postcodeLookupButton.prototype.showAddressList = function (addresses) {
 
         var addr,i,option,pcl,postcodeElement,selectAddressOption;
+
+        // Prevent swiping and wheel-scrolling the address
+        // list from scrolling the form underneath
+        this.list.addEventListener (
+            'touchmove',
+            function (e) { e.preventDefault (); },
+            false
+         );
+        this.list.addEventListener (
+            'wheel',
+            function (e) { e.preventDefault (); },
+            false
+         );
 
         // Clear any existing addresses.
         while (this.list.options.length>0) {
@@ -108,7 +122,6 @@
 
             // Custom code to remove/override hard-wired style
             container[0].setAttribute ('style','display:block');
-//            container[0].querySelector('select').style.backgroundColor = 'rgb(200,200,255)';
         }
 
     };
