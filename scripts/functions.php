@@ -3118,9 +3118,11 @@ function stannp_status_wins ($live=false) {
                 `w_in`.`letter_status`='$status'
                ,`w_out_1`.`letter_status`='$status'
                ,`w_out_2`.`letter_status`='$status'
-              WHERE `w_out_1`.`client_ref` IN (
+              WHERE `w_out_1`.`letter_batch_ref`='$batch'
+                AND `w_out_1`.`client_ref` IN (
                 '".implode("','",$crefs)."'
-              );
+              )
+              ;
             ";
             echo $q;
             try {
