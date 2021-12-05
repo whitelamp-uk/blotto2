@@ -163,7 +163,8 @@ catch (\mysqli_sql_exception $e) {
 $phonere='^\\\\+?[0-9]+$';
 $qs = "
   SELECT
-    `Mobile`
+    `ClientRef`
+   ,`Mobile`
   FROM `tmp_supporter`
   WHERE REPLACE(`Mobile`,' ','') NOT REGEXP '$phonere'
     AND REPLACE(`Mobile`,' ','')!=''
@@ -173,7 +174,7 @@ $qs = "
 try {
     $check = $zo->query ($qs);
     if ($check->fetch_assoc()) {
-        fwrite (STDERR,"Mobile number '".$c['Mobile']."' is illegal\n");
+        fwrite (STDERR,"Mobile number '".$c['Mobile']."' is illegal for ".$c['ClientRef']."\n");
         exit (111);
     }
 }
@@ -185,17 +186,18 @@ catch (\mysqli_sql_exception $e) {
 // MySQL regexp needs double escaping for reasons not yet fathomed...
 $qs = "
   SELECT
-    `Telephone`
+    `ClientRef`
+   ,`Telephone`
   FROM `tmp_supporter`
   WHERE REPLACE(REPLACE(`Telephone`,'-',''),' ','') NOT REGEXP '$phonere'
-    AND REPLACE(REPLACE(`Telephone`,'-',''),' ','')!=''
+    AND REPLACE(`Telephone`,' ','')!=''
   LIMIT 0,1
   ;
 ";
 try {
     $check = $zo->query ($qs);
     if ($check->fetch_assoc()) {
-        fwrite(STDERR, "Telephone number '".$c['Telephone']."' is illegal\n");
+        fwrite(STDERR, "Telephone number '".$c['Telephone']."' is illegal for ".$c['ClientRef']."\n");
         exit (113);
     }
 }
