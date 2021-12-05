@@ -40,8 +40,8 @@ $qs = "
     *
   FROM `tmp_supporter`
   WHERE REPLACE(`ClientRef`,' ','')=''
-     OR REPLACE(`FirstName`,' ','')=''
-     OR REPLACE(`LastName`,' ','')=''
+     OR REPLACE(`NamesGiven`,' ','')=''
+     OR REPLACE(`NamesFamily`,' ','')=''
      OR REPLACE(`AddressLine1`,' ','')=''
      OR REPLACE(`Town`,' ','')=''
      OR REPLACE(`Postcode`,' ','')=''
@@ -65,11 +65,11 @@ must be rewritten as per https://www.whitelamp.com/flc/
 
 
         if (str_replace(' ','',$c['FirstName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`FirstName` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesGiven` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['LastName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`LastName` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesFamily` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['AddressLine1'])=='') {
