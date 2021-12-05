@@ -45,7 +45,7 @@ try {
                       DISTINCT(`ClientRef`) AS `crf`
                     FROM `rsm_mandate`
                   ) AS `m`
-                    ON `m`.`ClientRef`=`cand`.`crf`
+                    ON `m`.`crf`=`cand`.`ClientRef`
                   WHERE `m`.`crf` IS NULL
                 ";
                 try {
