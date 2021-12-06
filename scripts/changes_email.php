@@ -53,6 +53,8 @@ if ($dt->format('D')==$dow) {
               SELECT
                 *
               FROM `Changes`
+              WHERE `changed_date`>='$start'
+                AND `changed_date`<='$end'
               ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
               ;
             ";
