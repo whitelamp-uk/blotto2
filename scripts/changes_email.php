@@ -55,7 +55,8 @@ if ($dt->format('D')==$dow) {
               FROM `Changes`
               WHERE `changed_date`>='$start'
                 AND `changed_date`<='$end'
-              ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
+                AND `ccc`='{$code['code']}'
+              ORDER BY `changed_date`,`canvas_ref`,`chance_number`
               ;
             ";
             $rows           = $zo->query ($qs);
