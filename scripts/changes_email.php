@@ -46,16 +46,16 @@ if ($dt->format('D')==$dow) {
         echo "CCCs to be emailed\n";
         $codes              = $zo->query ($qs);
         while ($code=$codes->fetch_assoc()) {
-            echo "    CCCs w/e $end found CCC={$code['code']}\n";
-            $code           = $code['code'];
             $changes        = [];
+            $code           = $code['code'];
+            echo "    CCCs w/e $end CCC=$code\n";
             $qs = "
               SELECT
                 *
               FROM `Changes`
               WHERE `changed_date`>='$start'
                 AND `changed_date`<='$end'
-                AND `ccc`='{$code['code']}'
+                AND `ccc`='$code'
               ORDER BY `changed_date`,`canvas_ref`,`chance_number`
               ;
             ";
