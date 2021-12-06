@@ -75,9 +75,9 @@ if ($dt->format('D')==$dow) {
                     foreach ($changes[0] as $field=>$v) {
                         $headers[] = $field;
                     }
-                    fputcsv ($headers);
+                    fputcsv ($fp,$headers);
                     foreach ($changes as $change) {
-                        fputcsv ($change);
+                        fputcsv ($fp,$change);
                     }
                     fclose ($fp);
                     $files[] = $file;
