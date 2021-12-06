@@ -99,8 +99,8 @@ if ($dt->format('D')==$dow) {
         echo "    Emailing ".count($files)." attachments to ".BLOTTO_EMAIL_CCC."\n";
         mail_attachments (
             BLOTTO_EMAIL_CCC,
-            "CCC report(s) from ".BLOTTO_BRAND." w/e $end",
-            "Early cancellation data for canvassing company feedback",
+            "CCC report(s) from ".BLOTTO_BRAND." w/c $start",
+            "Canvassing company ticket changes recorded last week",
             $files
         );
     }
