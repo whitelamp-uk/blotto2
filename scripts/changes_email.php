@@ -18,6 +18,7 @@ if (!$zo) {
 }
 
 
+$quiet = explode (',',BLOTTO_EMAIL_QUIET_CCCS);
 $dt                         = new \DateTime ();
 // Only do this if today is $dow
 if ($dt->format('D')==$dow) {
@@ -48,6 +49,10 @@ if ($dt->format('D')==$dow) {
         while ($code=$codes->fetch_assoc()) {
             $changes        = [];
             $code           = $code['code'];
+            if (in_array($code,$quiet)) {
+                // Skip this "software" CCC (not a real canvassing company)
+                continue;
+            }
             echo "    CCCs w/e $end CCC=$code\n";
             $qs = "
               SELECT

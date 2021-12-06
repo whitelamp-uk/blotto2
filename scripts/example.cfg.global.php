@@ -46,7 +46,7 @@ define ( 'BLOTTO_TSA_URL',          'https://freetsa.org/tsr'                   
 define ( 'BLOTTO_TSA_CERT',         'https://freetsa.org/files/tsa.crt'         );
 define ( 'BLOTTO_TSA_CACERT',       'https://freetsa.org/files/cacert.pem'      );
 
-define ( 'BLOTTO_BRAND',            'mylotto'           );
+define ( 'BLOTTO_BRAND',            'mylotto'       );
 
 define ( 'BLOTTO_SEARCH_LEN_MIN',   3               ); // at least one search term must be this long
 define ( 'BLOTTO_SEARCH_CREF_MIN',  4               ); // CREF terms not matched if not this long
@@ -58,6 +58,7 @@ define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
 define ( 'BLOTTO_PREFERENCES_SEP',  '::'            ); // see supporters.php
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
+define ( 'BLOTTO_EMAIL_QUIET_CCCS', 'STRP,PYPL,DD'  ); // do not send changes email attachments
 
 define ( 'BLOTTO_BANK_NAME',        'My Lottery Account'    );
 define ( 'BLOTTO_BANK_SORT',        '01-02-03'              );
