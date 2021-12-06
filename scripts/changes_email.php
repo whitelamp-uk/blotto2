@@ -25,10 +25,10 @@ if ($dt->format('D')==$dow) {
     $dir                    = BLOTTO_TMP_DIR.'/'.BLOTTO_ORG_USER.'/ccc';
     exec ("mkdir -p '$dir'");
     if (!is_dir($dir)) {
-        echo "        Failed to make directory '$dir'\n";
         fwrite (STDERR,"Failed to make directory '$dir'\n");
         exit (103);
     }
+    echo "        Created directory '$dir'\n";
     $files                  = [];
     $dt->sub (new \DateInterval('P1D'));
     $end                    = $dt->format ('Y-m-d');
@@ -46,7 +46,7 @@ if ($dt->format('D')==$dow) {
         echo "CCCs to be emailed\n";
         $codes              = $zo->query ($qs);
         while ($code=$codes->fetch_assoc()) {
-            echo "    CCCs w/e $end found CCC=$code\n";
+            echo "    CCCs w/e $end found CCC={$code['code']}\n";
             $code           = $code['code'];
             $changes        = [];
             $qs = "
