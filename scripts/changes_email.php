@@ -72,6 +72,10 @@ if ($dt->format('D')==$dow) {
                 else {
                     echo "        Creating CSV file '$file'\n";
                     $fp     = fopen ($file,'w');
+                    if (!$fp) {
+                        fwrite (STDERR,"Could not open file '$file' for writing\n");
+                        exit (104);
+                    }
                     foreach ($changes[0] as $field=>$v) {
                         $headers[] = $field;
                     }
@@ -87,7 +91,7 @@ if ($dt->format('D')==$dow) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (104);
+        exit (105);
     }
     exec ("rm -r '$dir'");
     echo "    ".count($files)." files to send\n";
