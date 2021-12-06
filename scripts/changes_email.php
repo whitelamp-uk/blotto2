@@ -94,7 +94,6 @@ if ($dt->format('D')==$dow) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
         exit (105);
     }
-    exec ("rm -r '$dir'");
     echo "    ".count($files)." files to send\n";
     if (count($files)) {
         echo "    Emailing ".count($files)." attachments to ".BLOTTO_EMAIL_CCC."\n";
@@ -105,5 +104,6 @@ if ($dt->format('D')==$dow) {
             $files
         );
     }
+    exec ("rm -r '$dir'");
 }
 
