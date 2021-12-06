@@ -24,7 +24,7 @@ if ($dt->format('D')==$dow) {
     fwrite (STDERR,"    Emailing CCCs because today is $dow\n");
     $dir                    = BLOTTO_TMP_DIR.'/'.BLOTTO_ORG_USER.'/ccc';
     exec ("mkdir -p '$dir'");
-    if (!is_directory($dir)) {
+    if (!is_dir($dir)) {
         echo "        Failed to make directory '$dir'\n";
         fwrite (STDERR,"Failed to make directory '$dir'\n");
         exit (103);
