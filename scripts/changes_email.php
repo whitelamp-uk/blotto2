@@ -24,6 +24,11 @@ if ($dt->format('D')==$dow) {
     fwrite (STDERR,"    Emailing CCCs because today is $dow\n");
     $dir                    = BLOTTO_TMP_DIR.'/'.BLOTTO_ORG_USER.'/ccc';
     exec ("mkdir -p '$dir'");
+    if (!is_directory($dir)) {
+        echo "        Failed to make directory '$dir'\n";
+        fwrite (STDERR,"Failed to make directory '$dir'\n");
+        exit (103);
+    }
     $files                  = [];
     $dt->sub (new \DateInterval('P1D'));
     $end                    = $dt->format ('Y-m-d');
@@ -80,7 +85,7 @@ if ($dt->format('D')==$dow) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (103);
+        exit (104);
     }
     exec ("rm -r '$dir'");
     echo "    ".count($files)." files to send\n";
