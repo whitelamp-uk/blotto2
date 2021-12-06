@@ -84,6 +84,7 @@ if ($dt->format('D')==$dow) {
                         fputcsv ($fp,$change);
                     }
                     fclose ($fp);
+                    echo "    Successfully wrote ".count($changes)." to file '$file'\n";
                     $files[] = $file;
                 }
             }
