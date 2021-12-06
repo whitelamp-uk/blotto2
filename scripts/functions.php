@@ -1680,7 +1680,7 @@ function mail_attachments ($to,$subject,$message,$files) {
     $attach             = [];
     foreach ($files as $file) {
         if (!is_readable($file)) {
-            throw new \Exception ('File "$file" is not readable');
+            throw new \Exception ("File '$file' is not readable");
             return false;
         }
         $file_size      = filesize ($file);
