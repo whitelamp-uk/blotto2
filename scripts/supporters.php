@@ -272,10 +272,10 @@ try {
                 fwrite (STDERR,$e->getMessage()."\n");
                 exit (116);
             }
-            if (property_exists($se,'cc_agent_ref')) {
+            if (property_exists($sx,'cc_agent_ref')) {
                 $ca = esc ($sx->cc_agent_ref);
             }
-            if (property_exists($se,'cc_ref')) {
+            if (property_exists($sx,'cc_ref')) {
                 $cv = esc ($sx->cc_ref);
             }
         }
