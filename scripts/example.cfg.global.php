@@ -100,11 +100,12 @@ define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.json' );
 define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up getting safe IPs
 
+*/
+
 // Global - all payment providers
+define ( 'BLOTTO_DD_TRY_INTERVAL',  '7 DAY'     );
 define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed'        );
 define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json' );
-
-*/
 

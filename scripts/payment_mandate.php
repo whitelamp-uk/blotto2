@@ -4,6 +4,8 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
+$interval = BLOTTO_DD_TRY_INTERVAL;
+
 echo "    Generating/posting mandate data\n";
 
 $zo = connect (BLOTTO_MAKE_DB);
@@ -46,7 +48,16 @@ try {
                     FROM `rsm_mandate`
                   ) AS `m`
                     ON `m`.`crf`=`cand`.`ClientRef`
+                  LEFT JOIN `blotto_supporter` AS `s`
+                         ON `s`.`client_ref`=`cand`.`ClientRef`
+                  -- No mandate exists
                   WHERE `m`.`crf` IS NULL
+                    AND (
+                    -- Either no supporter exists
+                         `s`.`id` IS NULL
+                    -- Or the supporter was inserted recently
+                      OR `s`.`inserted`>DATE_SUB(NOW(),INTERVAL $interval)
+                  )
                 ";
                 try {
                     $ms = $zo->query ($qs);
