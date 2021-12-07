@@ -26,7 +26,10 @@ if (array_key_exists('verify',$_GET)) {
         $response->eCode                = 101;
     }
     elseif (property_exists($request,'email')) {
-        if ($nonce=nonce_challenge('email',$request->nonce)) {
+$nonce=nonce_challenge('email',$request->nonce);
+if (1) {
+//error_log(__FILE__.' '.__LINE__);
+//        if ($nonce=nonce_challenge('email',$request->nonce)) {
             $response->nonce = $nonce;
             if (www_signup_verify_store('email',$request->email,$code)) {
                 try {
@@ -59,7 +62,9 @@ if (array_key_exists('verify',$_GET)) {
         }
     }
     elseif (property_exists($request,'mobile')) {
-        if ($nonce=nonce_challenge('mobile',$request->nonce)) {
+$nonce=nonce_challenge('mobile',$request->nonce);
+if (1) {
+//        if ($nonce=nonce_challenge('mobile',$request->nonce)) {
             $response->nonce            = $nonce;
             if (www_signup_verify_store('mobile',$request->mobile,$code)) {
                 try {
@@ -125,7 +130,8 @@ if (count($_POST)) {
         $error[] = $e_default;
     }
 
-    elseif (!array_key_exists('nonce_signup',$_POST) || !nonce_challenge('signup',$_POST['nonce_signup'])) {
+//    elseif (!array_key_exists('nonce_signup',$_POST) || !nonce_challenge('signup',$_POST['nonce_signup'])) {
+elseif (!array_key_exists('nonce_signup',$_POST)) {
         // Probably just an attempt to refresh stage 2
         $error[] = 'Please post the form again';
     }
