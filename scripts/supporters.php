@@ -272,6 +272,10 @@ try {
                 fwrite (STDERR,$e->getMessage()."\n");
                 exit (116);
             }
+            if (!$sx) {
+                fwrite (STDERR,"Could not interpret system exclusive column = '{$s['SysEx']}'\n");
+                exit (117);
+            }
             if (property_exists($sx,'cc_agent_ref')) {
                 $ca = esc ($sx->cc_agent_ref);
             }
@@ -322,7 +326,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (117);
+    exit (118);
 }
 
 echo "-- COUNT: $count supporters from $ccc --\n\n";
@@ -344,7 +348,7 @@ if (!$count) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (118);
+        exit (119);
     }
 }
 
