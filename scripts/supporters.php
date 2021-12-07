@@ -253,7 +253,7 @@ try {
     $count          = 0;
     while ($s=$new->fetch_assoc()) {
         if (!territory_permitted($s['Postcode'],$areas)) {
-            fwrite(STDERR, "`Postcode` is outside territory '$areas' - $ccc - {$s['ClientRef']}\n");
+            fwrite(STDERR, "Postcode '{$s['Postcode']}'' is outside territory '".BLOTTO_TERRITORIES_CSV."' - $ccc - for '{$s['ClientRef']}'\n");
             exit (115);
         }
         $cd         = esc ($s['Approved']);
