@@ -2746,6 +2746,7 @@ function signup ($org,$s,$ccc,$cref,$first_draw_close) {
               `created`=DATE('{$s['created']}')
              ,`signed`=DATE('{$s['created']}')
              ,`approved`=DATE('{$s['created']}')
+             ,`projected_first_draw_close`='$first_draw_close'
              ,`canvas_code`='$ccc'
              ,`canvas_agent_ref`='$ccc'
              ,`canvas_ref`='{$s['id']}'
