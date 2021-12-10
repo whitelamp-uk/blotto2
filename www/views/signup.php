@@ -289,7 +289,8 @@ $first_draw_dates = www_signup_dates ($date_error);
 
         <style>
 form.signup input[name="<?php echo $code; ?>"] {
-    background-image:  url('./media/<?php echo strtolower ($api->name); ?>.png');
+    background-image:  url('./<?php echo strtolower ($api->name); ?>.png');
+    background-position-y: center;
 }
         </style>
         <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />

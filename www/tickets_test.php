@@ -26,10 +26,8 @@ if (array_key_exists('verify',$_GET)) {
         $response->eCode                = 101;
     }
     elseif (property_exists($request,'email')) {
-$nonce=nonce_challenge('email',$request->nonce);
-if (1) {
 //error_log(__FILE__.' '.__LINE__);
-//        if ($nonce=nonce_challenge('email',$request->nonce)) {
+        if ($nonce=nonce_challenge('email',$request->nonce)) {
             $response->nonce = $nonce;
             if (www_signup_verify_store('email',$request->email,$code)) {
                 try {
@@ -62,9 +60,8 @@ if (1) {
         }
     }
     elseif (property_exists($request,'mobile')) {
-$nonce=nonce_challenge('mobile',$request->nonce);
-if (1) {
-//        if ($nonce=nonce_challenge('mobile',$request->nonce)) {
+//error_log(__FILE__.' '.__LINE__);
+        if ($nonce=nonce_challenge('mobile',$request->nonce)) {
             $response->nonce            = $nonce;
             if (www_signup_verify_store('mobile',$request->mobile,$code)) {
                 try {
@@ -130,8 +127,8 @@ if (count($_POST)) {
         $error[] = $e_default;
     }
 
-//    elseif (!array_key_exists('nonce_signup',$_POST) || !nonce_challenge('signup',$_POST['nonce_signup'])) {
-elseif (!array_key_exists('nonce_signup',$_POST)) {
+    elseif (!array_key_exists('nonce_signup',$_POST) || !nonce_challenge('signup',$_POST['nonce_signup'])) {
+//error_log(__FILE__.' '.__LINE__);
         // Probably just an attempt to refresh stage 2
         $error[] = 'Please post the form again';
     }
@@ -183,7 +180,7 @@ else {
     <script type="text/javascript" src="./media/js-config.js"></script>
     <!-- script defer type="text/javascript" src="./media/custom-postcode-lookup.js"></script -->
     <script defer type="text/javascript" src="./media/postcode-lookup.js"></script>
-    <script defer type="text/javascript" src="./media/signup.js"></script>
+    <script defer type="text/javascript" src="./media/signup_test.js"></script>
 <?php if ($go): ?>
     <script>
 window.location.href = '#<?php echo $go; ?>';

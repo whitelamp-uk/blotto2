@@ -22,6 +22,7 @@ CREATE TABLE `tmp_supporter` (
   `Approved` varchar(255) CHARACTER SET ascii NOT NULL,
   `Created` varchar(255) CHARACTER SET ascii NOT NULL,
   `Tickets` varchar(255) CHARACTER SET ascii NOT NULL,
+  `Title` varchar(255) CHARACTER SET ascii NOT NULL,
   `NamesGiven` varchar(255) NOT NULL,
   `NamesFamily` varchar(255) NOT NULL,
   `EasternOrder` char(1) CHARACTER SET ascii NOT NULL,
@@ -37,17 +38,17 @@ CREATE TABLE `tmp_supporter` (
   `Postcode` varchar(255) NOT NULL,
   `Country` varchar(255) NOT NULL,
   `Preferences` text,
-  `PayChannel` varchar(255) NOT NULL
-  `PayChanged` varchar(255) NOT NULL
-  `PayLatest` varchar(255) NOT NULL
-  `Active` varchar(255) NOT NULL
-  `Status` varchar(255) NOT NULL
-  `FailReason` varchar(255) NOT NULL
-  `TicketPricePerDraw` varchar(255) NOT NULL
-  `PaymenFirstReceived` varchar(255) NOT NULL
-  `PaymentTotal` varchar(255) NOT NULL
-  `Plays` varchar(255) NOT NULL
-  `CurrentBalance` varchar(255) NOT NULL
+  `PayChannel` varchar(255) NOT NULL,
+  `PayChanged` varchar(255) NOT NULL,
+  `PayLatest` varchar(255) NOT NULL,
+  `Active` varchar(255) NOT NULL,
+  `Status` varchar(255) NOT NULL,
+  `FailReason` varchar(255) NOT NULL,
+  `TicketPricePerDraw` varchar(255) NOT NULL,
+  `PaymenFirstReceived` varchar(255) NOT NULL,
+  `PaymentTotal` varchar(255) NOT NULL,
+  `Plays` varchar(255) NOT NULL,
+  `CurrentBalance` varchar(255) NOT NULL,
   UNIQUE KEY `ClientRef` (`ClientRef`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

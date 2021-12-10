@@ -18,12 +18,18 @@ if (!$zo) {
 }
 
 
+$quiet = explode (',',BLOTTO_EMAIL_QUIET_CCCS);
 $dt                         = new \DateTime ();
 // Only do this if today is $dow
 if ($dt->format('D')==$dow) {
     fwrite (STDERR,"    Emailing CCCs because today is $dow\n");
     $dir                    = BLOTTO_TMP_DIR.'/'.BLOTTO_ORG_USER.'/ccc';
     exec ("mkdir -p '$dir'");
+    if (!is_dir($dir)) {
+        fwrite (STDERR,"Failed to make directory '$dir'\n");
+        exit (103);
+    }
+    echo "        Created directory '$dir'\n";
     $files                  = [];
     $dt->sub (new \DateInterval('P1D'));
     $end                    = $dt->format ('Y-m-d');
@@ -41,14 +47,21 @@ if ($dt->format('D')==$dow) {
         echo "CCCs to be emailed\n";
         $codes              = $zo->query ($qs);
         while ($code=$codes->fetch_assoc()) {
-            echo "    CCCs w/e $end found CCC=$code\n";
-            $code           = $code['code'];
             $changes        = [];
+            $code           = $code['code'];
+            if (in_array($code,$quiet)) {
+                // Skip this "software" CCC (not a real canvassing company)
+                continue;
+            }
+            echo "    CCCs w/e $end CCC=$code\n";
             $qs = "
               SELECT
                 *
               FROM `Changes`
-              ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
+              WHERE `changed_date`>='$start'
+                AND `changed_date`<='$end'
+                AND `ccc`='$code'
+              ORDER BY `changed_date`,`canvas_ref`,`chance_number`
               ;
             ";
             $rows           = $zo->query ($qs);
@@ -65,14 +78,19 @@ if ($dt->format('D')==$dow) {
                 else {
                     echo "        Creating CSV file '$file'\n";
                     $fp     = fopen ($file,'w');
+                    if (!$fp) {
+                        fwrite (STDERR,"Could not open file '$file' for writing\n");
+                        exit (104);
+                    }
                     foreach ($changes[0] as $field=>$v) {
                         $headers[] = $field;
                     }
-                    fputcsv ($headers);
+                    fputcsv ($fp,$headers);
                     foreach ($changes as $change) {
-                        fputcsv ($change);
+                        fputcsv ($fp,$change);
                     }
                     fclose ($fp);
+                    echo "    Successfully wrote ".count($changes)." rows of data to file '$file'\n";
                     $files[] = $file;
                 }
             }
@@ -80,18 +98,18 @@ if ($dt->format('D')==$dow) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (103);
+        exit (105);
     }
-    exec ("rm -r '$dir'");
     echo "    ".count($files)." files to send\n";
     if (count($files)) {
         echo "    Emailing ".count($files)." attachments to ".BLOTTO_EMAIL_CCC."\n";
         mail_attachments (
             BLOTTO_EMAIL_CCC,
-            "CCC report(s) from ".BLOTTO_BRAND." w/e $end",
-            "Early cancellation data for canvassing company feedback",
+            "CCC report(s) from ".BLOTTO_BRAND." w/c $start",
+            "Canvassing company ticket changes recorded last week",
             $files
         );
     }
+    exec ("rm -r '$dir'");
 }
 

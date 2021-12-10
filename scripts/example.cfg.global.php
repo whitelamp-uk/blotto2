@@ -27,7 +27,9 @@ define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
 define ( 'BLOTTO_TMP_DIR',          '/tmp'              );
 
-
+// Postcodes are processed on the assumption they are UK - so territory options
+// are one or more of UK (default), GB, BT, JE, GY, IM
+define ( 'BLOTTO_TERRITORIES_CSV',  'GB'                                        );
 define ( 'BLOTTO_TRNG_API',         'random.org'                                );
 define ( 'BLOTTO_TRNG_API_URL',     'https://api.random.org/json-rpc/2/invoke'  );
 define ( 'BLOTTO_TRNG_API_VERSION', '2.0'               );
@@ -44,7 +46,7 @@ define ( 'BLOTTO_TSA_URL',          'https://freetsa.org/tsr'                   
 define ( 'BLOTTO_TSA_CERT',         'https://freetsa.org/files/tsa.crt'         );
 define ( 'BLOTTO_TSA_CACERT',       'https://freetsa.org/files/cacert.pem'      );
 
-define ( 'BLOTTO_BRAND',            'mylotto'           );
+define ( 'BLOTTO_BRAND',            'mylotto'       );
 
 define ( 'BLOTTO_SEARCH_LEN_MIN',   3               ); // at least one search term must be this long
 define ( 'BLOTTO_SEARCH_CREF_MIN',  4               ); // CREF terms not matched if not this long
@@ -56,6 +58,7 @@ define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
 define ( 'BLOTTO_PREFERENCES_SEP',  '::'            ); // see supporters.php
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
+define ( 'BLOTTO_EMAIL_QUIET_CCCS', 'STRP,PYPL,DD'  ); // do not send changes email attachments
 
 define ( 'BLOTTO_BANK_NAME',        'My Lottery Account'    );
 define ( 'BLOTTO_BANK_SORT',        '01-02-03'              );
@@ -97,11 +100,12 @@ define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.json' );
 define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up getting safe IPs
 
+*/
+
 // Global - all payment providers
+define ( 'BLOTTO_DD_TRY_INTERVAL',  '7 DAY'     );
 define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed'        );
 define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json' );
-
-*/
 

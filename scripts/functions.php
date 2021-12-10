@@ -1679,8 +1679,12 @@ function mail_attachments ($to,$subject,$message,$files) {
     }
     $attach             = [];
     foreach ($files as $file) {
+        if (!file_exists($file)) {
+            throw new \Exception ("File '$file' was not found");
+            return false;
+        }
         if (!is_readable($file)) {
-            throw new \Exception ('File "$file" is not readable');
+            throw new \Exception ("File '$file' was found but is not readable");
             return false;
         }
         $file_size      = filesize ($file);
@@ -2742,6 +2746,7 @@ function signup ($org,$s,$ccc,$cref,$first_draw_close) {
               `created`=DATE('{$s['created']}')
              ,`signed`=DATE('{$s['created']}')
              ,`approved`=DATE('{$s['created']}')
+             ,`projected_first_draw_close`='$first_draw_close'
              ,`canvas_code`='$ccc'
              ,`canvas_agent_ref`='$ccc'
              ,`canvas_ref`='{$s['id']}'
@@ -3118,9 +3123,11 @@ function stannp_status_wins ($live=false) {
                 `w_in`.`letter_status`='$status'
                ,`w_out_1`.`letter_status`='$status'
                ,`w_out_2`.`letter_status`='$status'
-              WHERE `w_out_1`.`client_ref` IN (
+              WHERE `w_out_1`.`letter_batch_ref`='$batch'
+                AND `w_out_1`.`client_ref` IN (
                 '".implode("','",$crefs)."'
-              );
+              )
+              ;
             ";
             echo $q;
             try {
@@ -3179,6 +3186,34 @@ function table_name ($generic_name) {
 function tee ($str) {
     echo $str;
     fwrite (STDERR,$str);
+}
+
+function territory_permitted ($postcode,&$areas=null) {
+    // BLOTTO_TERRITORIES_CSV can be:
+    // UK [everywhere is default],
+    // GB, BT, JE, GY, IM
+    $areas = BLOTTO_TERRITORIES_CSV;
+    if (!$areas) {
+        return true;
+    }
+    $areas = explode (',',$areas);
+    if (in_array('UK',$areas)) {
+        return true;
+    }
+    $gb = true;
+    foreach (['BT','GY','IM','JE'] as $area) {
+        if (strpos($postcode,$area)===0) {
+            if (in_array($area,$areas)) {
+                return true;
+            }
+            // Specific postcode so not GB
+            $gb = false;
+        }
+    }
+    if (in_array('GB',$areas) && $gb) {
+        return true;
+    }
+    return false;
 }
 
 function tidy_addr ($str) {
@@ -4134,6 +4169,10 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
         }
     }
     $org = org ();
+    if ($_POST['postcode'] && !territory_permitted($postcode)) {
+        set_once ($go,'about');
+        $e[]        = 'Sorry - we are not allowed to sell lottery tickets to your address';
+    }
     if ($_POST['dob']) {
         $dt             = new \DateTime ($_POST['dob']);
         if (!$dt) {
@@ -4211,6 +4250,7 @@ function www_winners ($format='Y-m-d') {
         SELECT
           MAX(`draw_closed`) AS `dc`
         FROM `Wins`
+        WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
       ) AS `last`
         ON `last`.`dc`=`w`.`draw_closed`
       ORDER BY `winnings` DESC, `ticket_number`
@@ -4219,7 +4259,7 @@ function www_winners ($format='Y-m-d') {
         $ws = connect()->query ($q);
     }
     catch (\mysqli_sql_exception $e) {
-        error_log ('www_winners(): '.$e->getMessage());
+        error_log ($e->getMessage());
         return $winners;
     }
     while ($w=$ws->fetch_assoc()) {

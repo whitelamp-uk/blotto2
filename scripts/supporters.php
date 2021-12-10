@@ -40,8 +40,8 @@ $qs = "
     *
   FROM `tmp_supporter`
   WHERE REPLACE(`ClientRef`,' ','')=''
-     OR REPLACE(`FirstName`,' ','')=''
-     OR REPLACE(`LastName`,' ','')=''
+     OR REPLACE(`NamesGiven`,' ','')=''
+     OR REPLACE(`NamesFamily`,' ','')=''
      OR REPLACE(`AddressLine1`,' ','')=''
      OR REPLACE(`Town`,' ','')=''
      OR REPLACE(`Postcode`,' ','')=''
@@ -65,11 +65,11 @@ must be rewritten as per https://www.whitelamp.com/flc/
 
 
         if (str_replace(' ','',$c['FirstName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`FirstName` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesGiven` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['LastName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`LastName` is compulsory - $ccc - {$c['ClientRef']}\n");
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesFamily` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
         }
         if (str_replace(' ','',$c['AddressLine1'])=='') {
@@ -85,6 +85,7 @@ must be rewritten as per https://www.whitelamp.com/flc/
             exit (103);
         }
 */
+
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -128,8 +129,8 @@ $qs = "
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
-        fwrite (STDERR,"Client reference ".$c['ClientRef']." contains illegal characters\n");
+    if ($c=$check->fetch_assoc()) {
+        fwrite (STDERR,"Client reference '".$c['ClientRef']."' contains illegal characters\n");
         exit (107);
     }
 }
@@ -149,7 +150,7 @@ $qs = "
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
+    if ($c=$check->fetch_assoc()) {
         fwrite (STDERR,"Client reference ".$c['ClientRef']." contains the reserved character sequence '$splitter' \n");
         exit (109);
     }
@@ -162,7 +163,8 @@ catch (\mysqli_sql_exception $e) {
 $phonere='^\\\\+?[0-9]+$';
 $qs = "
   SELECT
-    `Mobile`
+    `ClientRef`
+   ,`Mobile`
   FROM `tmp_supporter`
   WHERE REPLACE(`Mobile`,' ','') NOT REGEXP '$phonere'
     AND REPLACE(`Mobile`,' ','')!=''
@@ -171,8 +173,8 @@ $qs = "
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
-        fwrite (STDERR,"Mobile number ".$c['Mobile']." is illegal\n");
+    if ($c=$check->fetch_assoc()) {
+        fwrite (STDERR,"Mobile number '".$c['Mobile']."' is illegal for ".$c['ClientRef']."\n");
         exit (111);
     }
 }
@@ -184,17 +186,18 @@ catch (\mysqli_sql_exception $e) {
 // MySQL regexp needs double escaping for reasons not yet fathomed...
 $qs = "
   SELECT
-    `Telephone`
+    `ClientRef`
+   ,`Telephone`
   FROM `tmp_supporter`
   WHERE REPLACE(REPLACE(`Telephone`,'-',''),' ','') NOT REGEXP '$phonere'
-    AND REPLACE(REPLACE(`Telephone`,'-',''),' ','')!=''
+    AND REPLACE(`Telephone`,' ','')!=''
   LIMIT 0,1
   ;
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
-        fwrite(STDERR, "Telephone number ".$c['Telephone']." is illegal\n");
+    if ($c=$check->fetch_assoc()) {
+        fwrite(STDERR, "Telephone number '".$c['Telephone']."' is illegal for ".$c['ClientRef']."\n");
         exit (113);
     }
 }
@@ -249,6 +252,10 @@ try {
     $new            = $zo->query ($qs);
     $count          = 0;
     while ($s=$new->fetch_assoc()) {
+        if (!territory_permitted($s['Postcode'],$areas)) {
+            fwrite(STDERR, "Postcode '{$s['Postcode']}'' is outside territory '".BLOTTO_TERRITORIES_CSV."' - $ccc - for '{$s['ClientRef']}'\n");
+            exit (115);
+        }
         $cd         = esc ($s['Approved']);
         $sg         = esc ($s['Signed']);
         $ap         = esc ($s['Approved']);
@@ -263,12 +270,16 @@ try {
             }
             catch (\Exception $e) {
                 fwrite (STDERR,$e->getMessage()."\n");
+                exit (116);
+            }
+            if (!$sx) {
+                fwrite (STDERR,"Could not interpret system exclusive column = '{$s['SysEx']}'\n");
                 exit (117);
             }
-            if (property_exists($se,'cc_agent_ref')) {
+            if (property_exists($sx,'cc_agent_ref')) {
                 $ca = esc ($sx->cc_agent_ref);
             }
-            if (property_exists($se,'cc_ref')) {
+            if (property_exists($sx,'cc_ref')) {
                 $cv = esc ($sx->cc_ref);
             }
         }
