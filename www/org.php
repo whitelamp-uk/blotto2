@@ -27,6 +27,7 @@ $options       = array (
     'invoices',
     'invoice',
     'statements',
+    'statement',
     'about'
 );
 $list          = array (
@@ -103,6 +104,11 @@ elseif ($session=www_session($timestamp)) {
     // Invoice if that option
     if ($opt=='invoice') {
         invoice_serve ($_GET['invoice']);
+        exit;
+    }
+    // Statement if that option
+    if ($opt=='statement') {
+        statement_serve ($_GET['invoice']);
         exit;
     }
     // Draw report if that option
