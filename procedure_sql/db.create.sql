@@ -179,6 +179,8 @@ CREATE TABLE IF NOT EXISTS `blotto_ticket` (
   `org_id` int(11) unsigned DEFAULT NULL,
   `provider`char(4) CHARACTER SET ascii DEFAULT NULL,
   `client_ref` varchar(255) CHARACTER SET ascii DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`number`),
   UNIQUE KEY `org_id_client_ref` (`org_id`,`client_ref`),
   KEY `issue_date` (`issue_date`),
