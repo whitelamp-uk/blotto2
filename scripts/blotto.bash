@@ -572,11 +572,13 @@ then
     abort_on_error 31 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    echo "32. Generate missing draw reports and invoices"
+    echo "32. Generate missing draw reports, invoices and statements"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec draw_reports.php
     abort_on_error 32a $?
     /usr/bin/php $prg $sw "$cfg" exec invoices.php
+    abort_on_error 32b $?
+    /usr/bin/php $prg $sw "$cfg" exec statements.php
     abort_on_error 32b $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 

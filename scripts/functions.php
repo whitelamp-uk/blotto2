@@ -3146,6 +3146,173 @@ function stannp_status_wins ($live=false) {
     return true;
 }
 
+function statement ($stmt,$output=true) {
+    if ($output) {
+        require __DIR__.'/statement.php';
+        return;
+    }
+    ob_start ();
+    require __DIR__.'/statement.php';
+    $statement = ob_get_contents ();
+    ob_end_clean ();
+    return $statement;
+}
+
+function statement_render ($day_first,$day_last,$description,$output=true) {
+    $c                  = BLOTTO_CURRENCY;
+    $pennies            = BLOTTO_TICKET_PRICE;
+    $code               = strtoupper (BLOTTO_ORG_USER);
+    $org                = org ();
+    $qs = "
+      SELECT
+        `game_was`.`plays` AS `plays_before`
+       ,`game_is`.`plays` AS `plays_during`
+       ,`game_is`.`draw_closed_first`
+       ,`game_is`.`draw_closed_last`
+       ,`game_is`.`draws`
+       ,`game_is`.`paid_out`
+       ,`game_is`.`winners`
+       ,IFNULL(`pre`.`collected`,0) AS `collections_before`
+       ,IFNULL(`post`.`collected`,0) AS `collections_during`
+       ,`anl`.`quantity` AS `anls`
+      FROM (
+        SELECT
+          COUNT(`id`) AS `plays`
+        FROM `blotto_entry`
+        WHERE `draw_closed`<'$day_first'
+      ) AS `game_was`
+      JOIN (
+        SELECT
+          MIN(`e`.`draw_closed`) AS `draw_closed_first`
+         ,MAX(`e`.`draw_closed`) AS `draw_closed_last`
+         ,COUNT(DISTINCT `e`.`draw_closed`) AS `draws`
+         ,COUNT(`e`.`id`) AS `plays`
+         ,SUM(`w`.`winnings`) AS `paid_out`
+         ,SUM(`w`.`winners`) AS `winners`
+        FROM `blotto_entry` AS `e`
+        LEFT JOIN (
+          SELECT
+            `entry_id`
+           ,SUM(`amount`) AS `winnings`
+           ,COUNT(`id`) AS `winners`
+          FROM `blotto_winner`
+          GROUP BY `entry_id`
+        ) AS `w`
+          ON `w`.`entry_id`=`e`.`id`
+        WHERE `e`.`draw_closed`>='$day_first'
+          AND `e`.`draw_closed`<='$day_last'
+      ) AS `game_is`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          SUM(`PaidAmount`) AS `collected`
+        FROM `blotto_build_collection`
+        WHERE `DateDue`<'$day_first'
+      ) AS `pre`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          SUM(`PaidAmount`) AS `collected`
+        FROM `blotto_build_collection`
+        WHERE `DateDue`>='$day_first'
+          AND `DateDue`<='$day_last'
+      ) AS `post`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          COUNT(*) AS `quantity`
+        FROM `ANLs`
+        WHERE `tickets_issued`>='$day_first'
+          AND `tickets_issued`<='$day_last'
+      ) AS `anl`
+        ON 1
+      ;
+    ";
+    try {
+        $zo             = connect (BLOTTO_MAKE_DB);
+        $stats          = $zo->query ($qs);
+        $stats          = $stats->fetch_assoc ();
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $reconcile          = 0;
+    $return             = 0;
+    $played             = $stats['plays_during'] * $pennies/100;
+    $return            += $played;
+    $return            -= $stats['paid_out'];
+    $expend             = 0;
+    $expend_loading     = loading_fee($stats['anls'])/100 * $stats['anls'];
+    $expend            += $expend_loading;
+    $expend_anls        = BLOTTO_FEE_ANL/100 * $stats['anls'];
+    $expend            += $expend_anls;
+    $expend_winlets     = BLOTTO_FEE_WL/100 * $stats['winners'];
+    $expend            += $expend_winlets;
+    $expend_email       = BLOTTO_FEE_CM/100 * $stats['draws'];
+    $expend            += $expend_email;
+    $expend_admin       = BLOTTO_FEE_ADMIN/100 * $stats['draws'];
+    $expend            += $expend_admin;
+    $expend_tickets     = BLOTTO_FEE_MANAGE/100 * $stats['plays_during'];
+    $expend            += $expend_tickets;
+    $expend_insure      = 0;
+    if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS>0) {
+        $expend_insure  = BLOTTO_FEE_INSURE/100 * $stats['plays_during'];
+    }
+    $expend            += $expend_insure;
+    $opening            = $stats['collections_before'] - $stats['plays_before']*$pennies/100;
+    $closing            = $opening + $stats['collections_during'] - $stats['plays_during']*$pennies/100;
+    $reconcile         += $opening;
+    $reconcile         += $stats['collections_during'];
+    $reconcile         -= $played;
+    $reconcile         -= $closing;
+    $from               = new \DateTime ($day_first);
+    $to                 = new \DateTime ($day_last);
+    $stmt               = new \stdClass ();
+    $stmt->from         = $from->format ('Y M d');;
+    $stmt->to           = $to->format ('Y M d');;
+    $stmt->html_title   = "Statement $day_first through $day_last";
+    $stmt->description  = "Lottery game statement prepared {$stmt->to}";
+    $stmt->rows         = [];
+    $stmt->rows[]       = [ "", "", "", "Summary" ];
+    $stmt->rows[]       = [ "", $stats['draw_closed_first'], "", "First draw closed in period" ];
+    $stmt->rows[]       = [ "", $stats['draw_closed_last'], "", "Last draw closed in period" ];
+    $stmt->rows[]       = [ "", $stats['draws'], "", "Draws closed in this period" ];
+    $stmt->rows[]       = [ $c, number_format($pennies/100,2,'.',''), "", "Charge per play" ];
+    $stmt->rows[]       = [ "", $stats['plays_during'], "", "Plays in this period" ];
+    $stmt->rows[]       = [ "", "", "", "Reconciliation" ];
+    $stmt->rows[]       = [ $c, number_format($opening,2,'.',''), "", "+ player opening balances" ];
+    $stmt->rows[]       = [ $c, number_format($stats['collections_during'],2,'.',''), "", "+ collected this period" ];
+    $stmt->rows[]       = [ $c, number_format(0-$played,2,'.',''), "", "- played this period" ];
+    $stmt->rows[]       = [ $c, number_format(0-$closing,2,'.',''), "", "- player closing balances" ];
+    $stmt->rows[]       = [ $c, number_format($reconcile,2,'.',''), "", "≡ to be reconciled" ];
+    $stmt->rows[]       = [ "", "", "", "Revenue & expenditure" ];
+    $stmt->rows[]       = [ $c, number_format($played,2,'.',''), "", "+ revenue from plays" ];
+    $stmt->rows[]       = [ $c, number_format(0-$stats['paid_out'],2,'.',''), "", "- winnings paid out" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_loading,2,'.',''), "", "- loading fees" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_anls,2,'.',''), "", "- advanced notification letters" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_winlets,2,'.',''), "", "- winner letters" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_email,2,'.',''), "", "- email services" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_admin,2,'.',''), "", "- administration charges" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_tickets,2,'.',''), "", "- ticket management fees" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_insure,2,'.',''), "", "- draw insurance costs" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend,2,'.',''), "", "- total expenditure" ];
+    $stmt->rows[]       = [ $c, number_format($return,2,'.',''), "", "≡ return generated" ];
+    $snippet            = statement ($stmt,false);
+    return html ($snippet,$stmt->html_title,$output);
+}
+
+function statement_serve ($file) {
+    header ('Cache-Control: no-cache');
+    header ('Content-Type: text/html');
+    header ('Content-Disposition: attachment; filename="'.$file.'"');
+    if (!is_readable(BLOTTO_DIR_STMT.'/'.$file)) {
+        echo "<html><body>Sorry - could not find statement $file</body></html>";
+        return;
+    }
+    echo file_get_contents (BLOTTO_DIR_STMT.'/'.$file);
+}
+
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
     // TODO: these inputs are now a mess and should become an object, $table
     if ($output) {

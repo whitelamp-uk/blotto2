@@ -26,6 +26,7 @@ $options       = array (
     'drawreport',
     'invoices',
     'invoice',
+    'statements',
     'about'
 );
 $list          = array (
@@ -194,6 +195,9 @@ elseif ($opt=='terms') {
 }
 elseif ($opt=='invoices') {
     require __DIR__.'/views/invoices.php';
+}
+elseif ($opt=='statements') {
+    require __DIR__.'/views/statements.php';
 }
 elseif ($opt=='drawreports') {
     require __DIR__.'/views/draw_reports.php';

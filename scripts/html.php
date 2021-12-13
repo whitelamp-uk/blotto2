@@ -51,34 +51,47 @@ table#draw-summary-super tbody td:nth-of-type(3) {
     text-align:         right;
 }
 div.draw,
-div.invoice {
-    margin:  2em;
+div.invoice,
+div.report,
+div.statement {
+    margin: 2em;
     width: 50em;
     font-family: 'arial','sans';
 }
+div.statement {
+    text-align: center;
+}
 div.draw table.draw {
-    margin:  2em 0 0 0;
+    margin: 2em 0 0 0;
     font-size: 1.2em;
 }
 div.invoice table.invoice {
-    width:  100%;
+    width: 100%;
+    font-size: 1.2em;
+}
+div.statement table {
+    margin: 2em auto 0 auto;
     font-size: 1.2em;
 }
 #draw-header,
-#invoice-header {
+#invoice-header,
+#report-header {
     text-align: center;
 }
 #draw-header svg,
-#invoice-header svg {
+#invoice-header svg,
+#report-header svg {
     width: 10em;
     height: 5.1em;
 }
 #draw-header address,
-#invoice-header address {
+#invoice-header address,
+#report-header address,
+#statement-header address {
     padding: 2em 0 3em 0;     
     font-size: 0.8em;
     font-style: normal;
-    color:  #797979;
+    color: #797979;
 }
 #draw-ref,
 #invoice-ref {
@@ -99,8 +112,9 @@ div.invoice table.invoice {
 #invoice-terms {
 }
 .draw-large,
-.invoice-large {
-    font-size:  1.6em;
+.invoice-large,
+.report-large {
+    font-size: 1.6em;
     font-weight: bold;
 }
 .invoice-pre {
@@ -108,11 +122,15 @@ div.invoice table.invoice {
     margin-left: 2em;
 }
 table.draw caption,
-table.invoice caption {
+table.invoice caption,
+table.statement caption {
     font-size: 0.9em;
 }
 table.draw caption {
     font-weight: bold;
+}
+table.statement caption {
+    text-align: center;
 }
 table.draw tfoot,
 table.invoice tfoot {
@@ -126,6 +144,38 @@ table.draw td,
 table.invoice td:nth-of-type(1) {
     font-family: inherit;
     text-align: left;
+}
+table.statement td:nth-of-type(1),
+table.statement td:nth-of-type(2),
+table.statement td:nth-of-type(3) {
+    font-family: 'courier new';
+}
+table.statement td:nth-of-type(2) {
+    text-align: right;
+}
+table.statement tr:nth-of-type(1),
+table.statement tr:nth-of-type(7),
+table.statement tr:nth-of-type(13),
+table.statement tr:nth-of-type(24) {
+    font-weight: bold;
+}
+table.statement tr:nth-of-type(16),
+table.statement tr:nth-of-type(17),
+table.statement tr:nth-of-type(18),
+table.statement tr:nth-of-type(19),
+table.statement tr:nth-of-type(20),
+table.statement tr:nth-of-type(21),
+table.statement tr:nth-of-type(22) {
+    color: #797979;
+}
+table.statement tr:nth-of-type(16) td:nth-of-type(4),
+table.statement tr:nth-of-type(17) td:nth-of-type(4),
+table.statement tr:nth-of-type(18) td:nth-of-type(4),
+table.statement tr:nth-of-type(19) td:nth-of-type(4),
+table.statement tr:nth-of-type(20) td:nth-of-type(4),
+table.statement tr:nth-of-type(21) td:nth-of-type(4),
+table.statement tr:nth-of-type(22) td:nth-of-type(4) {
+    padding-left: 3em;
 }
     </style>
   </head>

@@ -81,6 +81,7 @@ $file = array (
        ,'players_check.php'
        ,'players_update.php'
        ,'reports.php'
+       ,'statements.php'
        ,'supporters.php'
        ,'ticket_discrepancy.php'
        ,'tickets.php'
