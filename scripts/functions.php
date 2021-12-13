@@ -3403,23 +3403,6 @@ function tickets ($provider_code,$refno,$cref,$qty) {
                 $new = mt_rand (intval(BLOTTO_TICKET_MIN),intval(BLOTTO_TICKET_MAX));
                 $pad_length = strlen(BLOTTO_TICKET_MAX);
                 $new = str_pad ($new,$pad_length,'0',STR_PAD_LEFT);
-                if (in_array($new,$tickets)) {
-                    // Already selected so try again
-                    continue;
-                }
-                $qs = "
-                  SELECT
-                    `number`
-                  FROM `blotto_ticket`
-                  WHERE `number`='$new'
-                  LIMIT 0,1
-                  ;
-                ";
-                $r = $zo->query ($qs);
-                if ($r->num_rows>0) {
-                    // Already issued so try again
-                    continue;
-                }
                 $qi = "
                   INSERT INTO `blotto_ticket` SET
                     `number`='$new'
@@ -3428,11 +3411,14 @@ function tickets ($provider_code,$refno,$cref,$qty) {
                    ,`mandate_provider`='$provider_code'
                    ,`dd_ref_no`=$refno
                    ,`client_ref`='$cref'
+                  ON DUPLICATE KEY UPDATE `id`=`id`
                   ;
                 ";
                 $zo->query ($qi);
-                array_push ($tickets,$new);
-                break;
+                if ($zo->affected_rows > 0) {  // if new number inserted
+                    array_push ($tickets,$new);
+                    break;
+                }
             }
         }
     }
