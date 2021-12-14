@@ -77,7 +77,9 @@ try {
                     $s['from'] = $first;
                 }
 //echo $s['from']." -- ".$s['to']." ";
-                $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$s['to'],$s['filename']);
+                $file = str_replace('{{d}}',$s['to'],$s['filename']);
+                $file = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
+                $file = BLOTTO_DIR_STATEMENT.'/'.$file;
                 if (!array_key_exists($file,$writes)) {
                     // First (most recent) file wins
                     $writes[$file] = $s;
