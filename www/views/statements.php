@@ -4,9 +4,11 @@ if (defined('BLOTTO_DIR_STATEMENT') && is_dir(BLOTTO_DIR_STATEMENT)) {
     $scan = scandir (BLOTTO_DIR_STATEMENT.'/', SCANDIR_SORT_DESCENDING);
     foreach ($scan as $f) {
         if ($f != '.' && $f != '..') {
-            $files[] = $f;
+            $files[$f] = filemtime (BLOTTO_DIR_STATEMENT.'/'.$f);
         }
     }
+    arsort ($files);
+    $files = array_keys ($files);
 }
 else {
     $err = "Statements directory not correctly configured";
