@@ -3057,7 +3057,7 @@ function stannp_status_anls ($live=false) {
             echo $q;
             try {
                 $c->query ($q);
-                if ($c_live) {
+                if ($live) {
                     // Make the data web accessible right now
                     $c_live->query ($q);
                 }
@@ -3132,7 +3132,7 @@ function stannp_status_wins ($live=false) {
             echo $q;
             try {
                 $c->query ($q);
-                if ($c_live) {
+                if ($live) {
                     // Make the data web accessible right now
                     $c_live->query ($q);
                 }
