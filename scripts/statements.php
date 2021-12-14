@@ -50,25 +50,32 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (103);
 }
-/*
+
 try {
     while ($start->format('Y-m-d')<$today) {
+        // Each day until now
         foreach ($statements as $s) {
+            // Each statement each day
             if ($start->format($s['format'])==$s['start_value']) {
+                // Start date matches scheduled "from"
                 $from = $start->format('Y-m-d');
                 $to = new \DateTime ($from);
                 $to->add (new \DateInterval($s['interval']));
                 $to->sub (new \DateInterval('P1D'));
                 $to = $to->format('Y-m-d');
+                // Scheduled "to" calculated
                 if ($to<$today) {
-                    // Statement ends is in the past
-                    $html = statement_render ($from,$to,false);
+                    // Scheduled "to" is in the past
+                    $description = BLOTTO_ORG_NAME." - Lottery Proceeds Statement";
+                    $html = statement_render ($from,$to,$s['heading'],false);
                     $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$to,$s['filename']);
                     if (!file_exists($file) || $s['overwrite']>0) {
                         echo "    Writing statement '$file'\n";
                         $fp = fopen ($file,'w');
                         fwrite ($fp,$html);
                         fclose ($fp);
+// Temporary code to just do one statement per build
+break 2;
                     }
                 }
             }
@@ -81,4 +88,4 @@ catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
     // Do not abort build for this
 }
-*/
+
