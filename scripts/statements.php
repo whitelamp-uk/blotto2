@@ -77,7 +77,8 @@ try {
     }
 }
 catch (\Exception $e) {
+    fwrite (STDERR,"Failed to create statements without errors\n");
     fwrite (STDERR,$e->getMessage()."\n");
-    exit (104);
+    // Do not abort build for this
 }
 
