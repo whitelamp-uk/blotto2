@@ -3411,7 +3411,7 @@ function tickets ($provider_code,$refno,$cref,$qty) {
                    ,`mandate_provider`='$provider_code'
                    ,`dd_ref_no`=$refno
                    ,`client_ref`='$cref'
-                  ON DUPLICATE KEY UPDATE `id`=`id`
+                  ON DUPLICATE KEY UPDATE `updated`=NOW()
                   ;
                 ";
                 $zo->query ($qi);
