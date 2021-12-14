@@ -3306,11 +3306,11 @@ function statement_serve ($file) {
     header ('Cache-Control: no-cache');
     header ('Content-Type: text/html');
     header ('Content-Disposition: attachment; filename="'.$file.'"');
-    if (!is_readable(BLOTTO_DIR_STMT.'/'.$file)) {
+    if (!is_readable(BLOTTO_DIR_STATEMENT.'/'.$file)) {
         echo "<html><body>Sorry - could not find statement $file</body></html>";
         return;
     }
-    echo file_get_contents (BLOTTO_DIR_STMT.'/'.$file);
+    echo file_get_contents (BLOTTO_DIR_STATEMENT.'/'.$file);
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
