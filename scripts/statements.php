@@ -23,11 +23,17 @@ $cdb = BLOTTO_CONFIG_DB;
 $org_code = BLOTTO_ORG_USER;
 $overwrites = [];
 if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
-    $first = BLOTTO_INVOICE_FIRST;
+    $first = new \DateTime (BLOTTO_INVOICE_FIRST);
 }
 else {
-    $first = day_one()->format ('Y-m-d');
+    $first = day_one ();
 }
+while ($first->format('D')!='Mon') {
+    $first->sub (new \DateInterval('P1D'));
+}
+// Monday before the first invoice
+$first = $first->format ('Y-m-d');
+// Now
 $day = new \DateTime ();
 
 // Get global and org-specific statements schedule
@@ -54,8 +60,8 @@ catch (\mysqli_sql_exception $e) {
 }
 
 try {
-    // From yesterday back to the first day
     while ($day->format('Y-m-d')>=$first) {
+        // From yesterday back to $first
         $day->sub (new \DateInterval('P1D'));
         foreach ($statements as $s) {
             // Each statement this end day
