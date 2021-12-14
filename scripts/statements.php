@@ -20,6 +20,7 @@ if (!is_dir(BLOTTO_DIR_STATEMENT)) {
 // Statements
 
 $cdb = BLOTTO_CONFIG_DB;
+$org_code = BLOTTO_ORG_USER;
 if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
     $first = BLOTTO_INVOICE_FIRST;
 }
@@ -33,10 +34,14 @@ while ($start->format('D')!='Mon') {
 $today = new \DateTime ();
 $today = $today->format ('Y-m-d');
 
+// Get global and org-specific statements schedule
 $qs = "
   SELECT
     *
   FROM `$cdb`.`blotto_schedule`
+  WHERE `org_code` IS NULL
+     OR `org_code`=''
+     OR `org_code`='$org_code'
   ;
 ";
 $statements = [];
