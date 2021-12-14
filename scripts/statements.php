@@ -69,7 +69,7 @@ try {
                     $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$to,$s['filename']);
                     if (!file_exists($file) || $s['overwrite']>0) {
                         if ($html=statement_render($from,$to,$s['heading'],false)) {
-                            echo "    Writing statement '$file'\n";
+                            echo "    Writing statement '$file' (".strlen($html)." characters)\n";
                             $fp = fopen ($file,'w');
                             fwrite ($fp,$html);
                             fclose ($fp);
