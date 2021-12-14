@@ -108,7 +108,7 @@ elseif ($session=www_session($timestamp)) {
     }
     // Statement if that option
     if ($opt=='statement') {
-        statement_serve ($_GET['invoice']);
+        statement_serve ($_GET['statement']);
         exit;
     }
     // Draw report if that option
