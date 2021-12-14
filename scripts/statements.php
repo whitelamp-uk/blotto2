@@ -66,14 +66,18 @@ try {
                 // Scheduled "to" calculated
                 if ($to<$today) {
                     // Scheduled "to" is in the past
-                    $description = BLOTTO_ORG_NAME." - Lottery Proceeds Statement";
-                    $html = statement_render ($from,$to,$s['heading'],false);
                     $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$to,$s['filename']);
                     if (!file_exists($file) || $s['overwrite']>0) {
-                        echo "    Writing statement '$file'\n";
-                        $fp = fopen ($file,'w');
-                        fwrite ($fp,$html);
-                        fclose ($fp);
+                        if ($html=statement_render($from,$to,$s['heading'],false)) {
+                            echo "    Writing statement '$file'\n";
+                            $fp = fopen ($file,'w');
+                            fwrite ($fp,$html);
+                            fclose ($fp);
+                        }
+                        else {
+                            fwrite (STDERR,"No statement HTML was generated\n");
+                            exit (104);
+                        }
 // Temporary code to just do one statement per build
 break 2;
                     }
