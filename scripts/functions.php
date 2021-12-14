@@ -2740,6 +2740,9 @@ function set_once (&$var,$value) {
 function signup ($org,$s,$ccc,$cref,$first_draw_close) {
     try {
         $c = connect (BLOTTO_MAKE_DB);
+        foreach ($s as $k => $v) {
+            $s[$k] = $c->escape_string($v);
+        }
         $c->query (
           "
             INSERT INTO `blotto_supporter` SET
@@ -3411,7 +3414,7 @@ function tickets ($provider_code,$refno,$cref,$qty) {
                    ,`mandate_provider`='$provider_code'
                    ,`dd_ref_no`=$refno
                    ,`client_ref`='$cref'
-                  ON DUPLICATE KEY UPDATE `updated`=NOW()
+                  ON DUPLICATE KEY UPDATE `number`=`number`
                   ;
                 ";
                 $zo->query ($qi);
