@@ -21,6 +21,7 @@ if (!is_dir(BLOTTO_DIR_STATEMENT)) {
 
 $cdb = BLOTTO_CONFIG_DB;
 $org_code = BLOTTO_ORG_USER;
+$overwrites = [];
 if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
     $first = BLOTTO_INVOICE_FIRST;
 }
@@ -63,33 +64,41 @@ try {
             // Each statement each day
             if ($start->format($s['format'])==$s['start_value']) {
                 // Start date matches scheduled "from"
-                $from = $start->format('Y-m-d');
-                $to = new \DateTime ($from);
-                $to->add (new \DateInterval($s['interval']));
-                $to->sub (new \DateInterval('P1D'));
-                $to = $to->format('Y-m-d');
+                $s['from'] = $start->format('Y-m-d');
+                $s['to'] = new \DateTime ($s['from']);
+                $s['to']->add (new \DateInterval($s['interval']));
+                $s['to']->sub (new \DateInterval('P1D'));
+                $s['to'] = $s['to']->format('Y-m-d');
                 // Scheduled "to" calculated
-                if ($to<$today) {
+                if ($s['to']<$today) {
                     // Scheduled "to" is in the past
-                    $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$to,$s['filename']);
-                    if (!file_exists($file) || $s['overwrite']>0) {
-                        if ($html=statement_render($from,$to,$s['heading'],false)) {
-                            echo "    Writing statement '$file' (".strlen($html)." characters)\n";
-                            $fp = fopen ($file,'w');
-                            fwrite ($fp,$html);
-                            fclose ($fp);
-                        }
-                        else {
-                            fwrite (STDERR,"No statement HTML was generated\n");
-                            exit (104);
-                        }
-// Temporary code to just do one statement per build
-break 2;
+                    $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$s['to'],$s['filename']);
+                    if ($s['overwrite']) {
+                        // Avoid lots of overwriting when from the beginning of time
+                        $writes[$file] = $s;
+                    }
+                    elseif (!file_exists($file)) {
+                        // A write-once file
+                        $writes[$file] = $s;
                     }
                 }
             }
         }
         $start->add ('P1D');
+    }
+    foreach ($writes as $file=>$w) {
+        if ($html=statement_render($w['from'],$w['to'],$w['heading'],false)) {
+            echo "    Writing statement '$file' (".strlen($html)." characters)\n";
+            $fp = fopen ($file,'w');
+            fwrite ($fp,$html);
+            fclose ($fp);
+        }
+        else {
+            fwrite (STDERR,"No statement HTML was generated: ({$w['from']},{$w['to']},{$w['heading']})\n");
+            exit (104);
+        }
+// Temporary code to just do one statement per build
+break;
     }
 }
 catch (\Exception $e) {
