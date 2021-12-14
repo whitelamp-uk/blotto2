@@ -50,7 +50,7 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (103);
 }
-
+/*
 try {
     while ($start->format('Y-m-d')<$today) {
         foreach ($statements as $s) {
@@ -81,4 +81,4 @@ catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
     // Do not abort build for this
 }
-
+*/
