@@ -1878,8 +1878,8 @@ function notarisation ($file) {
     $tsr        = basename ($tsr);
     $crt        = basename (BLOTTO_TSA_CERT);
     $cac        = basename (BLOTTO_TSA_CACERT);
-    $help       = "# How to verify draw entry list creation time\n";
-    $help      .= "# -------------------------------------------\n";
+    $help       = "# How to verify the file's creation time\n";
+    $help      .= "# --------------------------------------\n";
     $help      .= "\n";
     $help      .= "# Download these files to your current working directory:\n";
     $help      .= "#  * $file\n";
