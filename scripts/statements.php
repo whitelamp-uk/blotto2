@@ -26,7 +26,7 @@ if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
     $first = BLOTTO_INVOICE_FIRST;
 }
 else {
-    $first = day_one();
+    $first = day_one()->format ('Y-m-d');
 }
 $day = new \DateTime ();
 
@@ -67,6 +67,9 @@ try {
             if (!strlen($s['format']) || $start->format($s['format'])==$s['start_value']) {
                 // Start date matches the schedule
                 $s['from'] = $start->format ('Y-m-d');
+                if ($s['from']<$first) {
+                    $s['from'] = $first;
+                }
 //echo $s['from']." -- ".$s['to']." ";
                 $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$s['to'],$s['filename']);
                 if (!array_key_exists($file,$writes)) {
