@@ -7,7 +7,7 @@ if (!$v['draws']) {
     $v['draws'] = 1;
 }
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
-$first_draw_dates = www_signup_dates ($date_error);
+$first_draw_dates = www_signup_dates ($org,$date_error);
 ?>
 
 <?php if($date_error): ?>
