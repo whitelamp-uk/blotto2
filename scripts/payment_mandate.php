@@ -35,48 +35,46 @@ try {
         $api        = new $class ($zo);
         echo "    Instantiated $class\n";
         if (method_exists($api,'insert_mandates')) {
-            foreach (glob(BLOTTO_CSV_DIR_S.'/*/supporters-flc.*.csv') as $csv) {
-                // Get new candidates
-                $mandates = [];
-                $qs = "
-                  SELECT
-                    `cand`.*
-                  FROM `tmp_supporter` AS `cand`
-                  LEFT JOIN (
-                    SELECT
-                      DISTINCT(`ClientRef`) AS `crf`
-                    FROM `rsm_mandate`
-                  ) AS `m`
-                    ON `m`.`crf`=`cand`.`ClientRef`
-                  LEFT JOIN `blotto_supporter` AS `s`
-                         ON `s`.`client_ref`=`cand`.`ClientRef`
-                  -- No mandate exists
-                  WHERE `m`.`crf` IS NULL
-                    AND (
-                    -- Either no supporter exists
-                         `s`.`id` IS NULL
-                    -- Or the supporter was inserted recently
-                      OR `s`.`inserted`>DATE_SUB(NOW(),INTERVAL $interval)
-                  )
-                ";
-                try {
-                    $ms = $zo->query ($qs);
-                    while ($m=$ms->fetch_assoc()) {
-                        $mandates[] = $m;
-                    }
+            // Get new candidates
+            $mandates = [];
+            $qs = "
+              SELECT
+                `cand`.*
+              FROM `tmp_supporter` AS `cand`
+              LEFT JOIN (
+                SELECT
+                  DISTINCT(`ClientRef`) AS `crf`
+                FROM `rsm_mandate`
+              ) AS `m`
+                ON `m`.`crf`=`cand`.`ClientRef`
+              LEFT JOIN `blotto_supporter` AS `s`
+                     ON `s`.`client_ref`=`cand`.`ClientRef`
+              -- No mandate exists
+              WHERE `m`.`crf` IS NULL
+                AND (
+                -- Either no supporter exists
+                     `s`.`id` IS NULL
+                -- Or the supporter was inserted recently
+                  OR `s`.`inserted`>DATE_SUB(NOW(),INTERVAL $interval)
+              )
+            ";
+            try {
+                $ms = $zo->query ($qs);
+                while ($m=$ms->fetch_assoc()) {
+                    $mandates[] = $m;
                 }
-                catch (\mysqli_sql_exception $e) {
-                    fwrite (STDERR, $qs."\n".$zo->error."\n");
-                    exit (104);
-                }
-                $api->insert_mandates ($mandates);
-                $mandate_count += count ($mandates);
-                $apis++;
             }
-            echo "    Exported $mandate_count mandates using $class\n";
-            echo "    Only one mandate-creation API is allowed currently\n";
-            break;
+            catch (\mysqli_sql_exception $e) {
+                fwrite (STDERR, $qs."\n".$zo->error."\n");
+                exit (104);
+            }
+            $api->insert_mandates ($mandates);
+            $mandate_count += count ($mandates);
+            $apis++;
         }
+        echo "    Exported $mandate_count mandates using $class\n";
+        echo "    Only one mandate-creation API is allowed currently\n";
+        break;
     }
     if ($apis) {
         echo "    Imported payments using $apis APIs\n";
