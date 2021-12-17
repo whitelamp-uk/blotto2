@@ -7,15 +7,30 @@ if (!$v['draws']) {
     $v['draws'] = 1;
 }
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
-$first_draw_dates = www_signup_dates ($org,$date_error);
+try {
+    $date_fatal_error = null;
+    $first_draw_dates = www_signup_dates ($org,$date_error);
+}
+catch (\Exception $e) {
+    $date_fatal_error = "Sorry - that request could not be processed";
+}
 ?>
 
-<?php if($date_error): ?>
+<?php if($date_fatal_error): ?>
+
+    <div class="error">
+      <button data-close></button>
+      <p><?php echo htmlspecialchars ($date_fatal_error); ?></p>
+    </div>
+
+<?php else: ?>
+
+<?php   if($date_error): ?>
     <div class="error">
       <button data-close></button>
       <p><?php echo htmlspecialchars ($date_error); ?></p>
     </div>
-<?php endif; ?>
+<?php   endif; ?>
 
     <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />
@@ -57,24 +72,24 @@ $first_draw_dates = www_signup_dates ($org,$date_error);
         <label for="email" class="hidden">Email address</label>
         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars ($v['email']); ?>" placeholder="Email address" title="Email address" required />
 
-<?php if ($org['signup_verify_email']>0): ?>
+<?php   if ($org['signup_verify_email']>0): ?>
         <label for="email_verify" class="hidden">Verify</label>
         <button name="verify_button_email" data-verifytype="email" type="button">Send email</button>
         <input type="text" id="email_verify" name="email_verify" value="<?php echo htmlspecialchars ($v['email_verify']); ?>" placeholder="Verify code" title="Email verification code" required />
         <input type="hidden" name="nonce_email" value="<?php echo nonce('email'); ?>" />
-<?php endif; ?>
+<?php   endif; ?>
 
         <hr/>
 
         <label for="mobile" class="hidden">Mobile number</label>
         <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" pattern="[0-9]{10,12}" required />
 
-<?php if ($org['signup_verify_sms']>0): ?>
+<?php   if ($org['signup_verify_sms']>0): ?>
         <label for="mobile_verify" class="hidden">Verify</label>
         <button name="verify_button_mobile" data-verifytype="mobile" type="button">Send SMS</button>
         <input type="text" id="mobile_verify" name="mobile_verify" value="<?php echo htmlspecialchars ($v['mobile_verify']); ?>" placeholder="Verify code" title="Mobile number verification code" required />
         <input type="hidden" name="nonce_mobile" value="<?php echo nonce('mobile'); ?>" />
-<?php endif; ?>
+<?php   endif; ?>
 
         <hr/>
 
@@ -123,57 +138,57 @@ $first_draw_dates = www_signup_dates ($org,$date_error);
 
         <legend>Ticket requirements</legend>
 
-<?php if ($org['signup_dd_text']): ?>
+<?php   if ($org['signup_dd_text']): ?>
 
         <p><?php echo str_replace ("\n",'<br/>',htmlspecialchars($org['signup_dd_text'])); ?></p>
 
-<?php endif; ?>
+<?php   endif; ?>
 
-<?php if ($org['signup_dd_link']): ?>
+<?php   if ($org['signup_dd_link']): ?>
 
         <a class="dd" target="_top" href="<?php echo htmlspecialchars ($org['signup_dd_link']); ?>">Sign up by direct debit</a>
 
-<?php endif; ?>
+<?php   endif; ?>
 
-<?php if($count=count($first_draw_dates)): ?>
+<?php   if($count=count($first_draw_dates)): ?>
 
         <div class="field radioset">
 
-<?php   if($count>1): ?>
+<?php     if($count>1): ?>
           <label class="requirements">First draw date</label>
-<?php   endif; ?>
+<?php     endif; ?>
 
 <?php   foreach ($first_draw_dates as $draw_closed=>$day): ?>
-<?php     if($count==1): ?>
+<?php       if($count==1): ?>
             <input type="hidden" name="collection_date" id="collection_date-<?php echo htmlspecialchars ($draw_closed); ?>" value="<?php echo htmlspecialchars ($draw_closed); ?>" />
             <label><strong>Purchase tickets to start playing in the draw on <?php echo $day->format('l jS F Y'); ?></strong></label>
-<?php     else: ?>
+<?php       else: ?>
           <div>
             <input type="radio" name="collection_date" id="collection_date-<?php echo htmlspecialchars ($draw_closed); ?>" value="<?php echo htmlspecialchars ($draw_closed); ?>" <?php if($draw_closed==$v['collection_date']): ?>checked<?php endif;?> />
             <label for="draws-<?php echo 1*$i; ?>"><?php echo $day->format('l jS F Y'); ?></label>
           </div>
-<?php     endif; ?>
-<?php   endforeach; ?>
+<?php       endif; ?>
+<?php     endforeach; ?>
 
         </div>
 
-<?php else: ?>
+<?php   else: ?>
 
         <input type="hidden" name="collection_date" value="<?php echo date('Y-m-d'); ?>" />
         <p>Purchase tickets to start playing in the next available draw</p>
 
-<?php endif; ?>
+<?php   endif; ?>
 
         <div class="field radioset">
 
           <label data-ppt="<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'.',''); ?>" data-maxamount="<?php echo intval ($org['signup_amount_cap']); ?>" class="requirements">Tickets cost £<?php echo number_format (BLOTTO_TICKET_PRICE/100,2,'-',','); ?> per draw, maximum allowed purchase is &pound;<?php echo htmlspecialchars($org['signup_amount_cap']); ?></label>
 
-<?php foreach ($org['signup_ticket_options'] as $i): ?>
+<?php   foreach ($org['signup_ticket_options'] as $i): ?>
           <div>
             <input type="radio" name="quantity" data-maxdraws="<?php echo intval ($org['signup_amount_cap']/($i*BLOTTO_TICKET_PRICE/100)); ?>" id="quantity-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if ($i==$v['quantity']): ?> checked <?php endif;?> />
             <label for="quantity-<?php echo 1*$i; ?>"><?php echo 1*$i; ?> ticket<?php echo plural($i); ?></label>
           </div>
-<?php endforeach; ?>
+<?php   endforeach; ?>
 
         </div>
 
@@ -181,12 +196,12 @@ $first_draw_dates = www_signup_dates ($org,$date_error);
 
           <label class="requirements">Number of weekly draws</label>
 
-<?php foreach ($org['signup_draw_options'] as $i=>$label): ?>
+<?php   foreach ($org['signup_draw_options'] as $i=>$label): ?>
           <div>
             <input type="radio" name="draws" id="draws-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if($i==$v['draws']): ?>checked<?php endif;?> />
             <label for="draws-<?php echo 1*$i; ?>"><?php echo htmlspecialchars ($label); ?></label>
           </div>
-<?php endforeach; ?>
+<?php   endforeach; ?>
 
         </div>
 
@@ -285,7 +300,7 @@ $first_draw_dates = www_signup_dates ($org,$date_error);
 
         <legend>Select payment method to pay <span id="signup-cost-confirm" class="signup-cost">&pound;<output><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output></span></legend>
 
-<?php foreach ($apis as $code=>$api): ?>
+<?php   foreach ($apis as $code=>$api): ?>
 
         <style>
 form.signup input[name="<?php echo $code; ?>"] {
@@ -295,9 +310,12 @@ form.signup input[name="<?php echo $code; ?>"] {
         </style>
         <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />
 
-<?php endforeach; ?>
+<?php   endforeach; ?>
 
       </fieldset>
 
     </form>
+
+
+<?php endif; ?>
 

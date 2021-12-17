@@ -4210,7 +4210,7 @@ function www_signup_dates ($org,&$e) {
         }
         if (!count($dates)) {
             // At least one date passed but no dates are in scope
-            $e = "Sorry these options are no longer available";
+            throw new \Exception ("No dates are in scope");
             return false;
         }
     }
