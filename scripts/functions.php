@@ -4000,13 +4000,6 @@ function winnings_super ($wins,$type) {
     return true;
 }
 
-function www_auth_log ($str) {
-    // Get this line of data to a log
-    // which, in turn, should be sent
-    // to logs.thefundraisingfoundry.net
-    // using logger.git
-}
-
 function www_auth ($db,&$time,&$err,&$msg) {
     $time               = time ();
     if (!isset($_SESSION)) {
@@ -4014,20 +4007,48 @@ function www_auth ($db,&$time,&$err,&$msg) {
     }
     $zo = connect (BLOTTO_DB,$_POST['un'],$_POST['pw'],true,true);
     if (!$zo) {
+        www_auth_log (false);
         $err            = 'Authentication failed - please try again';
         return false;
     }
     $_SESSION['blotto'] = $_POST['un'];
     $_SESSION['ends']   = $time;
-    www_auth_log (
-        date('Y-m-d H:i:s').' AUTH '.$_SERVER['REMOTE_ADDR'].' '.$_POST['un']."\n"
-    );
+    www_auth_log (true);
     setcookie ('blotto_end',$_SESSION['ends'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_dbn',BLOTTO_DB,0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_key',pwd2cookie($_POST['pw']),0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_usr',$_POST['un'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     array_push ($msg,'Welcome, '.$_POST['un'].', to '.BLOTTO_ORG_NAME.' lottery system');
     return true;
+}
+
+function www_auth_log ($ok) {
+    try {
+        $zo = connect (BLOTTO_CONFIG_DB);
+        $r = $zo->escape_string($_SERVER['REMOTE_ADDR']);
+        $u = $zo->escape_string($_POST['un']);
+        $h = $zo->escape_string(gethostname());
+        if ($ok) {
+            $s = "OK";
+        }
+        else {
+            $s = "FAIL";
+        }
+        $qi = "
+          INSERT INTO `blotto_log`
+          SET
+            `remote_addr`='$r'
+           ,`hostname`='$h'
+           ,`user`='$u'
+           ,`type`='AUTH'
+           ,`status`='$s'
+        ";
+        $zo->query ($qi);
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+        return;
+    }
 }
 
 function www_get_address ( ) {

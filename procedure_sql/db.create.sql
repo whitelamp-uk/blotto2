@@ -114,6 +114,19 @@ INSERT IGNORE INTO `blotto_level` (`config_id`, `level`, `comments`) VALUES
 (4, '3LR6', 'Match 3 of 6 numbers left or right');
 
 
+CREATE TABLE IF NOT EXISTS `blotto_log` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `remote_addr`  char(64) CHARACTER SET ascii NOT NULL,
+  `hostname` char(64) CHARACTER SET ascii NOT NULL,
+  `user` char(64) CHARACTER SET ascii NOT NULL,
+  `type` char(64) CHARACTER SET ascii NOT NULL,
+  `status` char(64) CHARACTER SET ascii NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
+
 CREATE TABLE IF NOT EXISTS `blotto_org` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_code` char(16) CHARACTER SET ascii NOT NULL,
