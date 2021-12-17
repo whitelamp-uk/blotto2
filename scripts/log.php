@@ -13,17 +13,16 @@ if (!$zo) {
 
 $dt = new \DateTime ();
 $dt->sub (new \DateInterval('PT1H'));
-$dt = $dt->format ('Y-m-d H:i:');
+$dt = $dt->format ('Y-m-d H');
 
 try {
     $qs = "
       SELECT
         CONCAT_WS(' ',`created`,`remote_addr`,`hostname`,`http_host`,`user`,`type`,`status`) AS `line`
       FROM `blotto_log`
-      WHERE `created` LIKE '$dt%'
+      WHERE `created` LIKE '$dt:__:__'
       ORDER BY `id`
     ";
-echo $qs;
     $lines = $zo->query ($qs);
     while ($line=$lines->fetch_assoc()) {
         echo $line['line']."\n";
