@@ -15,17 +15,20 @@ $dt = new \DateTime ();
 $dt->sub (new \DateInterval('PT1H'));
 $dt = $dt->format ('Y-m-d H:i:');
 
-$qs = "
-  SELECT
-    CONCAT_WS(' ',`created`,`remote_addr`,`hostname`,`http_host`,`user`,`type`,`status`) AS `line`
-  FROM `blotto_log`
-  WHERE `created` LIKE '$dt%'
-  ORDER BY `id`
-";
-
-$lines = $zo->query ($qs);
-
-while ($line=$lines->fetch_assoc()) {
-    echo $line['line']."\n";
+try {
+    $qs = "
+      SELECT
+        CONCAT_WS(' ',`created`,`remote_addr`,`hostname`,`http_host`,`user`,`type`,`status`) AS `line`
+      FROM `blotto_log`
+      WHERE `created` LIKE '$dt%'
+      ORDER BY `id`
+    ";
+echo $qs;
+    $lines = $zo->query ($qs);
+    while ($line=$lines->fetch_assoc()) {
+        echo $line['line']."\n";
+    }
 }
-
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$e->getMessage());
+}
