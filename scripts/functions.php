@@ -255,18 +255,9 @@ function collection_startdate ($today,$payday) {
     // 1 day for printing and dispatch
     // 2 days in case its a weekend
     // 2 days for 2nd class delivery
-    // 10 days after delivery
-    $dt = new \DateTime ();
+    // 10 days cooling-off after delivery
+    $dt = new \DateTime ($today);
     $dt->add (new \DateInterval('P16D'));
-    if ($dow && $dt->format('w')!=$dow) {
-        // ANLs only weekly so add more days
-        for ($i=0;$i<6;$i++) {
-            $dt->add (new \DateInterval('P1D'));
-            if ($dt->format('w')==$dow) {
-                break;
-            }
-        }
-    }
     if (intval($dt->format('j'))>28) {
         // End of month so add more days
         for ($i=0;$i<3;$i++) {
@@ -278,7 +269,7 @@ function collection_startdate ($today,$payday) {
     }
     if ($pd=intval($payday)) {
         // Day of month specified so add more days
-        for ($i=0;$i<28;$i++) {
+        for ($i=0;$i<31;$i++) {
             if (intval($dt->format('j'))==$pd) {
                 break;
             }
