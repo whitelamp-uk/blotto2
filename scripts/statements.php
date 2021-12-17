@@ -23,17 +23,18 @@ $cdb = BLOTTO_CONFIG_DB;
 $org_code = BLOTTO_ORG_USER;
 $overwrites = [];
 if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
-    $first = BLOTTO_INVOICE_FIRST;
+    $first = new \DateTime (BLOTTO_INVOICE_FIRST);
 }
 else {
-    $first = day_one()->format ('Y-m-d');
+    $first = day_one ();
 }
-$start = new \DateTime ($first);
-while ($start->format('D')!='Mon') {
-    $start->sub (new \DateInterval('P1D'));
+while ($first->format('D')!='Mon') {
+    $first->sub (new \DateInterval('P1D'));
 }
-$today = new \DateTime ();
-$today = $today->format ('Y-m-d');
+// Monday before the first invoice
+$first = $first->format ('Y-m-d');
+// Now
+$day = new \DateTime ();
 
 // Get global and org-specific statements schedule
 $qs = "
@@ -46,6 +47,7 @@ $qs = "
   ;
 ";
 $statements = [];
+$writes = [];
 try {
     $rows = $zo->query ($qs);
     while ($row=$rows->fetch_assoc()) {
@@ -58,47 +60,48 @@ catch (\mysqli_sql_exception $e) {
 }
 
 try {
-    while ($start->format('Y-m-d')<$today) {
-        // Each day until now
+    while ($day->format('Y-m-d')>=$first) {
+        // From yesterday back to $first
+        $day->sub (new \DateInterval('P1D'));
         foreach ($statements as $s) {
-            // Each statement each day
-            if ($start->format($s['format'])==$s['start_value']) {
-                // Start date matches scheduled "from"
-                $s['from'] = $start->format('Y-m-d');
-                $s['to'] = new \DateTime ($s['from']);
-                $s['to']->add (new \DateInterval($s['interval']));
-                $s['to']->sub (new \DateInterval('P1D'));
-                $s['to'] = $s['to']->format('Y-m-d');
-                // Scheduled "to" calculated
-                if ($s['to']<$today) {
-                    // Scheduled "to" is in the past
-                    $file = BLOTTO_DIR_STATEMENT.'/'.str_replace('{{d}}',$s['to'],$s['filename']);
-                    if ($s['overwrite']) {
-                        // Avoid lots of overwriting when from the beginning of time
-                        $writes[$file] = $s;
-                    }
-                    elseif (!file_exists($file)) {
-                        // A write-once file
-                        $writes[$file] = $s;
-                    }
+            // Each statement this end day
+            $s['to'] = $day->format ('Y-m-d');
+            $start = new \DateTime ($s['to']);
+            $start->sub (new \DateInterval($s['interval']));
+            $start->add (new \DateInterval('P1D'));
+//echo $s['format'].' == '.$s['start_value'].' ? ';
+            if (!strlen($s['format']) || $start->format($s['format'])==$s['start_value']) {
+                // Start date matches the schedule
+                $s['from'] = $start->format ('Y-m-d');
+                if ($s['from']<$first) {
+                    $s['from'] = $first;
+                }
+//echo $s['from']." -- ".$s['to']." ";
+                $file = str_replace('{{d}}',$s['to'],$s['filename']);
+                $file = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
+                $file = BLOTTO_DIR_STATEMENT.'/'.$file;
+                if (!array_key_exists($file,$writes)) {
+                    // First (most recent) file wins
+                    $writes[$file] = $s;
+//echo $file;
                 }
             }
+//echo "\n";
         }
-        $start->add ('P1D');
     }
     foreach ($writes as $file=>$w) {
-        if ($html=statement_render($w['from'],$w['to'],$w['heading'],false)) {
-            echo "    Writing statement '$file' (".strlen($html)." characters)\n";
-            $fp = fopen ($file,'w');
-            fwrite ($fp,$html);
-            fclose ($fp);
+        if (!file_exists($file) || $w['overwrite']) {
+            if ($html=statement_render($w['from'],$w['to'],$w['heading'],false)) {
+                echo "    Writing statement '$file' (".strlen($html)." characters)\n";
+                $fp = fopen ($file,'w');
+                fwrite ($fp,$html);
+                fclose ($fp);
+            }
+            else {
+                fwrite (STDERR,"No statement HTML was generated: ({$w['from']},{$w['to']},{$w['heading']})\n");
+                exit (104);
+            }
         }
-        else {
-            fwrite (STDERR,"No statement HTML was generated: ({$w['from']},{$w['to']},{$w['heading']})\n");
-            exit (104);
-        }
-// Temporary code to just do one statement per build
-break;
     }
 }
 catch (\Exception $e) {

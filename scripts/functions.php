@@ -1878,8 +1878,8 @@ function notarisation ($file) {
     $tsr        = basename ($tsr);
     $crt        = basename (BLOTTO_TSA_CERT);
     $cac        = basename (BLOTTO_TSA_CACERT);
-    $help       = "# How to verify draw entry list creation time\n";
-    $help      .= "# -------------------------------------------\n";
+    $help       = "# How to verify the file creation time\n";
+    $help      .= "# ------------------------------------\n";
     $help      .= "\n";
     $help      .= "# Download these files to your current working directory:\n";
     $help      .= "#  * $file\n";
@@ -3060,7 +3060,7 @@ function stannp_status_anls ($live=false) {
             echo $q;
             try {
                 $c->query ($q);
-                if ($c_live) {
+                if ($live) {
                     // Make the data web accessible right now
                     $c_live->query ($q);
                 }
@@ -3135,7 +3135,7 @@ function stannp_status_wins ($live=false) {
             echo $q;
             try {
                 $c->query ($q);
-                if ($c_live) {
+                if ($live) {
                     // Make the data web accessible right now
                     $c_live->query ($q);
                 }
@@ -3163,6 +3163,7 @@ function statement ($stmt,$output=true) {
 
 function statement_render ($day_first,$day_last,$description,$output=true) {
     $c                  = BLOTTO_CURRENCY;
+    $n                  = '×';
     $pennies            = BLOTTO_TICKET_PRICE;
     $code               = strtoupper (BLOTTO_ORG_USER);
     $org                = org ();
@@ -3246,7 +3247,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $return            += $played;
     $return            -= $stats['paid_out'];
     $expend             = 0;
-    $expend_loading     = loading_fee($stats['anls'])/100 * $stats['anls'];
+    $expend_loading     = loading_fee($stats['anls']) * $stats['anls'];
     $expend            += $expend_loading;
     $expend_anls        = BLOTTO_FEE_ANL/100 * $stats['anls'];
     $expend            += $expend_anls;
@@ -3276,13 +3277,15 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $stmt->to           = $to->format ('Y M d');;
     $stmt->html_title   = "Statement {$stmt->from} through {$stmt->to}";
     $stmt->description  = str_replace ('{{d}}',$stmt->to,$description);
+    $stmt->description  = str_replace ('{{o}}',BLOTTO_ORG_USER,$stmt->description);
+    $stmt->description  = str_replace ('{{on}}',BLOTTO_ORG_NAME,$stmt->description);
     $stmt->rows         = [];
     $stmt->rows[]       = [ "", "", "", "Summary" ];
     $stmt->rows[]       = [ "", $stats['draw_closed_first'], "", "First draw closed in period" ];
     $stmt->rows[]       = [ "", $stats['draw_closed_last'], "", "Last draw closed in period" ];
-    $stmt->rows[]       = [ "", $stats['draws'], "", "Draws closed in this period" ];
+    $stmt->rows[]       = [ $n, $stats['draws'], "", "Draws closed in this period" ];
     $stmt->rows[]       = [ $c, number_format($pennies/100,2,'.',''), "", "Charge per play" ];
-    $stmt->rows[]       = [ "", $stats['plays_during'], "", "Plays in this period" ];
+    $stmt->rows[]       = [ $n, $stats['plays_during'], "", "Plays in this period" ];
     $stmt->rows[]       = [ "", "", "", "Reconciliation" ];
     $stmt->rows[]       = [ $c, number_format($opening,2,'.',''), "", "+ player opening balances" ];
     $stmt->rows[]       = [ $c, number_format($stats['collections_during'],2,'.',''), "", "+ collected this period" ];
@@ -4007,17 +4010,50 @@ function www_auth ($db,&$time,&$err,&$msg) {
     }
     $zo = connect (BLOTTO_DB,$_POST['un'],$_POST['pw'],true,true);
     if (!$zo) {
+        www_auth_log (false);
         $err            = 'Authentication failed - please try again';
         return false;
     }
     $_SESSION['blotto'] = $_POST['un'];
     $_SESSION['ends']   = $time;
+    www_auth_log (true);
     setcookie ('blotto_end',$_SESSION['ends'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_dbn',BLOTTO_DB,0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_key',pwd2cookie($_POST['pw']),0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_usr',$_POST['un'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     array_push ($msg,'Welcome, '.$_POST['un'].', to '.BLOTTO_ORG_NAME.' lottery system');
     return true;
+}
+
+function www_auth_log ($ok) {
+    try {
+        $zo = connect (BLOTTO_CONFIG_DB);
+        $r = $zo->escape_string($_SERVER['REMOTE_ADDR']);
+        $h = $zo->escape_string(gethostname());
+        $hh = $zo->escape_string($_SERVER['HTTP_HOST']);
+        $u = $zo->escape_string($_POST['un']);
+        if ($ok) {
+            $s = "OK";
+        }
+        else {
+            $s = "FAIL";
+        }
+        $qi = "
+          INSERT INTO `blotto_log`
+          SET
+            `remote_addr`='$r'
+           ,`hostname`='$h'
+           ,`http_host`='$hh'
+           ,`user`='$u'
+           ,`type`='AUTH'
+           ,`status`='$s'
+        ";
+        $zo->query ($qi);
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+        return;
+    }
 }
 
 function www_get_address ( ) {
