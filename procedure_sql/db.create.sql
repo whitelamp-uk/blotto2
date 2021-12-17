@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS `blotto_log` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `remote_addr`  char(64) CHARACTER SET ascii NOT NULL,
   `hostname` char(64) CHARACTER SET ascii NOT NULL,
+  `http_host` char(255) CHARACTER SET ascii NOT NULL,
   `user` char(64) CHARACTER SET ascii NOT NULL,
   `type` char(64) CHARACTER SET ascii NOT NULL,
   `status` char(64) CHARACTER SET ascii NOT NULL,

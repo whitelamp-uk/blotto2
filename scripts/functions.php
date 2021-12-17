@@ -4026,8 +4026,9 @@ function www_auth_log ($ok) {
     try {
         $zo = connect (BLOTTO_CONFIG_DB);
         $r = $zo->escape_string($_SERVER['REMOTE_ADDR']);
-        $u = $zo->escape_string($_POST['un']);
         $h = $zo->escape_string(gethostname());
+        $hh = $zo->escape_string($_SERVER['HTTP_HOST']);
+        $u = $zo->escape_string($_POST['un']);
         if ($ok) {
             $s = "OK";
         }
@@ -4039,6 +4040,7 @@ function www_auth_log ($ok) {
           SET
             `remote_addr`='$r'
            ,`hostname`='$h'
+           ,`http_host`='$hh'
            ,`user`='$u'
            ,`type`='AUTH'
            ,`status`='$s'
