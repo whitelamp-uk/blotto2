@@ -255,18 +255,9 @@ function collection_startdate ($today,$payday) {
     // 1 day for printing and dispatch
     // 2 days in case its a weekend
     // 2 days for 2nd class delivery
-    // 10 days after delivery
-    $dt = new \DateTime ();
+    // 10 days cooling-off after delivery
+    $dt = new \DateTime ($today);
     $dt->add (new \DateInterval('P16D'));
-    if ($dow && $dt->format('w')!=$dow) {
-        // ANLs only weekly so add more days
-        for ($i=0;$i<6;$i++) {
-            $dt->add (new \DateInterval('P1D'));
-            if ($dt->format('w')==$dow) {
-                break;
-            }
-        }
-    }
     if (intval($dt->format('j'))>28) {
         // End of month so add more days
         for ($i=0;$i<3;$i++) {
@@ -278,7 +269,7 @@ function collection_startdate ($today,$payday) {
     }
     if ($pd=intval($payday)) {
         // Day of month specified so add more days
-        for ($i=0;$i<28;$i++) {
+        for ($i=0;$i<31;$i++) {
             if (intval($dt->format('j'))==$pd) {
                 break;
             }
@@ -4182,8 +4173,9 @@ function www_session_start () {
     session_start();
 }
 
-function www_signup_dates (&$e) {
+function www_signup_dates ($org,&$e) {
     $e = false;
+    $now = new \DateTime ();
     $dates = [];
     if (array_key_exists('d',$_GET)) {
         $c = connect ();
@@ -4198,12 +4190,22 @@ function www_signup_dates (&$e) {
             $draw_closed = $d->format ('Y-m-d');
             try {
                 $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
-                $dates[$draw_closed] = new \DateTime ($rs->fetch_assoc()['draw_date']);
+                $date = $rs->fetch_assoc()['draw_date'];
+                $end = new \DateTime ("$date 00:00:00");
+                $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
+                if ($end>$now) {
+                    $dates[$draw_closed] = new \DateTime ($date);
+                }
             }
             catch (\mysqli_sql_exception $e) {
                 throw new \Exception ($e->getMessage());
                 return false;
             }
+        }
+        if (!count($dates)) {
+            // At least one date passed but no dates are in scope
+            throw new \Exception ("No dates are in scope");
+            return false;
         }
     }
     return $dates;
