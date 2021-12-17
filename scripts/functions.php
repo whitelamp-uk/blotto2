@@ -4000,6 +4000,13 @@ function winnings_super ($wins,$type) {
     return true;
 }
 
+function www_auth_log ($str) {
+    // Get this line of data to a log
+    // which, in turn, should be sent
+    // to logs.thefundraisingfoundry.net
+    // using logger.git
+}
+
 function www_auth ($db,&$time,&$err,&$msg) {
     $time               = time ();
     if (!isset($_SESSION)) {
@@ -4012,6 +4019,9 @@ function www_auth ($db,&$time,&$err,&$msg) {
     }
     $_SESSION['blotto'] = $_POST['un'];
     $_SESSION['ends']   = $time;
+    www_auth_log (
+        date('Y-m-d H:i:s').' AUTH '.$_SERVER['REMOTE_ADDR'].' '.$_POST['un']."\n"
+    );
     setcookie ('blotto_end',$_SESSION['ends'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_dbn',BLOTTO_DB,0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_key',pwd2cookie($_POST['pw']),0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
