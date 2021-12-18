@@ -112,6 +112,7 @@ Like this:
       WHERE `p`.`first_draw_close`<='$date'
       GROUP BY `p`.`id`
     ";
+    echo rtrim($q)."\n";
     try {
         $result = $zo->query ($q);
         if (!$quiet) {
