@@ -96,7 +96,7 @@ Like this:
         ON `e_summary`.`client_ref`=`p`.`client_ref`
       JOIN (
           SELECT
-            SUM(`PaidAmount`) AS PaidTotal
+            SUM(`PaidAmount`) AS `PaidTotal`
            ,`ClientRef`
           FROM `blotto_build_collection`
 
