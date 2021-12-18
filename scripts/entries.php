@@ -53,12 +53,34 @@ foreach ($close_dates as $date) {
         }
         continue;
     }
-    $date_due           = new DateTime ($date);
-// Removed because this is now the job of rsm-api.git or other API
-// reinstated because it is needed for a "historical" build.
-    $date_due->sub (new DateInterval(BLOTTO_PAY_DELAY));  
-    $date_due_string    = $date_due->format ('Y-m-d');
-    $q                  = "
+
+/*
+
+TODO: below is all very hacky
+
+We have bespoke PHP function:
+    draw_first ($first_collection_date,$ccc)
+which is no use in the SQL restrict-before-SUM() problem below:
+    `DateDue`<='not just one date'
+
+Which suggests we really to replace current PHP functions with SQL:
+    drawClosedFirst(collectedFirst,ccc) - org.bespoke.functions.sql
+    drawClosedFirstAsap(collectedFirst) - db.functions.sql
+    drawClosedFirstZaffoModel(collectedFirst) - db.functions.sql
+
+Then the SQL below can use drawClosedFirst() rather than
+  * rely on generic, un-customisable BLOTTO_PAY_DELAY
+  * have to hack the sum of PaidAmount as below
+
+Like this:
+    `DateDue` <= drawClosedFirst('$date',`blotto_supporter`.`canvas_code`)
+
+*/
+
+    $date_dd = new DateTime ($date);
+    $date_dd->sub (new DateInterval(BLOTTO_PAY_DELAY));  
+    $date_dd = $date_dd->format ('Y-m-d');
+    $q = "
       SELECT
         `p`.`client_ref`
        ,`c_sum`.`PaidTotal` - IFNULL(`e_summary`.`paid_out`,0) AS `balance`
@@ -73,10 +95,16 @@ foreach ($close_dates as $date) {
       ) AS `e_summary`
         ON `e_summary`.`client_ref`=`p`.`client_ref`
       JOIN (
-          SELECT SUM(`c`.`PaidAmount`) as PaidTotal, `c`.`ClientRef`
-          FROM `blotto_build_collection` AS `c`
-          WHERE `c`.`DateDue`<='$date_due_string'
-          GROUP BY `c`.`ClientRef`
+          SELECT
+            SUM(`PaidAmount`) AS PaidTotal
+           ,`ClientRef`
+          FROM `blotto_build_collection`
+
+-- HORRIBLE HACK
+          WHERE (`ClientRef` LIKE 'STRP%' AND `DateDue`<='$date')
+             OR (`ClientRef` NOT LIKE 'STRP%' AND `DateDue`<='$date_dd')
+
+          GROUP BY `ClientRef`
       ) AS `c_sum`
         ON `c_sum`.`ClientRef`=`p`.`client_ref`
       JOIN `$ticket_db`.`blotto_ticket` AS `tk`
@@ -85,28 +113,28 @@ foreach ($close_dates as $date) {
       GROUP BY `p`.`id`
     ";
     try {
-        $result         = $zo->query ($q);
+        $result = $zo->query ($q);
         if (!$quiet) {
             echo "b";
         }
-        $q                  = "
-          INSERT INTO blotto_entry
-          (`draw_closed`, `ticket_number`, `client_ref`)
+        $q = "
+          INSERT INTO `blotto_entry`
+          (`draw_closed`,`ticket_number`,`client_ref`)
           VALUES
         ";
         $n = 0;
-        while ($r = $result->fetch_assoc()) {
+        while ($r=$result->fetch_assoc()) {
             $cref           = $r['client_ref'];
             $balance        = $r['balance'];
             $ticket_numbers = explode (',',$r['ticket_numbers']);
-            $chances = count($ticket_numbers);
-            if ($balance >= round($price*$chances/100,2)) {
+            $chances        = count ($ticket_numbers);
+            if ($balance>=round($price*$chances/100,2)) {
                 foreach ($ticket_numbers as $key => $ticket_number) {
-                    $q  .= "( '$date', '$ticket_number', '$cref' ), ";
+                    $q     .= "( '$date', '$ticket_number', '$cref' ), ";
                     $n++;
                 }
             }
-            elseif ($balance < 0) {
+            elseif ($balance<0) {
                 fwrite (STDERR,"ClientRef '$cref' has a negative balance!\n");
             } 
         }
