@@ -3255,6 +3255,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
         $expend_insure  = BLOTTO_FEE_INSURE/100 * $stats['plays_during'];
     }
     $expend            += $expend_insure;
+    $return            -= $expend;
     $opening            = $stats['collections_before'] - $stats['plays_before']*$pennies/100;
     $closing            = $opening + $stats['collections_during'] - $stats['plays_during']*$pennies/100;
     $reconcile         += $opening;
