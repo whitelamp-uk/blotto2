@@ -524,7 +524,7 @@ BEGIN
            ON `tk`.`client_ref`=`p`.`client_ref`
 
 /*
-TODO: See scripts/entries.php and BLOTTO_EMAIL_QUIET_CCCS in scripts/changes_email.php
+TODO: Do this a proper way - see scripts/entries.php which has the same problem
 */
 -- HORRIBLE HACK
     WHERE `p`.`client_ref` NOT LIKE 'STRP%'
