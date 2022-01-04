@@ -61,7 +61,7 @@ if ($today->format('D')==$dow) {
             $day->sub (new \DateInterval($r['interval']));
             // At this week start:
             $end = new \DateTime ($day->format('Y-m-d'));
-            $end->sub ('P1D');
+            $end->sub (new \DateInterval('P1D'));
             $end = $end->format ('Y-m-d');
             $day->sub (new \DateInterval($r['interval']));
             // At last start:
