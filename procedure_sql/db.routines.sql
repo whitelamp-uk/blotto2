@@ -433,7 +433,7 @@ BEGIN
      ,`supporter_signed`
      ,`supporter_approved`
      ,`supporter_created`
-     ,`supporter_first_paid`
+     ,IFNULL(`supporter_first_paid`,'') AS `supporter_first_paid`
     FROM `blotto_change`
     ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
   ;
@@ -555,7 +555,7 @@ BEGIN
    ,`supporter_signed`
    ,`supporter_approved`
    ,`supporter_created`
-   ,IFNULL(`supporter_first_paid`,'') AS `supporter_first_paid`
+   ,`supporter_first_paid`
    ,`starting_chances`
    ,GROUP_CONCAT(
       CONCAT_WS(
