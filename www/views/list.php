@@ -3,7 +3,7 @@
 $tables         = array (
     'ANLs'             => 'ANLs by issue date',
     'Cancellations'    => 'Cancellations by cancel date',
-    'Changes'          => 'Canvassing company changes by date',
+    'Changes'          => 'Canvassing company returns by date',
     'Draws'            => 'Draw entries by close date',
     'Insurance'        => 'Insurance by draw close date',
     'Supporters'       => 'Supporters by create date',
