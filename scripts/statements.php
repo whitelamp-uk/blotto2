@@ -41,9 +41,12 @@ $qs = "
   SELECT
     *
   FROM `$cdb`.`blotto_schedule`
-  WHERE `org_code` IS NULL
+  WHERE `type`='statement'
+    AND (
+        `org_code` IS NULL
      OR `org_code`=''
      OR `org_code`='$org_code'
+    )
   ;
 ";
 $statements = [];
