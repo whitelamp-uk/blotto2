@@ -281,7 +281,7 @@ catch (\mysqli_sql_exception $e) {
     exit (108);
 }
 
-$qd = "
+$qu = "
   UPDATE `blotto_change`
   SET
     `supporter_first_paid`=null
