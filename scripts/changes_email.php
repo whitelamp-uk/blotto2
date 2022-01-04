@@ -43,6 +43,7 @@ if ($dt->format('D')==$dow) {
         AND `changed_date`<='$end'
       ;
     ";
+    echo $qs;
     try {
         echo "CCCs to be emailed\n";
         $codes              = $zo->query ($qs);
@@ -64,6 +65,7 @@ if ($dt->format('D')==$dow) {
               ORDER BY `changed_date`,`canvas_ref`,`chance_number`
               ;
             ";
+            echo $qs;
             $rows           = $zo->query ($qs);
             while ($row=$rows->fetch_assoc()) {
                 $changes[]  = $row;
