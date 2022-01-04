@@ -522,6 +522,13 @@ BEGIN
       GROUP BY `client_ref`
     )      AS `tk`
            ON `tk`.`client_ref`=`p`.`client_ref`
+
+/*
+TODO: See scripts/entries.php and BLOTTO_EMAIL_QUIET_CCCS in scripts/changes_email.php
+*/
+-- HORRIBLE HACK
+    WHERE `p`.`client_ref` NOT LIKE 'STRP%'
+
     ORDER BY `p`.`started`,`p`.`id`
   ;
   DROP TABLE IF EXISTS `tmp_changes_collection`
