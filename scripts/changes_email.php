@@ -93,24 +93,26 @@ if ($today->format('D')==$dow) {
                 echo "        $count changes for $code\n";
                 $headers    = [];
                 $file       = $dir.'/'.$r['filename'];
-                    echo "        Creating CSV file '$file'\n";
-                    $fp     = fopen ($file,'w');
-                    if (!$fp) {
-                        fwrite (STDERR,"Could not open file '$file' for writing\n");
-                        exit (105);
-                    }
-                    foreach ($changes[0] as $field=>$v) {
-                        $headers[] = $field;
-                    }
-                    fputcsv ($fp,$headers);
-                    foreach ($changes as $change) {
-                        fputcsv ($fp,$change);
-                    }
-                    fclose ($fp);
-                    echo "    Successfully wrote ".count($changes)." rows of data to file '$file'\n";
-                    $r['start'] = $start;
-                    $r['end'] = $end;
-                    $emails[$file] = $r;
+                $file       = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
+                $file       = str_replace('{{c}}',strtoupper($code),$file);
+                echo "        Creating CSV file '$file'\n";
+                $fp         = fopen ($file,'w');
+                if (!$fp) {
+                    fwrite (STDERR,"Could not open file '$file' for writing\n");
+                    exit (105);
+                }
+                foreach ($changes[0] as $field=>$v) {
+                    $headers[] = $field;
+                }
+                fputcsv ($fp,$headers);
+                foreach ($changes as $change) {
+                    fputcsv ($fp,$change);
+                }
+                fclose ($fp);
+                echo "    Successfully wrote ".count($changes)." rows of data to file '$file'\n";
+                $r['start'] = $start;
+                $r['end'] = $end;
+                $emails[$file] = $r;
             }
         }
     }
