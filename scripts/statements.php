@@ -21,7 +21,6 @@ if (!is_dir(BLOTTO_DIR_STATEMENT)) {
 
 $cdb = BLOTTO_CONFIG_DB;
 $org_code = BLOTTO_ORG_USER;
-$overwrites = [];
 if (defined('BLOTTO_INVOICE_FIRST') && BLOTTO_INVOICE_FIRST) {
     $first = new \DateTime (BLOTTO_INVOICE_FIRST);
 }
@@ -39,7 +38,15 @@ $day = new \DateTime ();
 // Get global and org-specific statements schedule
 $qs = "
   SELECT
-    *
+    `id`
+   ,`org_code`
+   ,`filename`
+   ,`format`
+   ,`start_value`
+   ,`interval`
+   ,`type`
+   ,`statement_overwrite`
+   ,`statement_heading`
   FROM `$cdb`.`blotto_schedule`
   WHERE `type`='statement'
     AND (
@@ -93,15 +100,15 @@ try {
         }
     }
     foreach ($writes as $file=>$w) {
-        if (!file_exists($file) || $w['overwrite']) {
-            if ($html=statement_render($w['from'],$w['to'],$w['heading'],false)) {
+        if (!file_exists($file) || $w['statement_overwrite']) {
+            if ($html=statement_render($w['from'],$w['to'],$w['statement_heading'],false)) {
                 echo "    Writing statement '$file' (".strlen($html)." characters)\n";
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$html);
                 fclose ($fp);
             }
             else {
-                fwrite (STDERR,"No statement HTML was generated: ({$w['from']},{$w['to']},{$w['heading']})\n");
+                fwrite (STDERR,"No statement HTML was generated: ({$w['from']},{$w['to']},{$w['statement_heading']})\n");
                 exit (104);
             }
         }
