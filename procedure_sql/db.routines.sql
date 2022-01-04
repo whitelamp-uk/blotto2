@@ -417,15 +417,16 @@ CREATE PROCEDURE `changes` (
 BEGIN
   DROP TABLE IF EXISTS `Changes`
   ;
+  -- Only changes in sign-ups over the last BLOTTO_CC_NOTIFY='{{BLOTTO_CC_NOTIFY}}' should be included
   CREATE TABLE `Changes` AS
     SELECT
       `changed_date`
      ,`ccc`
-     ,`agent_ref`
      ,`canvas_ref`
      ,`chance_number`
      ,CONCAT(`canvas_ref`,'-',`chance_number`) AS `chance_ref`
      ,`client_ref_original`
+     ,`agent_ref`
      ,`type`
      ,`is_termination`
      ,`reinstatement_for`
@@ -435,16 +436,23 @@ BEGIN
      ,`supporter_created`
      ,IFNULL(`supporter_first_paid`,'') AS `supporter_first_paid`
     FROM `blotto_change`
+    WHERE `supporter_signed`>=DATE_SUB(NOW(),INTERVAL {{BLOTTO_CC_NOTIFY}})
     ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
   ;
   ALTER TABLE `Changes`
   ADD PRIMARY KEY (`changed_date`,`ccc`,`canvas_ref`,`chance_number`)
   ;
   ALTER TABLE `Changes`
-  ADD KEY `agent_ref` (`agent_ref`)
+  ADD KEY `changed_date` (`changed_date`)
   ;
   ALTER TABLE `Changes`
-  ADD KEY `chance_ref` (`chance_ref`)
+  ADD KEY `ccc` (`ccc`)
+  ;
+  ALTER TABLE `Changes`
+  ADD KEY `canvas_ref` (`canvas_ref`)
+  ;
+  ALTER TABLE `Changes`
+  ADD KEY `agent_ref` (`agent_ref`)
   ;
   ALTER TABLE `Changes`
   ADD KEY `client_ref_original` (`client_ref_original`)
