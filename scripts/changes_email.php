@@ -9,6 +9,12 @@ $dow = BLOTTO_EMAIL_REPORT_DAY;
 
 echo "    Emailing changes for canvassing companies\n";
 
+if (!defined('BLOTTO_CANCEL_LEGACY')) {
+    write (STDERR,"BLOTTO_CANCEL_LEGACY should be 0 or 1\n");
+    exit (101);
+}
+
+
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
     exit (102);
@@ -74,14 +80,34 @@ if ($today->format('D')==$dow) {
                 exit (104);
             }
             echo "        Created directory '$dir'\n";
+            if (BLOTTO_CANCEL_LEGACY) {
+                $field = 'changed_date_legacy';
+            }
+            else {
+                $field = 'changed_date';
+            }
             $qs = "
               SELECT
-                *
+                `$field`
+               ,`ccc`
+               ,`canvas_ref`
+               ,`chance_number`
+               ,`chance_ref`
+               ,`client_ref_original`
+               ,`agent_ref`
+               ,`type`
+               ,`is_termination`
+               ,`reinstatement_for`
+               ,`amount_paid_before_this_date`
+               ,`supporter_signed`
+               ,`supporter_approved`
+               ,`supporter_created`
+               ,`supporter_first_paid`
               FROM `Changes`
-              WHERE `changed_date`>='$start'
-                AND `changed_date`<='$end'
+              WHERE `$field`>='$start'
+                AND `$field`<='$end'
                 AND `ccc`='$code'
-              ORDER BY `changed_date`,`canvas_ref`,`chance_number`
+              ORDER BY `$field`,`canvas_ref`,`chance_number`
               ;
             ";
             echo $qs."\n";
@@ -89,15 +115,16 @@ if ($today->format('D')==$dow) {
             while ($row=$rows->fetch_assoc()) {
                 $changes[]  = $row;
             }
-            if ($count=count($changes)) {
-                echo "        $count changes for $code\n";
-                $headers    = [];
-                $file       = $dir.'/'.$r['filename'];
-                $file       = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
-                $file       = str_replace('{{d}}',$end,$file);
-                $file       = str_replace('{{c}}',strtoupper($code),$file);
+            $r['count']     = count ($changes);
+            echo "        {$r['count']} changes for $code\n";
+            $headers        = [];
+            $file           = $dir.'/'.$r['filename'];
+            $file           = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
+            $file           = str_replace('{{d}}',$end,$file);
+            $file           = str_replace('{{c}}',strtoupper($code),$file);
+            if ($r['count']>0) {
                 echo "        Creating CSV file '$file'\n";
-                $fp         = fopen ($file,'w');
+                $fp             = fopen ($file,'w');
                 if (!$fp) {
                     fwrite (STDERR,"Could not open file '$file' for writing\n");
                     exit (105);
@@ -111,10 +138,13 @@ if ($today->format('D')==$dow) {
                 }
                 fclose ($fp);
                 echo "    Successfully wrote ".count($changes)." rows of data to file '$file'\n";
-                $r['start'] = $start;
-                $r['end'] = $end;
-                $emails[$file] = $r;
             }
+            else {
+                echo "    No data for file '$file'\n";
+            }
+            $r['start'] = $start;
+            $r['end'] = $end;
+            $emails[$file] = $r;
         }
     }
     catch (\mysqli_sql_exception $e) {
@@ -122,16 +152,24 @@ if ($today->format('D')==$dow) {
         exit (105);
     }
     echo "    ".count($emails)." files to send\n";
-    if (count($emails)) {
-        foreach ($emails as $file=>$r) {
-            echo "    Emailing CCR for {$r['ccr_ccc']} to {$r['ccr_email']}\n";
+    foreach ($emails as $file=>$r) {
+        echo "    Emailing CCR for {$r['ccr_ccc']} to {$r['ccr_email']}\n";
+        if ($r['count']>0) {
             mail_attachments (
                 $r['ccr_email'],
                 "Canvassing Company Return from ".BLOTTO_BRAND." w/e {$r['end']}",
-                "The canvassing company return - CCR - reports any ticket changes logged last week for recently-joined supporters (".BLOTTO_CC_NOTIFY." from sign-up)",
+                "The canvassing company return - CCR - reports any ticket changes logged last period for recently-joined supporters (".BLOTTO_CC_NOTIFY." from sign-up)",
                 [$file]
             );
             exec ("rm -f '$file'");
+        }
+        else {
+            mail (
+                $r['ccr_email'],
+                "Canvassing Company Return from ".BLOTTO_BRAND." w/e {$r['end']}",
+                "The canvassing company return - CCR - reports that no ticket changes were logged last period",
+                "From: ".BLOTTO_EMAIL_FROM.PHP_EOL
+            );
         }
     }
 }

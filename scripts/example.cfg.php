@@ -69,6 +69,7 @@ define ( 'BLOTTO_PAY_DELAY',     'P2D'               );  // From DateDue to cred
 define ( 'BLOTTO_CREF_MATCH',    '^[A-z0-9_]+$'      );  // Original supporter reference restriction
 define ( 'BLOTTO_CREF_SPLITTER', '-'                 );  // Split mandate detection character sequence
 define ( 'BLOTTO_CANCEL_RULE',   '2 MONTH'           );  // Used to define when a supporter has "cancelled"
+define ( 'BLOTTO_CANCEL_LEGACY', 0                   );  // 1 = use BLOTTO_CANCEL_RULE even if DD cancelled
 
 
 // rsm-api, an RSM payment class

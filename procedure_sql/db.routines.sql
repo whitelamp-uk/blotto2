@@ -318,6 +318,16 @@ BEGIN
           )
         )
       ) AS `cancelled_date`
+     ,IF(
+        `m`.`Refno` IS NULL
+       ,cancelDate(`s`.`created`,'')
+       ,IF(
+          `c`.`Payments_Collected` IS NULL
+          -- if no collections, use mandate start date
+         ,cancelDate(`m`.`StartDate`,`m`.`Freq`)
+         ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
+        )
+      ) AS `cancelled_date_legacy`
      ,`s`.`canvas_code` AS `ccc`
      ,`ip`.`client_ref`
      ,IFNULL(`t`.`number`,'') AS `ticket_number`
@@ -425,29 +435,41 @@ BEGIN
   ;
   CREATE TABLE `Changes` AS
     SELECT
-      `changed_date`
-     ,`ccc`
-     ,`canvas_ref`
-     ,`chance_number`
-     ,CONCAT(`canvas_ref`,'-',`chance_number`) AS `chance_ref`
-     ,`client_ref_original`
-     ,`agent_ref`
-     ,`type`
-     ,`is_termination`
-     ,`reinstatement_for`
-     ,`amount_paid_before_this_date`
-     ,`supporter_signed`
-     ,`supporter_approved`
-     ,`supporter_created`
-     ,IFNULL(`supporter_first_paid`,'') AS `supporter_first_paid`
-    FROM `blotto_change`
-    ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
+      `ch`.`changed_date`
+     ,`c`.`cancelled_date_legacy` AS `changed_date_legacy`
+     ,`ch`.`ccc`
+     ,`ch`.`canvas_ref`
+     ,`ch`.`chance_number`
+     ,CONCAT(`ch`.`canvas_ref`,'-',`ch`.`chance_number`) AS `chance_ref`
+     ,`ch`.`client_ref_original`
+     ,`ch`.`agent_ref`
+     ,`ch`.`type`
+     ,`ch`.`is_termination`
+     ,`ch`.`reinstatement_for`
+     ,`ch`.`amount_paid_before_this_date`
+     ,`ch`.`supporter_signed`
+     ,`ch`.`supporter_approved`
+     ,`ch`.`supporter_created`
+     ,IFNULL(`ch`.`supporter_first_paid`,'') AS `supporter_first_paid`
+    FROM `blotto_change` AS `ch`
+    JOIN (
+      SELECT
+        `client_ref`
+        `cancelled_date_legacy`
+      FROM `Cancellations`
+      GROUP BY `client_ref`
+    ) AS `c`
+      ON `c`.`client_ref`=`ch`.`client_ref_original`
+    ORDER BY `ch`.`changed_date`,`ch`.`ccc`,`ch`.`canvas_ref`,`ch`.`chance_number`
   ;
   ALTER TABLE `Changes`
   ADD PRIMARY KEY (`changed_date`,`ccc`,`canvas_ref`,`chance_number`)
   ;
   ALTER TABLE `Changes`
   ADD KEY `changed_date` (`changed_date`)
+  ;
+  ALTER TABLE `Changes`
+  ADD KEY `changed_date_legacy` (`changed_date_legacy`)
   ;
   ALTER TABLE `Changes`
   ADD KEY `ccc` (`ccc`)
