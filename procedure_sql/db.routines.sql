@@ -455,7 +455,7 @@ BEGIN
     JOIN (
       SELECT
         `client_ref`
-        `cancelled_date_legacy`
+       ,`cancelled_date_legacy`
       FROM `Cancellations`
       GROUP BY `client_ref`
     ) AS `c`
