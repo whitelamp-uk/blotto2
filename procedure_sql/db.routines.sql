@@ -417,7 +417,6 @@ CREATE PROCEDURE `changes` (
 BEGIN
   DROP TABLE IF EXISTS `Changes`
   ;
-  -- Only changes in sign-ups over the last BLOTTO_CC_NOTIFY='{{BLOTTO_CC_NOTIFY}}' should be included
   CREATE TABLE `Changes` AS
     SELECT
       `changed_date`
@@ -436,7 +435,6 @@ BEGIN
      ,`supporter_created`
      ,IFNULL(`supporter_first_paid`,'') AS `supporter_first_paid`
     FROM `blotto_change`
-    WHERE `supporter_signed`>=DATE_SUB(NOW(),INTERVAL {{BLOTTO_CC_NOTIFY}})
     ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
   ;
   ALTER TABLE `Changes`
