@@ -308,10 +308,14 @@ BEGIN
         `m`.`Refno` IS NULL
        ,cancelDate(`s`.`created`,'')
        ,IF(
-          `c`.`Payments_Collected` IS NULL
-          -- if no collections, use mandate start date
-         ,cancelDate(`m`.`StartDate`,`m`.`Freq`)
-         ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
+          `m`.`Status`='CANCELLED'
+         ,`m`.`StartDate`
+         ,IF(
+            `c`.`Payments_Collected` IS NULL
+            -- if no collections, use mandate start date
+            ,cancelDate(`m`.`StartDate`,`m`.`Freq`)
+            ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
+          )
         )
       ) AS `cancelled_date`
      ,`s`.`canvas_code` AS `ccc`
