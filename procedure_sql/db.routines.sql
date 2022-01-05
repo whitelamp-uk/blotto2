@@ -436,7 +436,7 @@ BEGIN
   CREATE TABLE `Changes` AS
     SELECT
       `ch`.`changed_date`
-     ,`c`.`cancelled_date_legacy` AS `changed_date_legacy`
+     ,IF(`ch`.`type`='DEC',`c`.`cancelled_date_legacy`,`ch`.`changed_date`) AS `changed_date_legacy`
      ,`ch`.`ccc`
      ,`ch`.`canvas_ref`
      ,`ch`.`chance_number`
@@ -452,14 +452,15 @@ BEGIN
      ,`ch`.`supporter_created`
      ,IFNULL(`ch`.`supporter_first_paid`,'') AS `supporter_first_paid`
     FROM `blotto_change` AS `ch`
-    JOIN (
+    LEFT JOIN (
       SELECT
         `client_ref`
        ,`cancelled_date_legacy`
       FROM `Cancellations`
       GROUP BY `client_ref`
     ) AS `c`
-      ON `c`.`client_ref`=`ch`.`client_ref_original`
+      ON `ch`.`type`='DEC'
+     AND `c`.`client_ref`=`ch`.`client_ref_original`
     ORDER BY `ch`.`changed_date`,`ch`.`ccc`,`ch`.`canvas_ref`,`ch`.`chance_number`
   ;
   ALTER TABLE `Changes`
