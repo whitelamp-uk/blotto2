@@ -308,8 +308,8 @@ BEGIN
         `m`.`Refno` IS NULL
        ,cancelDate(`s`.`created`,'')
        ,IF(
-          `m`.`Status`='CANCELLED'
-         ,`m`.`StartDate`
+          `m`.`Status`=CONVERT('CANCELLED' USING UTF8)
+         ,`m`.`Updated`
          ,IF(
             `c`.`Payments_Collected` IS NULL
             -- if no collections, use mandate start date
