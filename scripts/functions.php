@@ -2729,6 +2729,8 @@ function set_once (&$var,$value) {
 }
 
 function signup ($org,$s,$ccc,$cref,$first_draw_close) {
+    // For use by internal payment APIs which do not
+    // provide FLC-standard CSV files for importing
     try {
         $c = connect (BLOTTO_MAKE_DB);
         foreach ($s as $k => $v) {
