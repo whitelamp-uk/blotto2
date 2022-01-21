@@ -119,22 +119,22 @@ a.link-resource {
     height:             2em;
 }
 
-a.link-image img {
+a.link-image > img {
     width:              100%;
     height:             100%;
     src:                var(--blotto-url-link-image);
 }
 
-a.link-table img {
+a.link-table > img {
     width:              100%;
     height:             100%;
     src:                var(--blotto-url-link-table);
 }
 
-a.link-csv img {
+a.link-csv > img {
     width:              100%;
     height:             100%;
-    background-image:   var(--blotto-url-link-csv);
+    src:                var(--blotto-url-link-csv);
 }
 
 a.help {
