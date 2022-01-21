@@ -19,7 +19,7 @@ catch (\Exception $e) {
 <?php if($date_fatal_error): ?>
 
     <div class="error">
-      <button data-close></button>
+      <button data-close><img /></button>
       <p><?php echo htmlspecialchars ($date_fatal_error); ?></p>
     </div>
 
@@ -27,7 +27,7 @@ catch (\Exception $e) {
 
 <?php   if($date_error): ?>
     <div class="error">
-      <button data-close></button>
+      <button data-close><img /></button>
       <p><?php echo htmlspecialchars ($date_error); ?></p>
     </div>
 <?php   endif; ?>

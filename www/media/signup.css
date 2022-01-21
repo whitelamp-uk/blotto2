@@ -43,10 +43,13 @@ section.signup div.error button[data-close] {
     position:           absolute;
     top:                0.6em;
     right:              0.6em;
-    background-image:   url('./close.png');
-    background-size:    contain;
     width:              2em;
     height:             2em;
+}
+section.signup div.error button[data-close] img {
+    width:              100%;
+    height:             100%;
+    src:                url('./close.png');
 }
 section.signup button.ok {
     display:            block;
