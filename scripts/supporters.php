@@ -64,10 +64,6 @@ try {
 TODO: Some attempt to sanity check formats and values
 by something based roughly on the theme below.
 
-Actually soon both import.supporter.sql and this script
-must be rewritten as per https://www.whitelamp.com/flc/
-
-
         if (str_replace(' ','',$c['FirstName'])=='') {
             fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesGiven` is compulsory - $ccc - {$c['ClientRef']}\n");
             exit (103);
