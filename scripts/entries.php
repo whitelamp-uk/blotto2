@@ -83,7 +83,7 @@ Like this:
     $q = "
       SELECT
         `p`.`client_ref`
-       ,`c_sum`.`PaidTotal` - IFNULL(`e_summary`.`paid_out`,0) AS `balance`
+       ,`p`.`opening_balance` + `c_sum`.`PaidTotal` - IFNULL(`e_summary`.`paid_out`,0) AS `balance`
        ,GROUP_CONCAT(DISTINCT(`tk`.`number`)) AS `ticket_numbers`
       FROM `blotto_player` AS `p`
       LEFT JOIN (

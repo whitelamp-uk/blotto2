@@ -3169,6 +3169,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
        ,`game_is`.`draws`
        ,`game_is`.`paid_out`
        ,`game_is`.`winners`
+       ,`supporter`.`starting_balances`
        ,IFNULL(`pre`.`collected`,0) AS `collections_before`
        ,IFNULL(`post`.`collected`,0) AS `collections_during`
        ,`anl`.`quantity` AS `anls`
@@ -3199,6 +3200,16 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
         WHERE `e`.`draw_closed`>='$day_first'
           AND `e`.`draw_closed`<='$day_last'
       ) AS `game_is`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          SUM(`p`.`opening_balance`) AS `starting_balances`
+        FROM `blotto_player` AS `p`
+        JOIN `blotto_supporter` AS `s`
+          ON `s`.`id`=`p`.`supporter_id`
+         AND `s`.`client_ref`=`p`.`client_ref`
+        WHERE `p`.`created`<='$day_last'
+      ) AS `supporter`
         ON 1
       LEFT JOIN (
         SELECT
@@ -3258,7 +3269,8 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     }
     $expend            += $expend_insure;
     $return            -= $expend;
-    $opening            = $stats['collections_before'] - $stats['plays_before']*$pennies/100;
+    $opening            = $stats['starting_balances'] + $stats['collections_before'];
+    $opening           -= $stats['plays_before'] * $pennies/100;
     $closing            = $opening + $stats['collections_during'] - $stats['plays_during']*$pennies/100;
     $reconcile         += $opening;
     $reconcile         += $stats['collections_during'];

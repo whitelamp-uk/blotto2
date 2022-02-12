@@ -176,46 +176,53 @@ BEGIN
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8
   ;
-  SET @first        = (
+  SET @first = (
     SELECT
       MIN(`draw_closed`)
     FROM `blotto_entry`
     WHERE `draw_closed`>=starts
       AND `draw_closed`<=ends
-                      )
+  )
   ;
-  SET @last        = (
+  SET @last = (
     SELECT
       MAX(`draw_closed`)
     FROM `blotto_entry`
     WHERE `draw_closed`>=starts
       AND `draw_closed`<=ends
-                      )
+  )
   ;
-  SET @weeks        = (
+  SET @weeks = (
     SELECT
       COUNT(DISTINCT `draw_closed`)
     FROM `blotto_entry`
     WHERE `draw_closed`>=starts
       AND `draw_closed`<=ends
-                      )
+  )
   ;
-  SET @collections  = (
+  SET @collections = (
     SELECT
       SUM(`PaidAmount`)
     FROM `blotto_build_collection`
     WHERE `DateDue`>=starts
       AND `DateDue`<=ends
-                      )
+  )
   ;
-  SET @allCollected  = (
+  SET @starting = (
+    SELECT
+      SUM(`p`.`opening_balance`)
+    FROM `blotto_player` AS `p`
+    WHERE DATE(`p`.`created`)<=ends
+  )
+  ;
+  SET @allCollected = (
     SELECT
       SUM(`PaidAmount`)
     FROM `blotto_build_collection`
     WHERE `DateDue`<=ends
-                      )
+  )
   ;
-  SET @fees        = (
+  SET @fees = (
     SELECT
       ROUND(SUM(`amount`)/100,2)
     FROM `blotto_super_entry`
@@ -223,9 +230,9 @@ BEGIN
       AND `draw_closed`<=ends
                       )
   ;
-  SET @fees         = IFNULL(@fees,0)
+  SET @fees = IFNULL(@fees,0)
   ;
-  SET @plays        = (
+  SET @plays = (
     SELECT
       COUNT(`id`)
     FROM `blotto_entry`
@@ -233,7 +240,7 @@ BEGIN
       AND `draw_closed`<=ends
                       )
   ;
-  SET @allPlays    = (
+  SET @allPlays = (
     SELECT
       COUNT(`id`)
     FROM `blotto_entry`
@@ -246,7 +253,7 @@ BEGIN
   ;
   SET @allPlayed    = @perplay/100 * @allPlays
   ;
-  SET @balOpen      = ( @allCollected - @collections) - ( @allPlayed - @played )
+  SET @balOpen      = ( @starting + @allCollected - @collections) - ( @allPlayed - @played )
   ;
   SET @balClose     = @allCollected - @AllPlayed
   ;
@@ -778,7 +785,7 @@ BEGIN
   INSERT IGNORE INTO `blotto_insurance`
   ( `draw_closed`,`ticket_number`,`org_ref`,`client_ref` )
     SELECT futureCloseDate,`tk`.`number`,UPPER('{{BLOTTO_ORG_USER}}') AS `org_ref`,`tk`.`client_ref`
-    FROM `blotto_build_mandate` as `m`
+    FROM `blotto_build_mandate` AS `m`
     LEFT JOIN (
       SELECT
         `Provider`
@@ -807,12 +814,12 @@ BEGIN
     -- Supporter is neither new nor penniless
     WHERE `p`.`first_draw_close` IS NOT NULL
       AND `p`.`first_draw_close`<=futureCloseDate
-      AND `c`.`AmountCollected` IS NOT NULL
+      AND `p`.`opening_balance`+IFNULL(`c`.`AmountCollected`,0)=0
       AND (
           -- Either mandate is live
           `m`.`Status`='LIVE'
           -- Or there is sufficient balance for one more play
-       OR `c`.`AmountCollected`-(IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100>=0
+       OR `p`.`opening_balance`+IFNULL(`c`.`AmountCollected`,0)-(IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100>=0
       )
     ORDER BY `tk`.`number`
   ;
@@ -969,7 +976,7 @@ BEGIN
      ,IFNULL(`d`.`AmountCollected`,'0.00') `AmountCollected`
      ,IFNULL(`d`.`plays`,0) AS `plays`
      ,IFNULL(`d`.`per_play`,'') AS `per_play`
-     ,IFNULL(`d`.`balance`,0) AS `balance`
+     ,`s`.`opening_balance` + IFNULL(`d`.`balance`,0) AS `balance`
      ,IFNULL(`d`.`Active`,'') AS `active`
      ,IFNULL(IF(`d`.`Freq`='Single','SINGLE',`d`.`Status`),'') AS `status`
      ,IFNULL(`d`.`FailReason`,'') AS `fail_reason`
@@ -983,6 +990,7 @@ BEGIN
        ,`is`.`canvas_ref`
        ,`ip`.`client_ref` AS `current_client_ref`
        ,`ip`.`first_draw_close`
+       ,`ip`.`opening_balance`
        ,`ic`.`title`
        ,`ic`.`name_first`
        ,`ic`.`name_last`

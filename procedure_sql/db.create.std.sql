@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS `blotto_player` (
   `first_draw_close` date DEFAULT NULL,
   `letter_batch_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   `letter_status` varchar(64) CHARACTER SET ascii DEFAULT NULL,
+  `opening_balance` decimal(8,2) NOT NULL DEFAULT 0
   `chances` int(11) unsigned DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
