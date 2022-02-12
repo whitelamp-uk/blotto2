@@ -392,7 +392,7 @@ then
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "17. Generate draw entries based on calculated balances"
+    echo "17. Complete a final player check"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players_check.php -q
     abort_on_error 17 $?
