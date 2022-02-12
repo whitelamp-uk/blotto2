@@ -18,6 +18,9 @@ if (!$zo) {
     exit (102);
 }
 
+/*
+TODO: delete this
+
 // TEMPORARY CODE TO FILL HOLES IN canvas_agent_ref
 $qu = "
   UPDATE `blotto_supporter`
@@ -33,6 +36,7 @@ catch (\mysqli_sql_exception $e) {
     exit (127);
 }
 // END OF TEMPORARY CODE
+*/
 
 
 $qs = "
