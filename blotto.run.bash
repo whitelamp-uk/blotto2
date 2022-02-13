@@ -82,7 +82,7 @@ fi
 
 
 # Log latest SQL
-mkdir "$ldir/$lsql"
+mkdir -p "$ldir/$lsql"
 found=$(ls -l "$ldir/"*.last*.log | wc -l)
 if [ $found -gt 0 ]
 then
