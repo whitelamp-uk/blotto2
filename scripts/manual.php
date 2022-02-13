@@ -68,24 +68,6 @@ else {
         fwrite (STDERR,"    Number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
         exit (110);
     }
-    try {
-        $qs = "
-          SELECT
-            COUNT(*)>0 AS `found`
-          FROM `blotto_result`
-          WHERE `draw_closed`='{$draw->date}'
-        ";
-        $found = $zo->query ($qs);
-        $found = $found->fetch_assoc ();
-        if ($found['found']) {
-            fwrite (STDERR,"    There are already results for the date '{$draw->date}'\n");
-            exit (111);
-        }
-    }
-    catch (\mysqli_sql_exception $e) {
-        fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (112);
-    }
     echo "    Building SQL for `".BLOTTO_RESULTS_DB."`\n";
     $qi             = "INSERT INTO `blotto_result`";
     $qi            .= " (`draw_closed`,`draw_date`,`prize_level`,`number`)";
@@ -115,7 +97,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qi."\n".$e->getMessage()."\n");
-    exit (109);
+    exit (111);
 }
 
 
