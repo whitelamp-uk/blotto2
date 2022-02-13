@@ -98,15 +98,6 @@ get_args () {
     done
 }
 
-# User
-
-if [ "$UID" != "0" ]
-then
-    echo "Must be run as root"
-    exit 102
-fi
-
-
 # Arguments
 get_args "$@"
 if [ ! "$cfg" ]
@@ -119,14 +110,25 @@ then
     echo "    -r                     rehearsal only (do not recreate front-end BLOTTO_DB)"
     echo "    -s                     single draw only (do next required draw and exit)"
     echo "    -v                     verbose (echo full log to STDOUT)"
-    exit 103
+    exit 102
 fi
-
 if [ ! -f "$cfg" ]
 then
     echo "Cannot find config file \"$cfg\""
-    exit 104
+    exit 103
 fi
+
+# User
+if [ "$UID" != "0" ]
+then
+    if [ ! "$manual" ]
+    then
+    echo "Must be run as root innit"
+    exit 104
+    fi
+fi
+
+
 
 # Check config for basic PHP errors
 /usr/bin/php  "$cfg"
