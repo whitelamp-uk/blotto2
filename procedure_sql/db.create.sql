@@ -187,22 +187,26 @@ CREATE TABLE IF NOT EXISTS `_readme` (
 INSERT IGNORE INTO `_readme` (`project`, `location`) VALUES
 ('whitelamp-uk/blotto2', 'https://github.com/whitelamp-uk/blotto2.git');
 
+
 CREATE TABLE IF NOT EXISTS `blotto_ticket` (
-  `number` char(16) CHARACTER SET ascii NOT NULL,
+  `number` char(6) CHARACTER SET ascii NOT NULL,
   `issue_date` date DEFAULT NULL,
   `org_id` int(11) unsigned DEFAULT NULL,
-  `provider`char(4) CHARACTER SET ascii DEFAULT NULL,
+  `mandate_provider` char(4) CHARACTER SET ascii DEFAULT 'RSM',
+  `dd_ref_no` bigint(20) unsigned DEFAULT NULL,
   `client_ref` varchar(255) CHARACTER SET ascii DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`number`),
-  UNIQUE KEY `org_id_client_ref` (`org_id`,`client_ref`),
-  KEY `issue_date` (`issue_date`),
-  KEY `org_id` (`org_id`),
+  KEY `is_issued` (`issue_date`),
+  KEY `merchant_id` (`org_id`),
+  KEY `dd_ref_no` (`dd_ref_no`),
   KEY `client_ref` (`client_ref`),
+  KEY `org_id_dd_ref_no` (`org_id`,`dd_ref_no`),
+  KEY `org_id_client_ref` (`org_id`,`client_ref`),
+  KEY `org_id_dd_ref_no_issue_date` (`org_id`,`dd_ref_no`,`issue_date`),
   KEY `org_id_client_ref_issue_date` (`org_id`,`client_ref`,`issue_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 
