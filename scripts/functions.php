@@ -4203,18 +4203,20 @@ function www_signup_dates ($org,&$e) {
                 return false;
             }
             $draw_closed = $d->format ('Y-m-d');
-            try {
-                $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
-                $date = $rs->fetch_assoc()['draw_date'];
-                $end = new \DateTime ("$date 00:00:00");
-                $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
-                if ($end>$now) {
-                    $dates[$draw_closed] = new \DateTime ($date);
+            if ($draw_closed>=BLOTTO_DRAW_CLOSE_1) {
+                try {
+                    $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
+                    $date = $rs->fetch_assoc()['draw_date'];
+                    $end = new \DateTime ("$date 00:00:00");
+                    $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
+                    if ($end>$now) {
+                        $dates[$draw_closed] = new \DateTime ($date);
+                    }
                 }
-            }
-            catch (\mysqli_sql_exception $e) {
-                throw new \Exception ($e->getMessage());
-                return false;
+                catch (\mysqli_sql_exception $e) {
+                    throw new \Exception ($e->getMessage());
+                    return false;
+                }
             }
         }
         if (!count($dates)) {
