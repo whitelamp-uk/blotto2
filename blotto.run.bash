@@ -85,6 +85,7 @@ fi
 mkdir "$ldir/$lsql"
 found=$(ls -l "$ldir/"*.last*.log | wc -l)
 if [ $found -gt 0 ]
+then
     cp "$ldir/"*.last*.log "$ldir/$lsql/"
 fi
 
