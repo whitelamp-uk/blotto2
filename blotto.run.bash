@@ -83,7 +83,7 @@ fi
 
 # Log latest SQL
 mkdir "$ldir/$lsql"
-found=S(ls -l "$ldir/"*.last*.log | wc -l)
+found=$(ls -l "$ldir/"*.last*.log | wc -l)
 if [ $found -gt 0 ]
     cp "$ldir/"*.last*.log "$ldir/$lsql/"
 fi
