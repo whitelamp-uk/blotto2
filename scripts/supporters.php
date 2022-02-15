@@ -323,7 +323,7 @@ try {
         echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`canvas_code`,`canvas_agent_ref`,`canvas_ref`,`client_ref`) VALUES\n";
         echo "  ('$cd','$sg','$ap','$ccc','$ca','$cv','$cr');\n";
         echo "SET @sid = LAST_INSERT_ID();\n";
-        echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`,`balance`) VALUES\n";
+        echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`,`opening_balance`) VALUES\n";
         echo "  (@sid,'$cr',$bl);\n\n";
         // First contact should not be `created` = timestamp of when this script runs
         // Rather it should be `created` = when supporter is notionally created
