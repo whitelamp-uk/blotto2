@@ -1027,7 +1027,15 @@ BEGIN
         ON `ipl`.`supporter_id`=`is`.`id`
       JOIN `blotto_player` AS `ip`
         ON `ip`.`supporter_id`=`is`.`id`
-       AND `ip`.`started`=`ipl`.`latest`
+       AND (
+           `ip`.`started`=`ipl`.`latest`
+       -- Classic SQL gotcha
+       -- = operator does not return true for null=null
+         OR (
+               `ip`.`started` IS NULL
+           AND `ipl`.`latest` IS NULL
+         )
+       )
       JOIN (
         SELECT
           `supporter_id`
