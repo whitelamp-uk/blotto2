@@ -937,22 +937,22 @@ BEGIN
      ,`s`.`current_client_ref`
      ,`s`.`first_draw_close`
      ,`d`.`ticket_number` AS `current_ticket_number`
-     ,`s`.`signed`
+     ,IFNULL(`s`.`signed`,'') AS `signed`
      ,`s`.`canvas_agent_ref`
      ,`s`.`canvas_ref`
      ,`s`.`title`
      ,`s`.`name_first`
      ,`s`.`name_last`
-     ,`s`.`email`
-     ,`s`.`mobile`
-     ,`s`.`telephone`
+     ,IFNULL(`s`.`email`,'') AS `email`
+     ,IFNULL(`s`.`mobile`,'') AS `mobile`
+     ,IFNULL(`s`.`telephone`,'') AS `telephone`
      ,`s`.`address_1`
-     ,`s`.`address_2`
-     ,`s`.`address_3`
+     ,IFNULL(`s`.`address_2`,'') AS `address_2`
+     ,IFNULL(`s`.`address_3`,'') AS `address_3`
      ,`s`.`town`
      ,`s`.`county`
      ,`s`.`postcode`
-     ,`s`.`dob`
+     ,IFNULL(`s`.`dob`,'') AS `dob`
      ,`s`.`p0`
      ,`s`.`p1`
      ,`s`.`p2`
@@ -1005,7 +1005,7 @@ BEGIN
        ,`ic`.`postcode`
        ,`ic`.`country`
        ,`is`.`signed`
-       ,IFNULL(`ic`.`dob`,'') AS `dob`
+       ,`ic`.`dob`
        ,`ic`.`p0`
        ,`ic`.`p1`
        ,`ic`.`p2`
