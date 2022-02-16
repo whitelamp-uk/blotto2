@@ -1,0 +1,44 @@
+if [ ! "$1" ]
+then
+    echo "Config file not given"
+    exit
+fi
+cd blotto2
+
+
+#
+#echo 1. payment.create.sql
+#php scripts/blotto.php $1 sql payment.create.sql > ../pymtc
+#if [ $? != 0 ]
+#then
+#    exit
+#fi
+#cat ../pymtc
+#mariadb < ../pymtc
+#if [ $? != 0 ]
+#then
+#    exit
+#fi
+
+
+echo 2. payment_fetch.php
+php scripts/blotto.php $1 exec payment_fetch.php
+if [ $? != 0 ]
+then
+    exit
+fi
+
+#
+#echo 3. payment.update.sql
+#php scripts/blotto.php $1 sql payment.update.sql > ../pymtu
+#if [ $? != 0 ]
+#then
+#    exit
+#fi
+#cat ../pymtu
+#mariadb < ../pymtu
+#if [ $? != 0 ]
+#then
+#    exit
+#fi
+
