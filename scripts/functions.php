@@ -4228,7 +4228,8 @@ function www_signup_dates ($org,&$e) {
                     $closed->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
                     // Only if the time now is before the calculated cut-off can the date be available
                     if ($now<$closed) {
-                        $dates[$draw_closed] = new \DateTime ($draw_closed);
+                        $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
+                        $dates[$draw_closed] = new \DateTime ($rs->fetch_assoc()['draw_date']);
                     }
                 }
                 catch (\mysqli_sql_exception $e) {
