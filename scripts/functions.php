@@ -4225,9 +4225,9 @@ function www_signup_dates ($org,&$e) {
                     // Promoters sometimes prefer closing at 5pm rather than midnight (7 hours)
                     // Preferred approach is to set this to zero hours so that terms and conditions
                     // for DD and online players are harmonised
-                    $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
+                    $closed->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
                     // Only if the time now is before the calculated cut-off can the date be available
-                    if ($now<$end) {
+                    if ($now<$closed) {
                         $dates[$draw_closed] = new \DateTime ($date);
                     }
                 }
