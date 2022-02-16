@@ -682,7 +682,7 @@ function draw ($draw_closed) {
     }
     $draw->date             = $d['draw_date'];
     if (!$draw->date) {
-        throw new \Exception ("Draw could not be created; is '{$draw->closed}' a valid date?\n");
+        throw new \Exception ("Draw could not be found; is '{$draw->closed}' a valid date?\n");
         return false;
     }
     $draw->time             = $d['draw_time'];
@@ -767,6 +767,33 @@ function draw_first_zaffo_model ($first_collection_date) {
     $days       = (12-$fcd->format('w')) % 7;
     if ($days==0) {
         // Even if collection date is a Friday
+        $days  += 7;
+    }
+    // Move on 21 more days
+    $days      += 21;
+    $fcd->add (new DateInterval('P'.$days.'D'));
+    return $fcd->format ('Y-m-d');
+}
+
+function draw_first_zaffo_model1 ($first_collection_date,$dow=5) {
+    /*
+        OLD: Do it on a Friday
+            1. Take first_collection_date
+            2. Add pay delay
+            3. Move on to next Friday (even if first_collection_date is a Friday)
+            4. Move on 21 more days
+        NEW: Do it on day=4 for BWH
+            1. Take first_collection_date
+            2. Add pay delay
+            3. Move on to next $dow (even if first_collection_date is a $dow)
+            4. Move on 21 more days
+    */
+    $fcd        = new DateTime ($first_collection_date);
+    $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
+    // Move on to next Fri
+    $days       = ((12)-$fcd->format('w')) % 7;
+    if ($days==0) {
+        // Even if collection date is a Fri
         $days  += 7;
     }
     // Move on 21 more days
