@@ -117,19 +117,24 @@ a.link-resource {
     display:            inline-block;
     width:              1.5em;
     height:             2em;
-    background-size:    100%;
 }
 
-a.link-image {
-    background-image:   var(--blotto-url-link-image);
+a.link-image > img {
+    width:              100%;
+    height:             100%;
+    content:            var(--blotto-url-link-image);
 }
 
-a.link-table {
-    background-image:   var(--blotto-url-link-table);
+a.link-table > img {
+    width:              100%;
+    height:             100%;
+    content:            var(--blotto-url-link-table);
 }
 
-a.link-csv {
-    background-image:   var(--blotto-url-link-csv);
+a.link-csv > img {
+    width:              100%;
+    height:             100%;
+    content:            var(--blotto-url-link-csv);
 }
 
 a.help {

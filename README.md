@@ -3,6 +3,14 @@
 ---------
 
 
+Bank holidays
+=============
+
+If we ever need to know about them:
+https://www.gov.uk/bank-holidays.json
+
+
+
 Manually inserting external number-matches
 ==========================================
 

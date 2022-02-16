@@ -22,11 +22,15 @@ else {
         $draw       = draw ($argv[4]);
     }
     catch (\Exception $e) {
-        fwrite (STDERR,"    Draw could not be created; is '{$argv[4]}' a valid date?\n");
+        fwrite (STDERR,"    Draw could not be found; is '{$argv[4]}' a valid draw-closed date?\n");
         exit (103);
     }
+    if (draw_upcoming($argv[4])!=$argv[4]) {
+        fwrite (STDERR,"    '{$argv[4]}' is not a valid draw-closed date\n");
+        exit (105);
+    }
     if ($draw->date>date('Y-m-d')) {
-        fwrite (STDERR,"    Derived draw date {$draw->date} is in the future\n");
+        fwrite (STDERR,"    Derived draw day {$draw->date} is in the future so manual results cannot be known\n");
         exit (104);
     }
     $group          = null;
@@ -38,7 +42,7 @@ else {
     }
     if (!$group) {
         fwrite (STDERR,"    Number-match group '{$argv[5]}' has no prizes\n");
-        exit (105);
+        exit (106);
     }
     $manual         = false;
     foreach ($draw->groups[$group] as $level) {
@@ -49,20 +53,20 @@ else {
     }
     if (!$manual) {
         fwrite (STDERR,"    Number-match group '$group' is not manual\n");
-        exit (106);
+        exit (107);
     }
     if (array_key_exists($group,$draw->results)) {
         fwrite (STDERR,"    Group '$group' @ $draw->closed already has results\n");
-        exit (107);
+        exit (108);
     }
     $number         = $argv[6];
     if (!preg_match('<^[0-9]+$>',$number)) {
         fwrite (STDERR,"number can only contain digits 0 thru 9\n");
-        exit (108);
+        exit (109);
     }
     if ($number<BLOTTO_TICKET_MIN || $number>BLOTTO_TICKET_MAX) {
         fwrite (STDERR,"    Number must be ".BLOTTO_TICKET_MIN." thru".BLOTTO_TICKET_MAX."\n");
-        exit (109);
+        exit (110);
     }
     echo "    Building SQL for `".BLOTTO_RESULTS_DB."`\n";
     $qi             = "INSERT INTO `blotto_result`";
@@ -93,7 +97,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qi."\n".$e->getMessage()."\n");
-    exit (109);
+    exit (111);
 }
 
 

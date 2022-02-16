@@ -98,15 +98,6 @@ get_args () {
     done
 }
 
-# User
-
-if [ "$UID" != "0" ]
-then
-    echo "Must be run as root"
-    exit 102
-fi
-
-
 # Arguments
 get_args "$@"
 if [ ! "$cfg" ]
@@ -119,14 +110,25 @@ then
     echo "    -r                     rehearsal only (do not recreate front-end BLOTTO_DB)"
     echo "    -s                     single draw only (do next required draw and exit)"
     echo "    -v                     verbose (echo full log to STDOUT)"
-    exit 103
+    exit 102
 fi
-
 if [ ! -f "$cfg" ]
 then
     echo "Cannot find config file \"$cfg\""
-    exit 104
+    exit 103
 fi
+
+# User
+if [ "$UID" != "0" ]
+then
+    if [ ! "$manual" ]
+    then
+    echo "Must be run as root innit"
+    exit 104
+    fi
+fi
+
+
 
 # Check config for basic PHP errors
 /usr/bin/php  "$cfg"
@@ -161,7 +163,6 @@ bpf="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_FNC )"
 bpu="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_UPD )"
 bpp="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_PRM )"
 mda="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_MYSQLDUMP_AUTH  )"
-emc="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_EMAIL_CCC       )"
 nxt="$( /usr/bin/php  "$drp/exec.php"    "$cfg"  draw_upcoming          )"
 tmp="$ldr/blotto.$$.tmp"
 sps="$ldr/blotto.supporters.sql.last"
@@ -393,7 +394,7 @@ then
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "17. Generate draw entries based on calculated balances"
+    echo "17. Complete a final player check"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players_check.php -q
     abort_on_error 17 $?
@@ -551,11 +552,8 @@ then
     echo "    CALL changes();"
     mariadb $dbm                                          <<< "CALL changes();"
     abort_on_error 29c $?
-    if [ "$emc" ]
-    then
-        /usr/bin/php $prg $sw "$cfg" exec changes_email.php Mon
-        abort_on_error 29d $?
-    fi
+    /usr/bin/php $prg $sw "$cfg" exec changes_email.php
+    abort_on_error 29d $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 

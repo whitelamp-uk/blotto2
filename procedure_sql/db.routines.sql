@@ -176,46 +176,53 @@ BEGIN
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8
   ;
-  SET @first        = (
+  SET @first = (
     SELECT
       MIN(`draw_closed`)
     FROM `blotto_entry`
     WHERE `draw_closed`>=starts
       AND `draw_closed`<=ends
-                      )
+  )
   ;
-  SET @last        = (
+  SET @last = (
     SELECT
       MAX(`draw_closed`)
     FROM `blotto_entry`
     WHERE `draw_closed`>=starts
       AND `draw_closed`<=ends
-                      )
+  )
   ;
-  SET @weeks        = (
+  SET @weeks = (
     SELECT
       COUNT(DISTINCT `draw_closed`)
     FROM `blotto_entry`
     WHERE `draw_closed`>=starts
       AND `draw_closed`<=ends
-                      )
+  )
   ;
-  SET @collections  = (
+  SET @collections = (
     SELECT
       SUM(`PaidAmount`)
     FROM `blotto_build_collection`
     WHERE `DateDue`>=starts
       AND `DateDue`<=ends
-                      )
+  )
   ;
-  SET @allCollected  = (
+  SET @starting = (
+    SELECT
+      SUM(`p`.`opening_balance`)
+    FROM `blotto_player` AS `p`
+    WHERE DATE(`p`.`created`)<=ends
+  )
+  ;
+  SET @allCollected = (
     SELECT
       SUM(`PaidAmount`)
     FROM `blotto_build_collection`
     WHERE `DateDue`<=ends
-                      )
+  )
   ;
-  SET @fees        = (
+  SET @fees = (
     SELECT
       ROUND(SUM(`amount`)/100,2)
     FROM `blotto_super_entry`
@@ -223,9 +230,9 @@ BEGIN
       AND `draw_closed`<=ends
                       )
   ;
-  SET @fees         = IFNULL(@fees,0)
+  SET @fees = IFNULL(@fees,0)
   ;
-  SET @plays        = (
+  SET @plays = (
     SELECT
       COUNT(`id`)
     FROM `blotto_entry`
@@ -233,7 +240,7 @@ BEGIN
       AND `draw_closed`<=ends
                       )
   ;
-  SET @allPlays    = (
+  SET @allPlays = (
     SELECT
       COUNT(`id`)
     FROM `blotto_entry`
@@ -246,7 +253,7 @@ BEGIN
   ;
   SET @allPlayed    = @perplay/100 * @allPlays
   ;
-  SET @balOpen      = ( @allCollected - @collections) - ( @allPlayed - @played )
+  SET @balOpen      = ( @starting + @allCollected - @collections) - ( @allPlayed - @played )
   ;
   SET @balClose     = @allCollected - @AllPlayed
   ;
@@ -308,12 +315,26 @@ BEGIN
         `m`.`Refno` IS NULL
        ,cancelDate(`s`.`created`,'')
        ,IF(
+          `m`.`Status`=CONVERT('CANCELLED' USING UTF8)
+         ,`m`.`Updated`
+         ,IF(
+            `c`.`Payments_Collected` IS NULL
+            -- if no collections, use mandate start date
+            ,cancelDate(`m`.`StartDate`,`m`.`Freq`)
+            ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
+          )
+        )
+      ) AS `cancelled_date`
+     ,IF(
+        `m`.`Refno` IS NULL
+       ,cancelDate(`s`.`created`,'')
+       ,IF(
           `c`.`Payments_Collected` IS NULL
           -- if no collections, use mandate start date
          ,cancelDate(`m`.`StartDate`,`m`.`Freq`)
          ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
         )
-      ) AS `cancelled_date`
+      ) AS `cancelled_date_legacy`
      ,`s`.`canvas_code` AS `ccc`
      ,`ip`.`client_ref`
      ,IFNULL(`t`.`number`,'') AS `ticket_number`
@@ -382,6 +403,8 @@ BEGIN
            ON `t`.`mandate_provider`=`m`.`Provider`
           AND `t`.`client_ref`=`m`.`ClientRef`
           AND `t`.`org_id`={{BLOTTO_ORG_ID}}
+    -- One-off payments are not applicable
+    WHERE `m`.`Freq`!='Single'
     GROUP BY `client_ref`,`ticket_number`
     HAVING `cancelled_date`<CURDATE()
     ORDER BY `cancelled_date`,`ccc`,`client_ref`,`supporter_created`,`ticket_number`
@@ -419,32 +442,51 @@ BEGIN
   ;
   CREATE TABLE `Changes` AS
     SELECT
-      `changed_date`
-     ,`ccc`
-     ,`agent_ref`
-     ,`canvas_ref`
-     ,`chance_number`
-     ,CONCAT(`canvas_ref`,'-',`chance_number`) AS `chance_ref`
-     ,`client_ref_original`
-     ,`type`
-     ,`is_termination`
-     ,`reinstatement_for`
-     ,`amount_paid_before_this_date`
-     ,`supporter_signed`
-     ,`supporter_approved`
-     ,`supporter_created`
-     ,`supporter_first_paid`
-    FROM `blotto_change`
-    ORDER BY `changed_date`,`ccc`,`canvas_ref`,`chance_number`
+      `ch`.`changed_date`
+     ,IF(`ch`.`type`='DEC',`c`.`cancelled_date_legacy`,`ch`.`changed_date`) AS `changed_date_legacy`
+     ,`ch`.`ccc`
+     ,`ch`.`canvas_ref`
+     ,`ch`.`chance_number`
+     ,CONCAT(`ch`.`canvas_ref`,'-',`ch`.`chance_number`) AS `chance_ref`
+     ,`ch`.`client_ref_original`
+     ,`ch`.`agent_ref`
+     ,`ch`.`type`
+     ,`ch`.`is_termination`
+     ,`ch`.`reinstatement_for`
+     ,`ch`.`amount_paid_before_this_date`
+     ,`ch`.`supporter_signed`
+     ,`ch`.`supporter_approved`
+     ,`ch`.`supporter_created`
+     ,IFNULL(`ch`.`supporter_first_paid`,'') AS `supporter_first_paid`
+    FROM `blotto_change` AS `ch`
+    LEFT JOIN (
+      SELECT
+        `client_ref`
+       ,`cancelled_date_legacy`
+      FROM `Cancellations`
+      GROUP BY `client_ref`
+    ) AS `c`
+      ON `ch`.`type`='DEC'
+     AND `c`.`client_ref`=`ch`.`client_ref_original`
+    ORDER BY `ch`.`changed_date`,`ch`.`ccc`,`ch`.`canvas_ref`,`ch`.`chance_number`
   ;
   ALTER TABLE `Changes`
   ADD PRIMARY KEY (`changed_date`,`ccc`,`canvas_ref`,`chance_number`)
   ;
   ALTER TABLE `Changes`
-  ADD KEY `agent_ref` (`agent_ref`)
+  ADD KEY `changed_date` (`changed_date`)
   ;
   ALTER TABLE `Changes`
-  ADD KEY `chance_ref` (`chance_ref`)
+  ADD KEY `changed_date_legacy` (`changed_date_legacy`)
+  ;
+  ALTER TABLE `Changes`
+  ADD KEY `ccc` (`ccc`)
+  ;
+  ALTER TABLE `Changes`
+  ADD KEY `canvas_ref` (`canvas_ref`)
+  ;
+  ALTER TABLE `Changes`
+  ADD KEY `agent_ref` (`agent_ref`)
   ;
   ALTER TABLE `Changes`
   ADD KEY `client_ref_original` (`client_ref_original`)
@@ -514,6 +556,13 @@ BEGIN
       GROUP BY `client_ref`
     )      AS `tk`
            ON `tk`.`client_ref`=`p`.`client_ref`
+
+/*
+TODO: Do this a proper way - see scripts/entries.php which has the same problem
+*/
+-- HORRIBLE HACK
+    WHERE `p`.`client_ref` NOT LIKE 'STRP%'
+
     ORDER BY `p`.`started`,`p`.`id`
   ;
   DROP TABLE IF EXISTS `tmp_changes_collection`
@@ -555,7 +604,7 @@ BEGIN
    ,`supporter_signed`
    ,`supporter_approved`
    ,`supporter_created`
-   ,IFNULL(`supporter_first_paid`,'') AS `supporter_first_paid`
+   ,`supporter_first_paid`
    ,`starting_chances`
    ,GROUP_CONCAT(
       CONCAT_WS(
@@ -736,7 +785,7 @@ BEGIN
   INSERT IGNORE INTO `blotto_insurance`
   ( `draw_closed`,`ticket_number`,`org_ref`,`client_ref` )
     SELECT futureCloseDate,`tk`.`number`,UPPER('{{BLOTTO_ORG_USER}}') AS `org_ref`,`tk`.`client_ref`
-    FROM `blotto_build_mandate` as `m`
+    FROM `blotto_build_mandate` AS `m`
     LEFT JOIN (
       SELECT
         `Provider`
@@ -765,12 +814,12 @@ BEGIN
     -- Supporter is neither new nor penniless
     WHERE `p`.`first_draw_close` IS NOT NULL
       AND `p`.`first_draw_close`<=futureCloseDate
-      AND `c`.`AmountCollected` IS NOT NULL
+      AND `p`.`opening_balance`+IFNULL(`c`.`AmountCollected`,0)=0
       AND (
           -- Either mandate is live
           `m`.`Status`='LIVE'
           -- Or there is sufficient balance for one more play
-       OR `c`.`AmountCollected`-(IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100>=0
+       OR `p`.`opening_balance`+IFNULL(`c`.`AmountCollected`,0)-(IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100>=0
       )
     ORDER BY `tk`.`number`
   ;
@@ -888,22 +937,22 @@ BEGIN
      ,`s`.`current_client_ref`
      ,`s`.`first_draw_close`
      ,`d`.`ticket_number` AS `current_ticket_number`
-     ,`s`.`signed`
+     ,IFNULL(`s`.`signed`,'') AS `signed`
      ,`s`.`canvas_agent_ref`
      ,`s`.`canvas_ref`
      ,`s`.`title`
      ,`s`.`name_first`
      ,`s`.`name_last`
-     ,`s`.`email`
-     ,`s`.`mobile`
-     ,`s`.`telephone`
+     ,IFNULL(`s`.`email`,'') AS `email`
+     ,IFNULL(`s`.`mobile`,'') AS `mobile`
+     ,IFNULL(`s`.`telephone`,'') AS `telephone`
      ,`s`.`address_1`
-     ,`s`.`address_2`
-     ,`s`.`address_3`
+     ,IFNULL(`s`.`address_2`,'') AS `address_2`
+     ,IFNULL(`s`.`address_3`,'') AS `address_3`
      ,`s`.`town`
      ,`s`.`county`
      ,`s`.`postcode`
-     ,`s`.`dob`
+     ,IFNULL(`s`.`dob`,'') AS `dob`
      ,`s`.`p0`
      ,`s`.`p1`
      ,`s`.`p2`
@@ -927,7 +976,7 @@ BEGIN
      ,IFNULL(`d`.`AmountCollected`,'0.00') `AmountCollected`
      ,IFNULL(`d`.`plays`,0) AS `plays`
      ,IFNULL(`d`.`per_play`,'') AS `per_play`
-     ,IFNULL(`d`.`balance`,0) AS `balance`
+     ,`s`.`opening_balance` + IFNULL(`d`.`balance`,0) AS `balance`
      ,IFNULL(`d`.`Active`,'') AS `active`
      ,IFNULL(IF(`d`.`Freq`='Single','SINGLE',`d`.`Status`),'') AS `status`
      ,IFNULL(`d`.`FailReason`,'') AS `fail_reason`
@@ -941,6 +990,7 @@ BEGIN
        ,`is`.`canvas_ref`
        ,`ip`.`client_ref` AS `current_client_ref`
        ,`ip`.`first_draw_close`
+       ,`ip`.`opening_balance`
        ,`ic`.`title`
        ,`ic`.`name_first`
        ,`ic`.`name_last`
@@ -955,7 +1005,7 @@ BEGIN
        ,`ic`.`postcode`
        ,`ic`.`country`
        ,`is`.`signed`
-       ,IFNULL(`ic`.`dob`,'') AS `dob`
+       ,`ic`.`dob`
        ,`ic`.`p0`
        ,`ic`.`p1`
        ,`ic`.`p2`
@@ -977,7 +1027,15 @@ BEGIN
         ON `ipl`.`supporter_id`=`is`.`id`
       JOIN `blotto_player` AS `ip`
         ON `ip`.`supporter_id`=`is`.`id`
-       AND `ip`.`started`=`ipl`.`latest`
+       AND (
+           `ip`.`started`=`ipl`.`latest`
+       -- Classic SQL gotcha
+       -- = operator does not return true for null=null
+         OR (
+               `ip`.`started` IS NULL
+           AND `ipl`.`latest` IS NULL
+         )
+       )
       JOIN (
         SELECT
           `supporter_id`

@@ -18,6 +18,9 @@ if (!$zo) {
     exit (102);
 }
 
+/*
+TODO: delete this
+
 // TEMPORARY CODE TO FILL HOLES IN canvas_agent_ref
 $qu = "
   UPDATE `blotto_supporter`
@@ -33,6 +36,7 @@ catch (\mysqli_sql_exception $e) {
     exit (127);
 }
 // END OF TEMPORARY CODE
+*/
 
 
 $qs = "
@@ -59,10 +63,6 @@ try {
 
 TODO: Some attempt to sanity check formats and values
 by something based roughly on the theme below.
-
-Actually soon both import.supporter.sql and this script
-must be rewritten as per https://www.whitelamp.com/flc/
-
 
         if (str_replace(' ','',$c['FirstName'])=='') {
             fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesGiven` is compulsory - $ccc - {$c['ClientRef']}\n");
@@ -261,9 +261,10 @@ try {
         $ap         = esc ($s['Approved']);
         $ca         = '';
         $cv         = '';
+        $bl         = 0.00;
         if (trim($s['SysEx'])) {
-            // blotto currently has two sysex messages beyond the FLC standard
-            // using a JSON object with two properties
+            // blotto currently has three sys-ex messages beyond the FLC standard
+            // A JSON object is expected
             $sx     = null;
             try {
                 $sx = json_decode ($s['SysEx']);
@@ -281,6 +282,13 @@ try {
             }
             if (property_exists($sx,'cc_ref')) {
                 $cv = esc ($sx->cc_ref);
+            }
+            if (property_exists($sx,'balance')) {
+                if (!preg_match('<^[0-9]+$>',$sx->balance) && !preg_match('<^[0-9]*\.[0-9]+$>',$sx->balance)) {
+                    fwrite (STDERR,"Could not interpret sysex->balance = '{$sx->balance}'\n");
+                    exit (117);
+                }
+                $bl = round ($sx->balance,2);
             }
         }
         $cr         = esc ($s['ClientRef']);
@@ -315,8 +323,8 @@ try {
         echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`canvas_code`,`canvas_agent_ref`,`canvas_ref`,`client_ref`) VALUES\n";
         echo "  ('$cd','$sg','$ap','$ccc','$ca','$cv','$cr');\n";
         echo "SET @sid = LAST_INSERT_ID();\n";
-        echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
-        echo "  (@sid,'$cr');\n\n";
+        echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`,`opening_balance`) VALUES\n";
+        echo "  (@sid,'$cr',$bl);\n\n";
         // First contact should not be `created` = timestamp of when this script runs
         // Rather it should be `created` = when supporter is notionally created
         echo "INSERT INTO `blotto_contact` (`created`,`supporter_id`,`title`,`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`county`,`postcode`,`country`,`p0`,`p1`,`p2`,`p3`,`p4`,`p5`,`p6`,`p7`,`p8`,`p9`) VALUES\n";

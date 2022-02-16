@@ -48,12 +48,12 @@ var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
           title="Download reconciliation as CSV"
           class="link-resource link-csv"
           download="reconciliation_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.csv"
-          href="#"></a>
+          href="#"><img /></a>
         <a
           title="Download reconciliation as HTML"
           class="link-resource link-table"
           download="reconciliation_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
-          href="#"></a>
+          href="#"><img /></a>
 <?php
 table (
     'reconciliation',
@@ -76,12 +76,12 @@ linkCsv ('reconciliation');
           title="Download draw summary as CSV"
           class="link-resource link-csv"
           download="draw_summary_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.csv"
-        ></a>
+        ><img /></a>
         <a
           title="Download draw summary as HTML"
           class="link-resource link-table"
           download="draw_summary_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
-        ></a>
+        ><img /></a>
 <?php
 table (
     'draw-summary',
@@ -106,12 +106,12 @@ linkCsv ('draw-summary');
           title="Download draw <?php echo htmlspecialchars($supersum); ?> as CSV"
           class="link-resource link-csv"
           download="draw_summary-super_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.csv"
-        ></a>
+        ><img /></a>
         <a
           title="Download draw <?php echo htmlspecialchars($supersum); ?> as HTML"
           class="link-resource link-table"
           download="draw_summary-super_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
-        ></a>
+        ><img /></a>
 <?php
 table (
     'draw-summary-super',

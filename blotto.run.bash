@@ -82,9 +82,12 @@ fi
 
 
 # Log latest SQL
-mkdir "$ldir/$lsql"
-cp "$ldir/"*.last*.log "$ldir/$lsql/"
-
+found=$(find "$ldir/" -maxdepth 1 -type f -name '*.last*.log' | wc -l)
+if [ $found -gt 0 ]
+then
+    mkdir "$ldir/$lsql"
+    cp "$ldir/"*.last*.log "$ldir/$lsql/"
+fi
 
 # Return manual terminal to working directory
 cd "$wd"

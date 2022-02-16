@@ -19,7 +19,7 @@ catch (\Exception $e) {
 <?php if($date_fatal_error): ?>
 
     <div class="error">
-      <button data-close></button>
+      <button data-close><img /></button>
       <p><?php echo htmlspecialchars ($date_fatal_error); ?></p>
     </div>
 
@@ -27,7 +27,7 @@ catch (\Exception $e) {
 
 <?php   if($date_error): ?>
     <div class="error">
-      <button data-close></button>
+      <button data-close><img /></button>
       <p><?php echo htmlspecialchars ($date_error); ?></p>
     </div>
 <?php   endif; ?>
@@ -251,7 +251,7 @@ catch (\Exception $e) {
 
             <h3>GDPR Statement</h3>
 
-            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling <?php echo htmlspecialchars ($org['admin_phone']); ?> or e-mailing <a href="mailto:<?php echo htmlspecialchars ($org['admin_email']); ?>"><?php echo htmlspecialchars ($org['admin_email']); ?></a>.</p>
+            <p>Your support makes our vital work possible.  We&#039;d love to keep in touch with you to tell you more about our work and how you can support it. We&#039;ll do this by the options you chose above and you can change these preferences at any time by calling <?php echo htmlspecialchars ($org['admin_phone']); ?><?php if($org['admin_email']): ?> or e-mailing <a href="mailto:<?php echo htmlspecialchars ($org['admin_email']); ?>"><?php echo htmlspecialchars ($org['admin_email']); ?></a><?php endif; ?>.</p>
 
             <p>We will never sell your details on to anyone else.</p>
 

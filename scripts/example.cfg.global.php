@@ -22,6 +22,7 @@ define ( 'BLOTTO_EMAIL_WARN_ON',    true                );
 define ( 'BLOTTO_EMAIL_WARN_TO',    'techsupport@mysite.co.uk'                  );
 define ( 'BLOTTO_EMAIL_BACS_TO',    'bacs@mysite.co.uk'                         );
 define ( 'BLOTTO_EMAIL_TO',         'support@mysite.co.uk'                      );
+define ( 'BLOTTO_EMAIL_REPORT_DAY', 'Mon'               );
 define ( 'BLOTTO_EMAIL_WINS_ON',    true                );
 define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      );
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
@@ -58,7 +59,6 @@ define ( 'BLOTTO_CSV_ESCAPER',      "\\"            ); // see download_csv()
 define ( 'BLOTTO_PREFERENCES_SEP',  '::'            ); // see supporters.php
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
-define ( 'BLOTTO_EMAIL_QUIET_CCCS', 'STRP,PYPL,DD'  ); // do not send changes email attachments
 
 define ( 'BLOTTO_BANK_NAME',        'My Lottery Account'    );
 define ( 'BLOTTO_BANK_SORT',        '01-02-03'              );

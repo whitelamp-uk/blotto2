@@ -43,7 +43,6 @@ define ( 'BLOTTO_DIR_DRAW',      '/home/blotto/draw/abc'                );
 define ( 'BLOTTO_CSV_DIR_S',     '/home/sct/blotto/abc/supporters'      );
 define ( 'BLOTTO_CSV_DIR_M',     '/home/sct/blotto/abc/mandates'        );
 define ( 'BLOTTO_CSV_DIR_C',     '/home/sct/blotto/abc/collections'     );
-define ( 'BLOTTO_EMAIL_CCC',     'cccs@my.org'       );
 define ( 'BLOTTO_LOG_DIR',       '/home/blotto/log/abc'                 );
 define ( 'BLOTTO_LOG_SEARCH_SQL',false                                  );
 define ( 'BLOTTO_TICKET_DB',     'blotto_ticket_demo'                   );
@@ -70,6 +69,7 @@ define ( 'BLOTTO_PAY_DELAY',     'P2D'               );  // From DateDue to cred
 define ( 'BLOTTO_CREF_MATCH',    '^[A-z0-9_]+$'      );  // Original supporter reference restriction
 define ( 'BLOTTO_CREF_SPLITTER', '-'                 );  // Split mandate detection character sequence
 define ( 'BLOTTO_CANCEL_RULE',   '2 MONTH'           );  // Used to define when a supporter has "cancelled"
+define ( 'BLOTTO_CANCEL_LEGACY', 0                   );  // 1 = use BLOTTO_CANCEL_RULE even if DD cancelled
 
 
 // rsm-api, an RSM payment class

@@ -240,7 +240,7 @@ $qs = "
     ON `r`.`client_ref_original`=`t`.`client_ref_original`
    AND `r`.`DateDue`<=DATE_ADD(
           IF(
-            `t`.`supporter_first_paid`=''
+            `t`.`supporter_first_paid` IS NULL
            ,`t`.`supporter_created`
            ,`t`.`supporter_first_paid`
            )
@@ -279,5 +279,20 @@ try {
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qd."\n".$e->getMessage()."\n");
     exit (108);
+}
+
+$qu = "
+  UPDATE `blotto_change`
+  SET
+    `supporter_first_paid`=null
+  WHERE `supporter_first_paid`='0000-00-00'
+  ;
+";
+try {
+    $zo->query ($qu);
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qu."\n".$e->getMessage()."\n");
+    exit (109);
 }
 
