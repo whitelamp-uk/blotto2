@@ -4205,11 +4205,29 @@ function www_signup_dates ($org,&$e) {
             $draw_closed = $d->format ('Y-m-d');
             if ($draw_closed>=BLOTTO_DRAW_CLOSE_1) {
                 try {
+/*
                     $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
                     $date = $rs->fetch_assoc()['draw_date'];
                     $end = new \DateTime ("$date 00:00:00");
                     $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
                     if ($end>$now) {
+                        $dates[$draw_closed] = new \DateTime ($date);
+                    }
+*/
+// I think that was all wrong... instead something like:
+                    // A draw is closed exactly one day after the day begins
+                    $closed = new \DateTime ($draw_closed.' 00:00:00');
+                    $closed->add (new \DateInterval('P1D'));
+                    // The promotion for a particluar draw needs to close BLOTTO_INSURE_DAYS early
+                    if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS) {
+                        $closed->sub (new \DateInterval('P'.BLOTTO_INSURE_DAYS.'D'));
+                    }
+                    // Promoters sometimes prefer closing at 5pm rather than midnight (7 hours)
+                    // Preferred approach is to set this to zero hours so that terms and conditions
+                    // for DD and online players are harmonised
+                    $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
+                    // Only if the time now is before the calculated cut-off can the date be available
+                    if ($now<$end) {
                         $dates[$draw_closed] = new \DateTime ($date);
                     }
                 }
