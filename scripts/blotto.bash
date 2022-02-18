@@ -152,7 +152,6 @@ ldr="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_LOG_DIR         )"
 dfl="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_DUMP_FILE       )"
 sdr="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_CSV_DIR_S       )"
 pdr="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_PROOF_DIR       )"
-cra="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_CREATE_ANON_DB  )"
 dbm="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_MAKE_DB         )"
 dbo="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_DB              )"
 dbt="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_TICKET_DB       )"
@@ -208,15 +207,6 @@ then
     cat $tmp
     mariadb                                             < $tmp
     abort_on_error 1f $?
-fi
-if [ "$cra" ]
-then
-    echo "    Creating (if not exists) anonymisation (fake names) database"
-    /usr/bin/php $prg $sw "$cfg" sql db.create.anonymiser.sql  > $tmp
-    abort_on_error 1g $? $tmp
-    cat $tmp
-    mariadb                                             < $tmp
-    abort_on_error 1h $?
 fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
@@ -329,7 +319,7 @@ then
 
         echo "    10. Create supporter temp table"
         start=$SECONDS
-        mariadb                                             < $tmp
+        mariadb                                         < $tmp
         abort_on_error 10 $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
@@ -345,20 +335,20 @@ then
         if [ "$no_tidy" ]
         then
             echo "        Renaming table tmp_supporter to tmp_supporter_$dir"
-            mariadb $dbm                                  <<< "DROP TABLE IF EXISTS tmp_supporter_$dir;"
+            mariadb $dbm                              <<< "DROP TABLE IF EXISTS tmp_supporter_$dir;"
             abort_on_error 11c $?
-            mariadb $dbm                                  <<< "RENAME TABLE tmp_supporter TO tmp_supporter_$dir;"
+            mariadb $dbm                              <<< "RENAME TABLE tmp_supporter TO tmp_supporter_$dir;"
             abort_on_error 11d $?
         else
             echo "        Dropping table tmp_supporter"
-            mariadb $dbm                                  <<< "DROP TABLE tmp_supporter;"
+            mariadb $dbm                              <<< "DROP TABLE tmp_supporter;"
             abort_on_error 11e $?
         fi
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
         echo "    12. Insert supporters from $sps-$dir.log"
         start=$SECONDS
-        mariadb                                             < "$sps-$dir.log"
+        mariadb                                         < "$sps-$dir.log"
         abort_on_error 12 $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
@@ -368,28 +358,28 @@ then
 
     echo "13. Generate player insert SQL in $pls"
     start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" exec players.php           > $pls
+    /usr/bin/php $prg $sw "$cfg" exec players.php       > $pls
     abort_on_error 13 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
     echo "14. Bind RSM data to player data using $pls"
     start=$SECONDS
-    mariadb                                                 < $pls
+    mariadb                                             < $pls
     abort_on_error 14 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
     echo "15. Generate first-draw and chance update SQL in $plu"
     start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" exec players_update.php    > $plu
+    /usr/bin/php $prg $sw "$cfg" exec players_update.php > $plu
     abort_on_error 15 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
     echo "16. Set first-draw and chances using $plu"
     start=$SECONDS
-    mariadb                                                 < $plu
+    mariadb                                             < $plu
     abort_on_error 16 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
@@ -400,10 +390,24 @@ then
     abort_on_error 17 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    echo "18. Mangle data if a demo"
+    echo "18. Mangle data if a demo/test instance"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec demo.php
-    abort_on_error 18 $?
+    e="$?"
+    if [ "$e" = "104" ]
+    then
+        echo "    Creating anonymisation (fake names) database"
+        /usr/bin/php $prg $sw "$cfg" sql db.create.anonymiser.sql > $tmp
+        abort_on_error 18b $? $tmp
+        cat $tmp
+        mariadb                                         < $tmp
+        abort_on_error 18c $?
+        # Now try that again
+        /usr/bin/php $prg $sw "$cfg" exec demo.php
+        abort_on_error 18d $?
+    else
+        abort_on_error 18a $e
+    fi
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 fi
@@ -479,41 +483,41 @@ start=$SECONDS
 if [ "$rbe" = "" ]
 then
     echo "    CALL anls();"
-    mariadb $dbm                                  <<< "CALL anls();"
+    mariadb $dbm                                      <<< "CALL anls();"
     abort_on_error 27a $?
     echo "    CALL cancellationsByRule();"
-    mariadb $dbm                                  <<< "CALL cancellationsByRule();"
+    mariadb $dbm                                      <<< "CALL cancellationsByRule();"
     abort_on_error 27b $?
     echo "    CALL draws();"
-    mariadb $dbm                                  <<< "CALL draws();"
+    mariadb $dbm                                      <<< "CALL draws();"
     abort_on_error 27c $?
     echo "    CALL drawsSummarise();"
-    mariadb $dbm                                  <<< "CALL drawsSummarise();"
+    mariadb $dbm                                      <<< "CALL drawsSummarise();"
     abort_on_error 27d $?
     echo "    CALL insure('$nxt');"
-    mariadb $dbm                                  <<< "CALL insure('$nxt');"
+    mariadb $dbm                                      <<< "CALL insure('$nxt');"
     abort_on_error 27e $?
     echo "    CALL supporters();"
-    mariadb $dbm                                  <<< "CALL supporters();"
+    mariadb $dbm                                      <<< "CALL supporters();"
     abort_on_error 27f $?
     echo "    CALL updates();"
-    mariadb $dbm                                  <<< "CALL updates();"
+    mariadb $dbm                                      <<< "CALL updates();"
     abort_on_error 27g $?
     echo "    CALL winners();"
-    mariadb $dbm                                  <<< "CALL winners();"
+    mariadb $dbm                                      <<< "CALL winners();"
     abort_on_error 27h $?
 else
     echo "    CALL drawsRBE();"
-    mariadb $dbm                                  <<< "CALL drawsRBE();"
+    mariadb $dbm                                      <<< "CALL drawsRBE();"
     abort_on_error 27i $?
     echo "    CALL drawsSummariseRBE();"
-    mariadb $dbm                                  <<< "CALL drawsSummariseRBE();"
+    mariadb $dbm                                      <<< "CALL drawsSummariseRBE();"
     abort_on_error 27j $?
     echo "    CALL insureRBE();"
-    mariadb $dbm                                  <<< "CALL insureRBE();"
+    mariadb $dbm                                      <<< "CALL insureRBE();"
     abort_on_error 27k $?
     echo "    CALL winnersRBE();"
-    mariadb $dbm                                  <<< "CALL winnersRBE();"
+    mariadb $dbm                                      <<< "CALL winnersRBE();"
     abort_on_error 27l $?
 fi
 
@@ -545,12 +549,12 @@ then
     echo "29. Amend and build canvassing company change report"
     start=$SECONDS
     echo "    CALL changesGenerate();"
-    mariadb $dbm                                          <<< "CALL changesGenerate();"
+    mariadb $dbm                                      <<< "CALL changesGenerate();"
     abort_on_error 29a $?
     /usr/bin/php $prg $sw "$cfg" exec changes.php -q
     abort_on_error 29b $?
     echo "    CALL changes();"
-    mariadb $dbm                                          <<< "CALL changes();"
+    mariadb $dbm                                      <<< "CALL changes();"
     abort_on_error 29c $?
     /usr/bin/php $prg $sw "$cfg" exec changes_email.php
     abort_on_error 29d $?
@@ -559,14 +563,14 @@ then
 
     echo "30. Generate preference column names in $lgs"
     start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" exec legends.php           > $lgs
+    /usr/bin/php $prg $sw "$cfg" exec legends.php       > $lgs
     abort_on_error 30 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
     echo "31. Alter/drop preference columns in make database"
     start=$SECONDS
-    mariadb                                                 < $lgs
+    mariadb                                             < $lgs
     abort_on_error 31 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
