@@ -11,7 +11,7 @@ if (!$zo) {
 }
 
 if (!is_dir(BLOTTO_DIR_INVOICE)) {
-    fwrite (STDERR,"Draw report directory BLOTTO_DIR_INVOICE=".BLOTTO_DIR_INVOICE." does not exist\n");
+    fwrite (STDERR,"Invoice directory BLOTTO_DIR_INVOICE='".BLOTTO_DIR_INVOICE."' does not exist\n");
     exit (102);
 }
 

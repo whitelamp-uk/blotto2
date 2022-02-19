@@ -3434,6 +3434,7 @@ function tidy_addr ($str) {
 
 function tickets ($provider_code,$refno,$cref,$qty) {
     $org_id = BLOTTO_ORG_ID;
+    $refno = $org_id.$refno; // quirk originally created by RSM with non-numeric DDRefNo values
     $tickets = [];
     try {
         $zo = connect (BLOTTO_TICKET_DB);
