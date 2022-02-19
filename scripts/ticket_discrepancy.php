@@ -3,6 +3,7 @@
 require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
+$org_id=BLOTTO_ORG_ID;
 $mdb = BLOTTO_MAKE_DB;
 $tdb = BLOTTO_TICKET_DB;
 $csf = BLOTTO_DIR_EXPORT.'/checksum.blotto_ticket.txt';
@@ -71,6 +72,44 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
 
 }
 
+tee ("    Looking for ticket inconsistencies between `dd_ref_no` and `client_ref`\n");
+
+$qs = "
+  SELECT
+    `t1`.`dd_ref_no`
+   ,`t1`.`client_ref`
+   ,`t2`.`dd_ref_no`
+   ,`t2`.`client_ref`
+  FROM `$tdb`.`blotto_ticket` AS `t1`
+  JOIN `$tdb`.`blotto_ticket` AS `t2`
+    ON `t2`.`org_id`=`t1`.`org_id`
+   AND (
+         `t2`.`dd_ref_no`=`t1`.`dd_ref_no`
+     AND `t2`.`client_ref`!=`t1`.`client_ref`
+   )
+    OR (
+         `t2`.`client_ref`=`t1`.`client_ref`
+     AND `t2`.`dd_ref_no`!=`t1`.`dd_ref_no`
+    )
+  WHERE `t1`.`org_id`=$org_id
+  LIMIT 0,1
+  ;
+";
+try {
+    $d = $zo->query ($qs);
+    if ($d->num_rows) {
+        $d = $d->fetch_assoc ();
+        fwrite (STDERR,$qs."\n".print_r($d,true)."\n");
+        fwrite (STDERR,"`blotto_ticket` has inconsistencies\n");
+        exit (106);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (107);
+}
+
+
 
 if ($rbe) {
     exit (0);
@@ -100,7 +139,8 @@ $qs = "
   JOIN `$mdb`.`blotto_build_mandate` AS `m`
     ON `m`.`ClientRef`=`p`.`client_ref`
   LEFT JOIN `$tdb`.`blotto_ticket` AS `t`
-         ON `t`.`client_ref`=`p`.`client_ref`
+         ON `t`.`dd_ref_no`=`m`.`RefNo`
+        AND `t`.`client_ref`=`p`.`client_ref`
   WHERE `p`.`first_draw_close` IS NOT NULL
   GROUP BY `p`.`client_ref`
   HAVING `tickets`!=`chances`
@@ -125,7 +165,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (106);
+    exit (108);
 }
 
 if ($c=count($players)) {
@@ -133,6 +173,7 @@ if ($c=count($players)) {
     echo $qs;
     print_r ($players);
     fwrite (STDERR,"$c players have ticket discrepancies (see log)\n");
-    exit (107);
+    exit (109);
 }
+
 
