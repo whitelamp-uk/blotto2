@@ -1,13 +1,13 @@
 <?php
 
 
-require __DIR__.'/functions.php';
+require_once __DIR__.'/functions.php';
 cfg ();
-require $argv[1];
+require_once $argv[1];
 
 
 if (!defined('BLOTTO_DEMO') || !BLOTTO_DEMO) {
-    echo "    Not a demo\n";
+    echo "    Not a demo/test instance\n";
     exit (0);
 }
 
@@ -17,13 +17,42 @@ if (!$zo) {
     exit (101);
 }
 
-echo "    Mangling demo make database ".BLOTTO_MAKE_DB."\n"; 
+if (!defined('BLOTTO_ANONYMISER_DB') || !BLOTTO_ANONYMISER_DB) {
+    fwrite (STDERR,"BLOTTO_ANONYMISER_DB not defined\n");
+    exit (102);
+}
 
-$db   = BLOTTO_ANONYMISER_DB;
+
+$db             = BLOTTO_ANONYMISER_DB;
 $male_titles    = explode (',', BLOTTO_MALE_TITLES);
 $female_titles  = explode (',', BLOTTO_FEMALE_TITLES);
 $ngs_titles     = explode (',', BLOTTO_TITLES);
 $ngs_titles     = array_diff ($ngs_titles,$female_titles,$male_titles);
+
+
+$qs = "
+  SELECT
+    COUNT(*) AS `found`
+  FROM `INFORMATION_SCHEMA`.`SCHEMATA`
+  WHERE `SCHEMA_NAME`='$db'
+";
+
+try {
+    $db_found = $zo->query ($qs);
+    $db_found = $db_found->fetch_assoc() ['found'];
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (103);
+}
+if (!$db_found) {
+    fwrite (STDERR,"Anonymiser database '".BLOTTO_ANONYMISER_DB."' does not exist\n");
+    exit (104);
+}
+
+
+echo "    Mangling demo make database ".BLOTTO_MAKE_DB."\n"; 
+
 
 
 $qs = "
@@ -66,7 +95,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (102);
+    exit (105);
 }
 
 $q = "
@@ -80,7 +109,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$q."\n".$e->getMessage()."\n");
-    exit (103);
+    exit (106);
 }
 
 $q = "
@@ -94,7 +123,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$q."\n".$e->getMessage()."\n");
-    exit (104);
+    exit (107);
 }
 
 $q = "
@@ -108,7 +137,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$q."\n".$e->getMessage()."\n");
-    exit (105);
+    exit (108);
 }
 
 
@@ -193,7 +222,7 @@ Warning: this old code does not allow for $prev['m_pr']
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$nq."\n".$e->getMessage()."\n");
-            exit (106);
+            exit (109);
         }
 
         $namearr = explode(' ', $name, 2);
@@ -257,7 +286,7 @@ Warning: this old code does not allow for $prev['m_pr']
             }
             catch (\mysqli_sql_exception $e) {
                 fwrite (STDERR,$aq."\n".$e->getMessage()."\n");
-                exit (107);
+                exit (110);
             }
         }
 
@@ -280,7 +309,7 @@ Warning: this old code does not allow for $prev['m_pr']
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$uq."\n".$e->getMessage()."\n");
-            exit (108);
+            exit (111);
         }
 
     }
@@ -297,7 +326,7 @@ Warning: this old code does not allow for $prev['m_pr']
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$bq."\n".$e->getMessage()."\n");
-            exit (109);
+            exit (112);
         }
 
     }
