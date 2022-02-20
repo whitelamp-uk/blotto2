@@ -74,6 +74,10 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
 
 tee ("    Looking for ticket inconsistencies between `dd_ref_no` and `client_ref`\n");
 
+// This constraint cannot be done in SQL because, like quite a lot of blotto2,
+// this table is not fully normalised - typically justified by efficiency needs.
+// dd_ref_no:client_ref must be 1:1 but is not a unique key because
+// dd_ref_no:number is 1:N
 $qs = "
   SELECT
     `t1`.`dd_ref_no`
