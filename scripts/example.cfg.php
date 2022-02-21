@@ -2,7 +2,6 @@
 
 // DEMO
 define ( 'BLOTTO_ANONYMISER_DB',    'blotto_anonymiser'                 );
-define ( 'BLOTTO_DEMO',             true                );
 
 // Global config
 define ( 'BLOTTO_FILE_CFG',         '/home/blotto/config.global.php'    );
