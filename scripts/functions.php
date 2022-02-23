@@ -740,42 +740,22 @@ function draw_first_asap ($first_collection_date) {
     if (!defined('BLOTTO_INSURE_DAYS') || BLOTTO_INSURE_DAYS<1) {
         return $draw_closes;
     }
+    // How many days from first collection to insurance deadline?
     $d1             = new \DateTime ($first_collection_date);
     $d2             = new \DateTime ($draw_closes);
     $days           = $d1->diff($d2)->format ('%r%a');
     if ($days>=BLOTTO_INSURE_DAYS) {
+        // There is enough time
         return $draw_closes;
     }
-    // If insurance is required by any prize and first
-    // collection date is within BLOTTO_INSURE_DAYS of
-    // draw close date, the first draw must be postponed
-    // by one draw
+    // The first draw for this collection date
+    // must be the following one so add a day...
     $d2->add (new \DateInterval('P1D'));
+    // ... in order to return the next draw
     return draw_upcoming ($d2->format('Y-m-d'));
 }
 
-function draw_first_zaffo_model ($first_collection_date) {
-    /*
-        1. Take first_collection_date
-        2. Add pay delay
-        3. Move on to next Friday (even if first_collection_date is a Friday)
-        4. Move on 21 more days
-    */
-    $fcd        = new DateTime ($first_collection_date);
-    $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
-    // Move on to next Friday
-    $days       = (12-$fcd->format('w')) % 7;
-    if ($days==0) {
-        // Even if collection date is a Friday
-        $days  += 7;
-    }
-    // Move on 21 more days
-    $days      += 21;
-    $fcd->add (new DateInterval('P'.$days.'D'));
-    return $fcd->format ('Y-m-d');
-}
-
-function draw_first_zaffo_model1 ($first_collection_date,$dow=5) {
+function draw_first_zaffo_model ($first_collection_date,$dow=5) {
     /*
         OLD: Do it on a Friday
             1. Take first_collection_date
@@ -791,9 +771,9 @@ function draw_first_zaffo_model1 ($first_collection_date,$dow=5) {
     $fcd        = new DateTime ($first_collection_date);
     $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
     // Move on to next Fri
-    $days       = ((12)-$fcd->format('w')) % 7;
+    $days       = (($dow+7)-$fcd->format('w')) % 7;
     if ($days==0) {
-        // Even if collection date is a Fri
+        // Even if collection date is a $dow
         $days  += 7;
     }
     // Move on 21 more days
