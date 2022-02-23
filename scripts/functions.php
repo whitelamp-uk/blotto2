@@ -4363,6 +4363,11 @@ function www_validate_email ($email,&$e) {
         }
     }
     catch (\Throwable $error) {
+        notify (
+            BLOTTO_EMAIL_WARN_TO,
+            "Email validation problem",
+            "Error message: ".$error->getMessage()
+        );
         error_log ($error->getMessage());
         $e[] = "Error trying to use email validation service";
         return false;
