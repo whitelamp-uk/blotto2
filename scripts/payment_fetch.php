@@ -4,11 +4,6 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-if (defined('BLOTTO_DEV_PAY_FREEZE') && BLOTTO_DEV_PAY_FREEZE) {
-    tee ("Leaving existing mandate and collection data alone\n");
-    exit (0);
-}
-
 echo "    Fetching mandate and collection data\n";
 
 $zo = connect (BLOTTO_MAKE_DB);

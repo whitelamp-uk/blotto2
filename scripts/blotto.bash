@@ -162,6 +162,7 @@ bpf="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_FNC )"
 bpu="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_UPD )"
 bpp="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_PRM )"
 mda="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_MYSQLDUMP_AUTH  )"
+pfz="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_DEV_PAY_FREEZE  )"
 nxt="$( /usr/bin/php  "$drp/exec.php"    "$cfg"  draw_upcoming          )"
 tmp="$ldr/blotto.$$.tmp"
 sps="$ldr/blotto.supporters.sql.last"
@@ -260,39 +261,47 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 if [ "$rbe" = "" ]
 then
 
-    echo " 4. Generate mandate / collection table create SQL in $ddc"
-    start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
-    abort_on_error 4 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+    if [ "$pfz" = "" ]
+    then
+
+        # This stuff will not happen if BLOTTO_DEV_PAY_FREEZE is true
+        echo "BLOTTO_DEV_PAY_FREEZE==true so not touching mandate or collection tables"
+
+        echo " 4. Generate mandate / collection table create SQL in $ddc"
+        start=$SECONDS
+        /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
+        abort_on_error 4 $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo " 5. Create mandate / collection tables using $ddc"
-    start=$SECONDS
-    mariadb                                             < $ddc
-    abort_on_error 5 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+        echo " 5. Create mandate / collection tables using $ddc"
+        start=$SECONDS
+        mariadb                                             < $ddc
+        abort_on_error 5 $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
-    start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" exec payment_fetch.php
-    abort_on_error 6 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+        echo "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
+        start=$SECONDS
+        /usr/bin/php $prg $sw "$cfg" exec payment_fetch.php
+        abort_on_error 6 $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo " 7. Generate mandate / collection table index / transform SQL in $ddx"
-    start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" sql payment.update.sql > $ddx
-    abort_on_error 7 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+        echo " 7. Generate mandate / collection table index / transform SQL in $ddx"
+        start=$SECONDS
+        /usr/bin/php $prg $sw "$cfg" sql payment.update.sql > $ddx
+        abort_on_error 7 $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo " 8. Index / transform mandate / collection tables using $ddx"
-    start=$SECONDS
-    mariadb                                             < $ddx
-    abort_on_error 8 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+        echo " 8. Index / transform mandate / collection tables using $ddx"
+        start=$SECONDS
+        mariadb                                             < $ddx
+        abort_on_error 8 $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
+
+    fi
 
     for dir in $(ls "$sdr")
     do
@@ -328,10 +337,20 @@ then
         /usr/bin/php $prg $sw "$cfg" exec supporters.php $dir > "$sps-$dir.log"
         abort_on_error 11a $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
-        echo "    11b. Generate mandates"
-        /usr/bin/php $prg $sw "$cfg" exec payment_mandate.php
-        abort_on_error 11b $?
-        echo "        Completed in $(($SECONDS-$start)) seconds"
+
+        if [ "$pfz" = "" ]
+        then
+
+            # This stuff will not happen if BLOTTO_DEV_PAY_FREEZE is true
+            echo "BLOTTO_DEV_PAY_FREEZE==true so not attempting to set up new mandates"
+
+            echo "    11b. Generate mandates"
+            /usr/bin/php $prg $sw "$cfg" exec payment_mandate.php
+            abort_on_error 11b $?
+            echo "        Completed in $(($SECONDS-$start)) seconds"
+
+        fi
+
         if [ "$no_tidy" ]
         then
             echo "        Renaming table tmp_supporter to tmp_supporter_$dir"

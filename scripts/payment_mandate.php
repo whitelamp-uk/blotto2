@@ -4,11 +4,6 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
-if (defined('BLOTTO_DEV_PAY_FREEZE') && BLOTTO_DEV_PAY_FREEZE) {
-    tee ("Leaving new mandates alone\n");
-    exit (0);
-}
-
 $interval = BLOTTO_DD_TRY_INTERVAL;
 
 echo "    Generating/posting mandate data\n";

@@ -108,8 +108,8 @@ define ( 'STRIPE_DEV_MODE',         true        );
 */
 
 // Organisation - all payment providers
-define ( 'BLOTTO_DEV_MODE',         true        );
-define ( 'BLOTTO_DEV_PAY_FREEZE',   false       );
+define ( 'BLOTTO_DEV_MODE',         false       ); // Dummy online payment form population
+define ( 'BLOTTO_DEV_PAY_FREEZE',   false       ); // Leave blotto_build_* alone
 define ( 'CAMPAIGN_MONITOR',        '/path/to/createsend-php/csrest_transactional_smartemail.php' );
 define ( 'DATA8_USERNAME',          ''          );
 define ( 'DATA8_PASSWORD',          ''          );
