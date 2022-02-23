@@ -123,6 +123,8 @@ if (count($_POST)) {
     foreach ($apis as $api_code=>$api_object) {
         if (array_key_exists($api_code,$_POST)) {
             $api_found = true;
+            // First found is the one that gets used
+            break;
         }
     }
     if (!$api_found) {
