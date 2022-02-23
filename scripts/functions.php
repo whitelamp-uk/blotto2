@@ -4370,14 +4370,21 @@ function www_validate_email ($email,&$e) {
         "email"     => $email,
         "level"     => DATA8_EMAIL_LEVEL,
     ];
-    $client = new \SoapClient ("https://webservices.data-8.co.uk/EmailValidation.asmx?WSDL");
-    $result = $client->IsValid ($params);
-    if ($result->IsValidResult->Status->Success==false) {
-        $e[] = "Error trying to validate email: ".$result->Status->ErrorMessage;
-        return false;
+    try {
+        $client = new \SoapClient ("https://webservices.data-8.co.uk/EmailValidation.asmx?WSDL");
+        $result = $client->IsValid ($params);
+        if ($result->IsValidResult->Status->Success==false) {
+            $e[] = "Error trying to validate email: ".$result->Status->ErrorMessage;
+            return false;
+        }
+        if ($result->IsValidResult->Result=='Invalid') {
+            $e[] = "$email is an invalid address";
+            return false;
+        }
     }
-    if ($result->IsValidResult->Result=='Invalid') {
-        $e[] = "$email is an invalid address";
+    catch (\Throwable $error) {
+        error_log ($error->getMessage());
+        $e[] = "Error trying to use email validation service";
         return false;
     }
     return true;
