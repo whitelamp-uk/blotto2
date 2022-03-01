@@ -31,6 +31,7 @@ $qs = "
    ,`p`.`started`
    ,`s`.`projected_first_draw_close`
    ,`s`.`canvas_code`
+   ,IF(`s`.`client_ref`=`p`.`client_ref`,1,0) AS `is_original_player`
   FROM `blotto_build_mandate` AS `m`
   JOIN `blotto_player` AS `p`
     ON `p`.`client_ref`=`m`.`ClientRef`
@@ -38,6 +39,7 @@ $qs = "
     ON `s`.`id`=`p`.`supporter_id`
   WHERE `p`.`started` IS NULL
      OR `s`.`projected_first_draw_close` IS NULL
+  ;
 ";
 try {
     $ms = $zo->query ($qs);
@@ -51,7 +53,28 @@ try {
             array_push ($starts[$m['Created']],$m['player_id']);
         }
         if (!$m['projected_first_draw_close']) {
-            $close = draw_first ($m['StartDate'],$m['canvas_code']);
+            // Build-up some player balance before entering the game
+
+            if ($m['is_original_player']) {
+                // Original player needs to build up some balance
+                $close = draw_first ($m['StartDate'],$m['canvas_code']);
+            }
+            else {
+                $close = draw_first ($m['StartDate'],$m['canvas_code']);
+/*
+TODO:
+If you have either no change or a reduction in chances from old player
+to new, the new player should be able to play immediately.
+What should happen if there is an increase in chances? Probably the same as a new supporter.
+We now have `blotto_player`.`opening_balance` and I think we need `balance_transferred` too.
+Then a new build process should:
+ * find all superceded players with a non-zero balance
+ * set `balance_transferred` to that value
+ * increment `opening_balance` of latest player by that value
+ * Modify all existing logic to substract `balance_transferred` in balance calculations.
+BTW the last bit of this script (updating chances line 151) might want to happen before this bit.
+*/
+            }
             if (!array_key_exists($close,$firsts)) {
                 $firsts[$close] = [];
             }
@@ -63,6 +86,11 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (103);
 }
+/*
+blotto_player(supporter_id,started) is unique so `started` identifies and orders
+the players that make the history of any given supporter. It has no more subtle
+meaning than that - it has no implications around money, draw entries etc
+*/
 echo "-- Update player started date\n";
 foreach ($starts as $date=>$ids) {
     if (!count($ids)) {
@@ -80,7 +108,7 @@ foreach ($firsts as $close=>$ids) {
 
 
 
-// Set player actual first draw
+// Set the player first draw close
 $firsts                     = [];
 $qs = "
   SELECT
