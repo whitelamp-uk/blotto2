@@ -100,7 +100,7 @@ function cfg ( ) {
         exit (100);
     }
     if (!is_readable($argv[1])) {
-        fwrite(STDERR, "Config file is not readable\n");
+        fwrite(STDERR, "Config file ".$argv[1]." is not readable\n");
         exit (100);
     }
     return true;
