@@ -42,7 +42,7 @@ try {
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
-    if (!$api->errorCode) {
+    if (!property_exists($api,'errorCode')) {
         // Unexpected error
         exit (104);
     }
