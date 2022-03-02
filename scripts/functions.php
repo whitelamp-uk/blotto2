@@ -734,8 +734,13 @@ function draw ($draw_closed) {
 }
 
 function draw_first_asap ($first_collection_date) {
+    if (!function_exists('draw_upcoming')) {
+        throw new \Exception ("Function draw_upcoming() was not found");
+        return false;
+    }
     // Money received may be used in a draw closing on
     // the same day unless a delay is required for insurance
+    // Use the bespoke function
     $draw_closes    = draw_upcoming ($first_collection_date);
     if (!defined('BLOTTO_INSURE') || !BLOTTO_INSURE || BLOTTO_INSURE_DAYS<1) {
         return $draw_closes;
@@ -752,6 +757,7 @@ function draw_first_asap ($first_collection_date) {
     // must be the following one so add a day...
     $d2->add (new \DateInterval('P1D'));
     // ... in order to return the next draw
+    // Use the bespoke function
     return draw_upcoming ($d2->format('Y-m-d'));
 }
 
@@ -1060,6 +1066,7 @@ function draws_outstanding ( ) {
     $dates          = [];
     $date           = $range['start'];
     while (1) {
+        // Use the bespoke function
         $date       = draw_upcoming ($date);
         if ($date>=$range['future']) {
             break;
@@ -1283,6 +1290,22 @@ function html ($snippet,$title='Untitled',$output=true) {
     $html = ob_get_contents ();
     ob_end_clean ();
     return $html;
+}
+
+function insurance_draw_close ($today=null) {
+    // Which draw are we insuring today?
+    if (!function_exists('draw_upcoming')) {
+        throw new \Exception ("Function draw_upcoming() was not found");
+        return false;
+    }
+    $insure_days = 0;
+    if (defined('BLOTTO_INSURE_DAYS')) {
+        $insure_days = intval (BLOTTO_INSURE_DAYS);
+    }
+    $dt = new \DateTime ($today);
+    $dt->add (new \DateInterval('P'.$insure_days.'D'));
+    // Use the bespoke function
+    return draw_upcoming ($dt->format('Y-m-d'));
 }
 
 function invoice ($invoice,$output=true) {
@@ -2215,8 +2238,9 @@ function prizes ($date) {
             $p['left']          = stripos($p['level_method'],'L') !== false;
             $p['right']         = stripos($p['level_method'],'R') !== false;
         }
-        // Bespoke modification of prize amount in BLOTTO_BESPOKE_FUNC
+        // Bespoke modification of prize amount
         if (function_exists('prize_amount')) {
+            // Use bespoke function
             prize_amount ($p);
         }
         $prizes[$p['level']]    = $p;
@@ -3564,6 +3588,7 @@ function update ( ) {
             }
             $q .= "`$k`='".esc($fields[$k],BLOTTO_CONFIG_DB)."',";
         }
+        // Use the bespoke function chances()
         $ch  = intval (chances($fields['Freq'],$fields['Amount']));
         $onm = $m['Name'];
         $osc = $m['Sortcode'];

@@ -57,9 +57,11 @@ try {
 
             if ($m['is_original_player']) {
                 // Original player needs to build up some balance
+                // Use the bespoke function
                 $close = draw_first ($m['StartDate'],$m['canvas_code']);
             }
             else {
+                // For now, use the bespoke function
                 $close = draw_first ($m['StartDate'],$m['canvas_code']);
 /*
 TODO:
@@ -128,6 +130,7 @@ try {
     $ps                     = $zo->query ($qs);
     fwrite (STDERR,"{$ps->num_rows} players where first draw close not set\n");
     while ($p=$ps->fetch_assoc()) {
+        // Use the bespoke function
         $date               = draw_first ($p['first_collected'],$p['canvas_code']);
         if (!array_key_exists($date,$firsts)) {
             $firsts[$date]  = [];
