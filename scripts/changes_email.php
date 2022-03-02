@@ -158,7 +158,7 @@ if ($today->format('D')==$dow) {
         if ($r['count']>0) {
             mail_attachments (
                 $r['ccr_email'],
-                "Canvassing Company Return from ".BLOTTO_BRAND." w/e {$r['end']}",
+                "Canvassing Company Return from ".strtoupper($org_code)."@".BLOTTO_BRAND." w/e {$r['end']}",
                 "The canvassing company return - CCR - reports any ticket changes logged last period for recently-joined supporters (".BLOTTO_CC_NOTIFY." from sign-up)",
                 [$file]
             );
