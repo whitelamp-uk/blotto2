@@ -43,6 +43,7 @@ if ($today->format('D')==$dow) {
       ;
     ";
     echo $qs."\n";
+    $changes = [];
     $ccrs = [];
     $emails = [];
     try {
