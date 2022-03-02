@@ -737,7 +737,7 @@ function draw_first_asap ($first_collection_date) {
     // Money received may be used in a draw closing on
     // the same day unless a delay is required for insurance
     $draw_closes    = draw_upcoming ($first_collection_date);
-    if (!defined('BLOTTO_INSURE_DAYS') || BLOTTO_INSURE_DAYS<1) {
+    if (!defined('BLOTTO_INSURE') || !BLOTTO_INSURE || BLOTTO_INSURE_DAYS<1) {
         return $draw_closes;
     }
     // How many days from first collection to insurance deadline?
@@ -1419,7 +1419,7 @@ function invoice_game ($draw_closed_date,$output=true) {
             $tickets,
             number_format (BLOTTO_FEE_MANAGE/100,2,'.','')
         ];
-        if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS>0) {
+        if (defined('BLOTTO_INSURE') && BLOTTO_INSURE) {
             $invoice->items[] = [
                 "Ticket insurance fee",
                 $tickets,
@@ -3271,7 +3271,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $expend_tickets     = BLOTTO_FEE_MANAGE/100 * $stats['plays_during'];
     $expend            += $expend_tickets;
     $expend_insure      = 0;
-    if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS>0) {
+    if (defined('BLOTTO_INSURE') && BLOTTO_INSURE) {
         $expend_insure  = BLOTTO_FEE_INSURE/100 * $stats['plays_during'];
     }
     $expend            += $expend_insure;
@@ -4226,8 +4226,8 @@ function www_signup_dates ($org,&$e) {
                     // A draw is closed exactly one day after the day begins
                     $closed = new \DateTime ($draw_closed.' 00:00:00');
                     $closed->add (new \DateInterval('P1D'));
-                    // The promotion for a particluar draw needs to close BLOTTO_INSURE_DAYS early
-                    if (defined('BLOTTO_INSURE_DAYS') && BLOTTO_INSURE_DAYS) {
+                    if (defined('BLOTTO_INSURE') && BLOTTO_INSURE && BLOTTO_INSURE_DAYS>0) {
+                        // The www promotion for a draw date needs to close BLOTTO_INSURE_DAYS earlier than DD
                         $closed->sub (new \DateInterval('P'.BLOTTO_INSURE_DAYS.'D'));
                     }
                     // Promoters sometimes prefer closing at 5pm rather than midnight (7 hours)
