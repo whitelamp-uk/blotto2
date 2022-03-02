@@ -308,6 +308,10 @@ BEGIN
   DROP TABLE IF EXISTS `Cancellations`
   ;
   CREATE TABLE `Cancellations` AS
+
+-- TODO: Change this so that cancellations are purely defined by BLOTTO_CANCEL_RULE
+-- A supporter should be cancelled only if all its players are cancelled
+
     SELECT
       -- Deterministic cancelled date
       -- if no mandate, use supporter created
@@ -774,6 +778,7 @@ CREATE PROCEDURE `insure` (
 )
 BEGIN
   -- Add all unrecorded tickets in blotto_entry for draws in the past
+  -- That is, create an all-time history
   INSERT IGNORE INTO `blotto_insurance`
   ( `draw_closed`,`ticket_number`,`org_ref`,`client_ref` )
     SELECT `draw_closed`,`ticket_number`,UPPER('{{BLOTTO_ORG_USER}}') AS `org_ref`,`client_ref`
@@ -782,6 +787,9 @@ BEGIN
     ORDER BY `ticket_number`
   ;
   -- Add all unrecorded active tickets for the next draw having a live mandate
+
+-- TODO: change this so that instead of using m.Status, left join the newly built `Cancellations`
+
   INSERT IGNORE INTO `blotto_insurance`
   ( `draw_closed`,`ticket_number`,`org_ref`,`client_ref` )
     SELECT futureCloseDate,`tk`.`number`,UPPER('{{BLOTTO_ORG_USER}}') AS `org_ref`,`tk`.`client_ref`
@@ -1067,7 +1075,10 @@ BEGIN
        ,IFNULL(`e`.`draw_entries`,0) AS `plays`
        ,dp(@CostPerPlay/100,2) AS `per_play`
        ,dp(IFNULL(`cl`.`AmountCollected`,0)-(@CostPerPlay/100*IFNULL(`e`.`draw_entries`,0)),2) AS `balance`
-       ,IF(`m`.`Status` IN ('DELETED','CANCELLED','FAILED'),'DEAD','ACTIVE') AS `Active`
+
+-- Weening us off mandate status
+       ,IF(`m`.`Status`='','',IF(`m`.`Status` IN ('DELETED','CANCELLED','FAILED'),'DEAD','ACTIVE')) AS `Active`
+
        ,`m`.`Status`
        ,`m`.`FailReason`
       FROM `blotto_build_mandate` as `m`
@@ -1147,7 +1158,10 @@ BEGIN
        ,IFNULL(`e`.`draw_entries`,0) AS `plays`
        ,dp(@CostPerPlay/100,2) AS `per_play`
        ,dp(IFNULL(`cl`.`AmountCollected`,0)-(@CostPerPlay/100*IFNULL(`e`.`draw_entries`,0)),2) AS `balance`
-       ,IF(`m`.`Status` IN ('DELETED','CANCELLED','FAILED'),'DEAD','ACTIVE') AS `Active`
+
+-- Weening us off mandate status
+       ,IF(`m`.`Status`='','',IF(`m`.`Status` IN ('DELETED','CANCELLED','FAILED'),'DEAD','ACTIVE')) AS `Active`
+
        ,`m`.`Status`
        ,`m`.`FailReason`
       FROM `blotto_build_mandate` as `m`
