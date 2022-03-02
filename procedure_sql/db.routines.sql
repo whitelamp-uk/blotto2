@@ -137,6 +137,8 @@ BEGIN
     )      AS `sdtk`
            ON `sdtk`.`client_ref`=`p`.`client_ref`
     -- One-off payments do not need an ANL
+-- TODO: Actually this is more about online payment that one-off payment - or is it?
+-- The online/DD condition problem exists in other to-do comments
     WHERE `m`.`Freq`!='Single'
     GROUP BY `m`.`Provider`,`m`.`RefNo`
     ORDER BY `tickets_issued`,`ccc`,`ClientRef`
