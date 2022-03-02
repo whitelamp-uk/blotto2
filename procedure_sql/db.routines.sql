@@ -308,27 +308,23 @@ BEGIN
   DROP TABLE IF EXISTS `Cancellations`
   ;
   CREATE TABLE `Cancellations` AS
-
--- TODO: Change this so that cancellations are purely defined by BLOTTO_CANCEL_RULE
--- A supporter should be cancelled only if all its players are cancelled
-
     SELECT
       -- Deterministic cancelled date
-      -- if no mandate, use supporter created
+      -- If no mandate, use supporter created
+      -- Cancellation is based on late collection and not on mandate status
+      -- (not all APIs support mandate status)
       IF(
         `m`.`Refno` IS NULL
        ,cancelDate(`s`.`created`,'')
        ,IF(
-          `m`.`Status`=CONVERT('CANCELLED' USING UTF8)
-         ,`m`.`Updated`
-         ,IF(
-            `c`.`Payments_Collected` IS NULL
-            -- if no collections, use mandate start date
-            ,cancelDate(`m`.`StartDate`,`m`.`Freq`)
-            ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
-          )
+          `c`.`Payments_Collected` IS NULL
+          -- If no collections, use mandate start date
+         ,cancelDate(`m`.`StartDate`,`m`.`Freq`)
+         ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
         )
       ) AS `cancelled_date`
+
+-- This bit is soon to be sacked
      ,IF(
         `m`.`Refno` IS NULL
        ,cancelDate(`s`.`created`,'')
@@ -339,6 +335,7 @@ BEGIN
          ,cancelDate(`c`.`Last_Payment`,`m`.`Freq`)
         )
       ) AS `cancelled_date_legacy`
+
      ,`s`.`canvas_code` AS `ccc`
      ,`ip`.`client_ref`
      ,IFNULL(`t`.`number`,'') AS `ticket_number`
@@ -355,15 +352,7 @@ BEGIN
      ,IFNULL(`m`.`Freq`,'') AS `mandate_frequency`
      ,IFNULL(`m`.`Amount`,0) AS `mandate_amount`
      ,IFNULL(`m`.`Status`,'MISSING') AS `mandate_status`
-     ,IF(
-        `m`.`RefNo` IS NULL
-       ,CONCAT('Y: ',REPLACE(LOWER('{{BLOTTO_CANCEL_RULE}}'),' ','-'),' rule (mandate)')
-       ,IF(
-          `m`.`FailReason`=''
-         ,CONCAT('X: ',REPLACE(LOWER('{{BLOTTO_CANCEL_RULE}}'),' ','-'),' rule (collection)')
-         ,`m`.`FailReason`
-        )
-      ) AS `mandate_fail_reason`
+     ,IFNULL(`m`.`FailReason`,'') AS `mandate_fail_reason`
     FROM `blotto_supporter` AS `s`
     JOIN (
       SELECT
@@ -403,10 +392,10 @@ BEGIN
     )      AS `c`
            ON `c`.`Provider`=`m`.`Provider`
           AND `c`.`RefNo`=`m`.`RefNo`
-    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
+    LEFT JOIN `crucible_ticket_zaffo`.`blotto_ticket` AS `t`
            ON `t`.`mandate_provider`=`m`.`Provider`
           AND `t`.`client_ref`=`m`.`ClientRef`
-          AND `t`.`org_id`={{BLOTTO_ORG_ID}}
+          AND `t`.`org_id`=2
     -- One-off payments are not applicable
     WHERE `m`.`Freq`!='Single'
     GROUP BY `client_ref`,`ticket_number`
@@ -777,19 +766,6 @@ CREATE PROCEDURE `insure` (
   IN      futureCloseDate date
 )
 BEGIN
-  -- Add all unrecorded tickets in blotto_entry for draws in the past
-  -- That is, create an all-time history
-  INSERT IGNORE INTO `blotto_insurance`
-  ( `draw_closed`,`ticket_number`,`org_ref`,`client_ref` )
-    SELECT `draw_closed`,`ticket_number`,UPPER('{{BLOTTO_ORG_USER}}') AS `org_ref`,`client_ref`
-    FROM `blotto_entry`
-    WHERE `draw_closed`<CURDATE()
-    ORDER BY `ticket_number`
-  ;
-  -- Add all unrecorded active tickets for the next draw having a live mandate
-
--- TODO: change this so that instead of using m.Status, left join the newly built `Cancellations`
-
   INSERT IGNORE INTO `blotto_insurance`
   ( `draw_closed`,`ticket_number`,`org_ref`,`client_ref` )
     SELECT futureCloseDate,`tk`.`number`,UPPER('{{BLOTTO_ORG_USER}}') AS `org_ref`,`tk`.`client_ref`
@@ -809,6 +785,10 @@ BEGIN
       ON `p`.`client_ref`=`m`.`ClientRef`
      AND `p`.`first_draw_close` IS NOT NULL
      AND `p`.`first_draw_close`<=futureCloseDate
+    JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` as `tk`
+      ON `tk`.`client_ref`=`m`.`ClientRef`
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`p`.`supporter_id`
     LEFT JOIN (
       SELECT
         `client_ref`
@@ -817,18 +797,20 @@ BEGIN
       GROUP BY `client_ref`
     ) AS `e`
       ON `e`.`client_ref`=`p`.`client_ref`
-    JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` as `tk`
-      ON `tk`.`client_ref`=`m`.`ClientRef`
-    -- Supporter is neither new nor penniless
-    WHERE `p`.`first_draw_close` IS NOT NULL
+    LEFT JOIN `Cancellations` AS `cancelled`
+           ON `cancelled`.`client_ref`=`s`.`client_ref`
+    -- The player is deemed to be active
+    WHERE `cancelled`.`client_ref` IS NULL
+    -- Player is ready to go
+      AND `p`.`first_draw_close` IS NOT NULL
+    -- Player is ready to go right now
       AND `p`.`first_draw_close`<=futureCloseDate
-      AND `p`.`opening_balance`+IFNULL(`c`.`AmountCollected`,0)=0
-      AND (
-          -- Either mandate is live
-          `m`.`Status`='LIVE'
-          -- Or there is sufficient balance for one more play
-       OR `p`.`opening_balance`+IFNULL(`c`.`AmountCollected`,0)-(IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100>=0
-      )
+    -- Player has enough balance to play one more time
+      AND
+              `p`.`opening_balance`
+            + IFNULL(`c`.`AmountCollected`,0)
+            - (IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100
+          >= 0
     ORDER BY `tk`.`number`
   ;
   CALL insureOutput()
