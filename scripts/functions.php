@@ -1294,6 +1294,8 @@ function html ($snippet,$title='Untitled',$output=true) {
 
 function insurance_draw_close ($today=null) {
     // Which draw are we insuring today?
+    // This is called by bespoke draw_insuring()
+    // Therefore customisation is supported if not envisaged
     if (!function_exists('draw_upcoming')) {
         throw new \Exception ("Function draw_upcoming() was not found");
         return false;
