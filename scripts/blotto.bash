@@ -515,9 +515,12 @@ else
     echo "    CALL drawsSummariseRBE();"
     mariadb $dbm                                      <<< "CALL drawsSummariseRBE();"
     abort_on_error 26j $?
-    echo "    CALL insureRBE();"
-    mariadb $dbm                                      <<< "CALL insureRBE();"
-    abort_on_error 26k $?
+    if [ "$nxi" ]
+    then
+        echo "    CALL insureRBE();"
+        mariadb $dbm                                  <<< "CALL insureRBE();"
+        abort_on_error 26k $?
+    fi
     echo "    CALL winnersRBE();"
     mariadb $dbm                                      <<< "CALL winnersRBE();"
     abort_on_error 26l $?
