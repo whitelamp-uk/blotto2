@@ -341,6 +341,26 @@ CREATE TABLE IF NOT EXISTS `blotto_verification` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
+CREATE TABLE IF NOT EXISTS `blotto_update` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `updated` date NOT NULL,
+  `milestone` char(16) CHARACTER SET ascii NOT NULL,
+  `supporter_id` int(11) unsigned NOT NULL,
+  `player_id` int(11) unsigned DEFAULT NULL,
+  `contact_id` int(11) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `updated_milestone_supporter_player_contact` (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`),
+  KEY `updated` (`updated`),
+  KEY `milestone` (`milestone`),
+  KEY `supporter_id` (`supporter_id`),
+  KEY `player_id` (`player_id`),
+  KEY `contact_id` (`contact_id`),
+  CONSTRAINT `blotto_update_ibfk_1` FOREIGN KEY (`supporter_id`) REFERENCES `blotto_supporter` (`id`),
+  CONSTRAINT `blotto_update_ibfk_2` FOREIGN KEY (`player_id`) REFERENCES `blotto_player` (`id`),
+  CONSTRAINT `blotto_update_ibfk_3` FOREIGN KEY (`contact_id`) REFERENCES `blotto_contact` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+;
+
 CREATE TABLE IF NOT EXISTS `blotto_winner` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `entry_id` int(11) unsigned NOT NULL,

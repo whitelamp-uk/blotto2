@@ -1344,527 +1344,204 @@ DROP PROCEDURE IF EXISTS `updates`$$
 CREATE PROCEDURE `updates` (
 )
 BEGIN
-  -- Updates triggered by first draw entry creation (per SUPPORTER)
-  DROP TABLE IF EXISTS `tmp_updates_first_collect`
-  ;
-  CREATE TABLE `tmp_updates_first_collect` AS
+  -- `milestone`='first_collection'
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      `f`.`first_collection` AS `updated`
-     ,`s`.`id` AS `supporter_id`
-     ,'SYSTEM' AS `updater`
-     ,'first_collection' AS `milestone`
-     ,`s`.`signed`
-     ,`s`.`created`
-     ,IF(`cl`.`cancelled_date`<=MIN(`u`.`first_draw`),`cl`.`cancelled_date`,'') AS `cancelled`
-     ,`s`.`canvas_code`
-     ,`s`.`canvas_ref`
-     ,`s`.`client_ref` AS `client_ref_orig`
-     ,`u`.`client_ref`
-     ,`u`.`chances` AS `tickets`
-     ,GROUP_CONCAT(DISTINCT `pl`.`number` SEPARATOR ', ') AS `ticket_numbers`
-     ,`c`.`title`
-     ,`c`.`name_first`
-     ,`c`.`name_last`
-     ,`c`.`email`
-     ,`c`.`mobile`
-     ,`c`.`telephone`
-     ,`c`.`address_1`
-     ,`c`.`address_2`
-     ,`c`.`address_3`
-     ,`c`.`town`
-     ,`c`.`county`
-     ,`c`.`postcode`
-     ,IFNULL(`c`.`dob`,'') AS `dob`
-     ,`c`.`p0`
-     ,`c`.`p1`
-     ,`c`.`p2`
-     ,`c`.`p3`
-     ,`c`.`p4`
-     ,`c`.`p5`
-     ,`c`.`p6`
-     ,`c`.`p7`
-     ,`c`.`p8`
-     ,`c`.`p9`
-     ,`f`.`first_collection` AS `first_collected`
-     ,IFNULL(`l`.`last_collection`,'') AS `last_collected`
-     ,IFNULL(MIN(`u`.`first_draw`),'') AS `first_draw`
-     ,IFNULL(`u`.`Status`,'') AS `mandate_status`
-    FROM `blotto_supporter` AS `s`
-    JOIN (
-      SELECT
-        `p`.`id`
-       ,`p`.`started`
-       ,`p`.`supporter_id`
-       ,`p`.`chances`
-       ,`m`.`Provider`
-       ,`m`.`RefNo`
-       ,`e`.`client_ref`
-       ,`e`.`first_draw`
-       ,`m`.`Freq`
-       ,`m`.`Status`
-       ,`m`.`Updated`
-       ,MAX(DATE(`cs`.`created`)) AS `contact_date`
-      FROM `blotto_player` AS `p`
-      JOIN `blotto_build_mandate` AS `m`
-        ON `m`.`ClientRef`=`p`.`client_ref`
-      JOIN (
-        SELECT
-          `client_ref`
-         ,MIN(`draw_closed`) AS `first_draw`
-        FROM `blotto_entry`
-        GROUP BY `client_ref`
-      ) AS `e`
-        ON `e`.`client_ref`=`m`.`ClientRef`
-      LEFT JOIN `blotto_contact` AS `cs`
-             ON `cs`.`supporter_id`=`p`.`supporter_id`
-            AND DATE(`cs`.`created`)<=dateSilly2Sensible(`m`.`Updated`)
-      GROUP BY `m`.`Provider`,`m`.`RefNo`
-    ) AS `u`
-      ON `u`.`supporter_id`=`s`.`id`
-    JOIN (
+      `cln`.`DateDue`
+     ,'first_collection'
+     ,`s`.`id`
+     ,MIN(`p`.`id`)
+     ,MIN(`c`.`id`)
+    FROM (
       SELECT
         `ClientRef`
-       ,MIN(`DateDue`) AS `first_collection`
+       ,MIN(`DateDue`) AS `DateDue`
       FROM `blotto_build_collection`
-      WHERE 1
-      GROUP BY `Provider`,`RefNo`
-    ) AS `f`
-      ON `f`.`ClientRef`=`s`.`client_ref`
-    JOIN (
-      SELECT
-        `supporter_id`
-       ,MAX(`started`) AS `started`
-      FROM `blotto_player`
-      GROUP BY `supporter_id`
-    ) AS `plast`
-      ON `plast`.`supporter_id`
-    JOIN `blotto_player` as `pcurr`
-      ON `pcurr`.`supporter_id`=`s`.`id`
-     AND `pcurr`.`started`=`plast`.`started`
-    LEFT JOIN `blotto_contact` AS `c`
-           ON `c`.`supporter_id`=`s`.`id`
-          AND ( `u`.`contact_date` IS NULL OR DATE(`c`.`created`)=`u`.`contact_date` )
-    LEFT JOIN (
-      SELECT
-        `lc`.`client_ref`
-       ,MAX(`lc`.`DateDue`) AS `last_collection`
-      FROM (
-        SELECT
-          `lcc`.`Provider`
-         ,`lcc`.`RefNo`
-         ,`lcp`.`client_ref`
-         ,`lcc`.`DateDue`
-        FROM `blotto_player` AS `lcp`
-        JOIN `blotto_build_collection` AS `lcc`
-          ON `lcc`.`ClientRef`=`lcp`.`client_ref`
-         AND `lcc`.`DateDue`<=`lcp`.`started`
-      ) AS `lc`
-      GROUP BY `lc`.`Provider`,`lc`.`RefNo`
-    ) AS `l`
-      ON `l`.`client_ref`=`pcurr`.`client_ref`
-    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `pl`
-           ON `pl`.`org_id`={{BLOTTO_ORG_ID}}
-          AND `pl`.`client_ref`=`u`.`client_ref`
-    LEFT JOIN `Cancellations` AS `cl`
-           ON `cl`.`client_ref`=`s`.`client_ref`
-    GROUP BY `s`.`id`
-    -- Draw entries might be in the future (?) but updates definitely not
-    HAVING `updated`<CURDATE()
-    ORDER BY `updated`,`client_ref_orig`,`client_ref`
-  ;
-  -- Updates triggered by mandate replacement => player creation (per PLAYER)
-  DROP TABLE IF EXISTS `tmp_updates_player`
-  ;
-  CREATE TABLE `tmp_updates_player` AS
-    SELECT
-      `u`.`player_started` AS `updated`
-     ,`s`.`id` AS `supporter_id`
-     ,'SYSTEM' AS `updater`
-     ,'bacs_change' AS `milestone`
-     ,`s`.`signed`
-     ,`s`.`created`
-     ,IF(`cl`.`cancelled_date`<=`u`.`player_started`,`cl`.`cancelled_date`,'') AS `cancelled`
-     ,`s`.`canvas_code`
-     ,`s`.`canvas_ref`
-     ,`s`.`client_ref` AS `client_ref_orig`
-     ,`u`.`client_ref`
-     ,`u`.`chances` AS `tickets`
-     ,GROUP_CONCAT(DISTINCT `pl`.`number` SEPARATOR ', ') AS `ticket_numbers`
-     ,`c`.`title`
-     ,`c`.`name_first`
-     ,`c`.`name_last`
-     ,`c`.`email`
-     ,`c`.`mobile`
-     ,`c`.`telephone`
-     ,`c`.`address_1`
-     ,`c`.`address_2`
-     ,`c`.`address_3`
-     ,`c`.`town`
-     ,`c`.`county`
-     ,`c`.`postcode`
-     ,IFNULL(`c`.`dob`,'') AS `dob`
-     ,`c`.`p0`
-     ,`c`.`p1`
-     ,`c`.`p2`
-     ,`c`.`p3`
-     ,`c`.`p4`
-     ,`c`.`p5`
-     ,`c`.`p6`
-     ,`c`.`p7`
-     ,`c`.`p8`
-     ,`c`.`p9`
-     ,IFNULL(`f`.`first_collection`,'') AS `first_collected`
-     ,IFNULL(`l`.`last_collection`,'') AS `last_collected`
-     ,IFNULL(MIN(`u`.`first_draw`),'') AS `first_draw`
-     ,IFNULL(`u`.`Status`,'') AS `mandate_status`
-    FROM `blotto_supporter` AS `s`
-    JOIN (
-        SELECT
-          `supporter_id`
-         ,MIN(`started`) AS `started`
-        FROM `blotto_player`
-        GROUP BY `supporter_id`
-    ) AS `fp`
-      ON `fp`.`supporter_id`=`s`.`id`
-    JOIN (
-      SELECT
-        `p`.`id`
-       ,`p`.`started` AS `player_started`
-       ,`p`.`chances`
-       ,`m`.`created`
-       ,`p`.`supporter_id`
-       ,`m`.`Provider`
-       ,`m`.`RefNo`
-       ,`e`.`client_ref`
-       ,`e`.`first_draw`
-       ,`m`.`Freq`
-       ,`m`.`Status`
-       ,`m`.`Updated`
-       ,MAX(DATE(`cs`.`created`)) AS `contact_date`
-      FROM `blotto_player` AS `p`
-      JOIN `blotto_build_mandate` AS `m`
-        ON `m`.`ClientRef`=`p`.`client_ref`
-      JOIN (
-        SELECT
-          `client_ref`
-         ,MIN(`draw_closed`) AS `first_draw`
-        FROM `blotto_entry`
-        GROUP BY `client_ref`
-      ) AS `e`
-        ON `e`.`client_ref`=`m`.`ClientRef`
-      LEFT JOIN `blotto_contact` AS `cs`
-             ON `cs`.`supporter_id`=`p`.`supporter_id`
-            AND DATE(`cs`.`created`)<=dateSilly2Sensible(`m`.`Updated`)
-      GROUP BY `m`.`Provider`,`m`.`RefNo`
-    ) AS `u`
-      ON `u`.`supporter_id`=`s`.`id`
-     -- first contact is not an update
-     AND `u`.`player_started`!=`fp`.`started`
-    LEFT JOIN `blotto_contact` AS `c`
-           ON `c`.`supporter_id`=`s`.`id`
-          AND ( `u`.`contact_date` IS NULL OR DATE(`c`.`created`)=`u`.`contact_date` )
-    LEFT JOIN (
-      SELECT
-        `ClientRef`
-       ,MIN(`DateDue`) AS `first_collection`
-      FROM `blotto_build_collection`
-      WHERE 1
-      GROUP BY `Provider`,`RefNo`
-    ) AS `f`
-      ON `f`.`ClientRef`=`s`.`client_ref`
-    LEFT JOIN (
-      SELECT
-        `lc`.`client_ref`
-       ,MAX(`lc`.`DateDue`) AS `last_collection`
-      FROM (
-        SELECT
-          `lcp`.`client_ref`
-         ,`lcc`.`DateDue`
-        FROM `blotto_player` AS `lcp`
-        JOIN `blotto_build_collection` AS `lcc`
-          ON `lcc`.`ClientRef`=`lcp`.`client_ref`
-         AND `lcc`.`DateDue`<=`lcp`.`started`
-      ) AS `lc`
-      GROUP BY `lc`.`client_ref`
-    ) AS `l`
-      ON `l`.`client_ref`=`u`.`client_ref`
-    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `pl`
-           ON `pl`.`org_id`={{BLOTTO_ORG_ID}}
-          AND `pl`.`client_ref`=`l`.`client_ref`
-    LEFT JOIN `Cancellations` AS `cl`
-           ON `cl`.`client_ref`=`s`.`client_ref`
-    GROUP BY `u`.`id`
-    ORDER BY `updated`,`client_ref_orig`,`client_ref`
-  ;
-  -- Updates triggered by details edit => contact creation (per CONTACT)
-  DROP TABLE IF EXISTS `tmp_updates_contact`
-  ;
-  CREATE TABLE `tmp_updates_contact` AS
-    SELECT
-      DATE(`c`.`created`) AS `updated`
-     ,`s`.`id` AS `supporter_id`
-     ,`c`.`updater`
-     ,'contact_change' AS `milestone`
-     ,`s`.`signed`
-     ,`s`.`created`
-     ,IF(`cl`.`cancelled_date`<=DATE(`c`.`created`),`cl`.`cancelled_date`,'') AS `cancelled`
-     ,`s`.`canvas_code`
-     ,`s`.`canvas_ref`
-     ,`s`.`client_ref` AS `client_ref_orig`
-     ,`p`.`client_ref`
-     ,`p`.`chances` AS `tickets`
-     ,GROUP_CONCAT(DISTINCT `tk`.`number` SEPARATOR ', ') AS `ticket_numbers`
-     ,`c`.`title`
-     ,`c`.`name_first`
-     ,`c`.`name_last`
-     ,`c`.`email`
-     ,`c`.`mobile`
-     ,`c`.`telephone`
-     ,`c`.`address_1`
-     ,`c`.`address_2`
-     ,`c`.`address_3`
-     ,`c`.`town`
-     ,`c`.`county`
-     ,`c`.`postcode`
-     ,IFNULL(`c`.`dob`,'') AS `dob`
-     ,`c`.`p0`
-     ,`c`.`p1`
-     ,`c`.`p2`
-     ,`c`.`p3`
-     ,`c`.`p4`
-     ,`c`.`p5`
-     ,`c`.`p6`
-     ,`c`.`p7`
-     ,`c`.`p8`
-     ,`c`.`p9`
-     ,IFNULL(`f`.`first_collection`,'') AS `first_collected`
-     ,IFNULL(MAX(`cn`.`DateDue`),'') AS `last_collected`
-     ,IFNULL(`e`.`first_draw`,'') AS `first_draw`
-     ,IFNULL(`p`.`Status`,'') AS `mandate_status`
-    FROM `blotto_supporter` AS `s`
-    JOIN (
-        SELECT
-          `supporter_id`
-         ,MIN(`created`) AS `created`
-        FROM `blotto_contact`
-        GROUP BY `supporter_id`
-    ) AS `fc`
-      ON `fc`.`supporter_id`=`s`.`id`
+      GROUP BY `RefNo`
+    ) AS `cln`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`client_ref`=`cln`.`ClientRef`
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`p`.`supporter_id`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
-     -- first contact is not an update
-     AND `c`.`created`!=`fc`.`created`
-    JOIN (
-      SELECT
-        `cs`.`id`
-       ,MAX(`ps`.`started`) AS `player_started`
-      FROM `blotto_contact` AS `cs`
-      JOIN `blotto_player` AS `ps`
-        ON `ps`.`supporter_id`=`cs`.`supporter_id`
-       AND `ps`.`created`<`cs`.`created`
-      GROUP BY `cs`.`id`
-    ) AS `cp`
-      ON `cp`.`id`=`c`.`id`
-    JOIN (
-      SELECT
-        `pm`.`id`
-       ,`pm`.`started`
-       ,`pm`.`supporter_id`
-       ,`pm`.`chances`
-       ,`m`.`Provider`
-       ,`m`.`RefNo`
-       ,`pm`.`client_ref`
-       ,`m`.`Freq`
-       ,`m`.`Status`
-       ,`m`.`Updated`
-      FROM `blotto_player` AS `pm`
-      JOIN `blotto_build_mandate` AS `m`
-        ON `m`.`ClientRef`=`pm`.`client_ref`
-      GROUP BY `pm`.`id`
-    ) AS `p`
-      ON `p`.`supporter_id`=`s`.`id`
-     AND `p`.`started`=`cp`.`player_started`
-    LEFT JOIN (
-      SELECT
-        `ClientRef`
-       ,MIN(`DateDue`) AS `first_collection`
-      FROM `blotto_build_collection`
-      WHERE 1
-      GROUP BY `Provider`,`RefNo`
-    ) AS `f`
-      ON `f`.`ClientRef`=`s`.`client_ref`
-    LEFT JOIN `blotto_build_collection` AS `cn`
-           ON `cn`.`ClientRef`=`p`.`client_ref`
-    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `tk`
-           ON `tk`.`org_id`={{BLOTTO_ORG_ID}}
-          AND `tk`.`mandate_provider`=`p`.`Provider`
-          AND `tk`.`client_ref`=`p`.`client_ref`
-    LEFT JOIN `Cancellations` AS `cl`
-           ON `cl`.`client_ref`=`s`.`client_ref`
-    LEFT JOIN (
-      SELECT
-        `ep`.`supporter_id`
-       ,MIN(`ee`.`draw_closed`) AS `first_draw`
-      FROM `blotto_supporter` AS `es`
-      JOIN `blotto_player` AS `ep`
-        ON `ep`.`supporter_id`=`es`.`id`
-      JOIN `blotto_entry` AS `ee`
-        ON `ee`.`client_ref`=`ep`.`client_ref`
-      GROUP BY `es`.`id`
-         ) AS `e`
-           ON `e`.`supporter_id`=`s`.`id`
-    WHERE `cn`.`DateDue` IS NULL OR `cn`.`DateDue`<=DATE(`c`.`created`)
-    GROUP BY `c`.`id`
-    ORDER BY `updated`,`client_ref_orig`,`client_ref`
+    GROUP BY `s`.`client_ref`
   ;
-  -- Updates triggered by cancellation (per SUPPORTER)
-  DROP TABLE IF EXISTS `tmp_updates_cancelled`
-  ;
-  CREATE TABLE `tmp_updates_cancelled` AS
+  -- `milestone`='bacs_change'
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      `cl`.`cancelled_date` AS `updated`
-     ,`s`.`id` AS `supporter_id`
-     ,'SYSTEM' AS `updater`
-     ,'cancellation' AS `milestone`
-     ,`s`.`signed`
-     ,`s`.`created`
-     ,`cl`.`cancelled_date` AS `cancelled`
-     ,`s`.`canvas_code`
-     ,`s`.`canvas_ref`
-     ,`s`.`client_ref` AS `client_ref_orig`
-     ,`u`.`client_ref`
-     ,`u`.`chances` AS `tickets`
-     ,GROUP_CONCAT(DISTINCT `tk`.`number` SEPARATOR ', ') AS `ticket_numbers`
-     ,`c`.`title`
-     ,`c`.`name_first`
-     ,`c`.`name_last`
-     ,`c`.`email`
-     ,`c`.`mobile`
-     ,`c`.`telephone`
-     ,`c`.`address_1`
-     ,`c`.`address_2`
-     ,`c`.`address_3`
-     ,`c`.`town`
-     ,`c`.`county`
-     ,`c`.`postcode`
-     ,IFNULL(`c`.`dob`,'') AS `dob`
-     ,`c`.`p0`
-     ,`c`.`p1`
-     ,`c`.`p2`
-     ,`c`.`p3`
-     ,`c`.`p4`
-     ,`c`.`p5`
-     ,`c`.`p6`
-     ,`c`.`p7`
-     ,`c`.`p8`
-     ,`c`.`p9`
-     ,IFNULL(`f`.`first_collection`,'') AS `first_collected`
-     ,IFNULL(`l`.`last_collection`,'') AS `last_collected`
-     ,IFNULL(MIN(`u`.`first_draw`),'') AS `first_draw`
-     ,IFNULL(`u`.`Status`,'') AS `mandate_status`
-    FROM `blotto_supporter` AS `s`
-    JOIN (
-      SELECT
-        `p`.`id`
-       ,`p`.`started`
-       ,`p`.`supporter_id`
-       ,`p`.`chances`
-       ,`m`.`Provider`
-       ,`m`.`RefNo`
-       ,`e`.`client_ref`
-       ,`e`.`first_draw`
-       ,`m`.`Freq`
-       ,`m`.`Status`
-       ,`m`.`Updated`
-       ,MAX(DATE(`cs`.`created`)) AS `contact_date`
-      FROM `blotto_player` AS `p`
-      JOIN `blotto_build_mandate` AS `m`
-        ON `m`.`ClientRef`=`p`.`client_ref`
-      JOIN (
-        SELECT
-          `client_ref`
-         ,MIN(`draw_closed`) AS `first_draw`
-        FROM `blotto_entry`
-        GROUP BY `client_ref`
-      ) AS `e`
-        ON `e`.`client_ref`=`m`.`ClientRef`
-      LEFT JOIN `blotto_contact` AS `cs`
-             ON `cs`.`supporter_id`=`p`.`supporter_id`
-            AND DATE(`cs`.`created`)<=dateSilly2Sensible(`m`.`Updated`)
-      GROUP BY `m`.`Provider`,`m`.`RefNo`
-    ) AS `u`
-      ON `u`.`supporter_id`=`s`.`id`
-    LEFT JOIN `blotto_contact` AS `c`
-           ON `c`.`supporter_id`=`s`.`id`
-          AND ( `u`.`contact_date` IS NULL OR DATE(`c`.`created`)=`u`.`contact_date` )
-    LEFT JOIN (
-      SELECT
-        `ClientRef`
-       ,MIN(`DateDue`) AS `first_collection`
-      FROM `blotto_build_collection`
-      WHERE 1
-      GROUP BY `Provider`,`RefNo`
-    ) AS `f`
-      ON `f`.`ClientRef`=`s`.`client_ref`
+      `p`.`started`
+     ,'bacs_change'
+     ,`s`.`id`
+     ,`p`.`id`
+     ,MAX(`c`.`id`)
+    FROM `blotto_player` AS `p`
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`p`.`supporter_id`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+     AND DATE(`c`.`created`)<=`p`.`started`
+    WHERE `p`.`client_ref`!=`s`.`client_ref`
+    GROUP BY `p`.`id`
+  ;
+  -- `milestone`='contact_change'
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      DATE(`c`.`created`)
+     ,'contact_change'
+     ,`s`.`id`
+     ,MAX(`p`.`id`)
+     ,`c`.`id`
+    FROM `blotto_contact` AS `c`
     JOIN (
       SELECT
         `supporter_id`
-       ,MAX(`started`) AS `started`
-      FROM `blotto_player`
+       ,MIN(`c`.`id`) AS `id`
+      FROM `blotto_contact` AS `c`
       GROUP BY `supporter_id`
-    ) AS `plast`
-      ON `plast`.`supporter_id`
-    JOIN `blotto_player` as `pcurr`
-      ON `pcurr`.`supporter_id`=`s`.`id`
-     AND `pcurr`.`started`=`plast`.`started`
-    LEFT JOIN (
-      SELECT
-        `lc`.`client_ref`
-       ,MAX(`lc`.`DateDue`) AS `last_collection`
-      FROM (
-        SELECT
-          `lcp`.`client_ref`
-         ,`lcc`.`DateDue`
-        FROM `blotto_player` AS `lcp`
-        JOIN `blotto_build_collection` AS `lcc`
-          ON `lcc`.`ClientRef`=`lcp`.`client_ref`
-         AND `lcc`.`DateDue`<=`lcp`.`started`
-      ) AS `lc`
-      GROUP BY `lc`.`client_ref`
-    )      AS `l`
-           ON `l`.`client_ref`=`pcurr`.`client_ref`
-    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `tk`
-           ON `tk`.`org_id`={{BLOTTO_ORG_ID}}
-          AND `tk`.`client_ref`=`pcurr`.`client_ref`
-    JOIN `Cancellations` AS `cl`
-      ON `cl`.`client_ref`=`s`.`client_ref`
-    GROUP BY `s`.`id`
-    ORDER BY `updated`,`client_ref_orig`,`client_ref`
+    )      AS `cfirst`
+           ON `cfirst`.`supporter_id`=`c`.`supporter_id`
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`c`.`supporter_id`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`supporter_id`=`s`.`id`
+     AND `p`.`started`<=DATE(`c`.`created`)
+    WHERE `c`.`id`!=`cfirst`.`id`
+    GROUP BY `c`.`id`
   ;
-  -- Compile and order updates in a single table
+  -- `milestone`='cancellation'
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      `cnl`.`cancelled_date`
+     ,'cancellation'
+     ,`s`.`id`
+     ,`p`.`id`
+     ,MAX(`c`.`id`)
+    FROM `Cancellations` AS `cnl`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`client_ref`=`cnl`.`client_ref`
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`p`.`supporter_id`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+     AND DATE(`c`.`created`)<=`cnl`.`cancelled_date`
+    GROUP BY `cnl`.`client_ref`
+  ;
+  -- `milestone`='reinstatement'
+  DROP TABLE IF EXISTS `blotto_update_tmp`
+  ;
+  CREATE TABLE `blotto_update_tmp` LIKE `blotto_update`
+  ;
+  INSERT IGNORE INTO `blotto_update_tmp`
+    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      CURDATE()
+     ,'reinstatement'
+     ,`s`.`id`
+     ,MAX(`p`.`id`)
+     ,MAX(`c`.`id`)
+    FROM `blotto_update` AS `u`
+    JOIN (
+      SELECT
+        `supporter_id`
+       ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `cancelled`
+      FROM `blotto_update`
+      GROUP BY `supporter_id`
+    ) AS `chk`
+      ON `chk`.`supporter_id`=`u`.`supporter_id`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`supporter_id`=`u`.`supporter_id`
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`p`.`supporter_id`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+    LEFT JOIN `Cancellations` AS `cnl`
+           ON `cnl`.`client_ref`=`s`.`client_ref`
+           OR `cnl`.`client_ref` LIKE CONCAT(`s`.`client_ref`,'{{BLOTTO_CREF_SPLITTER}}%')
+    WHERE `cnl`.`cancelled_date` IS NULL
+      AND `chk`.`cancelled`>0
+    GROUP BY `s`.`client_ref`
+  ;
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      `updated`
+     ,`milestone`
+     ,`supporter_id`
+     ,`player_id`
+     ,`contact_id`
+    FROM `blotto_update_tmp`
+  ;
+  DROP TABLE `blotto_update_tmp`
+  ;
+  -- Output table
   DROP TABLE IF EXISTS `Updates`
   ;
   CREATE TABLE `Updates` AS
     SELECT
-      `u`.*
-    FROM (
+      `u`.`updated`
+     ,`u`.`supporter_id`
+     ,IF(`milestone`='contact_change',`c`.`updater`,'SYSTEM') AS `updater`
+     ,`u`.`milestone`
+     ,`s`.`signed`
+     ,`s`.`created`
+     ,`s`.`cancelled`
+     ,`s`.`ccc`
+     ,`s`.`canvas_ref`
+     ,`s`.`original_client_ref` AS `client_ref_orig`
+     ,`p`.`client_ref`
+     ,COUNT(`t`.`number`) AS `tickets`
+     ,GROUP_CONCAT(`t`.`number` SEPARATOR ', ') AS `ticket_numbers`
+     ,`c`.`title`
+     ,`c`.`name_first`
+     ,`c`.`name_last`
+     ,`c`.`email`
+     ,`c`.`mobile`
+     ,`c`.`telephone`
+     ,`c`.`address_1`
+     ,`c`.`address_2`
+     ,`c`.`address_3`
+     ,`c`.`town`
+     ,`c`.`county`
+     ,`c`.`postcode`
+     ,`c`.`dob`
+     ,`c`.`p0`
+     ,`c`.`p1`
+     ,`c`.`p2`
+     ,`c`.`p3`
+     ,`c`.`p4`
+     ,`c`.`p5`
+     ,`c`.`p6`
+     ,`c`.`p7`
+     ,`c`.`p8`
+     ,`c`.`p9`
+     ,`s`.`supporter_first_payment` AS `first_collected`
+     ,`s`.`latest_payment_collected` AS `last_collected`
+     ,`player1`.`first_draw_close` AS `first_draw`
+     ,'' AS `mandate_status`
+    FROM `blotto_update` AS `u`
+    JOIN (
       SELECT
         *
-      FROM `tmp_updates_first_collect`
-      UNION
-      SELECT
-        *
-      FROM `tmp_updates_player`
-      UNION
-      SELECT
-        *
-      FROM `tmp_updates_contact`
-      UNION
-      SELECT
-        *
-      FROM `tmp_updates_cancelled`
-    ) AS `u`
-    WHERE `u`.`updated`<CURDATE()
+      FROM `Supporters` AS `s`
+      GROUP BY `supporter_id`
+    ) AS `s`
+      ON `s`.`supporter_id`=`u`.`supporter_id`
+    JOIN `blotto_player` AS `player1`
+      ON `player1`.`supporter_id`=`s`.`supporter_id`
+     AND `player1`.`client_ref`=`s`.`original_client_ref`
+    JOIN `blotto_player` as `p`
+      ON `p`.`id`=`u`.`player_id`
+    JOIN `blotto_contact` as `c`
+      ON `c`.`id`=`u`.`contact_id`
+    JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
+      ON `t`.`org_id`={{BLOTTO_ORG_ID}}
+     AND `t`.`client_ref`=`p`.`client_ref`
+    GROUP BY `t`.`client_ref`
     ORDER BY `updated`,`client_ref_orig`,`client_ref`
   ;
   ALTER TABLE `Updates`
