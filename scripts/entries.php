@@ -132,8 +132,9 @@ foreach ($close_dates as $date) {
             if ($balance>=round($price*$chances/100,2)) {
 
 // New insurance bit
-                if (!$insured && defined('BLOTTO_INSURE') && BLOTTO_INSURE) {
+                if (!$insured && defined('BLOTTO_INSURE') && BLOTTO_INSURE && BLOTTO_INSURE_FROM<=$date) {
                     fwrite (STDERR,"WARNING: '$date', refusing to enter uninsured player '{$r['client_ref']}'\n");
+                    fwrite (STDERR,"This could be a catch 22 if you have not thought about BLOTTO_INSURE_FROM\n");
                 }
                 else {
 

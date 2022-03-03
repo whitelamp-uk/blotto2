@@ -61,7 +61,8 @@ define ( 'BLOTTO_DAY_LAST',         null                );  // Last date due day
 define ( 'BLOTTO_WEEK_ENDED',       5                   );  // Reports up to and including Friday
 define ( 'BLOTTO_DRAW_CLOSE_1',     '2016-07-08'        );  // First draw close for the game
 define ( 'BLOTTO_INSURE',           true                );  // Use insurance
-define ( 'BLOTTO_INSURE_DAYS',      0                   );  // Days before draw close to insure entries
+define ( 'BLOTTO_INSURE_DAYS',      0                   );  // Days before draw close to close insurance
+define ( 'BLOTTO_INSURE_FROM',      '2001-01-01'        );  // First draw requiring insurance (advance if insurance introduced mid-game)
 define ( 'BLOTTO_CC_NOTIFY',        '10 MONTH'          );  // MySQL interval notify CC of ticket changes
 // BLOTTO_PAY_DELAY and rsm-api's RSM_PAY_INTERVAL are both needed
 define ( 'BLOTTO_PAY_DELAY',        'P2D'               );  // From DateDue to credit "available" (DateInterval)
