@@ -261,8 +261,8 @@ catch (\mysqli_sql_exception $e) {
 
 
 $changes = [];
-while ($t=$ts->fetch_assoc()) {
-    push_changes ($changes,$t['reinstatement_date'],0,$t['chances'],$t['amount_paid_before_this_date'],$t,0,$t['changed_date']);
+while ($c=$cs->fetch_assoc()) {
+    push_changes ($changes,$c['reinstatement_date'],0,$c['chances'],$c['amount_paid_before_this_date'],$c,0,$c['changed_date']);
 }
 echo "    ".count($changes)." reinstatement changes\n";
 echo "    ".insert_changes($zo,$changes)." new reinstatement rows (1 per chance)\n";
