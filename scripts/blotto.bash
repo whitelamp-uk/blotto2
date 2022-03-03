@@ -493,9 +493,12 @@ then
     echo "    CALL drawsSummarise();"
     mariadb $dbm                                      <<< "CALL drawsSummarise();"
     abort_on_error 26d $?
-    echo "    CALL insure('$nxi');"
-    mariadb $dbm                                      <<< "CALL insure('$nxi');"
-    abort_on_error 26e $?
+    if [ "$nxi" ]
+    then
+        echo "    CALL insure('$nxi');"
+        mariadb $dbm                                  <<< "CALL insure('$nxi');"
+        abort_on_error 26e $?
+    fi
     echo "    CALL supporters();"
     mariadb $dbm                                      <<< "CALL supporters();"
     abort_on_error 26f $?
