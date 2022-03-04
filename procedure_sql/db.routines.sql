@@ -437,42 +437,15 @@ BEGIN
   ;
   CREATE TABLE `Changes` AS
     SELECT
-      `ch`.`changed_date`
-     ,IF(`ch`.`type`='DEC',`c`.`cancelled_date_legacy`,`ch`.`changed_date`) AS `changed_date_legacy`
-     ,`ch`.`ccc`
-     ,`ch`.`canvas_ref`
-     ,`ch`.`chance_number`
-     ,CONCAT(`ch`.`canvas_ref`,'-',`ch`.`chance_number`) AS `chance_ref`
-     ,`ch`.`client_ref_original`
-     ,`ch`.`agent_ref`
-     ,`ch`.`type`
-     ,`ch`.`is_termination`
-     ,`ch`.`reinstatement_for`
-     ,`ch`.`amount_paid_before_this_date`
-     ,`ch`.`supporter_signed`
-     ,`ch`.`supporter_approved`
-     ,`ch`.`supporter_created`
-     ,IFNULL(`ch`.`supporter_first_paid`,'') AS `supporter_first_paid`
+      *
     FROM `blotto_change` AS `ch`
-    LEFT JOIN (
-      SELECT
-        `client_ref`
-       ,`cancelled_date_legacy`
-      FROM `Cancellations`
-      GROUP BY `client_ref`
-    ) AS `c`
-      ON `ch`.`type`='DEC'
-     AND `c`.`client_ref`=`ch`.`client_ref_original`
     ORDER BY `ch`.`changed_date`,`ch`.`ccc`,`ch`.`canvas_ref`,`ch`.`chance_number`
   ;
   ALTER TABLE `Changes`
-  ADD PRIMARY KEY (`changed_date`,`ccc`,`canvas_ref`,`chance_number`)
+  ADD PRIMARY KEY (`id`)
   ;
   ALTER TABLE `Changes`
   ADD KEY `changed_date` (`changed_date`)
-  ;
-  ALTER TABLE `Changes`
-  ADD KEY `changed_date_legacy` (`changed_date_legacy`)
   ;
   ALTER TABLE `Changes`
   ADD KEY `ccc` (`ccc`)
@@ -481,155 +454,12 @@ BEGIN
   ADD KEY `canvas_ref` (`canvas_ref`)
   ;
   ALTER TABLE `Changes`
-  ADD KEY `agent_ref` (`agent_ref`)
+  ADD KEY `agent_ref` (`canvas_agent_ref`)
   ;
   ALTER TABLE `Changes`
-  ADD KEY `client_ref_original` (`client_ref_original`)
+  ADD KEY `client_ref` (`client_ref`)
   ;
 END $$
-
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS `changesGenerate`$$
-CREATE PROCEDURE `changesGenerate` (
-)
-BEGIN
-  DROP TABLE IF EXISTS `tmp_changes_player`
-  ;
-  CREATE TABLE `tmp_changes_player` AS
-    SELECT
-      `p`.`id`
-     ,`p`.`supporter_id`
-     ,`p`.`started`
-     ,`p`.`client_ref`
-     ,`p`.`first_draw_close`
-     ,`tk`.`chances`
-     ,`s`.`canvas_code` AS `ccc`
-     ,`s`.`canvas_agent_ref` AS `agent_ref`
-     ,`s`.`canvas_ref`
-     ,`p1`.`client_ref` AS `client_ref_original`
-     ,`s`.`signed` AS `supporter_signed`
-     ,`s`.`approved` AS `supporter_approved`
-     ,`s`.`created` AS `supporter_created`
-     ,`p1`.`FirstPaid` AS `supporter_first_paid`
-     ,`p1`.`chances` AS `starting_chances`
-    FROM `blotto_player` AS `p`
-    JOIN `blotto_supporter` AS `s`
-      ON `s`.`id`=`p`.`supporter_id`
-    JOIN (
-      SELECT
-        `pfirst`.`client_ref`
-       ,`c`.`FirstPaid`
-       ,`tkt`.`chances`
-      FROM `blotto_player` AS `pfirst`
-      JOIN (
-        SELECT
-          `client_ref`
-         ,COUNT(`number`) AS `chances`
-        FROM `{{BLOTTO_TICKET_DB}}`.`blotto_ticket`
-        WHERE `org_id`={{BLOTTO_ORG_ID}}
-        GROUP BY `client_ref`
-      ) AS `tkt`
-        ON `tkt`.`client_ref`=`pfirst`.`client_ref`
-      LEFT JOIN (
-        SELECT
-            `ClientRef`
-         ,MIN(`DateDue`) AS `FirstPaid`
-        FROM `blotto_build_collection`
-        WHERE 1
-        GROUP BY `ClientRef`
-      ) AS `c`
-        ON `c`.`ClientRef`=`pfirst`.`client_ref`
-    ) AS `p1`
-      ON `p1`.`client_ref`=`s`.`client_ref`
-    JOIN (
-      SELECT
-        `client_ref`
-       ,COUNT(`number`) AS `chances`
-      FROM `{{BLOTTO_TICKET_DB}}`.`blotto_ticket`
-      WHERE `org_id`={{BLOTTO_ORG_ID}}
-      GROUP BY `client_ref`
-    )      AS `tk`
-           ON `tk`.`client_ref`=`p`.`client_ref`
-
-/*
-TODO: Do this a proper way - see scripts/entries.php which has the same problem
-*/
--- HORRIBLE HACK
-    WHERE `p`.`client_ref` NOT LIKE 'STRP%'
-
-    ORDER BY `p`.`started`,`p`.`id`
-  ;
-  DROP TABLE IF EXISTS `tmp_changes_collection`
-  ;
-  CREATE TABLE `tmp_changes_collection` AS
-    SELECT
-      `p`.`id` AS `player_id`
-     ,`c`.*
-    FROM `blotto_build_collection` AS `c`
-    JOIN `tmp_changes_player` AS `p`
-      ON `p`.`client_ref`=`c`.`ClientRef`
-    WHERE `c`.`DateDue`<=DATE_ADD(IFNULL(`p`.`supporter_first_paid`,`p`.`supporter_created`),INTERVAL {{BLOTTO_CC_NOTIFY}})
-  ;
-  DROP TABLE IF EXISTS `tmp_changes_by_player`
-  ;
-  CREATE TABLE `tmp_changes_by_player` AS
-    SELECT
-      `p`.*
-     ,IFNULL(MIN(`c`.`DateDue`),'') AS `first_payment`
-     ,IFNULL(MAX(`c`.`DateDue`),'') AS `last_payment`
-     ,IFNULL(SUM(`c`.`PaidAmount`),0) AS `amount_paid`
-    FROM `tmp_changes_player` AS `p`
-    LEFT JOIN `blotto_build_collection` AS `c`
-      ON `c`.`ClientRef`=`p`.`client_ref`
-    GROUP BY `p`.`id`
-    ORDER BY `p`.`supporter_id`,`p`.`started`
-  ;
-  DROP TABLE IF EXISTS `tmp_changes_by_supporter`
-  ;
-  CREATE TABLE `tmp_changes_by_supporter` AS
-  SELECT
-    `id`
-   ,`supporter_id`
-   ,`first_draw_close`
-   ,`ccc`
-   ,`agent_ref`
-   ,`canvas_ref`
-   ,`client_ref_original`
-   ,`supporter_signed`
-   ,`supporter_approved`
-   ,`supporter_created`
-   ,`supporter_first_paid`
-   ,`starting_chances`
-   ,GROUP_CONCAT(
-      CONCAT_WS(
-        '::'
-       ,`started`
-       ,`client_ref`
-       ,`chances`
-       ,`first_payment`
-       ,`last_payment`
-       ,`amount_paid`
-      )
-      ORDER BY `started`
-      SEPARATOR ';;'
-    ) AS `players`
-    FROM `tmp_changes_by_player`
-    GROUP BY `supporter_id`
-  ;
-  DROP TABLE IF EXISTS `tmp_changes_termination`
-  ;
-  CREATE TABLE `tmp_changes_termination` AS
-    SELECT
-      `p`.*
-     ,`c`.`Cancelled_Date`
-     ,`c`.`Amount_Collected_(all_tickets)` AS `amount_paid`
-    FROM `Cancellations` AS `c`
-    JOIN `tmp_changes_player` AS `p`
-      ON `p`.`client_ref`=`c`.`client_ref`
-    WHERE `c`.`Cancelled_Date`<=DATE_ADD(IFNULL(`p`.`supporter_first_paid`,`p`.`supporter_created`),INTERVAL {{BLOTTO_CC_NOTIFY}})
-  ;
-END$$
 
 
 DELIMITER $$
@@ -1344,6 +1174,23 @@ DROP PROCEDURE IF EXISTS `updates`$$
 CREATE PROCEDURE `updates` (
 )
 BEGIN
+  -- `milestone`='created'
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      `s`.`created`
+     ,'created'
+     ,`s`.`id`
+     ,`p`.`id`
+     ,MIN(`c`.`id`)
+    FROM `blotto_supporter` AS `s`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`supporter_id`=`s`.`id`
+     AND `p`.`client_ref`=`s`.`client_ref`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+    GROUP BY `p`.`id`
+  ;
   -- `milestone`='first_collection'
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
@@ -1366,7 +1213,7 @@ BEGIN
       ON `s`.`id`=`p`.`supporter_id`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
-    GROUP BY `s`.`client_ref`
+    GROUP BY `s`.`id`
   ;
   -- `milestone`='bacs_change'
   INSERT IGNORE INTO `blotto_update`
@@ -1380,10 +1227,10 @@ BEGIN
     FROM `blotto_player` AS `p`
     JOIN `blotto_supporter` AS `s`
       ON `s`.`id`=`p`.`supporter_id`
+     AND `s`.`client_ref`!=`p`.`client_ref`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
      AND DATE(`c`.`created`)<=`p`.`started`
-    WHERE `p`.`client_ref`!=`s`.`client_ref`
     GROUP BY `p`.`id`
   ;
   -- `milestone`='contact_change'
@@ -1395,21 +1242,21 @@ BEGIN
      ,`s`.`id`
      ,MAX(`p`.`id`)
      ,`c`.`id`
-    FROM `blotto_contact` AS `c`
-    JOIN (
+    FROM (
       SELECT
         `supporter_id`
        ,MIN(`c`.`id`) AS `id`
       FROM `blotto_contact` AS `c`
       GROUP BY `supporter_id`
-    )      AS `cfirst`
-           ON `cfirst`.`supporter_id`=`c`.`supporter_id`
+    ) AS `cfirst`
+    JOIN `blotto_contact` AS `c`
+           ON `c`.`supporter_id`=`cfirst`.`supporter_id`
+          AND `c`.`id`!=`cfirst`.`id`
     JOIN `blotto_supporter` AS `s`
       ON `s`.`id`=`c`.`supporter_id`
     JOIN `blotto_player` AS `p`
       ON `p`.`supporter_id`=`s`.`id`
      AND `p`.`started`<=DATE(`c`.`created`)
-    WHERE `c`.`id`!=`cfirst`.`id`
     GROUP BY `c`.`id`
   ;
   -- `milestone`='cancellation'
@@ -1464,7 +1311,7 @@ BEGIN
            OR `cnl`.`client_ref` LIKE CONCAT(`s`.`client_ref`,'{{BLOTTO_CREF_SPLITTER}}%')
     WHERE `cnl`.`cancelled_date` IS NULL
       AND `chk`.`cancelled`>0
-    GROUP BY `s`.`client_ref`
+    GROUP BY `s`.`id`
   ;
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
@@ -1541,6 +1388,7 @@ BEGIN
     JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
       ON `t`.`org_id`={{BLOTTO_ORG_ID}}
      AND `t`.`client_ref`=`p`.`client_ref`
+    WHERE `u`.`milestone`!='created'
     GROUP BY `t`.`client_ref`
     ORDER BY `updated`,`client_ref_orig`,`client_ref`
   ;
