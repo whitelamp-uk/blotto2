@@ -96,6 +96,10 @@ while ($u=$us->fetch_assoc()) {
     elseif ($u['milestone']=='reinstatement') {
         $u['increment'] = $u['player_chances'];
     }
+    else {
+        // The milestone is not relevant to CCRs
+        continue;
+    }
     if ($u['increment']!=0) {
         $count = abs ($u['increment']);
         if ($u['increment']>0) {
@@ -130,7 +134,7 @@ while ($u=$us->fetch_assoc()) {
         }
         catch (\mysqli_sql_exception $e) {
             fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-            exit (104);
+            exit (105);
         }
     }
     else {
