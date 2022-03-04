@@ -86,11 +86,16 @@ define ( 'PAYPAL_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'PAYPAL_CALLBACK_TO',      30          ); // Confirmation time-out
 
 // Global - RSM
+define ( 'BLOTTO_PAY_API_RSM_TABLE',    'rsm_mandate'       );
 define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
 define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
 define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'      );
 define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'   );
 define ( 'RSM_FLC_TO_PERIODS',      '1:Monthly,3:Quarterly,6:Six Monthly,12:Annually' );
+
+
+// Global - Paysuite
+define ( 'BLOTTO_PAY_API_PST_TABLE',    'paysuite_mandate'  );
 
 
 
@@ -103,6 +108,8 @@ define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up g
 */
 
 // Global - all payment providers
+define ( 'BLOTTO_PAY_API_RSM_TABLE',    'rsm_mandate'       );
+define ( 'BLOTTO_PAY_API_PST_TABLE',    'paysuite_mandate'  );
 define ( 'BLOTTO_DD_TRY_INTERVAL',  '7 DAY'     );
 define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
