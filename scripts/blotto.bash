@@ -166,6 +166,7 @@ pfz="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_DEV_PAY_FREEZE  )"
 nxi="$( /usr/bin/php  "$drp/exec.php"    "$cfg"  draw_insuring          )"
 tmp="$ldr/blotto.$$.tmp"
 sps="$ldr/blotto.supporters.sql.last"
+chi="$ldr/blotto.changes_insert.sql.last.log"
 ddc="$ldr/blotto.directdebits_create.sql.last.log"
 ddx="$ldr/blotto.directdebits_xform.sql.last.log"
 pls="$ldr/blotto.players.sql.last.log"
@@ -551,13 +552,19 @@ then
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "28. Amend and build canvassing company change report"
+    echo "28a. Generate CCR insert SQL in $chi"
     start=$SECONDS
-    echo "    CALL changesGenerate();"
-    mariadb $dbm                                      <<< "CALL changesGenerate();"
+    /usr/bin/php $prg $sw "$cfg" exec changes.php       > $chi
     abort_on_error 28a $?
-    /usr/bin/php $prg $sw "$cfg" exec changes.php -q
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
+    echo "28b. Insert new changes data using $ddc"
+    start=$SECONDS
+    mariadb                                             < $chi
     abort_on_error 28b $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
+    echo "28c. Generate CCR output table Changes"
     echo "    CALL changes();"
     mariadb $dbm                                      <<< "CALL changes();"
     abort_on_error 28c $?
