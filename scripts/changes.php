@@ -4,9 +4,13 @@ require __DIR__.'/functions.php';
 cfg ();
 require $argv[1];
 
+$mdb = BLOTTO_MAKE_DB;
 $cc_notify_interval = BLOTTO_CC_NOTIFY;
 
-echo "-- New changes data for canvassing companies\n";
+tee ("-- New changes data for canvassing companies\n");
+
+echo "USE `$mdb`;\n\n";
+
 
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
