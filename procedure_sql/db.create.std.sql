@@ -7,22 +7,31 @@ SET foreign_key_checks=0;
 
 
 CREATE TABLE IF NOT EXISTS `blotto_change` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `changed_date` date NOT NULL,
+  `client_ref` varchar(64) CHARACTER SET ascii,
   `ccc` char(4) CHARACTER SET ascii NOT NULL,
-  `agent_ref` char(16) CHARACTER SET ascii,
+  `canvas_agent_ref` char(16) CHARACTER SET ascii,
+  `signed` date NOT NULL,
+  `approved` date NOT NULL,
+  `created` date NOT NULL,
   `canvas_ref` int(11) unsigned NOT NULL,
-  `chance_number` tinyint(3) DEFAULT NULL,
-  `client_ref_original` varchar(64) CHARACTER SET ascii,
-  `type` char(4) CHARACTER SET ascii NOT NULL DEFAULT 'DEC',
+  `chance_number` tinyint(3) unsigned NOT NULL,
+  `chance_ref` char(16) CHARACTER SET ascii,
+  `type` char(4) CHARACTER SET ascii NOT NULL,
+  `type_is_increment` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `is_termination` tinyint(1) unsigned NOT NULL DEFAULT 0,
-  `reinstatement_for` char(10) CHARACTER SET ascii NOT NULL,
-  `amount_paid_before_this_date` decimal(8,2) NOT NULL,
-  `supporter_signed` date DEFAULT NULL,
-  `supporter_approved` date DEFAULT NULL,
-  `supporter_created` date DEFAULT NULL,
-  `supporter_first_paid` date DEFAULT NULL,
-  PRIMARY KEY (`changed_date`,`ccc`,`canvas_ref`,`chance_number`),
-  KEY `client_ref_original` (`client_ref_original`)
+  `chances_orig` tinyint(3) unsigned NOT NULL,
+  `supporter_id` int(11) unsigned NOT NULL,
+  `update_id` int(11) unsigned NOT NULL,
+  `milestone` char(16) CHARACTER SET ascii,
+  PRIMARY KEY (`id`),
+  KEY `changed_date` (`changed_date`),
+  KEY `client_ref` (`client_ref`),
+  KEY `ccc` (`ccc`),
+  KEY `supporter_id` (`supporter_id`),
+  KEY `update_id` (`update_id`),
+  KEY `milestone` (`milestone`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8
 ;
 
@@ -238,6 +247,7 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `signed` date DEFAULT NULL,
   `approved` date DEFAULT NULL,
   `projected_first_draw_close` date DEFAULT NULL,
+  `projected_chances` tinyint(3) unsigned DEFAULT NULL,
   `canvas_code` char(4) CHARACTER SET ascii DEFAULT NULL,
   `canvas_agent_ref` varchar(16) CHARACTER SET ascii,
   `canvas_ref` int(11) unsigned,
