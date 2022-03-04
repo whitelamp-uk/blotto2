@@ -259,6 +259,7 @@ try {
         $cd         = esc ($s['Approved']);
         $sg         = esc ($s['Signed']);
         $ap         = esc ($s['Approved']);
+        $ch         = esc ($s['Chances']);
         $ca         = '';
         $cv         = '';
         $bl         = 0.00;
@@ -320,8 +321,8 @@ try {
                 ${'p'.$i} = '';
             }
         }
-        echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`canvas_code`,`canvas_agent_ref`,`canvas_ref`,`client_ref`) VALUES\n";
-        echo "  ('$cd','$sg','$ap','$ccc','$ca','$cv','$cr');\n";
+        echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`projected_chances`,`canvas_code`,`canvas_agent_ref`,`canvas_ref`,`client_ref`) VALUES\n";
+        echo "  ('$cd','$sg','$ap','$ch','$ccc','$ca','$cv','$cr');\n";
         echo "SET @sid = LAST_INSERT_ID();\n";
         echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`,`opening_balance`) VALUES\n";
         echo "  (@sid,'$cr',$bl);\n\n";
