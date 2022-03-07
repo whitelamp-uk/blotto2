@@ -160,6 +160,30 @@ catch (\mysqli_sql_exception $e) {
     exit (110);
 }
 
+$qs = "
+  SELECT
+    `ClientRef`
+   ,`Chances`
+  FROM `tmp_supporter`
+  WHERE `Chances` IS NULL
+     OR `Chances`<1
+  LIMIT 0,1
+  ;
+";
+try {
+    $check = $zo->query ($qs);
+    if ($c=$check->fetch_assoc()) {
+        fwrite (STDERR,"Chances='".$c['Chances']."' is illegal for ".$c['ClientRef']."\n");
+        exit (111);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (112);
+}
+
+
+
 $phonere='^\\\\+?[0-9]+$';
 $qs = "
   SELECT
@@ -259,7 +283,7 @@ try {
         $cd         = esc ($s['Approved']);
         $sg         = esc ($s['Signed']);
         $ap         = esc ($s['Approved']);
-        $ch         = esc ($s['Chances']);
+        $ch         = intval ($s['Chances']);
         $ca         = '';
         $cv         = '';
         $bl         = 0.00;
