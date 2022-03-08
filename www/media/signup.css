@@ -48,6 +48,7 @@ section.signup div.error button[data-close] {
     padding:            0;
 }
 section.signup div.error button[data-close] img {
+    display:            block;
     margin:             0;
     width:              100%;
     height:             100%;
