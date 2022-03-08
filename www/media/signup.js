@@ -160,12 +160,14 @@ async function postData (url='',data={}) {
 }
 
 function userMessage (msg) {
-    var button,button2,div,p;
+    var button,button2,div,img,p;
     div = document.createElement ('div');
     div.classList.add ('error');
     button = document.createElement ('button');
     button.dataset.close = '';
     button.addEventListener ('click',closeHandle);
+    img = document.createElement ('img');
+    button.appendChild (img);
     div.appendChild (button);
     p = document.createElement ('p');
     p.textContent = msg;
