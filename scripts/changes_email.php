@@ -157,8 +157,8 @@ if ($today->format('D')==$dow) {
         else {
             mail (
                 $r['ccr_email'],
-                "Canvassing Company Return from ".BLOTTO_BRAND." w/e {$r['end']}",
-                "The canvassing company return - CCR - reports that no ticket changes were logged last period",
+                "Canvassing Company Return from ".BLOTTO_BRAND." for ".strtoupper(BLOTTO_ORG_USER)."/".$r['ccc']." w/e {$r['end']}",
+                "The canvassing company return - CCR - reports that no ticket changes were logged for ".strtoupper(BLOTTO_ORG_USER)."/".$r['ccc']." last period",
                 "From: ".BLOTTO_EMAIL_FROM.PHP_EOL
             );
         }
