@@ -9,15 +9,9 @@ $dow = BLOTTO_EMAIL_REPORT_DAY;
 
 echo "    Emailing changes for canvassing companies\n";
 
-if (!defined('BLOTTO_CANCEL_LEGACY')) {
-    write (STDERR,"BLOTTO_CANCEL_LEGACY should be 0 or 1\n");
-    exit (101);
-}
-
-
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
-    exit (102);
+    exit (101);
 }
 
 
@@ -54,7 +48,7 @@ if ($today->format('D')==$dow) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (103);
+        exit (102);
     }
     try {
         foreach ($ccrs as $r) {
@@ -78,18 +72,12 @@ if ($today->format('D')==$dow) {
             exec ("mkdir -p '$dir'");
             if (!is_dir($dir)) {
                 fwrite (STDERR,"Failed to make directory '$dir'\n");
-                exit (104);
+                exit (103);
             }
             echo "        Created directory '$dir'\n";
-            if (BLOTTO_CANCEL_LEGACY) {
-                $field = 'changed_date_legacy';
-            }
-            else {
-                $field = 'changed_date';
-            }
             $qs = "
               SELECT
-                `$field`
+                `changed_date`
                ,`ccc`
                ,`canvas_ref`
                ,`chance_number`
@@ -105,10 +93,10 @@ if ($today->format('D')==$dow) {
                ,`supporter_created`
                ,`supporter_first_paid`
               FROM `Changes`
-              WHERE `$field`>='$start'
-                AND `$field`<='$end'
+              WHERE `changed_date`>='$start'
+                AND `changed_date`<='$end'
                 AND `ccc`='$code'
-              ORDER BY `$field`,`canvas_ref`,`chance_number`
+              ORDER BY `changed_date`,`canvas_ref`,`chance_number`
               ;
             ";
             echo $qs."\n";
@@ -150,7 +138,7 @@ if ($today->format('D')==$dow) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (105);
+        exit (104);
     }
     echo "    ".count($emails)." files to send\n";
     foreach ($emails as $file=>$r) {
