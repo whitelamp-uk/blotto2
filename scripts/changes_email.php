@@ -78,20 +78,22 @@ if ($today->format('D')==$dow) {
             $qs = "
               SELECT
                 `changed_date`
+               ,`client_ref`
                ,`ccc`
+               ,`canvas_agent_ref`
+               ,`signed`
+               ,`approved`
+               ,`created`
                ,`canvas_ref`
                ,`chance_number`
                ,`chance_ref`
-               ,`client_ref_original`
-               ,`agent_ref`
                ,`type`
+               ,`type_is_increment`
                ,`is_termination`
-               ,`reinstatement_for`
-               ,`amount_paid_before_this_date`
-               ,`supporter_signed`
-               ,`supporter_approved`
-               ,`supporter_created`
-               ,`supporter_first_paid`
+               ,`chances_orig`
+               ,`supporter_id`
+               ,`update_id`
+               ,`milestone`
               FROM `Changes`
               WHERE `changed_date`>='$start'
                 AND `changed_date`<='$end'
