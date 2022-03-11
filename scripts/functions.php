@@ -129,16 +129,16 @@ function chances_weekly ($frequency,$amount) {
 
 function chances2Amount ($freq,$chances) {
     if ($freq=='Monthly') {
-        return number_format (4.34*$chances,2,'.','');
+        return number_format ($chances*BLOTTO_TICKET_PRICE*434/10000,2,'.','');
     }
     if ($freq=='Quarterly') {
-        return number_format (13.02*$chances,2,'.','');
+        return number_format ($chances*BLOTTO_TICKET_PRICE*1302/10000,2,'.','');
     }
     if ($freq=='Six Monthly') {
-        return number_format (26*$chances,2,'.','');
+        return number_format ($chances*BLOTTO_TICKET_PRICE*2600/10000,2,'.','');
     }
     if ($freq=='Annually') {
-        return number_format (52*$chances,2,'.','');
+        return number_format ($chances*BLOTTO_TICKET_PRICE*5200/10000,2,'.','');
     }
     return false;
 }
