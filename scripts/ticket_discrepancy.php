@@ -7,6 +7,7 @@ $org_id=BLOTTO_ORG_ID;
 $mdb = BLOTTO_MAKE_DB;
 $tdb = BLOTTO_TICKET_DB;
 $csf = BLOTTO_DIR_EXPORT.'/checksum.blotto_ticket.txt';
+$price = BLOTTO_TICKET_PRICE;
 $rbe = get_argument('r',$Sw) !== false;
 
 
@@ -149,14 +150,14 @@ $qs = "
   GROUP BY `p`.`client_ref`
   HAVING `tickets`!=`chances`
       OR (                             `chances`!=0  AND   `amount`=0       )
-      OR ( `frequency`='Monthly'   AND `chances`=1   AND   `amount`!=4.34   )
-      OR ( `frequency`='Monthly'   AND `chances`=2   AND   `amount`!=8.68   )
-      OR ( `frequency`='Monthly'   AND `chances`=3   AND ( `amount`<13.00  OR  `amount`>13.02 ) )
-      OR ( `frequency`='Monthly'   AND `chances`=4   AND   `amount`!=17.36  )
-      OR ( `frequency`='Annually'  AND `chances`=1   AND   `amount`!=52.00  )
-      OR ( `frequency`='Annually'  AND `chances`=2   AND   `amount`!=104.00 )
-      OR ( `frequency`='Annually'  AND `chances`=3   AND   `amount`!=156.00 )
-      OR ( `frequency`='Annually'  AND `chances`=4   AND   `amount`!=208.00 )
+      OR ( `frequency`='Monthly'   AND `chances`=1   AND   `amount`!=ROUND($price*434/10000,2)   )
+      OR ( `frequency`='Monthly'   AND `chances`=2   AND   `amount`!=ROUND($price*868/10000,2)   )
+      OR ( `frequency`='Monthly'   AND `chances`=3   AND ( `amount`<ROUND($price*1300/10000,2)  OR  `amount`>ROUND($price*1302/10000,2) ) )
+      OR ( `frequency`='Monthly'   AND `chances`=4   AND   `amount`!=ROUND($price*1736/10000,2)  )
+      OR ( `frequency`='Annually'  AND `chances`=1   AND   `amount`!=ROUND($price*5200/10000,2)  )
+      OR ( `frequency`='Annually'  AND `chances`=2   AND   `amount`!=ROUND($price*10400/10000,2) )
+      OR ( `frequency`='Annually'  AND `chances`=3   AND   `amount`!=ROUND($price*15600/10000,2) )
+      OR ( `frequency`='Annually'  AND `chances`=4   AND   `amount`!=ROUND($price*20800/10000,2) )
   ;
 ";
 
