@@ -77,23 +77,7 @@ if ($today->format('D')==$dow) {
             echo "        Created directory '$dir'\n";
             $qs = "
               SELECT
-                `changed_date`
-               ,`client_ref`
-               ,`ccc`
-               ,`canvas_agent_ref`
-               ,`signed`
-               ,`approved`
-               ,`created`
-               ,`canvas_ref`
-               ,`chance_number`
-               ,`chance_ref`
-               ,`type`
-               ,`type_is_increment`
-               ,`is_termination`
-               ,`chances_orig`
-               ,`supporter_id`
-               ,`update_id`
-               ,`milestone`
+                *
               FROM `Changes`
               WHERE `changed_date`>='$start'
                 AND `changed_date`<='$end'
