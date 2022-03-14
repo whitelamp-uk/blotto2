@@ -53,7 +53,7 @@ $qs = "
      ,`plyr`.`supporter_id`
      ,`plyr`.`chances`
      ,`plyr`.`client_ref`
-     ,IFNULL(MAX(`coll`.`DateDue`),'') AS `collected_last`
+     ,MAX(`coll`.`DateDue`) AS `collected_last`
      ,IFNULL(COUNT(`coll`.`DateDue`),0) AS `collected_times`
      ,IFNULL(SUM(`coll`.`PaidAmount`),0.00) AS `collected_amount`
     FROM `blotto_player` AS `plyr`
