@@ -33,11 +33,34 @@ $qs = "
      ,INTERVAL $cc_notify_interval
     ) AS `last_interested`
    ,`u`.*
-   ,GROUP_CONCAT(CONCAT_WS('::',`p`.`id`,`p`.`chances`,`p`.`client_ref`) ORDER BY `p`.`id` SEPARATOR ';;') AS `players`
+   ,GROUP_CONCAT(
+      CONCAT_WS(
+        '::'
+       ,`p`.`id`
+       ,`p`.`chances`
+       ,`p`.`client_ref`
+       ,`p`.`collected_last`
+       ,`p`.`collected_times`
+       ,`p`.`collected_amount`
+      ) ORDER BY `p`.`id` SEPARATOR ';;'
+    ) AS `players`
   FROM `blotto_update` AS `u`
   JOIN `blotto_supporter` AS `s`
     ON `s`.`id`=`u`.`supporter_id`
-  JOIN `blotto_player` AS `p`
+  JOIN (
+    SELECT
+      `plyr`.`id`
+     ,`plyr`.`supporter_id`
+     ,`plyr`.`chances`
+     ,`plyr`.`client_ref`
+     ,IFNULL(MAX(`coll`.`DateDue`),'') AS `collected_last`
+     ,IFNULL(COUNT(`coll`.`DateDue`),0) AS `collected_times`
+     ,IFNULL(SUM(`coll`.`PaidAmount`),0.00) AS `collected_amount`
+    FROM `blotto_player` AS `plyr`
+    LEFT JOIN `blotto_build_collection` AS `coll`
+           ON `coll`.`ClientRef`=`plyr`.`client_ref`
+    GROUP BY `plyr`.`id`
+  ) AS `p`
     ON `p`.`supporter_id`=`s`.`id`
    -- TODO: null chances implies non-DD/one-off/not CSV import or something
    -- like one of those things - ie not relevant to CCR
@@ -78,6 +101,9 @@ while ($u=$us->fetch_assoc()) {
         if ($p[0]==$u['player_id']) {
             $u['player_chances'] = $p[1];
             $u['player_client_ref'] = $p[2];
+            $u['collected_last'] = $p[3];
+            $u['collected_times'] = $p[4];
+            $u['collected_amount'] = $p[5];
             break;
         }
         $u['player_old_chances'] = $p[1];
