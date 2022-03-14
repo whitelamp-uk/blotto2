@@ -39,9 +39,9 @@ $qs = "
        ,`p`.`id`
        ,`p`.`chances`
        ,`p`.`client_ref`
-       ,`p`.`collected_last`
-       ,`p`.`collected_times`
-       ,`p`.`collected_amount`
+       ,IFNULL(`p`.`collected_last`,'')
+       ,IFNULL(`p`.`collected_times`,0)
+       ,IFNULL(`p`.`collected_amount`,0.00)
       ) ORDER BY `p`.`id` SEPARATOR ';;'
     ) AS `players`
   FROM `blotto_update` AS `u`
@@ -205,7 +205,7 @@ INSERT INTO `blotto_change` (
 ";
 
 foreach ($changes as $i=>$c) {
-    echo "('{$c['updated']}','{$c['client_ref']}','{$c['canvas_code']}','{$c['canvas_agent_ref']}','{$c['signed']}','{$c['approved']}','{$c['created']}','{$c['canvas_ref']}',{$c['chance_number']},'{$c['chance_ref']}','{$c['type']}',{$c['type_is_increment']},{$c['is_termination']},{$c['chances_orig']},{$c['supporter_id']},{$c['id']},'{$c['milestone']}','{$c['collected_last']}',{$c['collected_times']},{$c['collected_amount']})";
+    echo "('{$c['updated']}','{$c['client_ref']}','{$c['canvas_code']}','{$c['canvas_agent_ref']}','{$c['signed']}','{$c['approved']}','{$c['created']}','{$c['canvas_ref']}',{$c['chance_number']},'{$c['chance_ref']}','{$c['type']}',{$c['type_is_increment']},{$c['is_termination']},{$c['chances_orig']},{$c['supporter_id']},{$c['id']},'{$c['milestone']}',IF('{$c['collected_last']}'='',null,'{$c['collected_last']}'),{$c['collected_times']},{$c['collected_amount']})";
     if (array_key_exists($i+1,$changes)) {
         echo ",";
     }
