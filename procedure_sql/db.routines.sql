@@ -459,6 +459,9 @@ BEGIN
   ALTER TABLE `Changes`
   ADD KEY `client_ref` (`client_ref`)
   ;
+  ALTER TABLE `Changes`
+  MODIFY `collected_last` char(16) CHARACTER SET ascii NOT NULL
+  ;
 END $$
 
 
