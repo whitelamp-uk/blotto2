@@ -300,6 +300,8 @@ catch (\Exception $e) {
 
         <legend>Select payment method to pay <span id="signup-cost-confirm" class="signup-cost">&pound;<output><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output></span></legend>
 
+        <small class="warning">We are sorry but we cannot accept credit cards due to Gambling Commission rules.</small>
+
 <?php   foreach ($apis as $code=>$api): ?>
 
         <style>
@@ -316,6 +318,7 @@ form.signup input[name="<?php echo $code; ?>"] {
 
     </form>
 
+    <a name="end"></a>
 
 <?php endif; ?>
 
