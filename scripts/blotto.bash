@@ -265,9 +265,6 @@ then
     if [ "$pfz" = "" ]
     then
 
-        # This stuff will not happen if BLOTTO_DEV_PAY_FREEZE is true
-        echo "BLOTTO_DEV_PAY_FREEZE==true so not touching mandate or collection tables"
-
         echo " 4. Generate mandate / collection table create SQL in $ddc"
         start=$SECONDS
         /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
@@ -301,6 +298,11 @@ then
         mariadb                                             < $ddx
         abort_on_error 8 $?
         echo "    Completed in $(($SECONDS-$start)) seconds"
+
+    else
+
+        # The stuff above will not happen if BLOTTO_DEV_PAY_FREEZE is true
+        echo "BLOTTO_DEV_PAY_FREEZE==true so not touching mandate or collection tables"
 
     fi
 
