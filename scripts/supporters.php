@@ -374,7 +374,7 @@ if (!$count) {
     try {
         $rows = $zo->query ($qs);
         $rows = $rows->fetch_assoc ()['rows'];
-        fwrite (STDERR,"$rows of data found for $ccc\n");
+        fwrite (STDERR,"$rows rows of data found for $ccc\n");
         if ($rows<5) {
             fwrite (STDERR,"WARNING: very little data was found for $ccc\n");
         }
