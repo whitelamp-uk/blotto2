@@ -37,15 +37,13 @@ try {
         if (method_exists($api,'insert_mandates')) {
             // Get new candidates
             $mandates = [];
-            $table    = constant ($name.'_TABLE');
+            $select = constant ($name.'_SELECT');
             $qs = "
               SELECT
                 `cand`.*
               FROM `tmp_supporter` AS `cand`
               LEFT JOIN (
-                SELECT
-                  DISTINCT(`ClientRef`) AS `crf`
-                FROM `$table`
+                $select
               ) AS `m`
                 ON `m`.`crf`=`cand`.`ClientRef`
               LEFT JOIN `blotto_supporter` AS `s`
