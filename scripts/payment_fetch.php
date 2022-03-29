@@ -13,7 +13,8 @@ if (!$zo) {
 
 try {
     $constants      = get_defined_constants (true);
-    $apis = 0;
+    $apis           = 0;
+    $api            = null;
     foreach ($constants['user'] as $name => $classfile) {
         if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
             continue;
@@ -41,10 +42,15 @@ try {
     echo "    Imported payments using $apis APIs\n";
 }
 catch (\Exception $e) {
-    fwrite (STDERR,$e->getMessage()."\n");
-    if (!property_exists($api,'errorCode')) {
-        // Unexpected error
+    fwrite (STDERR,"Failed to fetch payments: ".$e->getMessage()."\n");
+    if (!$api) {
+        fwrite (STDERR,"(No API was instantiated)\n");
         exit (104);
+    }
+    if (!property_exists($api,'errorCode')) {
+        fwrite (STDERR,"(Unexpected error)\n");
+        // Unexpected error
+        exit (105);
     }
     exit ($api->errorCode);
 }
