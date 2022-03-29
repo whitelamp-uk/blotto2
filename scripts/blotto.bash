@@ -343,15 +343,12 @@ then
 
         if [ "$pfz" = "" ]
         then
-
-            # This stuff will not happen if BLOTTO_DEV_PAY_FREEZE is true
-            echo "BLOTTO_DEV_PAY_FREEZE==true so not attempting to set up new mandates"
-
             echo "    11b. Generate mandates"
             /usr/bin/php $prg $sw "$cfg" exec payment_mandate.php
             abort_on_error 11b $?
             echo "        Completed in $(($SECONDS-$start)) seconds"
-
+        else
+            echo "BLOTTO_DEV_PAY_FREEZE==true so not attempting to set up new mandates"
         fi
 
         if [ "$no_tidy" ]
