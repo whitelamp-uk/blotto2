@@ -108,8 +108,8 @@ while ($u=$us->fetch_assoc()) {
         }
         $u['player_old_chances'] = $p[1];
     }
-    if (!array_key_exists('player_chances',$u)) {
-        fwrite (STDERR,"No payers found for update: \n".print_r($u,true));
+    if (!array_key_exists('collected_amount',$u)) {
+        fwrite (STDERR,"No players found for update: \n".print_r($u,true));
         exit (104);
     }
     if ($u['milestone']=='created') {
@@ -142,7 +142,7 @@ while ($u=$us->fetch_assoc()) {
             for ($i=0;$i<$count;$i++) {
                 $u['chance_number'] = $i + 1;
                 $u['chance_ref'] = $u['canvas_ref'].'-'.$u['chance_number'];
-                array_push ($changes,$u);
+                $changes[] = $u;
             }
         }
         else {
@@ -151,7 +151,7 @@ while ($u=$us->fetch_assoc()) {
             for ($i=0;$i<$count;$i++) {
                 $u['chance_number'] = $count - $i;
                 $u['chance_ref'] = $u['canvas_ref'].'-'.$u['chance_number'];
-                array_push ($changes,$u);
+                $changes[] = $u;
             }
         }
         $qs = "
