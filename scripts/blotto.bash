@@ -365,7 +365,7 @@ then
         fi
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-        echo "    12. Insert supporters from $sps-$dir.log"
+        echo "    12. Insert supporters/first players from $sps-$dir.log"
         start=$SECONDS
         mariadb                                         < "$sps-$dir.log"
         abort_on_error 12 $?
@@ -375,28 +375,28 @@ then
     done
 
 
-    echo "13. Generate player insert SQL in $pls"
+    echo "13. Generate replacement player insert SQL in $pls"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players.php       > $pls
     abort_on_error 13 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "14. Bind RSM data to player data using $pls"
+    echo "14. Insert replacement players using $pls"
     start=$SECONDS
     mariadb                                             < $pls
     abort_on_error 14 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "15. Generate first-draw and chance update SQL in $plu"
+    echo "15. Generate first-draw and chance (for all players) SQL in $plu"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players_update.php > $plu
     abort_on_error 15 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "16. Set first-draw and chances using $plu"
+    echo "16. Set first-draw and chance (for all players) using $plu"
     start=$SECONDS
     mariadb                                             < $plu
     abort_on_error 16 $?
