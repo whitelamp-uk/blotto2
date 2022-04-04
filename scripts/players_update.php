@@ -171,7 +171,7 @@ try {
         $chances = explode (',',$p['ChancesCsv']);
         $chances = intval (trim(array_pop($chances)));
         if ($chances<1) {
-            fwrite (STDERR,"$chances chances is not valid from ChancesCsv={$p['ChancesCsv']} for {$p['ClientRef']}\n");
+            fwrite (STDERR,"$chances chances is not valid from mandate ChancesCsv={$p['ChancesCsv']} for {$p['ClientRef']}\n");
             exit (105);
         }
         if (!array_key_exists($chances,$chances_options)) {
