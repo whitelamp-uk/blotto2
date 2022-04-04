@@ -108,6 +108,10 @@ while ($u=$us->fetch_assoc()) {
         }
         $u['player_old_chances'] = $p[1];
     }
+    if (!array_key_exists('player_chances',$u)) {
+        fwrite (STDERR,"No payers found for update: \n".print_r($u,true));
+        exit (104);
+    }
     if ($u['milestone']=='created') {
         $u['increment'] = $u['chances_orig'];
     }
