@@ -3021,11 +3021,16 @@ function stannp_status ($batch_names) {
     foreach ($batch_names as $campaign_name) {
         $refs[$campaign_name] = [];
         $recipients = $stannp->campaign ($campaign_name) ['recipient_list'];
-        foreach ($recipients as $r) {
-            if (!array_key_exists($r['mailpiece_status'],$refs[$campaign_name])) {
-                $refs[$campaign_name][$r['mailpiece_status']] = [];
+        if (is_array($recipients)) {
+            foreach ($recipients as $r) {
+                if (!array_key_exists($r['mailpiece_status'],$refs[$campaign_name])) {
+                    $refs[$campaign_name][$r['mailpiece_status']] = [];
+                }
+                $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
             }
-            $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
+        }
+        else {
+            fwrite (STDERR,"WARNING: campaign $campaign_name was not found\n");
         }
     }
     return $refs;
