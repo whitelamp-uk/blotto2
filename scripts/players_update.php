@@ -162,7 +162,6 @@ $qs = "
   JOIN `blotto_player` AS `p`
     ON `p`.`client_ref`=`m`.`ClientRef`
   WHERE `p`.`chances` IS NULL
-    AND `m`.`ChancesCsv`!=''
 ";
 try {
     $ps = $zo->query ($qs);
