@@ -33,6 +33,10 @@ try {
             exit (103);
         }
         $api        = new $class ($zo);
+        if (method_exists($api,'reset_fakes')) {
+            // Migrating mandates
+            $api->reset_fakes ();
+        }
         echo "    Instantiated $class\n";
         if (method_exists($api,'insert_mandates')) {
             // Get new candidates
