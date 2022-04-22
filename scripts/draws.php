@@ -166,7 +166,7 @@ while ($d=$ds->fetch_assoc()) {
     }
     else {
         try {
-            notarise ($draw->closed,$draw->prizes,'prizes.json',false,false,true);
+            notarise ($draw->closed,$draw->prizes,'prizes.json',false,false);
             notarise ($draw->closed,$entries,'draw.csv','CSV','HEADERS');
             if (!$quiet) {
                 echo "Just notarised\n";
