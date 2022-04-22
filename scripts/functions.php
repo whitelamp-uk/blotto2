@@ -1235,9 +1235,13 @@ function file_write ($file,$contents) {
         fwrite (STDERR,debug_backtrace()[1]['function']."(\n");
         fwrite (STDERR,print_r(debug_backtrace()[1]['args'],true));
         fwrite (STDERR,")\n");
-        fwrite (STDERR,debug_backtrace()[2]['function']."(\n");
-        fwrite (STDERR,print_r(debug_backtrace()[2]['args'],true));
-        fwrite (STDERR,")\n");
+        try {
+            fwrite (STDERR,debug_backtrace()[2]['function']."(\n");
+            fwrite (STDERR,print_r(debug_backtrace()[2]['args'],true));
+            fwrite (STDERR,")\n");
+        }
+        catch (\Exception $e) {
+        }
         throw new \Exception ("File $file already exists");
         return false;
     }
