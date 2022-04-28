@@ -640,12 +640,16 @@ BEGIN
       AND `p`.`first_draw_close` IS NOT NULL
     -- Player is ready to go right now
       AND `p`.`first_draw_close`<=futureCloseDate
+
+-- If a player is not cancelled then they should be insured
+-- This is a good safe approach at the cost of a few extra tickets
     -- Player has enough balance to play one more time
-      AND
-              `p`.`opening_balance`
-            + IFNULL(`c`.`AmountCollected`,0)
-            - (IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100
-          >= 0
+--      AND
+--              `p`.`opening_balance`
+--            + IFNULL(`c`.`AmountCollected`,0)
+--            - (IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100
+--          >= 0
+
     ORDER BY `tk`.`number`
   ;
   CALL insureOutput()
