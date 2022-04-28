@@ -258,7 +258,6 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `canvas_ref` (`canvas_ref`),
   UNIQUE KEY `client_ref` (`client_ref`),
   KEY `created` (`created`),
   KEY `signed` (`signed`),
