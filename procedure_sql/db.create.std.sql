@@ -251,7 +251,7 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `approved` date DEFAULT NULL,
   `projected_first_draw_close` date DEFAULT NULL,
   `projected_chances` tinyint(3) unsigned DEFAULT NULL,
-  `canvas_code` char(4) CHARACTER SET ascii DEFAULT NULL,
+  `canvas_code` char(16) CHARACTER SET ascii DEFAULT NULL,
   `canvas_agent_ref` varchar(16) CHARACTER SET ascii,
   `canvas_ref` int(11) unsigned,
   `client_ref` varchar(64) CHARACTER SET ascii,
