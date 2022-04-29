@@ -2955,8 +2955,7 @@ function stannp_mail_wins ( ) {
     $earliest = BLOTTO_STANNP_FROM_WIN;
     $q = "
       SELECT
-        `bw`.`entry_id`
-       ,`w`.*
+        `w`.*
       FROM `Wins` AS `w`
       JOIN `blotto_entry` AS `e`
         ON `e`.`draw_closed`=`w`.`draw_closed`
