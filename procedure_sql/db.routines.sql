@@ -642,7 +642,8 @@ BEGIN
       AND `p`.`first_draw_close`<=futureCloseDate
 
 -- If a player is not cancelled then they should be insured
--- This is a good safe approach at the cost of a few extra tickets
+-- This means insurance (when it closes before the draw)
+-- places inclusivity above the cost of a few extra tickets
     -- Player has enough balance to play one more time
 --      AND
 --              `p`.`opening_balance`
