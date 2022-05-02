@@ -2243,6 +2243,7 @@ function prizes ($date) {
             $p['length']        = substr ($p['level_method'],0,1);
             $p['left']          = stripos($p['level_method'],'L') !== false;
             $p['right']         = stripos($p['level_method'],'R') !== false;
+            $p['group']         = substr ($p['level_method'],-1);
         }
         // Bespoke modification of prize amount
         if (function_exists('prize_amount')) {
@@ -4536,11 +4537,26 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
 function www_winners ($format='Y-m-d') {
     // Provide latest winners for external API requests
     $rdb = BLOTTO_RESULTS_DB;
+    $winners = new \stdClass ();
+    $q = "
+      SELECT
+        `w`.*
+      FROM `Wins` AS `w`
+      JOIN (
+        SELECT
+          MAX(`draw_closed`) AS `dc`
+        FROM `Wins`
+        WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
+      ) AS `last`
+        ON `last`.`dc`=`w`.`draw_closed`
+      ORDER BY `winnings` DESC, `ticket_number`
+    ";
+    $winners->results = 
     $winners = ['date'=>'','dateYMD'=>'','results'=>[],'wins'=>[]];
     $results = [];
     $zo = connect ();
     if (!$zo) {
-        return $winners;
+        return ;
     }
     $q = "
       SELECT
@@ -4577,7 +4593,9 @@ function www_winners ($format='Y-m-d') {
       SELECT
         `prize_level`
        ,`number`
-      FROM `$rdb`.`blotto_result`
+      FROM `$rdb`.`blotto_result` AS `r`
+      JOIN `blotto_prize` AS `p`
+        ON `p
       WHERE `draw_closed`='$draw_closed'
       ORDER BY `prize_level`,`number`
     ";
