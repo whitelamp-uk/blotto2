@@ -4569,7 +4569,7 @@ function www_winners ($format='Y-m-d') {
             while ($w=$ws->fetch_assoc()) {
                 $results->winners[] = [$w['ticket_number'],$w['winnings']];
             }
-            $draw = draw ($draw_closed);
+            $draw = draw ($r['draw_closed']);
             // Get the lowest level for each group
             foreach ($draw->prizes as $p) {
                 if ($p['level_method']!='RAFF') {
