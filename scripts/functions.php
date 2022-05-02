@@ -4536,59 +4536,81 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
 
 function www_winners ($format='Y-m-d') {
     // Provide latest winners for external API requests
-    $rdb = BLOTTO_RESULTS_DB;
-    $winners = new \stdClass ();
-    $q = "
-      SELECT
-        `w`.*
-      FROM `Wins` AS `w`
-      JOIN (
-        SELECT
-          MAX(`draw_closed`) AS `dc`
-        FROM `Wins`
-        WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
-      ) AS `last`
-        ON `last`.`dc`=`w`.`draw_closed`
-      ORDER BY `winnings` DESC, `ticket_number`
-    ";
-    $winners->results = 
-    $winners = ['date'=>'','dateYMD'=>'','results'=>[],'wins'=>[]];
-    $results = [];
     $zo = connect ();
+    $results = new \stdClass ();
+    $results->number_matches = [];
+    $results->winners = [];
+    $level = [];
     if (!$zo) {
-        return ;
+        return $results;
     }
-    $q = "
-      SELECT
-        `w`.*
-      FROM `Wins` AS `w`
-      JOIN (
-        SELECT
-          MAX(`draw_closed`) AS `dc`
-        FROM `Wins`
-        WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
-      ) AS `last`
-        ON `last`.`dc`=`w`.`draw_closed`
-      ORDER BY `winnings` DESC, `ticket_number`
-    ";
+    $rdb = BLOTTO_RESULTS_DB;
     try {
-        $ws = connect()->query ($q);
+        $q = "
+          SELECT
+            MAX(`draw_closed`) AS `draw_closed`
+           ,drawOnOrAfter(MAX(`draw_closed`)) AS `drawn`
+          FROM `$rdb`.`blotto_result`
+          WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
+        ";
+        $rs = connect()->query ($q);
+        $r = $rs->fetch_assoc ();
+        if ($r) {
+            $dt                 = new DateTime ($r['drawn']);
+            $results->date      = $dt->format ($format);
+            $q = "
+              SELECT
+                `w`.*
+              FROM `Wins`
+              WHERE `draw_closed`='{$r['draw_closed']}'
+              ORDER BY `winnings` DESC, `ticket_number`
+            ";
+            $ws = connect()->query ($q);
+            while ($w=$ws->fetch_assoc()) {
+                $results->winners[] = [$w['ticket_number'],$w['winnings']];
+            }
+            $draw = draw ($draw_closed);
+            // Get the lowest level for each group
+            foreach ($draw->prizes as $p) {
+                if ($p['level_method']!='RAFF') {
+                    if (!array_key_exists($p['group'],$level)) {
+                        $level[$p['group']] = 1000000;
+                    }
+                    if ($p['level']<$level[$p['group']]) {
+                        $level[$p['group']] = $p['level'];
+                    }
+                }
+            }
+            // Use lowest level prize in group for result name
+            foreach ($draw->prizes as $p) {
+                if ($p['level_method']!='RAFF') {
+                    if ($p['level']==$level[$p['group']]) {
+                        $results->number_matches[] = [$p['name'],$p['results'][0]];
+                    }
+                }
+            }
+        }
+        else {
+            return $results;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+        return $results;
+    }
+    $draw = draw ($r['draw_closed']);
+
+
+    try {
     }
     catch (\mysqli_sql_exception $e) {
         error_log ($e->getMessage());
         return $winners;
     }
-    while ($w=$ws->fetch_assoc()) {
-        $draw_closed = $w['draw_closed'];
-        array_push ($winners['wins'],[$w['ticket_number'],$w['winnings']]);
-    }
     if (!count($winners['wins'])) {
         return $winners;
     }
-    $dt                 = new DateTime ($draw_closed);
-    $dt->add (new DateInterval('P1D'));
-    $winners['date']    = $dt->format ($format);
-    $prizes             = draw($draw_closed)->prizes;
+    $prizes             = draw($r['draw_closed'])->prizes;
     $q = "
       SELECT
         `prize_level`

@@ -16,8 +16,8 @@ if (array_key_exists('f',$_GET)) {
 
 $w = www_winners ($f);
 
-table ('lottery-results-latest-table','','Results for '.$w['date'],['Prize','Number'],$w['results']);
+table ('lottery-results-latest-table','','Results for '.$w->date,['Prize','Number'],$w->number_matches);
 
-table ('lottery-winners-latest-table','','Winners for '.$w['date'],['Ticket','Winnings'],$w['wins']);
+table ('lottery-winners-latest-table','','Winners for '.$w->date,['Ticket','Winnings'],$w->winners);
 
 
