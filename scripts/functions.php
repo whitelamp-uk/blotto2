@@ -4549,7 +4549,7 @@ function www_winners ($format='Y-m-d') {
         $q = "
           SELECT
             MAX(`draw_closed`) AS `draw_closed`
-           ,drawOnOrAfter(MAX(`draw_closed`)) AS `drawn`
+           ,DATE(drawOnOrAfter(MAX(`draw_closed`))) AS `drawn`
           FROM `$rdb`.`blotto_result`
           WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
         ";
