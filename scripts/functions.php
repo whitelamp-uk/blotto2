@@ -4596,56 +4596,8 @@ function www_winners ($format='Y-m-d') {
     }
     catch (\mysqli_sql_exception $e) {
         error_log ($e->getMessage());
-        return $results;
     }
-    $draw = draw ($r['draw_closed']);
-
-
-    try {
-    }
-    catch (\mysqli_sql_exception $e) {
-        error_log ($e->getMessage());
-        return $winners;
-    }
-    if (!count($winners['wins'])) {
-        return $winners;
-    }
-    $prizes             = draw($r['draw_closed'])->prizes;
-    $q = "
-      SELECT
-        `prize_level`
-       ,`number`
-      FROM `$rdb`.`blotto_result` AS `r`
-      JOIN `blotto_prize` AS `p`
-        ON `p
-      WHERE `draw_closed`='$draw_closed'
-      ORDER BY `prize_level`,`number`
-    ";
-    try {
-        $rs = connect()->query ($q);
-    }
-    catch (\mysqli_sql_exception $e) {
-        error_log ('www_winners(): '.$e->getMessage());
-        return $winners;
-    }
-    while ($r=$rs->fetch_assoc()) {
-        foreach ($prizes as $p) {
-            if ($p['level_method']=='RAFF') {
-                continue;
-            }
-            if ($p['level']!=$r['prize_level']) {
-                continue;
-            }
-            if (array_key_exists($r['number'],$results)) {
-                continue;
-            }
-            $results[$r['number']] = $p;
-        }
-    }
-    foreach ($results as $n=>$r) {
-        array_push ($winners['results'],[$r['name'],$n]);
-    }
-    return $winners;
+    return $results;
 }
 
 function yes_or_no ($loose_value,$y=true,$n=false) {
