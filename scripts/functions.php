@@ -4534,13 +4534,16 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
     return true;
 }
 
-function www_winners ($format='Y-m-d') {
+function www_winners ($format='') {
     // Provide latest winners for external API requests
     $zo = connect ();
     $results = new \stdClass ();
     $results->number_matches = [];
     $results->winners = [];
     $level = [];
+    if (!$format) {
+        $format = 'Y-m-d';
+    }
     if (!$zo) {
         return $results;
     }
