@@ -4560,7 +4560,7 @@ function www_winners ($format='Y-m-d') {
             $results->date      = $dt->format ($format);
             $q = "
               SELECT
-                `w`.*
+                *
               FROM `Wins`
               WHERE `draw_closed`='{$r['draw_closed']}'
               ORDER BY `winnings` DESC, `ticket_number`
