@@ -63,7 +63,7 @@ foreach ($close_dates as $date) {
     $q = "
       SELECT
         `p`.`client_ref`
-       ,`p`.`opening_balance` + `c_sum`.`PaidTotal` - IFNULL(`e_summary`.`paid_out`,0) AS `balance`
+       ,`p`.`opening_balance` + IFNULL(`c_sum`.`PaidTotal`,0) - IFNULL(`e_summary`.`paid_out`,0) AS `balance`
        ,GROUP_CONCAT(DISTINCT(`tk`.`number`)) AS `ticket_numbers`
 
 -- NEW INSURANCE BIT
@@ -78,7 +78,7 @@ foreach ($close_dates as $date) {
         GROUP BY `e`.`client_ref`
       ) AS `e_summary`
         ON `e_summary`.`client_ref`=`p`.`client_ref`
-      JOIN (
+      LEFT JOIN (
           SELECT
             SUM(`PaidAmount`) AS `PaidTotal`
            ,`ClientRef`
