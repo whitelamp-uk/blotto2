@@ -41,6 +41,13 @@
             border-collapse:    collapse;
             border:             1px solid #4a2100;
         }
+        #lottery-results-latest-table {
+              /*
+                Hide the number-match results table
+                if the game has only raffle prizes
+              */
+/*            display:            none; */
+        }
         #lottery-results-latest-table:first-of-type,
         #lottery-winners-latest-table:first-of-type {
             margin-top:         0;
@@ -60,6 +67,9 @@
         }
         #lottery-results-latest-table thead,
         #lottery-winners-latest-table thead {
+              /*
+                Hide the table column headings
+              */
 /*            display:            none; */
         }
         #lottery-results-latest-table thead th,
@@ -87,13 +97,12 @@
         * For example 2022-04-30 in the format "jS M Y" becomes:
           30th Apr 2022
         * This code generates two tables:
-          * #lottery-results-latest shows number-match results
-            which should be hidden if your game only has raffle
+          * #lottery-results-latest gives number-match results
+            Use CSS displaywhich should be hidden if your game only has raffle
             prizes
-            Shown as prize name, number drawn
-          * #lottery-winners-latest shows winning tickets for
-            any kind of monetary win
-            Shown as number drawn, prize name
+            Shows: prize name, number drawn
+          * #lottery-winners-latest gives winning tickets
+            Shows: number drawn, prize name
       -->
       <div id="lottery-winners-latest" data-dateformat="jS M Y"></div>
 
