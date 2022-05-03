@@ -300,7 +300,14 @@ try {
             }
             if (!$sx) {
                 fwrite (STDERR,"Could not interpret system exclusive column = '{$s['SysEx']}'\n");
-                exit (117);
+                exit (116);
+            }
+            if (property_exists($sx,'balance')) {
+                if (!preg_match('<^[0-9]+$>',$sx->balance) && !preg_match('<^[0-9]*\.[0-9]+$>',$sx->balance)) {
+                    fwrite (STDERR,"Could not interpret sysex->balance = '{$sx->balance}'\n");
+                    exit (116);
+                }
+                $bl = round ($sx->balance,2);
             }
             if (property_exists($sx,'cc_agent_ref')) {
                 $ca = esc ($sx->cc_agent_ref);
@@ -308,12 +315,15 @@ try {
             if (property_exists($sx,'cc_ref')) {
                 $cv = esc ($sx->cc_ref);
             }
-            if (property_exists($sx,'balance')) {
-                if (!preg_match('<^[0-9]+$>',$sx->balance) && !preg_match('<^[0-9]*\.[0-9]+$>',$sx->balance)) {
-                    fwrite (STDERR,"Could not interpret sysex->balance = '{$sx->balance}'\n");
-                    exit (117);
+            if (property_exists($sx,'first_draw_close')) {
+                try {
+                    $dc = new \DateTime ($sx->first_draw_close);
+                    $dc = $dc->format ('Y-m-d');
                 }
-                $bl = round ($sx->balance,2);
+                catch (\Exception $e) {
+                    fwrite (STDERR,"Could not interpret sysex->first_draw_close = '{$sx->first_draw_close}'\n");
+                    exit (116);
+                }
             }
         }
         $cr         = esc ($s['ClientRef']);
@@ -359,7 +369,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (118);
+    exit (117);
 }
 
 echo "-- COUNT: $count supporters from $ccc --\n\n";
@@ -381,7 +391,7 @@ if (!$count) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (119);
+        exit (118);
     }
 }
 
