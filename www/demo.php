@@ -32,7 +32,7 @@
       -->
       <script defer src="https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/winners.js'); ?>"></script>
       <style>
-        /* WINNER API OPTIONAL CSS
+        /* Optional CSS */
         #lottery-results-latest-table,
         #lottery-winners-latest-table {
             margin-top:         1em;
@@ -106,8 +106,8 @@
       <h4 id="lottery-signup-heading">Get one-off payment lottery tickets</h4>
 
 <!-- 2. TICKETS ONLINE -->
-
       <style>
+        /* Example CSS */
         #lottery-signup-heading {
             position: absolute;
             left: 18em;
