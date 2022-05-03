@@ -120,20 +120,26 @@
 <!-- 2. TICKETS ONLINE -->
       <style>
         /* Example CSS */
+        :root {
+            /* Move the sign-up form to the right by a certain amount */
+            --lottery-results-latest-left:      18em;
+            /* Move the sign-up form down by a certain amount */
+            --lottery-results-latest-top:       2em;
+        }
         #lottery-signup-heading {
             position: absolute;
-            left: 18em;
+            left: var(--lottery-results-latest-left);
             top: 0em;
-            width: calc(100vw - 18em);
+            width: calc(100vw - var(--lottery-results-latest-left));
             margin: 0;
         }            
         #lottery-signup {
             position: absolute;
             box-sizing: border-box;
-            left: 18em;
-            top: 2em;
-            width: calc(100vw - 18em);
-            height: calc(100vh - 10em);
+            left: var(--lottery-results-latest-left);
+            top: var(--lottery-results-latest-top);
+            width: calc(100vw - var(--lottery-results-latest-left));
+            height: calc(100vh - var(--lottery-results-latest-top));
             border-style: none;
             overflow-x: auto;
             overflow-y: scroll;
