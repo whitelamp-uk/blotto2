@@ -36,7 +36,7 @@
         #lottery-results-latest-table,
         #lottery-winners-latest-table {
             margin-top:         1em;
-            min-width:          15em;
+            min-width:          18em;
             table-layout:       fixed;
             border-collapse:    collapse;
             border:             1px solid #4a2100;
