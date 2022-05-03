@@ -62,6 +62,10 @@
         #lottery-winners-latest-table thead {
 /*            display:            none; */
         }
+        #lottery-results-latest-table thead th,
+        #lottery-winners-latest-table thead th {
+            text-align:         left;
+        }
         #lottery-results-latest-table tbody tr:nth-child(odd),
         #lottery-winners-latest-table tbody tr:nth-child(odd) {
             background-color:   #f7f7f7;
