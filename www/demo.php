@@ -130,7 +130,7 @@
             position: absolute;
             left: var(--lottery-results-latest-left);
             top: 0em;
-            width: calc(100vw - var(--lottery-results-latest-left) - 2em);
+            width: calc(100vw - 1em var(--lottery-results-latest-left));
             margin: 0;
         }            
         #lottery-signup {
@@ -139,7 +139,7 @@
             left: var(--lottery-results-latest-left);
             top: var(--lottery-results-latest-top);
             margin: 0;
-            width: calc(100vw - var(--lottery-results-latest-left));
+            width: calc(100vw - 1em - var(--lottery-results-latest-left));
             height: calc(100vh - var(--lottery-results-latest-top));
             border-style: none;
             border-width: 0;
