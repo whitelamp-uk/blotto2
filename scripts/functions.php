@@ -4561,19 +4561,6 @@ function www_winners ($format='') {
         $rs = connect()->query ($q);
         $r = $rs->fetch_assoc ();
         if ($r) {
-            $dt                 = new DateTime ($r['drawn']);
-            $results->date      = $dt->format ($format);
-            $q = "
-              SELECT
-                *
-              FROM `Wins`
-              WHERE `draw_closed`='{$r['draw_closed']}'
-              ORDER BY `winnings` DESC, `ticket_number`
-            ";
-            $ws = connect()->query ($q);
-            while ($w=$ws->fetch_assoc()) {
-                $results->winners[] = [$w['ticket_number'],$w['winnings']];
-            }
             $draw = draw ($r['draw_closed']);
             // Get the lowest level for each group
             foreach ($draw->prizes as $p) {
@@ -4593,6 +4580,19 @@ function www_winners ($format='') {
                         $results->number_matches[] = [$p['name'],$p['results'][0]];
                     }
                 }
+            }
+            $dt                 = new DateTime ($r['drawn']);
+            $results->date      = $dt->format ($format);
+            $q = "
+              SELECT
+                *
+              FROM `Wins`
+              WHERE `draw_closed`='{$r['draw_closed']}'
+              ORDER BY `winnings` DESC, `ticket_number`
+            ";
+            $ws = connect()->query ($q);
+            while ($w=$ws->fetch_assoc()) {
+                $results->winners[] = [$w['ticket_number'],$w['prize']];
             }
         }
         else {
