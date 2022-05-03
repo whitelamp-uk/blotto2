@@ -1423,11 +1423,13 @@ function invoice_game ($draw_closed_date,$output=true) {
             $letters_anl,
             loading_fee ($letters_anl)
         ];
-        $invoice->items[] = [
-            "Advanced notification letters",
-            $letters_anl,
-            number_format (BLOTTO_FEE_ANL/100,2,'.','')
-        ];
+        if (defined('BLOTTO_STANNP_TPL_ANL') && BLOTTO_STANNP_TPL_ANL) {
+            $invoice->items[] = [
+                "Advanced notification letters",
+                $letters_anl,
+                number_format (BLOTTO_FEE_ANL/100,2,'.','')
+            ];
+        }
         $invoice->items[] = [
             "Winner letters",
             $letters_win,
