@@ -60,7 +60,7 @@
         }
         #lottery-results-latest-table thead,
         #lottery-winners-latest-table thead {
-            display:            none;
+/*            display:            none; */
         }
         #lottery-results-latest-table tbody tr:nth-child(odd),
         #lottery-winners-latest-table tbody tr:nth-child(odd) {
@@ -75,7 +75,6 @@
         #lottery-winners-latest-table thead th:nth-child(2),
         #lottery-winners-latest-table tbody td:nth-child(2) {
           text-align: right;
-        }
         }
       </style>
       <!--
