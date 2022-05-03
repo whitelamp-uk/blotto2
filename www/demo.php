@@ -122,7 +122,7 @@
         /* Example CSS */
         :root {
             /* Move the sign-up form to the right by a certain amount */
-            --lottery-results-latest-left:      18em;
+            --lottery-results-latest-left:      24em;
             /* Move the sign-up form down by a certain amount */
             --lottery-results-latest-top:       2em;
         }
