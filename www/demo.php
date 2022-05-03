@@ -130,7 +130,7 @@
             position: absolute;
             left: var(--lottery-results-latest-left);
             top: 0em;
-            width: calc(100vw - 1em var(--lottery-results-latest-left));
+            width: calc(100vw - 1em - var(--lottery-results-latest-left));
             margin: 0;
         }            
         #lottery-signup {
