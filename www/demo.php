@@ -115,7 +115,7 @@
 
 
 
-      <h4 id="lottery-signup-heading">Get one-off payment lottery tickets</h4>
+      <h4 id="lottery-signup-heading">Get one-off-payment lottery tickets</h4>
 
 <!-- 2. TICKETS ONLINE -->
       <style>
@@ -130,7 +130,7 @@
             position: absolute;
             left: var(--lottery-results-latest-left);
             top: 0em;
-            width: calc(100vw - var(--lottery-results-latest-left));
+            width: calc(100vw - var(--lottery-results-latest-left) - 2em);
             margin: 0;
         }            
         #lottery-signup {
@@ -138,9 +138,11 @@
             box-sizing: border-box;
             left: var(--lottery-results-latest-left);
             top: var(--lottery-results-latest-top);
+            margin: 0;
             width: calc(100vw - var(--lottery-results-latest-left));
             height: calc(100vh - var(--lottery-results-latest-top));
             border-style: none;
+            border-width: 0;
             overflow-x: auto;
             overflow-y: scroll;
         }
