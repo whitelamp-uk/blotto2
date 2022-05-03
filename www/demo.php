@@ -70,9 +70,12 @@
         #lottery-winners-latest-table tbody tr:nth-child(even) {
             background-color:   #eeeeee;
         }
+        #lottery-results-latest-table thead th:nth-child(2),
         #lottery-results-latest-table tbody td:nth-child(2),
+        #lottery-winners-latest-table thead th:nth-child(2),
         #lottery-winners-latest-table tbody td:nth-child(2) {
           text-align: right;
+        }
         }
       </style>
       <!--
