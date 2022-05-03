@@ -74,9 +74,6 @@
         #lottery-winners-latest-table tbody td:nth-child(2) {
           text-align: right;
         }
-        #lottery-winners-latest-table tbody td:nth-child(2):before {
-          content: "£";
-        }
       </style>
       <!--
         * The full list of date format characters:
