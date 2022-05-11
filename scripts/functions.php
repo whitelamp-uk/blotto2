@@ -3370,7 +3370,7 @@ function statement_serve ($file) {
     echo file_get_contents (BLOTTO_DIR_STATEMENT.'/'.$file);
 }
 
-function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false) {
+function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false,$classes=false) {
     // TODO: these inputs are now a mess and should become an object, $table
     if ($output) {
         require __DIR__.'/table.php';
