@@ -4587,7 +4587,11 @@ function www_winners ($format='') {
                         $results->classes->number_matches[] = preg_replace (
                             '<[^A-z0-9\-]>',
                             '',
-                            str_replace (' ','-',$p['name'])
+                            str_replace (
+                                ' ',
+                                '-',
+                                strtolower ($p['name'])
+                            )
                         );
                     }
                 }
@@ -4610,7 +4614,11 @@ function www_winners ($format='') {
                 $results->classes->winners[] = preg_replace (
                     '<[^A-z0-9\-]>',
                     '',
-                    str_replace (' ','-',$w['prize'])
+                    str_replace (
+                        ' ',
+                        '-',
+                        strtolower ($w['prize'])
+                    )
                 );
             }
         }
