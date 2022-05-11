@@ -4542,6 +4542,9 @@ function www_winners ($format='') {
     $results = new \stdClass ();
     $results->number_matches = [];
     $results->winners = [];
+    $results->classes = new \stdClass ();
+    $results->classes->number_matches = [];
+    $results->classes->winners = [];
     $level = [];
     if (!$format) {
         $format = 'Y-m-d';
@@ -4577,7 +4580,15 @@ function www_winners ($format='') {
             foreach ($draw->prizes as $p) {
                 if ($p['level_method']!='RAFF') {
                     if ($p['level']==$level[$p['group']]) {
-                        $results->number_matches[] = [$p['name'],$p['results'][0]];
+                        $results->number_matches[] = [
+                            $p['name'],
+                            $p['results'][0]
+                        ];
+                        $results->classes->number_matches[] = preg_replace (
+                            '<[^A-z0-9\-]>',
+                            '',
+                            str_replace (' ','-',$p['name'])
+                        );
                     }
                 }
             }
@@ -4592,7 +4603,15 @@ function www_winners ($format='') {
             ";
             $ws = connect()->query ($q);
             while ($w=$ws->fetch_assoc()) {
-                $results->winners[] = [$w['ticket_number'],$w['prize']];
+                $results->winners[] = [
+                    $w['ticket_number'],
+                    $w['prize']
+                ];
+                $results->classes->winners[] = preg_replace (
+                    '<[^A-z0-9\-]>',
+                    '',
+                    str_replace (' ','-',$w['prize'])
+                );
             }
         }
         else {

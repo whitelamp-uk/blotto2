@@ -15,7 +15,7 @@
 <?php if($data): ?>
   <tbody>
 <?php     foreach ($data as $i=>$row): ?>
-    <tr<?php if (is_array($classes) && array_key_exists($i,$classes)): ?> class="<?php echo htmlspecialchars($classes[$i]); ?>"<?php endif; ?>>
+    <tr <?php if (is_array($classes) && array_key_exists($i,$classes)): ?> class="<?php echo htmlspecialchars($classes[$i]); ?>" <?php endif; ?> >
 <?php         foreach ($row as $cell): ?>
       <td><?php echo htmlspecialchars($cell); ?></td>
 <?php         endforeach; ?>
