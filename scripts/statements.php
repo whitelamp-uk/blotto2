@@ -73,32 +73,32 @@ try {
     while ($day->format('Y-m-d')>=$first) {
         // From yesterday back to $first
         $day->sub (new \DateInterval('P1D'));
-fwrite (STDERR,"--------\n".$day->format('Y-m-d'))."\n--------\n";
+//fwrite (STDERR,"--------\n".$day->format('Y-m-d'))."\n--------\n";
         foreach ($statements as $s) {
-fwrite (STDERR,$s['filename']);
+//fwrite (STDERR,$s['filename']);
             // Each statement this end day
             $s['to'] = $day->format ('Y-m-d');
             $start = new \DateTime ($s['to']);
             $start->sub (new \DateInterval($s['interval']));
             $start->add (new \DateInterval('P1D'));
             $s['from'] = $start->format ('Y-m-d');
-fwrite (STDERR,' from:'.$s['from'].' to: '.$s['to']);
+//fwrite (STDERR,' from:'.$s['from'].' to: '.$s['to']);
             $s['from_formatted'] = false;
             if (strlen($s['format'])) {
                 $s['from_formatted'] = $start->format ($s['format']);
             }
             if (!strlen($s['format'])) {
-fwrite (STDERR,' no date matching constraint ');
+//fwrite (STDERR,' no date matching constraint ');
             }
             else {
-fwrite (STDERR,$s['from_formatted'].' == '.$s['start_value'].' ? ');
+//fwrite (STDERR,$s['from_formatted'].' == '.$s['start_value'].' ? ');
             }
             if (!strlen($s['format']) || $s['from_formatted']==$s['start_value']) {
                 // Start date matches the schedule
                 if ($s['from']<$first) {
                     $s['from'] = $first;
                 }
-fwrite (STDERR,' from:'.$s['from']." to:".$s['to']);
+//fwrite (STDERR,' from:'.$s['from']." to:".$s['to']);
                 $file = str_replace('{{d}}',$s['to'],$s['filename']);
                 $file = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
                 $file = BLOTTO_DIR_STATEMENT.'/'.$file;
@@ -108,9 +108,9 @@ fwrite (STDERR,' from:'.$s['from']." to:".$s['to']);
                 }
             }
             else {
-fwrite (STDERR,' did not match date constraint');
+//fwrite (STDERR,' did not match date constraint');
             }
-fwrite (STDERR,"\n");
+//fwrite (STDERR,"\n");
         }
     }
     foreach ($writes as $file=>$w) {
