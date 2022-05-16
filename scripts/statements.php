@@ -70,33 +70,35 @@ catch (\mysqli_sql_exception $e) {
 }
 
 try {
-    while ($day->format('Y-m-d')>=$first) {
-        // From yesterday back to $first
+    $count = 0;
+    while ($count<=366 || $day->format('Y-m-d')>=$first) {
+        // From yesterday back to $first or a at least a year whichever is earlier
+        $count++;
         $day->sub (new \DateInterval('P1D'));
+//fwrite (STDERR,"--------\n".$day->format('Y-m-d'))."\n--------\n";
         foreach ($statements as $s) {
             // Each statement this end day
             $s['to'] = $day->format ('Y-m-d');
             $start = new \DateTime ($s['to']);
             $start->sub (new \DateInterval($s['interval']));
             $start->add (new \DateInterval('P1D'));
-//echo $s['format'].' == '.$s['start_value'].' ? ';
+//fwrite (STDERR,$s['format'].' == '.$s['start_value'].' ? ');
             if (!strlen($s['format']) || $start->format($s['format'])==$s['start_value']) {
                 // Start date matches the schedule
                 $s['from'] = $start->format ('Y-m-d');
                 if ($s['from']<$first) {
                     $s['from'] = $first;
                 }
-//echo $s['from']." -- ".$s['to']." ";
+//fwrite (STDERR,$s['from']." -- ".$s['to']." ");
                 $file = str_replace('{{d}}',$s['to'],$s['filename']);
                 $file = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
                 $file = BLOTTO_DIR_STATEMENT.'/'.$file;
                 if (!array_key_exists($file,$writes)) {
                     // First (most recent) file wins
                     $writes[$file] = $s;
-//echo $file;
                 }
             }
-//echo "\n";
+//fwrite (STDERR,"\n");
         }
     }
     foreach ($writes as $file=>$w) {
