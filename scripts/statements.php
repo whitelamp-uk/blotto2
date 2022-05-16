@@ -70,10 +70,8 @@ catch (\mysqli_sql_exception $e) {
 }
 
 try {
-    $count = 0;
-    while ($count<=366 || $day->format('Y-m-d')>=$first) {
-        // From yesterday back to $first or a at least a year whichever is earlier
-        $count++;
+    while ($day->format('Y-m-d')>=$first) {
+        // From yesterday back to $first
         $day->sub (new \DateInterval('P1D'));
 //fwrite (STDERR,"--------\n".$day->format('Y-m-d'))."\n--------\n";
         foreach ($statements as $s) {
