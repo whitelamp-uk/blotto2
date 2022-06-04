@@ -61,10 +61,6 @@
   text-align: right;
 }
 
-#lottery-winners-latest-table tbody td:nth-child(2):before {
-  content: "£";
-}
-
     </style>
 
   </head>
