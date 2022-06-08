@@ -41,6 +41,13 @@
     font-size:          0.8em;
 }
 
+#lottery-results-latest-table th:first-of-type,
+#lottery-winners-latest-table th:first-of-type,
+#lottery-results-latest-table td:first-of-type,
+#lottery-winners-latest-table td:first-of-type {
+    width:              50%;
+}
+
 #lottery-results-latest-table thead,
 #lottery-winners-latest-table thead {
     display:            none;
