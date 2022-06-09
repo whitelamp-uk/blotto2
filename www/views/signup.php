@@ -294,6 +294,8 @@ catch (\Exception $e) {
 
         <p>For GamCare telephone <a href="tel:08088020133">0808 8020 133</a></p>
 
+        <p>To self-exclude, please email: <a href="mailto:<?php echo htmlspecialchars (BLOTTO_SELFEX_EMAIL); ?>"><?php echo htmlspecialchars (BLOTTO_SELFEX_EMAIL); ?></a></p>
+
       </fieldset>
 
       <fieldset>

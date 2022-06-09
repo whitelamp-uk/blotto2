@@ -117,6 +117,7 @@ define ( 'DATA8_USERNAME',          ''          );
 define ( 'DATA8_PASSWORD',          ''          );
 define ( 'DATA8_COUNTRY',           'GB'        );
 define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
+define ( 'BLOTTO_SELFEX_EMAIL',     'SelfExclusionYLH@MyHelpDomain.com' );
 
 
 // Stannp snail-mail service
