@@ -2906,7 +2906,7 @@ function stannp_mail_anls ( ) {
         `a`.*
       FROM `ANLs` AS `a`
       JOIN `blotto_player` AS `p`
-        ON `p`.`letter_batch_ref` IS NULL
+        ON (`p`.`letter_batch_ref` IS NULL OR `p`.`letter_batch_ref`='')
        AND `p`.`client_ref`=`a`.`ClientRef`
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
@@ -2966,7 +2966,7 @@ function stannp_mail_wins ( ) {
         ON `e`.`draw_closed`=`w`.`draw_closed`
        AND `e`.`ticket_number`=`w`.`ticket_number`
       JOIN `blotto_winner` AS `bw`
-        ON `bw`.`letter_batch_ref` IS NULL
+        ON (`bw`.`letter_batch_ref` IS NULL OR `bw`.`letter_batch_ref`='')
        AND `bw`.`entry_id`=`e`.`id`
       WHERE `w`.`draw_closed`>='$earliest'
       ORDER BY `w`.`draw_closed`,`w`.`winnings`,`ticket_number`
@@ -3059,7 +3059,8 @@ function stannp_status_anls ($live=false) {
         ON `p`.`client_ref`=`a`.`ClientRef`
        AND `a`.`tickets_issued`>='$earliest'
       WHERE `p`.`letter_batch_ref` IS NOT NULL
-        AND (`p`.`letter_status`!='delivered' OR `p`.`letter_status` IS NULL)
+        AND `p`.`letter_batch_ref`!=''
+        AND (`p`.`letter_status`!='delivered' OR `p`.`letter_status` IS NULL OR `p`.`letter_status`='')
       ORDER BY `batch`
     ";
 //    echo $q;
@@ -3127,7 +3128,8 @@ function stannp_status_wins ($live=false) {
         ON `e`.`id`=`w`.`entry_id`
        AND `e`.`draw_closed`>='$earliest'
       WHERE `w`.`letter_batch_ref` IS NOT NULL
-        AND (`w`.`letter_status`!='delivered' OR `w`.`letter_status` IS NULL)
+        AND `w`.`letter_batch_ref`!=''
+        AND (`w`.`letter_status`!='delivered' OR `w`.`letter_status` IS NULL OR `w`.`letter_status`='')
       ORDER BY `batch`
       ;
     ";
