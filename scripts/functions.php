@@ -1430,11 +1430,13 @@ function invoice_game ($draw_closed_date,$output=true) {
                 number_format (BLOTTO_FEE_ANL/100,2,'.','')
             ];
         }
-        $invoice->items[] = [
-            "Winner letters",
-            $letters_win,
-            number_format (BLOTTO_FEE_WL/100,2,'.','')
-        ];
+        if (defined('BLOTTO_STANNP_TPL_WIN') && BLOTTO_STANNP_TPL_WIN) {
+            $invoice->items[] = [
+                "Winner letters",
+                $letters_win,
+                number_format (BLOTTO_FEE_WL/100,2,'.','')
+            ];
+        }
         $invoice->items[] = [
             "Email services",
             1,
@@ -3113,7 +3115,7 @@ function stannp_status_anls ($live=false) {
 }
 
 function stannp_status_wins ($live=false) {
-    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $earliest = BLOTTO_STANNP_FROM_WIN;
     $batches = [];
     $c = connect (BLOTTO_MAKE_DB);
     // Get winners
