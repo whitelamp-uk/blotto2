@@ -1390,8 +1390,8 @@ BEGIN
      ,`s`.`canvas_ref`
      ,`s`.`original_client_ref` AS `client_ref_orig`
      ,`p`.`client_ref`
-     ,COUNT(`t`.`number`) AS `tickets`
-     ,GROUP_CONCAT(`t`.`number` SEPARATOR ', ') AS `ticket_numbers`
+     ,COUNT(DISTINCT `t`.`number`) AS `tickets`
+     ,GROUP_CONCAT(DISTINCT `t`.`number` SEPARATOR ', ') AS `ticket_numbers`
      ,`c`.`title`
      ,`c`.`name_first`
      ,`c`.`name_last`
