@@ -1004,7 +1004,7 @@ BEGIN
      ,IFNULL(`d`.`PaymentsCollected`,0) AS `PaymentsCollected`
      ,IFNULL(`d`.`AmountCollected`,0.00) AS `AmountCollected`
      ,IFNULL(`d`.`plays`,0) AS `plays`
-     ,IFNULL(`d`.`balance`,0) AS `balance`
+     ,`p`.`opening_balance` + IFNULL(`d`.`balance`,0) AS `balance`
     FROM `blotto_player` AS `p`
     LEFT JOIN (
       SELECT
