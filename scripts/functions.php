@@ -3217,10 +3217,12 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
        ,`game_is`.`draws`
        ,`game_is`.`paid_out`
        ,`game_is`.`winners`
+       ,SUM(IFNULL(`game_is`.`winners_posted`,0)) AS `winners_posted`
        ,`supporter`.`starting_balances`
        ,IFNULL(`pre`.`collected`,0) AS `collections_before`
        ,IFNULL(`post`.`collected`,0) AS `collections_during`
        ,`anl`.`quantity` AS `anls`
+       ,SUM(IFNULL(`anl`.`posted`,0)) AS `anls_posted`
       FROM (
         SELECT
           COUNT(`id`) AS `plays`
@@ -3235,12 +3237,14 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
          ,COUNT(`e`.`id`) AS `plays`
          ,SUM(`w`.`winnings`) AS `paid_out`
          ,SUM(`w`.`winners`) AS `winners`
+         ,SUM(`w`.`posted`) AS `winners_posted`
         FROM `blotto_entry` AS `e`
         LEFT JOIN (
           SELECT
             `entry_id`
            ,SUM(`amount`) AS `winnings`
            ,COUNT(`id`) AS `winners`
+           ,SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0) AS `posted`
           FROM `blotto_winner`
           GROUP BY `entry_id`
         ) AS `w`
@@ -3277,6 +3281,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
       LEFT JOIN (
         SELECT
           COUNT(*) AS `quantity`
+         ,SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0) AS `posted`
         FROM `ANLs`
         WHERE `tickets_issued`>='$day_first'
           AND `tickets_issued`<='$day_last'
