@@ -1397,7 +1397,7 @@ function invoice_game ($draw_closed_date,$output=true) {
             $qs = "
               SELECT
                 COUNT(`ClientRef`) AS `loaded`
-               ,IFNULL(SUM(LENGTH(`letter_batch_ref`)>0),0) AS `letters_anl`
+               ,SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0) AS `letters_anl`
               FROM `ANLs`
               WHERE `tickets_issued`<='$draw_closed_date'
                 AND `tickets_issued`>'$previous'
@@ -1411,6 +1411,7 @@ function invoice_game ($draw_closed_date,$output=true) {
                 COUNT(`ticket_number`) AS `letters_win`
               FROM `Wins`
               WHERE `draw_closed`='$draw_closed_date'
+                AND LENGTH(IFNULL(`letter_batch_ref`,''))>0
             ";
             $letters_win    = $zo->query ($qs);
             $letters_win    = $letters_win->fetch_assoc ();
@@ -1425,20 +1426,16 @@ function invoice_game ($draw_closed_date,$output=true) {
             $loaded,
             loading_fee ($loaded)
         ];
-        if (defined('BLOTTO_STANNP_TPL_ANL') && BLOTTO_STANNP_TPL_ANL) {
-            $invoice->items[] = [
-                "Advanced notification letters",
-                $letters_anl,
-                number_format (BLOTTO_FEE_ANL/100,2,'.','')
-            ];
-        }
-        if (defined('BLOTTO_STANNP_TPL_WIN') && BLOTTO_STANNP_TPL_WIN) {
-            $invoice->items[] = [
-                "Winner letters",
-                $letters_win,
-                number_format (BLOTTO_FEE_WL/100,2,'.','')
-            ];
-        }
+        $invoice->items[] = [
+            "Advanced notification letters",
+            $letters_anl,
+            number_format (BLOTTO_FEE_ANL/100,2,'.','')
+        ];
+        $invoice->items[] = [
+            "Winner letters",
+            $letters_win,
+            number_format (BLOTTO_FEE_WL/100,2,'.','')
+        ];
         $invoice->items[] = [
             "Email services",
             1,
