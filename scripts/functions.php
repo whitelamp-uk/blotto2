@@ -1396,14 +1396,16 @@ function invoice_game ($draw_closed_date,$output=true) {
             $previous       = $previous['previous'];
             $qs = "
               SELECT
-                COUNT(`ClientRef`) AS `letters_anl`
+                COUNT(`ClientRef`) AS `loaded`
+               ,IFNULL(SUM(LENGTH(`letter_batch_ref`)>0),0) AS `letters_anl`
               FROM `ANLs`
               WHERE `tickets_issued`<='$draw_closed_date'
                 AND `tickets_issued`>'$previous'
             ";
-            $letters_anl    = $zo->query ($qs);
-            $letters_anl    = $letters_anl->fetch_assoc ();
-            $letters_anl    = $letters_anl['letters_anl'];
+            $loaded         = $zo->query ($qs);
+            $loaded         = $loaded->fetch_assoc ();
+            $loaded         = $loaded['loaded'];
+            $letters_anl    = $loaded['letters_anl'];
             $qs = "
               SELECT
                 COUNT(`ticket_number`) AS `letters_win`
@@ -1420,8 +1422,8 @@ function invoice_game ($draw_closed_date,$output=true) {
         }
         $invoice->items[] = [
             "Loading fees",
-            $letters_anl,
-            loading_fee ($letters_anl)
+            $loaded,
+            loading_fee ($loaded)
         ];
         if (defined('BLOTTO_STANNP_TPL_ANL') && BLOTTO_STANNP_TPL_ANL) {
             $invoice->items[] = [
