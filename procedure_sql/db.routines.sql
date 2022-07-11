@@ -298,7 +298,7 @@ BEGIN
   ;
   SET @balOpen      = ( @starting + @allCollected - @collections) - ( @allPlayed - @played )
   ;
-  SET @balClose     = @allCollected - @AllPlayed
+  SET @balClose     = @starting + @allCollected - @AllPlayed
   ;
   SET @payout       = (
     SELECT
