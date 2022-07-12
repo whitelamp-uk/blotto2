@@ -23,7 +23,7 @@ try {
             fwrite (STDERR,"Payment API file '$classfile' is not readable - aborting\n");
             exit (101);
         }
-        fwrite (STDERR,"Processing payment API class file: $classfile\n");
+        fwrite (STDERR,__FILE__.": processing payment API class file: $classfile\n");
         require $classfile;
         $class      = constant ($name.'_CLASS');
         if (!class_exists($class)) {
