@@ -93,6 +93,23 @@ function campaign_monitor ($key,$campaign_id,$to,$data) {
     );
 }
 
+function campaign_monitor_bounces ($time_from,$time_to) {
+    if (!class_exists('\CS_REST_Transactional_SmartEmail')) {
+        throw new \Exception ('Class \CS_REST_Transactional_SmartEmail not found');
+        return false;
+    }
+    $cm         = new \CS_REST_Transactional_SmartEmail (
+        $campaign_id,
+        ['api_key'=>$key]
+    );
+    return $cm->get_bounces_or_whatever (
+        [
+// ????
+        ],
+        'unchanged'
+    );
+}
+
 function cfg ( ) {
     global $argv;
     if (!array_key_exists(1,$argv)) {
@@ -1404,8 +1421,8 @@ function invoice_game ($draw_closed_date,$output=true) {
             ";
             $loaded         = $zo->query ($qs);
             $loaded         = $loaded->fetch_assoc ();
-            $loaded         = $loaded['loaded'];
             $letters_anl    = $loaded['letters_anl'];
+            $loaded         = $loaded['loaded'];
             $qs = "
               SELECT
                 COUNT(`ticket_number`) AS `letters_win`
