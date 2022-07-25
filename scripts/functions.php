@@ -2819,6 +2819,10 @@ function signup ($org,$s,$ccc,$cref,$first_draw_close) {
              ,`chances`={$s['quantity']}
           "
         );
+        $dob = "null";
+        if ($s['dob']) {
+            $dob = "'{$s['dob']}'";
+        }
         $c->query (
           "
             INSERT INTO `blotto_contact` SET
@@ -2835,7 +2839,7 @@ function signup ($org,$s,$ccc,$cref,$first_draw_close) {
              ,`town`='{$s['town']}'
              ,`county`='{$s['county']}'
              ,`postcode`='{$s['postcode']}'
-             ,`dob`='{$s['dob']}'
+             ,`dob`=$dob
              ,`p{$org['pref_nr_email']}`='{$s['pref_email']}'
              ,`p{$org['pref_nr_sms']}`='{$s['pref_sms']}'
              ,`p{$org['pref_nr_post']}`='{$s['pref_post']}'
@@ -3560,6 +3564,11 @@ function update ( ) {
             return '{ "error" : 107 }';
         }
         $fieldnames = fields ();
+        $dob = "null";
+        if ($fields['dob']) {
+            $dob = esc ($fields['dob']);
+            $dob = "'$dob'";
+        }
         $q = "
           UPDATE `Supporters`
           SET
@@ -3575,7 +3584,7 @@ function update ( ) {
            ,`town`='".esc($fields['town'])."'
            ,`county`='".esc($fields['county'])."'
            ,`postcode`='".esc($fields['postcode'])."'
-           ,`dob`='".esc($fields['dob'])."'
+           ,`dob`=$dob
         ";
         foreach ($fieldnames AS $f) {
             $l = $f->legend;
