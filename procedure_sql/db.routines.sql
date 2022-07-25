@@ -797,9 +797,9 @@ CREATE PROCEDURE `supporters` (
 BEGIN
   SET @CostPerPlay = {{BLOTTO_TICKET_PRICE}};
   -- Supporter data
-  DROP TABLE IF EXISTS `tmp_supporter`
+  DROP TABLE IF EXISTS `tmp_supporter_out`
   ;
-  CREATE TABLE `tmp_supporter` AS
+  CREATE TABLE `tmp_supporter_out` AS
     SELECT
       `s`.`id`
      ,`s`.`created`
@@ -980,7 +980,7 @@ BEGIN
     GROUP BY `s`.`id`,`d`.`ticket_number`
     ORDER BY `s`.`id`,`d`.`ticket_number`
   ;
-  ALTER TABLE `tmp_supporter`
+  ALTER TABLE `tmp_supporter_out`
   ADD PRIMARY KEY (`id`,`current_ticket_number`),
   CHANGE `FirstPayment` `FirstPayment` date NOT NULL AFTER `Name`,
   CHANGE `LastCreated` `LastCreated` date NOT NULL AFTER `FirstPayment`,
@@ -1156,7 +1156,7 @@ BEGIN
       FROM `tmp_player`
       GROUP BY `supporter_id`
     ) AS `p`
-    JOIN `tmp_supporter` AS `s`
+    JOIN `tmp_supporter_out` AS `s`
       ON `s`.`id`=`p`.`supporter_id`
     GROUP BY `s`.`id`,`s`.`current_ticket_number`
     ORDER BY `s`.`created`,`ccc`,`s`.`current_client_ref`,`s`.`current_ticket_number`

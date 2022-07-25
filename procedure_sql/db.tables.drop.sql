@@ -28,6 +28,9 @@ DROP TABLE IF EXISTS `tmp_player`
 DROP TABLE IF EXISTS `tmp_supporter`
 ;
 
+DROP TABLE IF EXISTS `tmp_supporter_out`
+;
+
 DROP TABLE IF EXISTS `tmp_updates_first_collect`
 ;
 
