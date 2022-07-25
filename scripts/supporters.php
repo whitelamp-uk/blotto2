@@ -346,6 +346,10 @@ try {
         $cn         = esc (trim($s['County']));
         $pc         = esc (trim($s['Postcode']));
         $cy         = esc (trim($s['Country']));
+        $db         = "null";
+        if (preg_match('<^[0-9]{4}-[0-9]{2}-[0-9]{2}$>',$s['DOB'])) {
+            $db     = "'{$s['DOB']}'";
+        }
         $ps         = explode (BLOTTO_PREFERENCES_SEP,trim($s['Preferences']));
         for ($i=0;$i<10;$i++) {
             if (array_key_exists($i,$ps)) {
@@ -362,8 +366,8 @@ try {
         echo "  (@sid,'$cr',$bl);\n\n";
         // First contact should not be `created` = timestamp of when this script runs
         // Rather it should be `created` = when supporter is notionally created
-        echo "INSERT INTO `blotto_contact` (`created`,`supporter_id`,`title`,`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`county`,`postcode`,`country`,`p0`,`p1`,`p2`,`p3`,`p4`,`p5`,`p6`,`p7`,`p8`,`p9`) VALUES\n";
-        echo "  ('$cd 03:00:00',@sid,'$tt','$nf','$nl','$em','$mb','$tl','$a1','$a2','$a3','$tn','$cn','$pc','$cy','$p0','$p1','$p2','$p3','$p4','$p5','$p6','$p7','$p8','$p9');\n\n";
+        echo "INSERT INTO `blotto_contact` (`created`,`supporter_id`,`title`,`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`county`,`postcode`,`country`,`dob`,`p0`,`p1`,`p2`,`p3`,`p4`,`p5`,`p6`,`p7`,`p8`,`p9`) VALUES\n";
+        echo "  ('$cd 03:00:00',@sid,'$tt','$nf','$nl','$em','$mb','$tl','$a1','$a2','$a3','$tn','$cn','$pc','$cy',$db,'$p0','$p1','$p2','$p3','$p4','$p5','$p6','$p7','$p8','$p9');\n\n";
         $count++;
     }
 }
