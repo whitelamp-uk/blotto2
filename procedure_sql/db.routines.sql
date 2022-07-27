@@ -43,44 +43,51 @@ USE `{{BLOTTO_MAKE_DB}}`
 ;
 
 
+-- REPLACED
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `activity`$$
-CREATE PROCEDURE `activity` (
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `activityEmail`$$
+CREATE PROCEDURE `activityEmail` (
 )
 BEGIN
     SELECT
-      'Repeat mobile number' AS `Analysis`
-    ;
-    SELECT
       SUBSTR(`supporter_first_mandate`,1,7) AS `month`
-     ,`mobile`
+     ,`email` AS `user`
      ,COUNT(DISTINCT `original_client_ref`) AS `supporters`
      ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
-     ,GROUP_CONCAT(DISTINCT `original_client_ref`) AS `client_refs`
-    FROM `Supporters`
-    WHERE `mobile`!=''
-      AND `supporter_first_mandate`!=''
-      AND `supporter_first_mandate`!='0000-00-00'
-    GROUP BY `month`,`mobile`
-    HAVING `supporters`>1
-    ORDER BY `month` DESC,`supporters` DESC,`mobile`
-  ;
-    SELECT
-      'Repeat email' AS `Analysis`
-    ;
-    SELECT
-      SUBSTR(`supporter_first_mandate`,1,7) AS `month`
-     ,`email`
-     ,COUNT(DISTINCT `original_client_ref`) AS `supporters`
-     ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
-     ,GROUP_CONCAT(DISTINCT `original_client_ref`) AS `client_refs`
+     ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
     FROM `Supporters`
     WHERE `email`!=''
       AND `supporter_first_mandate`!=''
       AND `supporter_first_mandate`!='0000-00-00'
-    GROUP BY `month`,`email`
+    GROUP BY `month`,`user`
     HAVING `supporters`>1
-    ORDER BY `month` DESC,`supporters` DESC,`email`
+    ORDER BY `month` DESC,`supporters` DESC,`user`
+  ;
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `activityMobile`$$
+CREATE PROCEDURE `activityMobile` (
+)
+BEGIN
+    SELECT
+      SUBSTR(`supporter_first_mandate`,1,7) AS `month`
+     ,1*REPLACE(`mobile`,'+','') AS `user`
+     ,COUNT(DISTINCT `original_client_ref`) AS `supporters`
+     ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
+     ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
+    FROM `Supporters`
+    WHERE `mobile`!=''
+      AND `supporter_first_mandate`!=''
+      AND `supporter_first_mandate`!='0000-00-00'
+    GROUP BY `month`,`user`
+    HAVING `supporters`>1
+    ORDER BY `month` DESC,`supporters` DESC,`user`
   ;
 END$$
 
