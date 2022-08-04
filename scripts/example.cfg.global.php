@@ -1,9 +1,9 @@
 <?php
 
-
 define ( 'BLOTTO_UN',               '****'              );
 define ( 'BLOTTO_PW',               '********'          );
 define ( 'BLOTTO_ADMIN_USER',       'blotto'            );
+define ( 'BLOTTO_ADMIN_IPS_CSV',    '31.125.150.68'     ); // Used to restrict certain processes invoked over the web
 define ( 'BLOTTO_ANONYMISER_DB',    'blotto_anonymiser' );
 define ( 'BLOTTO_CONFIG_DB',        'blotto_config'     );
 define ( 'BLOTTO_UPLOAD_MAX_MB',    4                   );
