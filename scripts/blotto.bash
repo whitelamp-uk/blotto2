@@ -603,7 +603,7 @@ then
 
 fi
 
-echo "34. Send winner letters to postal service"
+echo "33. Send winner letters to postal service"
 start=$SECONDS
 /usr/bin/php $prg $sw "$cfg" exec wins.php
 abort_on_error 33 $?
