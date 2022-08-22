@@ -1414,7 +1414,7 @@ function invoice_game ($draw_closed_date,$output=true) {
             $qs = "
               SELECT
                 COUNT(`ClientRef`) AS `loaded`
-               ,SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0) AS `letters_anl`
+               ,IFNULL(SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0),0) AS `letters_anl`
               FROM `ANLs`
               WHERE `tickets_issued`<='$draw_closed_date'
                 AND `tickets_issued`>'$previous'
@@ -1425,7 +1425,7 @@ function invoice_game ($draw_closed_date,$output=true) {
             $loaded         = $loaded['loaded'];
             $qs = "
               SELECT
-                COUNT(`ticket_number`) AS `letters_win`
+                IFNULL(COUNT(`ticket_number`),0) AS `letters_win`
               FROM `Wins`
               WHERE `draw_closed`='$draw_closed_date'
                 AND LENGTH(IFNULL(`letter_batch_ref`,''))>0
