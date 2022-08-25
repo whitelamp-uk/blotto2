@@ -43,11 +43,6 @@ USE `{{BLOTTO_MAKE_DB}}`
 ;
 
 
--- REPLACED
-DELIMITER $$
-DROP PROCEDURE IF EXISTS `activity`$$
-
-
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `activityEmail`$$
 CREATE PROCEDURE `activityEmail` (
@@ -56,7 +51,7 @@ BEGIN
     SELECT
       SUBSTR(`supporter_first_mandate`,1,7) AS `month`
      ,`email` AS `user`
-     ,COUNT(DISTINCT `original_client_ref`) AS `supporters`
+     ,COUNT(DISTINCT `original_client_ref`) AS `signups_in_month`
      ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
      ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
     FROM `Supporters`
@@ -64,8 +59,8 @@ BEGIN
       AND `supporter_first_mandate`!=''
       AND `supporter_first_mandate`!='0000-00-00'
     GROUP BY `month`,`user`
-    HAVING `supporters`>1
-    ORDER BY `month` DESC,`supporters` DESC,`user`
+    HAVING `signups_in_month`>1
+    ORDER BY `month` DESC,`signups_in_month` DESC,`user`
   ;
 END$$
 
@@ -78,7 +73,7 @@ BEGIN
     SELECT
       SUBSTR(`supporter_first_mandate`,1,7) AS `month`
      ,1*REPLACE(`mobile`,'+','') AS `user`
-     ,COUNT(DISTINCT `original_client_ref`) AS `supporters`
+     ,COUNT(DISTINCT `original_client_ref`) AS `signups_in_month`
      ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
      ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
     FROM `Supporters`
@@ -86,8 +81,30 @@ BEGIN
       AND `supporter_first_mandate`!=''
       AND `supporter_first_mandate`!='0000-00-00'
     GROUP BY `month`,`user`
-    HAVING `supporters`>1
-    ORDER BY `month` DESC,`supporters` DESC,`user`
+    HAVING `signups_in_month`>1
+    ORDER BY `month` DESC,`signups_in_month` DESC,`user`
+  ;
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `activityHouse`$$
+CREATE PROCEDURE `activityHouse` (
+)
+BEGIN
+    SELECT
+      SUBSTR(`supporter_first_mandate`,1,7) AS `month`
+     ,CONCAT(`postcode`,' ',`address_1`) AS `user`
+     ,COUNT(DISTINCT `original_client_ref`) AS `signups_in_month`
+     ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
+     ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
+    FROM `Supporters`
+    WHERE `postcode`!=''
+      AND `supporter_first_mandate`!=''
+      AND `supporter_first_mandate`!='0000-00-00'
+    GROUP BY `month`,`user`
+    HAVING `signups_in_month`>1
+    ORDER BY `month` DESC,`signups_in_month` DESC,`user`
   ;
 END$$
 
