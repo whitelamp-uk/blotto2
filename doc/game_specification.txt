@@ -73,7 +73,7 @@ Prize type
        This could mean something like "First prize is 30% of the draw revenue".
      * Free ticket prizes [blotto_prize.ticket_quantity,
        blotto_prize.ticket_num_of_draws]
-     * Non-monetary prizes such as "cuddly toy" or "supper with Evan Davies"
+     * Non-cash prizes such as "new Ford Ka", "cuddly toy" or "supper with Evan Davies"
 
 Raffle properties
 
