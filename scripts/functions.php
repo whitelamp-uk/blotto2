@@ -1367,28 +1367,28 @@ function invoice_custom ($inv,$output=true) {
 }
 
 function invoice_game ($draw_closed_date,$output=true) {
-    $code                   = strtoupper (BLOTTO_ORG_USER);
-    $org                    = org ();
-    $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
+    $code                       = strtoupper (BLOTTO_ORG_USER);
+    $org                        = org ();
+    $qs                         = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
     try {
-        $zo                 = connect (BLOTTO_MAKE_DB);
-        $date_draw          = $zo->query ($qs);
-        $date_draw          = $date_draw->fetch_assoc ();
-        $date_draw          = $date_draw['dt'];
+        $zo                     = connect (BLOTTO_MAKE_DB);
+        $date_draw              = $zo->query ($qs);
+        $date_draw              = $date_draw->fetch_assoc ();
+        $date_draw              = $date_draw['dt'];
     }
     catch (\mysqli_sql_exception $e) {
         throw new \Exception ($qs."\n".$e->getMessage());
         return false;
     }
-    $invoice                = new \stdClass ();
-    $invoice->html_title    = "Invoice LOT{$code}-{$date_draw}";
-    $invoice->html_table_id = "invoice-game";
-    $invoice->date          = $date_draw;
-    $invoice->reference     = "LOT{$code}-{$draw_closed_date}";
-    $invoice->address       = $org['invoice_address'];
-    $invoice->description   = "Payout for draw closing {$draw_closed_date}";
-    $invoice->items         = [];
-    $invoice->terms         = $org['invoice_terms_game'];
+    $invoice                    = new \stdClass ();
+    $invoice->html_title        = "Invoice LOT{$code}-{$date_draw}";
+    $invoice->html_table_id     = "invoice-game";
+    $invoice->date              = $date_draw;
+    $invoice->reference         = "LOT{$code}-{$draw_closed_date}";
+    $invoice->address           = $org['invoice_address'];
+    $invoice->description       = "Payout for draw closing {$draw_closed_date}";
+    $invoice->items             = [];
+    $invoice->terms             = $org['invoice_terms_game'];
     if ($invoice->terms) {
         try {
             $qs = "
@@ -1397,9 +1397,9 @@ function invoice_game ($draw_closed_date,$output=true) {
               FROM `blotto_entry`
               WHERE `draw_closed`='$draw_closed_date'
             ";
-            $tickets        = $zo->query ($qs);
-            $tickets        = $tickets->fetch_assoc ();
-            $tickets        = intval ($tickets['tickets']);
+            $tickets            = $zo->query ($qs);
+            $tickets            = $tickets->fetch_assoc ();
+            $tickets            = intval ($tickets['tickets']);
             $qs = "
               SELECT
                 DISTINCT `draw_closed` AS `previous`
@@ -1408,31 +1408,32 @@ function invoice_game ($draw_closed_date,$output=true) {
               ORDER BY `draw_closed` DESC
               LIMIT 0,1
             ";
-            $previous       = $zo->query ($qs);
-            $previous       = $previous->fetch_assoc ();
-            $previous       = $previous['previous'];
+            $previous           = $zo->query ($qs);
+            $previous           = $previous->fetch_assoc ();
+            $previous           = $previous['previous'];
             $qs = "
               SELECT
                 COUNT(`ClientRef`) AS `loaded`
-               ,IFNULL(SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0),0) AS `letters_anl`
+               ,IFNULL(SUM(`letter_batch_ref` LIKE 'email%'),0) AS `letters_anl_email`
+               ,IFNULL(SUM(`letter_batch_ref` LIKE 'sms%'),0) AS `letters_anl_sms`
+               ,IFNULL(SUM(`letter_batch_ref` NOT  LIKE 'email%' AND `letter_batch_ref` NOT LIKE 'sms%'),0) AS `letters_anl_post`
               FROM `ANLs`
               WHERE `tickets_issued`<='$draw_closed_date'
                 AND `tickets_issued`>'$previous'
             ";
-            $loaded         = $zo->query ($qs);
-            $loaded         = $loaded->fetch_assoc ();
-            $letters_anl    = $loaded['letters_anl'];
-            $loaded         = $loaded['loaded'];
+            $loaded             = $zo->query ($qs);
+            $loaded             = $loaded->fetch_assoc ();
+            $letters_anl_post   = $loaded['letters_anl_post'];
+            $loaded             = $loaded['loaded'];
             $qs = "
               SELECT
                 IFNULL(COUNT(`ticket_number`),0) AS `letters_win`
               FROM `Wins`
               WHERE `draw_closed`='$draw_closed_date'
-                AND LENGTH(IFNULL(`letter_batch_ref`,''))>0
             ";
-            $letters_win    = $zo->query ($qs);
-            $letters_win    = $letters_win->fetch_assoc ();
-            $letters_win    = $letters_win['letters_win'];
+            $letters_win        = $zo->query ($qs);
+            $letters_win        = $letters_win->fetch_assoc ();
+            $letters_win        = $letters_win['letters_win'];
         }
         catch (\mysqli_sql_exception $e) {
             throw new \Exception ($qs."\n".$e->getMessage());
@@ -1443,9 +1444,23 @@ function invoice_game ($draw_closed_date,$output=true) {
             $loaded,
             loading_fee ($loaded)
         ];
+        if (defined('BLOTTO_FEE_ANL_EMAIL') && BLOTTO_FEE_ANL_EMAIL>0) {
+            $invoice->items[] = [
+                "Email advanced notification letters",
+                $letters_anl_email,
+                number_format (BLOTTO_FEE_ANL_EMAIL/100,2,'.','')
+            ];
+        }
+        if (defined('BLOTTO_FEE_ANL_SMS') && BLOTTO_FEE_ANL_SMS>0) {
+            $invoice->items[] = [
+                "SMS advanced notification letters",
+                $letters_anl_sms,
+                number_format (BLOTTO_FEE_ANL_SMS/100,2,'.','')
+            ];
+        }
         $invoice->items[] = [
-            "Advanced notification letters",
-            $letters_anl,
+            "Postal advanced notification letters",
+            $letters_anl_post,
             number_format (BLOTTO_FEE_ANL/100,2,'.','')
         ];
         $invoice->items[] = [
