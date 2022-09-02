@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+    <link rel="icon" href="./media/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="./media/favicon.ico" type="image/x-icon" />
+
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="author" href="http://www.thefundraisingfoundry.com/" />
+    <title title="Lottery profit calculator by The Fundrasing Foundry">Lottery profit calculator</title>
+
+    <script>
+
+Date.prototype.ymd = function (pfx='',sep='') {
+    var mm = this.getMonth () + 1; // getMonth() is zero-based
+    var dd = this.getDate ();
+    return pfx + [
+        this.getFullYear (),
+        (mm>9 ? '' : '0') + mm,
+        (dd>9 ? '' : '0') + dd
+    ].join (sep);
+};
+Date.prototype.futureDate = function (days) {
+    var d;
+    d = new Date (this.toDateString());
+    d.setDate (d.getDate()+days);
+    return d;
+};
+
+function calculate ( ) {
+    // Declare all internal variables and get it over with before doing anything else
+    var balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost,d,days=[],delay,df,dps,expenses;
+    var i,k,inc,loaded,now,profit,row,start,tbody,tickets=0,total=0,week,weeks={},worst=0,years,yr,yr1,yrcurrent;
+    years = 5;
+    // Sign-up quantity loaded to ELM each week
+    price   = 1 * document.querySelector ('[name="price"]').value;
+    // Cancellation rate immediately %
+    loaded  = 1 * document.querySelector ('[name="loaded"]').value;
+    // Cancellation rate immediately %
+    cnli    = 1 * document.querySelector ('[name="cancellation_i"]').value;
+    // Canvassing company charge per sign-up
+    cost    = 1 * document.querySelector ('[name="cost"]').value;
+    // Canvassing company charge increase per annum %
+    inc     = 1 * document.querySelector ('[name="increase"]').value;
+    // Delay in weeks before payments
+    delay   = 1 * document.querySelector ('[name="delay"]').value;
+    // Profit from lottery revenue %
+    profit  = 1 * document.querySelector ('[name="profit"]').value;
+    // Cancellation rate in later years %
+    cnla    = 1 * document.querySelector ('[name="cancellation_a"]').value;
+    // The HTML table for writing out the simulation to screen
+    tbody   = document.querySelector ('#results');
+    // The break-even element for writing out the simulation to screen
+    brkevne = document.querySelector ('#break-even');
+    // Mean quantity of chances per sign-up
+    chances = document.querySelector ('[name="chances"]').value;
+    // Loop through time starting today
+    now     = new Date ();
+    yr1     = now.getFullYear ();
+//console.log (now);
+    start   = new Date (now);
+    end     = start.futureDate (years*365);
+    end     = end.ymd ('wc');
+//console.log (start);
+    for (d=start;d.ymd('wc')<=end;d.setDate(d.getDate()+1)) {
+//console.log (d);
+        if (d.getDay()==1) {
+//console.log ('----');
+            // This date
+            k = d.ymd ('wc');
+//console.log ('sign-up: '+k);
+            if (!weeks[k]) {
+                weeks[k] = {
+                    date : d.ymd ('','-'),
+                    signed : 0,
+                    loaded : 0,
+                    ticketsAdded : 0,
+                    ticketsCancelled : 0,
+                    revenue : 0,
+                    cost : 0
+                }
+            }
+            weeks[k].signed      = 1 * loaded;
+            weeks[k].loaded      = loaded * (1-(cnli/100));
+            yrcurrent            = Math.floor ((d.getTime()-now.getTime())/(1000*60*60*24*365));
+            weeks[k].cost        = loaded * (1-(cnli/100)) * (cost + (yrcurrent*inc));
+console.log (weeks[k]);
+            // Future date for first payment
+            df = d.futureDate (7*delay);
+            k = df.ymd ('wc');
+            if (!weeks[k]) {
+                weeks[k] = {
+                    date : df.ymd ('','-'),
+                    signed : 0,
+                    loaded : 0,
+                    ticketsAdded : 0,
+                    ticketsCancelled : 0,
+                    revenue : 0,
+                    cost : 0
+                }
+            }
+//console.log ('Add tickets delayed to '+k);
+            weeks[k].ticketsAdded = 1*(chances*loaded*(1-(cnli/100))).toFixed(1);
+//console.log (weeks[k]);
+            // Future date for cancellation attrition
+            df = new Date ();
+            df = d.futureDate (7*26);
+            for (i=0;i<years;i++) {
+                k = df.ymd ('wc');
+//console.log ('middle of year '+i+': '+k);
+                if (!weeks[k]) {
+                    weeks[k] = {
+                        date : df.ymd ('','-'),
+                        signed : 0,
+                        loaded : 0,
+                        ticketsAdded : 0,
+                        ticketsCancelled : 0,
+                        revenue : 0,
+                        cost : 0
+                    }
+                }
+                weeks[k].ticketsCancelled = 1*((1*weeks[k].ticketsCancelled)+(chances*loaded*(1-(cnli/100))*(cnla/100))).toFixed(1);
+                df.setDate (df.getDate()+(7*52));
+            }
+        }
+    }
+//console.log ('----------------');
+//console.log ('----------------');
+    tbody.innerHTML     = '';
+    for (d=now;d.getFullYear()<=(yr1+(years-1));d.setDate(d.getDate()+1)) {
+        if (d.getDay()==1) {
+            k           = d.ymd ('wc');
+            tickets    += weeks[k].ticketsAdded;
+            tickets    -= weeks[k].ticketsCancelled;
+            weeks[k].ticketsCumulative      = 1 * tickets.toFixed(0);
+            weeks[k].revenue                = 1 * (tickets*price*profit/100).toFixed(2);
+            balance    += weeks[k].revenue;
+            balance    -= weeks[k].cost;
+            weeks[k].balance                = 1 * balance.toFixed(2);
+            if (!brkevn && weeks[k].balance>=0) {
+                brkevn = weeks[k].date
+            }
+console.log (weeks[k]);
+            row = document.createElement ('tr');
+            if (weeks[k].balance<0) {
+                row.classList.add ('negative');
+            }
+            columns     = [ 'date','signed','loaded','ticketsAdded','ticketsCancelled','ticketsCumulative','revenue','cost','balance' ];
+            dps         = [ null,null,0,0,1,0,2,2,2 ];
+            for (i=0;columns[i];i++) {
+                cell = document.createElement ('td');
+                if (dps[i]!==null) {
+                    cell.textContent = weeks[k][columns[i]].toFixed (dps[i]);
+                }
+                else {
+                    cell.textContent = weeks[k][columns[i]];
+                }
+                row.appendChild (cell);
+            }
+            tbody.appendChild (row);
+        }
+    }
+    if (brkevn) {
+        brkevne.innerHTML = '<strong>'+brkevn+'</strong>';
+    }
+    else {
+        brkevne.innerHTML = 'no break-even in range';
+    }
+}
+
+window.addEventListener (
+    'DOMContentLoaded',
+    function() {
+        (
+            function($) {
+                document.querySelector('[name="calculate"]').addEventListener ('click',calculate);
+            }
+        ) ();
+    }
+);
+
+    </script>
+
+    <style>
+
+section {
+    margin-top: 1em;
+    margin-left: 0.3em;
+}
+body > section {
+    margin-top: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+label {
+    display: inline-block;
+    width: 20em;
+}
+label strong {
+    font-style: italic;
+}
+
+table {
+    position: absolute;
+    top:  0;
+    right: 0;
+    border-spacing: 1em 0;
+    text-align: right;
+    font-family: 'courier new';
+}
+thead {
+    position: sticky;
+    top:  0;
+    right: 0;
+    background-color: white;
+}
+th {
+    text-align: left;
+}
+tr.negative {
+    color: darkred;
+}
+
+    </style>
+
+  </head>
+
+  <body id="profit-calculator">
+
+    <section>
+
+      <section>
+        <label>Mean avg chances per sign-up</label>
+        <input name="chances" type="number" min="0.0" max="2.00" step="0.1" value="1.2" />
+      </section>
+
+      <section>
+        <label>Weeks before first payment</label>
+        <input name="delay" type="number" min="0" max="10" step="1" value="6" />
+      </section>
+
+      <section>
+        <label>Sign-ups per week</label>
+        <input name="loaded" type="number" min="0" max="10000" step="1" value="100" />
+      </section>
+
+      <section>
+        <label>Cancellation (immediate) <strong>%</strong></label>
+        <input name="cancellation_i" type="number" min="0.0" max="20.0" step="0.1" value="10.0" />
+      </section>
+
+      <section>
+        <label>Cost per sign-up <strong>&pound;</strong></label>
+        <input name="cost" type="number" min="0.00" max="100.00" step="0.01" value="50.00" />
+      </section>
+
+      <section>
+        <label>Cost increase per year <strong>%</strong></label>
+        <input name="increase" type="number" min="0.0" max="5.0" step="0.1" value="0.0" />
+      </section>
+
+      <section>
+        <label>Ticket price <strong>&pound;</strong></label>
+        <input name="price" type="number" min="1.00" max="5.00" step="0.01" value="1.00" />
+      </section>
+
+      <section>
+        <label>Return from tickets <strong>%</strong></label>
+        <input name="profit" type="number" min="0" max="100" step="1" value="73" />
+      </section>
+
+      <section>
+        <label>Cancellation (attrition) <strong>% pa</strong></label>
+        <input name="cancellation_a" type="number" min="0.0" max="20.0" step="0.1" value="7.0" />
+      </section>
+
+      <section>
+        <label>&nbsp;</label>
+        <input name="calculate" type="button" value="Calculate" />
+      </section>
+
+      <section>
+        <label>Break-even</label>
+        <span id="break-even">no break-even in range</span>
+      </section>
+
+    </section>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Signed up</th>
+          <th>Loaded</th>
+          <th>Tickets added</th>
+          <th>Ticket attrition</th>
+          <th>Tickets (cumulative)</th>
+          <th>Revenue</th>
+          <th>Costs</th>
+          <th>Balance (cumulative)</th>
+        </tr>
+      </thead>
+      <tbody id="results">
+      </tbody>
+      <tfoot>
+        <td colspan="9">&nbsp;</td>
+      </tfoot>
+    </table>
+
+  </body>
+
+</html>
+
+
