@@ -259,6 +259,7 @@ input {
 input[type="button"] {
     width: auto;
     text-align: center;
+    margin-right: 1.2em;
 }
 
 table {
@@ -284,6 +285,12 @@ th {
 }
 td {
     padding-right: 2em;
+}
+
+.summary {
+    display: inline-block;
+    width: 9em;
+    text-align: right;
 }
 
     </style>
@@ -351,17 +358,17 @@ td {
 
       <section>
         <label>&nbsp;</label>
-        <input name="calculate" type="button" value="Calculate" />
+        <span class="summary"><input name="calculate" type="button" value="Calculate" /></span>
       </section>
 
       <section>
         <label>Break-even week commencing</label>
-        <span id="break-even">no break-even in range</span>
+        <span id="break-even" class="summary">no break-even</span>
       </section>
 
       <section>
         <label>Peak investment <strong>&pound;</strong></label>
-        <span id="invest">no value</span>
+        <span id="invest" class="summary">no value</span>
       </section>
 
     </section>
