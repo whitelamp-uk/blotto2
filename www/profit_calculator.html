@@ -34,12 +34,16 @@ Date.prototype.futureDate = function (days) {
 
 function calculate ( ) {
     // Declare all internal variables and get it over with before doing anything else
-    var balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost,d,days=[],delay,df,dps,expenses;
-    var i,k,inc,loaded,now,profit,row,start,tbody,tickets=0,total=0,week,weeks={},worst=0,years,yr,yr1,yrcurrent;
+    var amts,balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost,d,days=[],delay,df,dps,expenses;
+    var i,invest=0,investe,k,inc,loaded,now,nrs,profit,row,start,tbody,tickets=0,total=0,week,weeks={},worst=0,years,yr,yr1,yrcurrent;
     years = 5;
-    // Sign-up quantity loaded to ELM each week
+    // Pre-existing balance
+    balance = 1 * document.querySelector ('[name="balance"]').value;
+    // Pre-existing tickets
+    tickets = 1 * document.querySelector ('[name="tickets"]').value;
+    // Ticket price
     price   = 1 * document.querySelector ('[name="price"]').value;
-    // Cancellation rate immediately %
+    // Sign-up quantity
     loaded  = 1 * document.querySelector ('[name="loaded"]').value;
     // Cancellation rate immediately %
     cnli    = 1 * document.querySelector ('[name="cancellation_i"]').value;
@@ -57,6 +61,8 @@ function calculate ( ) {
     tbody   = document.querySelector ('#results');
     // The break-even element for writing out the simulation to screen
     brkevne = document.querySelector ('#break-even');
+    // The peak investment element for writing out the simulation to screen
+    investe = document.querySelector ('#invest');
     // Mean quantity of chances per sign-up
     chances = document.querySelector ('[name="chances"]').value;
     // Loop through time starting today
@@ -89,7 +95,7 @@ function calculate ( ) {
             weeks[k].loaded      = loaded * (1-(cnli/100));
             yrcurrent            = Math.floor ((d.getTime()-now.getTime())/(1000*60*60*24*365));
             weeks[k].cost        = loaded * (1-(cnli/100)) * (cost + (yrcurrent*inc));
-console.log (weeks[k]);
+//console.log (weeks[k]);
             // Future date for first payment
             df = d.futureDate (7*delay);
             k = df.ymd ('wc');
@@ -145,16 +151,27 @@ console.log (weeks[k]);
             if (!brkevn && weeks[k].balance>=0) {
                 brkevn = weeks[k].date
             }
-console.log (weeks[k]);
+            if (invest>balance) {
+                invest = balance;
+            }
+//console.log (weeks[k]);
             row = document.createElement ('tr');
             if (weeks[k].balance<0) {
                 row.classList.add ('negative');
             }
             columns     = [ 'date','signed','loaded','ticketsAdded','ticketsCancelled','ticketsCumulative','revenue','cost','balance' ];
             dps         = [ null,null,0,0,1,0,2,2,2 ];
+            nrs         = [ 'ticketsCumulative' ];
+            amts        = [ 'revenue','cost','balance' ];
             for (i=0;columns[i];i++) {
                 cell = document.createElement ('td');
-                if (dps[i]!==null) {
+                if (nrs.includes(columns[i])) {
+                    cell.textContent = thouSepRound (weeks[k][columns[i]],0,' ');
+                }
+                else if (amts.includes(columns[i])) {
+                    cell.textContent = thouSepRound (weeks[k][columns[i]],2,' ');
+                }
+                else if (dps[i]!==null) {
                     cell.textContent = weeks[k][columns[i]].toFixed (dps[i]);
                 }
                 else {
@@ -171,6 +188,29 @@ console.log (weeks[k]);
     else {
         brkevne.innerHTML = 'no break-even in range';
     }
+    investe.innerHTML = '<strong>'+thouSepRound(invest,2,' ')+'</strong>';
+}
+
+function thouSepRound (num,dp,sep=',',decsep='.') {
+    var out='';
+    num = num.toFixed (dp);
+//console.log ('----');
+    if (num.indexOf(decsep)>=0) {
+//console.log ('decsep '+num);
+        num = num.split (decsep);
+        out = decsep + num[1];
+        num = num[0];
+//console.log ('num='+num);
+    }
+    while (num.length>3) {
+        out = sep + num.substr(num.length-3,3) + out;
+//console.log ('out='+out);
+        num = num.substr (0,num.length-3);
+//console.log ('num='+num);
+    }
+    out = num + out;
+//console.log ('out '+out);
+    return out;
 }
 
 window.addEventListener (
@@ -183,6 +223,7 @@ window.addEventListener (
         ) ();
     }
 );
+
 
     </script>
 
@@ -214,6 +255,7 @@ table {
     border-spacing: 1em 0;
     text-align: right;
     font-family: 'courier new';
+    font-size: 0.9em;
 }
 thead {
     position: sticky;
@@ -224,8 +266,11 @@ thead {
 th {
     text-align: left;
 }
-tr.negative {
+.negative {
     color: darkred;
+}
+td {
+    padding-right: 2em;
 }
 
     </style>
@@ -235,6 +280,16 @@ tr.negative {
   <body id="profit-calculator">
 
     <section>
+
+      <section>
+        <label>Pre-existing tickets</label>
+        <input name="tickets" type="number" min="0" max="1000000" step="1" value="0" />
+      </section>
+
+      <section>
+        <label>Pre-existing balance</label>
+        <input name="balance" type="number" min="0.00" max="1000000.00" step="0.01" value="0.00" />
+      </section>
 
       <section>
         <label>Mean avg chances per sign-up</label>
@@ -272,7 +327,7 @@ tr.negative {
       </section>
 
       <section>
-        <label>Return from tickets <strong>%</strong></label>
+        <label>Return from lottery <strong>%</strong></label>
         <input name="profit" type="number" min="0" max="100" step="1" value="73" />
       </section>
 
@@ -287,8 +342,13 @@ tr.negative {
       </section>
 
       <section>
-        <label>Break-even</label>
+        <label>Break-even week commencing</label>
         <span id="break-even">no break-even in range</span>
+      </section>
+
+      <section>
+        <label>Peak investment <strong>&pound;</strong></label>
+        <span id="invest" class="negative">no value</span>
       </section>
 
     </section>
@@ -299,12 +359,12 @@ tr.negative {
           <th>Week commencing</th>
           <th>Signed up</th>
           <th>Loaded</th>
-          <th>Tickets added</th>
-          <th>Ticket attrition</th>
-          <th>Tickets (cumulative)</th>
-          <th>Revenue</th>
-          <th>Costs</th>
-          <th>Balance (cumulative)</th>
+          <th>+Tickets</th>
+          <th>-Attrition</th>
+          <th>Tickets (cum)</th>
+          <th>+Revenue</th>
+          <th>-Costs</th>
+          <th>Balance (cum)</th>
         </tr>
       </thead>
       <tbody id="results">
