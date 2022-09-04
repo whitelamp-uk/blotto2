@@ -192,9 +192,13 @@ function calculate ( ) {
 }
 
 function thouSepRound (num,dp,sep=',',decsep='.') {
-    var out='';
+    var neg='',out='';
     num = num.toFixed (dp);
 //console.log ('----');
+    if (num.indexOf('-')==0) {
+        neg = '-';
+        num = num.substr (1);
+    }
     if (num.indexOf(decsep)>=0) {
 //console.log ('decsep '+num);
         num = num.split (decsep);
@@ -208,7 +212,7 @@ function thouSepRound (num,dp,sep=',',decsep='.') {
         num = num.substr (0,num.length-3);
 //console.log ('num='+num);
     }
-    out = num + out;
+    out = neg + num + out;
 //console.log ('out '+out);
     return out;
 }
