@@ -188,7 +188,7 @@ function calculate ( ) {
     else {
         brkevne.innerHTML = 'no break-even in range';
     }
-    investe.innerHTML = '<strong>'+thouSepRound(invest,2,' ')+'</strong>';
+    investe.innerHTML = '<strong>'+thouSepRound(0-invest,2,' ')+'</strong>';
 }
 
 function thouSepRound (num,dp,sep=',',decsep='.') {
@@ -348,7 +348,7 @@ td {
 
       <section>
         <label>Peak investment <strong>&pound;</strong></label>
-        <span id="invest" class="negative">no value</span>
+        <span id="invest">no value</span>
       </section>
 
     </section>
