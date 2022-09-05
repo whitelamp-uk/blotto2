@@ -34,8 +34,9 @@ Date.prototype.futureDate = function (days) {
 
 function calculate ( ) {
     // Declare all internal variables and get it over with before doing anything else
-    var amts,balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost,d,days=[],delay,df,dps,expenses;
-    var i,invest=0,investe,k,inc,loaded,now,nrs,profit,row,start,tbody,tickets=0,total=0,week,weeks={},worst=0,years,yr,yr1,yrcurrent;
+    var balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost;
+    var d,days=[],delay,df,dps,expenses,i,invest=0,investe,k,inc,loaded,now,profit,row;
+    var slffnd,slffnde,start,tbody,tickets=0,total=0,week,weeks={},worst=0,years,yr,yr1,yrcurrent;
     years = 5;
     // Pre-existing balance
     balance = 1 * document.querySelector ('[name="balance"]').value;
@@ -59,7 +60,9 @@ function calculate ( ) {
     cnla    = 1 * document.querySelector ('[name="cancellation_a"]').value;
     // The HTML table for writing out the simulation to screen
     tbody   = document.querySelector ('#results');
-    // The break-even element for writing out the simulation to screen
+    // The self-funding date element for writing out the simulation to screen
+    slffnde = document.querySelector ('#self-funding');
+    // The break-even date element for writing out the simulation to screen
     brkevne = document.querySelector ('#break-even');
     // The peak investment element for writing out the simulation to screen
     investe = document.querySelector ('#invest');
@@ -148,6 +151,9 @@ function calculate ( ) {
             balance    += weeks[k].revenue;
             balance    -= weeks[k].cost;
             weeks[k].balance                = 1 * balance.toFixed(2);
+            if (!slffnd && weeks[k]['revenue']>=weeks[k]['cost']) {
+                slffnd = weeks[k].date
+            }
             if (!brkevn && weeks[k].balance>=0) {
                 brkevn = weeks[k].date
             }
@@ -161,14 +167,12 @@ function calculate ( ) {
             }
             columns     = [ 'date','signed','loaded','ticketsAdded','ticketsCancelled','ticketsCumulative','revenue','cost','balance' ];
             dps         = [ null,null,0,0,1,0,2,2,2 ];
-            nrs         = [ 'ticketsCumulative' ];
-            amts        = [ 'revenue','cost','balance' ];
             for (i=0;columns[i];i++) {
                 cell = document.createElement ('td');
-                if (nrs.includes(columns[i])) {
+                if (['ticketsCumulative'].includes(columns[i])) {
                     cell.textContent = thouSepRound (weeks[k][columns[i]],0,' ');
                 }
-                else if (amts.includes(columns[i])) {
+                else if (['revenue','cost','balance'].includes(columns[i])) {
                     cell.textContent = thouSepRound (weeks[k][columns[i]],2,' ');
                 }
                 else if (dps[i]!==null) {
@@ -177,10 +181,16 @@ function calculate ( ) {
                 else {
                     cell.textContent = weeks[k][columns[i]];
                 }
+                if (slffnd && ['revenue','cost'].includes(columns[i])) {
+                    cell.classList.add ('positive');
+                }
                 row.appendChild (cell);
             }
             tbody.appendChild (row);
         }
+    }
+    if (slffnd) {
+        slffnde.innerHTML = '<strong>'+slffnd+'</strong>';
     }
     if (brkevn) {
         brkevne.innerHTML = '<strong>'+brkevn+'</strong>';
@@ -286,6 +296,9 @@ th {
 td {
     padding-right: 2em;
 }
+td.positive {
+    color: black;
+}
 
 .summary {
     display: inline-block;
@@ -362,13 +375,18 @@ td {
       </section>
 
       <section>
+        <label>Self-funding week commencing</label>
+        <span id="self-funding" class="summary"></span>
+      </section>
+
+      <section>
         <label>Break-even week commencing</label>
-        <span id="break-even" class="summary">no break-even</span>
+        <span id="break-even" class="summary"></span>
       </section>
 
       <section>
         <label>Peak investment <strong>&pound;</strong></label>
-        <span id="invest" class="summary">no value</span>
+        <span id="invest" class="summary"></span>
       </section>
 
     </section>
@@ -383,7 +401,7 @@ td {
           <th>-Attrition</th>
           <th>Tickets (cum)</th>
           <th>+Revenue</th>
-          <th>-Costs</th>
+          <th>-Fundraising</th>
           <th>Balance (cum)</th>
         </tr>
       </thead>
