@@ -464,7 +464,7 @@ BEGIN
           AND `t`.`client_ref`=`m`.`ClientRef`
           AND `t`.`org_id`=2
     -- One-off payments are not applicable
-    WHERE `m`.`Freq`!='Single'
+    WHERE `m`.`Freq`!='Single' OR `m`.`Freq` IS NULL
     GROUP BY `client_ref`,`ticket_number`
     HAVING `cancelled_date`<CURDATE()
     ORDER BY `cancelled_date`,`ccc`,`client_ref`,`supporter_created`,`ticket_number`
