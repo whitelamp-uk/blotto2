@@ -91,7 +91,6 @@ define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php
 define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
 define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'      );
 define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'   );
-define ( 'RSM_FLC_TO_PERIODS',      '1:Monthly,3:Quarterly,6:Six Monthly,12:Annually' );
 
 
 // Global - Paysuite
