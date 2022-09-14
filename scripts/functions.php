@@ -3701,7 +3701,7 @@ function update ( ) {
                     $pn_mandate = array( // TODO get names right Sortcode or SortCode????
                            'ClientRef' =>$ncr,
                            'Name'      =>$fields['Name'],
-                           'SortCode'  =>($fields['SortCode']  ?: $m['Sortcode']),
+                           'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
                            'Account'   =>($fields['Account']   ?: $m['Account']),
                            'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
                            'Freq'      =>$fields['Freq'],
