@@ -3707,7 +3707,7 @@ function update ( ) {
                            'Freq'      =>$fields['Freq'],
                            'Amount'    =>$fields['Amount'],
                            'Chances'   =>$ch,
-                           'PayDay'    =>null,
+                           'PayDay'    =>'',
                        );
 
                     $api->player_new ($pn_mandate, $crf);
