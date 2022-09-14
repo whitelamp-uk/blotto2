@@ -3629,7 +3629,7 @@ function update ( ) {
           WHERE `ClientRef`='$crf'
           ORDER BY `Created` DESC
           LIMIT 0,1
-        ";
+        ";  // ClientRef is unique - remove last lines of query?
         try {
             $ms = $zo->query ($qs);
             $m = null;
@@ -3656,6 +3656,7 @@ function update ( ) {
         $onm = $m['Name'];
         $osc = $m['Sortcode'];
         $oac = $m['Account'];
+        // get old freq and amount
         $q .= "`Chances`=$ch,";
         $q .= "`OldDDRef`='$ddr',";
         $q .= "`OldName`='$onm',";
@@ -3673,6 +3674,46 @@ function update ( ) {
             error_log ('update(): '.$e->getMessage());
             return '{ "error" : 112 }';
         }
+        // if freq or amount have changed
+        // instantiate pay api (see payment_mandate.php) and call player_new
+        if ($m['Freq'] != $fields['Freq'] || $m['Amount'] != $fields['Amount']) {
+            $constants      = get_defined_constants (true);
+            $apis           = 0;
+            $mandate_count  = 0;
+            foreach ($constants['user'] as $name => $classfile) {
+                if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
+                    continue;
+                }
+                if (!is_readable($classfile)) {
+                    error_log ("update(): Payment API file '$classfile' is not readable - aborting");
+                    return '{ "error" : 113 }';
+                }
+                error_log ("update(): processing payment API class file: $classfile");
+                require $classfile;
+                $class      = constant ($name.'_CLASS');
+                if (!class_exists($class)) {
+                    error_log ("update(): Payment API class '$class' does not exist - aborting");
+                    return '{ "error" : 114 }';
+                }
+                $api        = new $class ($zo);
+                if (method_exists($api,'player_new')) {
+                    //fiuelds [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+                    $pn_mandate = array( // TODO get names right Sortcode or SortCode????
+                           'ClientRef' =>$ncr,
+                           'Name'      =>$fields['Name'],
+                           'SortCode'  =>($fields['SortCode']  ?: $m['Sortcode']),
+                           'Account'   =>($fields['Account']   ?: $m['Account']),
+                           'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
+                           'Freq'      =>$fields['Freq'],
+                           'Amount'    =>$fields['Amount'],
+                           'Chances'   =>$ch,
+                       );
+
+                    $api->player_new ($pn_mandate, $crf);
+                }
+            }
+        }
+
         if (!defined('BLOTTO_EMAIL_BACS_TO')) {
             return '{ "ok" : true }';
         }
@@ -3683,7 +3724,8 @@ function update ( ) {
         mail (
             BLOTTO_EMAIL_BACS_TO,
             BLOTTO_BRAND." BACS change request for ".BLOTTO_ORG_NAME,
-            "Record added to `$dbc`.`blotto_bacs` for old client ref ".$fields['ClientRef']."\n",
+            "Record added to `$dbc`.`blotto_bacs` for old client ref ".$fields['ClientRef']."\n".
+            "Caution: Do you need to modify supporter contact details?\n",
             $headers
         );
         return '{ "ok" : true }';
