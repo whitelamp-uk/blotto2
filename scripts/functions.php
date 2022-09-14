@@ -3676,7 +3676,7 @@ function update ( ) {
         }
         // if freq or amount have changed
         // instantiate pay api (see payment_mandate.php) and call player_new
-        if ($m['Freq'] != $fields['Freq'] || $m['Amount'] != $fields['Amount']) {
+        if (false) { //($m['Freq'] != $fields['Freq'] || $m['Amount'] != $fields['Amount']) {
             $constants      = get_defined_constants (true);
             $apis           = 0;
             $mandate_count  = 0;
@@ -3708,6 +3708,18 @@ function update ( ) {
                            'Amount'    =>$fields['Amount'],
                            'Chances'   =>$ch,
                            'PayDay'    =>'',
+/* required from blotto_contact
+Email
+Title
+NamesGiven
+NamesFamily
+AddressLine1
+AddressLine2
+Postcode
+AddressLine3
+*/
+
+
                        );
 
                     $api->player_new ($pn_mandate, $crf);
