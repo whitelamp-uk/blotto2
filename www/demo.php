@@ -190,10 +190,8 @@
         }
       </style>
       <!
-        * Remove demo=1 below in order to activate the sign-up form
-        * Use css=[my stylesheet URL] to override form styling as demonstrated by
-          the yellow background from:
-            https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>
+       * Use css=[my stylesheet URL] to override form styling
+       * Replace ??? with your organisation code LOWER CASE
       >
       <iframe id="lottery-signup" src="https://sss.burdenandburden.co.uk/?o=???&p=LT&amp;css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
 -->
