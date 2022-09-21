@@ -109,7 +109,7 @@ define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up g
 // Global - all payment providers
 define ( 'BLOTTO_PAY_API_RSM_TABLE',    'rsm_mandate'       );
 define ( 'BLOTTO_PAY_API_PST_TABLE',    'paysuite_mandate'  );
-define ( 'BLOTTO_DD_TRY_INTERVAL',  '7 DAY'     );
+define ( 'BLOTTO_DD_TRY_INTERVAL',  '14 DAY'     );
 define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed'        );
