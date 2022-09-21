@@ -122,25 +122,25 @@
         /* Example CSS */
         :root {
             /* Move the sign-up form to the right by a certain amount */
-            --lottery-results-latest-left:      24em;
+            --lottery-left:      24em;
             /* Move the sign-up form down by a certain amount */
-            --lottery-results-latest-top:       2em;
+            --lottery-top:       2em;
         }
         #lottery-signup-heading {
             position: absolute;
-            left: var(--lottery-results-latest-left);
+            left: var(--lottery-left);
             top: 0em;
-            width: calc(100vw - 1em - var(--lottery-results-latest-left));
+            width: calc(100vw - 1em - var(--lottery-left));
             margin: 0;
         }            
         #lottery-signup {
             position: absolute;
             box-sizing: border-box;
-            left: var(--lottery-results-latest-left);
-            top: var(--lottery-results-latest-top);
+            left: var(--lottery-left);
+            top: var(--lottery-top);
             margin: 0;
-            width: calc(100vw - 1em - var(--lottery-results-latest-left));
-            height: calc(100vh - var(--lottery-results-latest-top));
+            width: calc(100vw - 1em - var(--lottery-left));
+            height: calc(100vh - var(--lottery-top));
             border-style: none;
             border-width: 0;
             overflow-x: auto;
@@ -158,12 +158,51 @@
 
 
 
-
-
+<!-- 3. TICKETS (DIRECT DEBIT MANDATE) -->
+<!--
+      <style>
+        /* Example CSS */
+        :root {
+            /* Move the sign-up form to the right by a certain amount */
+            --lottery-left: 24em;
+            /* Move the sign-up form down by a certain amount */
+            --lottery-top: 2em;
+        }
+        #lottery-signup-heading {
+            position: absolute;
+            left: var(--lottery-left);
+            top: 0em;
+            width: calc(100vw - 1em - var(--lottery-left));
+            margin: 0;
+        }            
+        #lottery-signup {
+            position: absolute;
+            box-sizing: border-box;
+            left: var(--lottery-left);
+            top: var(--lottery-top);
+            margin: 0;
+            width: calc(100vw - 1em - var(--lottery-left));
+            height: calc(100vh - var(--lottery-top));
+            border-style: none;
+            border-width: 0;
+            overflow-x: auto;
+            overflow-y: scroll;
+        }
+      </style>
+      <!
+        * Remove demo=1 below in order to activate the sign-up form
+        * Use css=[my stylesheet URL] to override form styling as demonstrated by
+          the yellow background from:
+            https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>
+      >
+      <iframe id="lottery-signup" src="https://sss.burdenandburden.co.uk/?o=???&p=LT&amp;css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
+-->
+      <!-- 3 ENDS -->
 
 
 
       </div>
     </body>
   </html>
+
 
