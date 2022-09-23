@@ -146,6 +146,9 @@ BEGIN
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`Created`),'%d/%m/%Y') AS `Created`
      ,DATE_FORMAT(dateSilly2Sensible(`m`.`StartDate`),'%d/%m/%Y') AS `StartDate`
      ,DATE_FORMAT(`m`.`StartDate`,'%a %D %b %Y') AS `projected_first_collection`
+     ,`p`.`email_id`
+     ,`p`.`email_status`
+     ,`p`.`email_sent`
      ,`p`.`letter_batch_ref`
      ,`p`.`letter_status`
     FROM `blotto_build_mandate` AS `m`
@@ -167,6 +170,9 @@ BEGIN
        ,`ic`.`postcode`
        ,`ic`.`country`
        ,`ip`.`client_ref`
+       ,IFNULL(`ip`.`email_id`,'') AS `email_id`
+       ,IFNULL(`ip`.`email_status`,'') AS `email_status`
+       ,IFNULL(`ip`.`email_sent`,'') AS `email_sent`
        ,IFNULL(`ip`.`letter_batch_ref`,'') AS `letter_batch_ref`
        ,IFNULL(`ip`.`letter_status`,'') AS `letter_status`
       FROM `blotto_player` AS `ip`
