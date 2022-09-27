@@ -10,7 +10,7 @@ function bank_decrypt ($key,$data,&$sortcode,&$accountnr) {
     $out = unserialize ($out);
     if ($out) {
         $sortcode   = $out['sort_code'];
-        $accountnr  = $out['account_number'];
+        $accountnr  = str_pad ($out['account_number'],8,"0",STR_PAD_LEFT);
         return true;
     }
     else {
