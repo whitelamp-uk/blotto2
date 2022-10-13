@@ -831,8 +831,8 @@ DROP PROCEDURE IF EXISTS `mandates`$$
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `supporterRevenue`$$
 CREATE PROCEDURE `supporterRevenue` (
-  IN      start date
- ,IN      finish date
+  IN      approvedOnOrAfter date
+ ,IN      approvedOnOrBefore date
  ,IN      cancelMonths int(4) unsigned
 )
 BEGIN
@@ -874,8 +874,8 @@ BEGIN
            ON `c`.`ClientRef`=`p`.`client_ref`
     LEFT JOIN `Cancellations` AS `cl`
            ON `cl`.`client_ref`=`p`.`client_ref`
-    WHERE `s`.`approved`>=start
-      AND `s`.`approved`<=finish
+    WHERE `s`.`approved`>=approvedOnOrAfter
+      AND `s`.`approved`<=approvedOnOrBefore
   ) AS `results`
   GROUP BY `months_to cancellation`
   HAVING `months_to cancellation`>=0
