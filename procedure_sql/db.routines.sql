@@ -837,13 +837,13 @@ CREATE PROCEDURE `supporterRevenue` (
 )
 BEGIN
   SELECT
-    SUM(`results`.`payments`) AS `payments`
+    COUNT(DISTINCT `results`.`supporter_id`) AS `supporters`
+   ,SUM(`results`.`payments`) AS `payments`
    ,SUM(`results`.`revenue`) AS `revenue`
    ,IF(`results`.`months` IS NULL OR `results`.`months`>cancelMonths,CONCAT('>',cancelMonths),`results`.`months`) AS `months_to cancellation`
   FROM (
     SELECT
-      `s`.`created` AS `supporter_created`
-     ,`p`.`client_ref` AS `player_client_ref`
+      `s`.`id` AS `supporter_id`
      ,IFNULL(`c`.`payments`,0) AS `payments`
      ,IFNULL(`c`.`revenue`,0.00) AS `revenue`
      ,TIMESTAMPDIFF(
