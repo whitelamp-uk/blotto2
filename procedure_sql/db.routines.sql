@@ -705,8 +705,16 @@ BEGIN
       ON `e`.`client_ref`=`p`.`client_ref`
     LEFT JOIN `Cancellations` AS `cancelled`
            ON `cancelled`.`client_ref`=`s`.`client_ref`
-    -- The player is deemed to be active
-    WHERE `cancelled`.`client_ref` IS NULL
+    WHERE (
+          -- The player is deemed to be active
+          `cancelled`.`client_ref` IS NULL
+          -- The player has enough right now to play again
+          -- Payments as of today - ignore BLOTTO_PAY_DELAY to keep it simple
+       OR `p`.`opening_balance`
+            + IFNULL(`c`.`AmountCollected`,0)
+            - (IFNULL(`e`.`plays`,0)+1)*`p`.`chances`*{{BLOTTO_TICKET_PRICE}}/100
+          >= 0
+    )
     -- Player is ready to go
       AND `p`.`first_draw_close` IS NOT NULL
     -- Player is ready to go right now
@@ -818,6 +826,62 @@ END$$
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `mandates`$$
 -- Functionality moved to rsm-api
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `supporterRevenue`$$
+CREATE PROCEDURE `supporterRevenue` (
+  IN      start date
+ ,IN      finish date
+ ,IN      cancelMonths int(4) unsigned
+)
+BEGIN
+  SELECT
+    SUM(`results`.`payments`) AS `payments`
+   ,SUM(`results`.`revenue`) AS `revenue`
+   ,IF(`results`.`months` IS NULL OR `results`.`months`>cancelMonths,CONCAT('>',cancelMonths),`results`.`months`) AS `months_to cancellation`
+  FROM (
+    SELECT
+      `s`.`created` AS `supporter_created`
+     ,`p`.`client_ref` AS `player_client_ref`
+     ,IFNULL(`c`.`payments`,0) AS `payments`
+     ,IFNULL(`c`.`revenue`,0.00) AS `revenue`
+     ,TIMESTAMPDIFF(
+        MONTH
+       ,IFNULL(
+          `c`.`first_collected`
+         ,IFNULL(
+            `m`.`StartDate`
+           ,IFNULL(`p`.`started`,`s`.`created`)
+          )
+        )
+       ,`cl`.`cancelled_date`
+      ) AS `months`
+    FROM `blotto_supporter` AS `s`
+    LEFT JOIN `blotto_player` AS `p`
+           ON `p`.`supporter_id`=`s`.`id`
+    LEFT JOIN `blotto_build_mandate` AS `m`
+           ON `m`.`ClientRef`=`p`.`client_ref`
+    LEFT JOIN (
+      SELECT
+        `ClientRef`
+       ,COUNT(`DateDue`) AS `payments`
+       ,SUM(`PaidAmount`) AS `revenue`
+       ,MIN(`DateDue`) AS `first_collected`
+      FROM `blotto_build_collection`
+      GROUP BY `ClientRef`
+         ) AS `c`
+           ON `c`.`ClientRef`=`p`.`client_ref`
+    LEFT JOIN `Cancellations` AS `cl`
+           ON `cl`.`client_ref`=`p`.`client_ref`
+    WHERE `s`.`approved`>=start
+      AND `s`.`approved`<=finish
+  ) AS `results`
+  GROUP BY `months_to cancellation`
+  HAVING `months_to cancellation`>=0
+  ORDER BY 1*`months_to cancellation`
+  ;
+END$$
 
 
 DELIMITER $$
