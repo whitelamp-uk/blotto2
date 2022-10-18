@@ -1424,6 +1424,7 @@ function invoice_game ($draw_closed_date,$output=true) {
             $loaded             = $zo->query ($qs);
             $loaded             = $loaded->fetch_assoc ();
             $letters_anl_post   = $loaded['letters_anl_post'];
+            $letters_anl_sms    = $loaded['letters_anl_sms'];
             $loaded             = $loaded['loaded'];
             $qs = "
               SELECT
