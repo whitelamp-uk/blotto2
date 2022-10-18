@@ -258,7 +258,7 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `canvas_agent_ref` varchar(16) CHARACTER SET ascii,
   `canvas_ref` int(11) unsigned,
   `client_ref` varchar(64) CHARACTER SET ascii,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `client_ref` (`client_ref`),
