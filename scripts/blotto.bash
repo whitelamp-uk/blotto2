@@ -192,6 +192,9 @@ then
     exit
 fi
 
+echo " 0. Set SQL_MODE to ensure compatibility (for now!)"
+mariadb <<< "SET GLOBAL SQL_MODE='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'"
+abort_on_error 0 $?
 
 echo " 1. Create databases (if missing) $dbm and $dbt"
 start=$SECONDS
