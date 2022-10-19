@@ -2372,12 +2372,13 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
     $results                        = implode (',',$return->response->result->random->data);
     $random_object                  = json_encode ($return->response->result->random);
     $log                            = json_encode ($return);
+    $completionTime                 = trim($return->response->result->random->completionTime, 'Z'); // trailing Z has issues on snowy
     $q ="
       INSERT INTO `blotto_generation`
       SET
         `provider`='".BLOTTO_TRNG_API."'
        ,`reference`='{$return->request->id}'
-       ,`generated`='{$return->response->result->random->completionTime}'
+       ,`generated`='{$completionTime}'
        ,`min`='{$return->request->params->min}'
        ,`max`='{$return->request->params->max}'
        ,`n`='{$return->request->params->n}'
@@ -3676,7 +3677,7 @@ function update ( ) {
         }
         // if freq or amount have changed
         // instantiate pay api (see payment_mandate.php) and call player_new
-        if (false) { //($m['Freq'] != $fields['Freq'] || $m['Amount'] != $fields['Amount']) {
+        if ($m['Freq'] != $fields['Freq'] || $m['Amount'] != $fields['Amount']) {
             $constants      = get_defined_constants (true);
             $apis           = 0;
             $mandate_count  = 0;
@@ -3697,31 +3698,74 @@ function update ( ) {
                 }
                 $api        = new $class ($zo);
                 if (method_exists($api,'player_new')) {
-                    //fiuelds [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+                    $q = "SELECT 
+                    `title`
+                    ,`name_first`
+                    ,`name_last`
+                    ,`email`
+                    ,`address_1`
+                    ,`address_2`
+                    ,`address_3`
+                    ,`town`
+                    ,`county`
+                    ,`postcode`
+                    FROM Supporters 
+                    WHERE `current_client_ref` = '$crf'
+                    LIMIT 0,1";
+                     //fields [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+                    try {
+                        $sr = $zo->query ($q);
+                        $s = null;
+                        if(!($s=$sr->fetch_assoc())) {
+                            return '{ "error" : 115 }';
+                        }
+                    }
+                    catch (\mysqli_sql_exception $e) {
+                        error_log ('update(): '.$e->getMessage());
+                        return '{ "error" : 116 }';
+                    }
+                    $address_array = array($s['address_1'], $s['address_2'], $s['address_3'], $s['town'], $s['county']);
+                    foreach ($address_array as $line) {
+                        if (strlen($line)) {
+                            $lines[] = $line;
+                        }
+                    }
+                    $numlines = count($lines);
+                    if ($numlines == 5) {
+                        $addr1 = $lines[0].', '.$lines[1];
+                        $addr2 = $lines[2].', '.$lines[3];
+                        $addr3 = $lines[4];
+                    }
+                    elseif ($numlines == 4) {
+                        $addr1 = $lines[0].', '.$lines[1];
+                        $addr2 = $lines[2];
+                        $addr3 = $lines[3];
+                    }
+                    else {
+                        $addr1 = $lines[0];
+                        $addr2 = (isset($lines[1])) ? $lines[1] : '';
+                        $addr3 = (isset($lines[2])) ? $lines[2] : '';
+                    }
+
                     $pn_mandate = array( // TODO get names right Sortcode or SortCode????
-                           'ClientRef' =>$ncr,
-                           'Name'      =>$fields['Name'],
-                           'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
-                           'Account'   =>($fields['Account']   ?: $m['Account']),
-                           'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
-                           'Freq'      =>$fields['Freq'],
-                           'Amount'    =>$fields['Amount'],
-                           'Chances'   =>$ch,
-                           'PayDay'    =>'',
-/* required from blotto_contact
-Email
-Title
-NamesGiven
-NamesFamily
-AddressLine1
-AddressLine2
-Postcode
-AddressLine3
-*/
-
-
+                            'ClientRef' =>$ncr,
+                            'Name'      =>$fields['Name'],
+                            'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
+                            'Account'   =>($fields['Account']   ?: $m['Account']),
+                            'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
+                            'Freq'      =>$fields['Freq'],
+                            'Amount'    =>$fields['Amount'],
+                            'Chances'   =>$ch,
+                            'PayDay'    =>'',
+                            'Email' => $s['email'],
+                            'Title' => $s['title'],
+                            'NamesGiven' => $s['name_first'],
+                            'NamesFamily' => $s['name_last'],
+                            'AddressLine1' => $addr1,
+                            'AddressLine2' => $addr2,
+                            'AddressLine3' => $addr3,
+                            'Postcode' => $s['postcode'],
                        );
-
                     $api->player_new ($pn_mandate, $crf);
                 }
             }
