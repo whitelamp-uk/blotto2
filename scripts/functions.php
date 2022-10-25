@@ -1247,6 +1247,19 @@ function fields ( ) {
     return $fields;
 }
 
+// pinched from 
+// https://stackoverflow.com/questions/933367/php-how-to-best-determine-if-the-current-invocation-is-from-cli-or-web-server
+function env_is_cli() {
+    if ( ( defined('STDIN') )
+      || ( php_sapi_name() === 'cli' )
+      || ( array_key_exists('SHELL', $_ENV) ) 
+      || ( empty($_SERVER['REMOTE_ADDR']) and !isset($_SERVER['HTTP_USER_AGENT']) and count($_SERVER['argv']) > 0) 
+      || ( !array_key_exists('REQUEST_METHOD', $_SERVER) ) ) {
+        return true;
+    }
+    return false;
+}
+
 function file_write ($file,$contents) {
     if (file_exists($file)) {
         fwrite (STDERR,debug_backtrace()[1]['function']."(\n");
@@ -3416,6 +3429,14 @@ function statement_serve ($file) {
     echo file_get_contents (BLOTTO_DIR_STATEMENT.'/'.$file);
 }
 
+function stderr_or_log($msg) {
+    if (env_is_cli() && defined('STDERR')) {
+        fwrite (STDERR,"$msg\n");
+    } else {
+        error_log($msg);
+    }
+}
+
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false,$classes=false) {
     // TODO: these inputs are now a mess and should become an object, $table
     if ($output) {
@@ -3725,29 +3746,8 @@ function update ( ) {
                         error_log ('update(): '.$e->getMessage());
                         return '{ "error" : 116 }';
                     }
-                    $address_array = array($s['address_1'], $s['address_2'], $s['address_3'], $s['town'], $s['county']);
-                    foreach ($address_array as $line) {
-                        if (strlen($line)) {
-                            $lines[] = $line;
-                        }
-                    }
-                    $numlines = count($lines);
-                    if ($numlines == 5) {
-                        $addr1 = $lines[0].', '.$lines[1];
-                        $addr2 = $lines[2].', '.$lines[3];
-                        $addr3 = $lines[4];
-                    }
-                    elseif ($numlines == 4) {
-                        $addr1 = $lines[0].', '.$lines[1];
-                        $addr2 = $lines[2];
-                        $addr3 = $lines[3];
-                    }
-                    else {
-                        $addr1 = $lines[0];
-                        $addr2 = (isset($lines[1])) ? $lines[1] : '';
-                        $addr3 = (isset($lines[2])) ? $lines[2] : '';
-                    }
 
+                    // see import.supporter.sql
                     $pn_mandate = array( // TODO get names right Sortcode or SortCode????
                             'ClientRef' =>$ncr,
                             'Name'      =>$fields['Name'],
@@ -3758,16 +3758,19 @@ function update ( ) {
                             'Amount'    =>$fields['Amount'],
                             'Chances'   =>$ch,
                             'PayDay'    =>'',
-                            'Email' => $s['email'],
-                            'Title' => $s['title'],
-                            'NamesGiven' => $s['name_first'],
-                            'NamesFamily' => $s['name_last'],
-                            'AddressLine1' => $addr1,
-                            'AddressLine2' => $addr2,
-                            'AddressLine3' => $addr3,
+                            'Email'     => $s['email'],
+                            'Title'     => $s['title'],
+                            'NamesGiven'   => $s['name_first'],
+                            'NamesFamily'  => $s['name_last'],
+                            'AddressLine1' => $s['address_1'],
+                            'AddressLine2' => $s['address_2'],
+                            'AddressLine3' => $s['address_3'],
+                            'Town'     => $s['town'],
+                            'County'   => $s['county']
                             'Postcode' => $s['postcode'],
                        );
                     $api->player_new ($pn_mandate, $crf);
+                    // if all good then update blotto_build_mandate on both databases
                 }
             }
         }
