@@ -3766,8 +3766,8 @@ function update ( ) {
                             'AddressLine2' => $s['address_2'],
                             'AddressLine3' => $s['address_3'],
                             'Town'     => $s['town'],
-                            'County'   => $s['county']
-                            'Postcode' => $s['postcode'],
+                            'County'   => $s['county'],
+                            'Postcode' => $s['postcode']
                        );
                     $api->player_new ($pn_mandate, $crf);
                     // if all good then update blotto_build_mandate on both databases
