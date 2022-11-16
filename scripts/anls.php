@@ -5,6 +5,12 @@ cfg ();
 require $argv[1];
 
 
+// find new ANLs - email_id is blank
+// send using createsend, update and email_sent but not status (?)
+// find emails sent yesterday with blank status and fetch status
+// update status - if not 'Delivered', invoke stannp
+
+
 try {
     if (defined('BLOTTO_STANNP') && BLOTTO_STANNP) {
         // Stannp API is active

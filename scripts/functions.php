@@ -3720,54 +3720,61 @@ function update ( ) {
                 }
                 $api        = new $class ($zo);
                 if (method_exists($api,'player_new')) {
-                    $q = "SELECT 
-                    `title`
-                    ,`name_first`
-                    ,`name_last`
-                    ,`email`
-                    ,`address_1`
-                    ,`address_2`
-                    ,`address_3`
-                    ,`town`
-                    ,`county`
-                    ,`postcode`
-                    FROM Supporters 
-                    WHERE `current_client_ref` = '$crf'
-                    LIMIT 0,1";
-                     //fields [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+                    //fields [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+
+                    $q = "
+                      SELECT
+                           `c`.`title`
+                          ,`c`.`name_first`
+                          ,`c`.`name_last`
+                          ,`c`.`email`
+                          ,`c`.`address_1`
+                          ,`c`.`address_2`
+                          ,`c`.`address_3`
+                          ,`c`.`postcode`
+                      FROM `blotto_supporter` AS `s`
+                        JOIN (
+                          SELECT
+                            `supporter_id`
+                           ,MAX(`created`) AS `created`
+                          FROM `blotto_contact`
+                          GROUP BY `supporter_id`
+                        ) AS `clast`
+                          ON `clast`.`supporter_id`=`s`.`id`
+                        JOIN `blotto_contact` AS `c`
+                          ON `c`.`supporter_id`=`clast`.`supporter_id`
+                         AND `c`.`created`=`clast`.`created`
+                        WHERE `s`.`client_ref` = '".$fields['ClientRef']."'
+                        ";
+
                     try {
-                        $sr = $zo->query ($q);
-                        $s = null;
-                        if(!($s=$sr->fetch_assoc())) {
-                            return '{ "error" : 115 }';
-                        }
+                        $rs = $zo->query ($q);
+                        $c=$rs->fetch_assoc();
                     }
                     catch (\mysqli_sql_exception $e) {
                         error_log ('update(): '.$e->getMessage());
-                        return '{ "error" : 116 }';
+                        return '{ "error" : 112 }';
                     }
 
-                    // see import.supporter.sql
-                    $pn_mandate = array( // TODO get names right Sortcode or SortCode????
-                            'ClientRef' =>$ncr,
-                            'Name'      =>$fields['Name'],
-                            'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
-                            'Account'   =>($fields['Account']   ?: $m['Account']),
-                            'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
-                            'Freq'      =>$fields['Freq'],
-                            'Amount'    =>$fields['Amount'],
-                            'Chances'   =>$ch,
-                            'PayDay'    =>'',
-                            'Email'     => $s['email'],
-                            'Title'     => $s['title'],
-                            'NamesGiven'   => $s['name_first'],
-                            'NamesFamily'  => $s['name_last'],
-                            'AddressLine1' => $s['address_1'],
-                            'AddressLine2' => $s['address_2'],
-                            'AddressLine3' => $s['address_3'],
-                            'Town'     => $s['town'],
-                            'County'   => $s['county']
-                            'Postcode' => $s['postcode'],
+                    $pn_mandate = array( // Argh. Sortcode or SortCode????
+                           'ClientRef' =>$ncr,
+                           'Name'      =>$fields['Name'],
+                           'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
+                           'Account'   =>($fields['Account']   ?: $m['Account']),
+                           'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
+                           'Freq'      =>$fields['Freq'],
+                           'Amount'    =>$fields['Amount'],
+                           'Chances'   =>$ch,
+                           'PayDay'    =>'', // can be blank because we have a StartDate
+                           'Email' => $c['email'],
+                           'Title' => $c['title'],
+                           'NamesGiven' => $c['name_first'],
+                           'NamesFamily' => $c['name_last'],
+                           'AddressLine1' => $c['address_1'],
+                           'AddressLine2' => $c['address_2'],
+                           'AddressLine3' => $c['address_3'],
+                           'Postcode' => $c['postcode'],
+
                        );
                     $api->player_new ($pn_mandate, $crf);
                     // if all good then update blotto_build_mandate on both databases
