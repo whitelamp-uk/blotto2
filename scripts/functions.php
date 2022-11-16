@@ -3756,24 +3756,27 @@ function update ( ) {
                         return '{ "error" : 112 }';
                     }
 
-                    $pn_mandate = array( // Argh. Sortcode or SortCode????
-                           'ClientRef' =>$ncr,
-                           'Name'      =>$fields['Name'],
-                           'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
-                           'Account'   =>($fields['Account']   ?: $m['Account']),
-                           'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
-                           'Freq'      =>$fields['Freq'],
-                           'Amount'    =>$fields['Amount'],
-                           'Chances'   =>$ch,
-                           'PayDay'    =>'', // can be blank because we have a StartDate
-                           'Email' => $c['email'],
-                           'Title' => $c['title'],
-                           'NamesGiven' => $c['name_first'],
-                           'NamesFamily' => $c['name_last'],
-                           'AddressLine1' => $c['address_1'],
-                           'AddressLine2' => $c['address_2'],
-                           'AddressLine3' => $c['address_3'],
-                           'Postcode' => $c['postcode'],
+                    // see import.supporter.sql
+                    $pn_mandate = array( // TODO get names right Sortcode or SortCode????
+                            'ClientRef' =>$ncr,
+                            'Name'      =>$fields['Name'],
+                            'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
+                            'Account'   =>($fields['Account']   ?: $m['Account']),
+                            'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
+                            'Freq'      =>$fields['Freq'],
+                            'Amount'    =>$fields['Amount'],
+                            'Chances'   =>$ch,
+                            'PayDay'    =>'',
+                            'Email'     => $s['email'],
+                            'Title'     => $s['title'],
+                            'NamesGiven'   => $s['name_first'],
+                            'NamesFamily'  => $s['name_last'],
+                            'AddressLine1' => $s['address_1'],
+                            'AddressLine2' => $s['address_2'],
+                            'AddressLine3' => $s['address_3'],
+                            'Town'     => $s['town'],
+                            'County'   => $s['county'],
+                            'Postcode' => $s['postcode']
 
                        );
                     $api->player_new ($pn_mandate, $crf);

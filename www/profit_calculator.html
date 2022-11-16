@@ -36,7 +36,7 @@ function calculate ( ) {
     // Declare all internal variables and get it over with before doing anything else
     var balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost;
     var d,days=[],delay,df,dps,expenses,i,invest=0,investe,k,inc,loaded,now,profit,row;
-    var slffnd,slffnde,start,tbody,tickets=0,total=0,week,weeks={},worst=0,years,yr,yr1,yrcurrent;
+    var slffnd,slffnde,start,tbody,tickets=0,total=0,week=0,weeks={},worst=0,years,yr,yr1,yrcurrent;
     years = 5;
     // Pre-existing balance
     balance = 1 * document.querySelector ('[name="balance"]').value;
@@ -143,7 +143,9 @@ function calculate ( ) {
     tbody.innerHTML     = '';
     for (d=now;d.getFullYear()<=(yr1+(years-1));d.setDate(d.getDate()+1)) {
         if (d.getDay()==1) {
+            week++;
             k           = d.ymd ('wc');
+            weeks[k].weeks = week;
             tickets    += weeks[k].ticketsAdded;
             tickets    -= weeks[k].ticketsCancelled;
             weeks[k].ticketsCumulative      = 1 * tickets.toFixed(0);
@@ -165,8 +167,8 @@ function calculate ( ) {
             if (weeks[k].balance<0) {
                 row.classList.add ('negative');
             }
-            columns     = [ 'date','signed','loaded','ticketsAdded','ticketsCancelled','ticketsCumulative','revenue','cost','balance' ];
-            dps         = [ null,null,0,0,1,0,2,2,2 ];
+            columns     = [ 'weeks','date','signed','loaded','ticketsAdded','ticketsCancelled','ticketsCumulative','revenue','cost','balance' ];
+            dps         = [ 0,null,null,0,0,1,0,2,2,2 ];
             for (i=0;columns[i];i++) {
                 cell = document.createElement ('td');
                 if (['ticketsCumulative'].includes(columns[i])) {
@@ -394,6 +396,7 @@ td.positive {
     <table>
       <thead>
         <tr>
+          <th>Weeks</th>
           <th>Week commencing</th>
           <th>Signed up</th>
           <th>Loaded</th>

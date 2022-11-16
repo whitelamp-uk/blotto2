@@ -19,6 +19,5 @@
     <img id="logo" src="./logo-org.png"/>
 
 
-
-
+<?php require './brand.php'; ?>
 
