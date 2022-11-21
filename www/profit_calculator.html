@@ -154,10 +154,10 @@ function calculate ( ) {
             balance    -= weeks[k].cost;
             weeks[k].balance                = 1 * balance.toFixed(2);
             if (!slffnd && weeks[k]['revenue']>=weeks[k]['cost']) {
-                slffnd = weeks[k].date
+                slffnd = week
             }
             if (!brkevn && weeks[k].balance>=0) {
-                brkevn = weeks[k].date
+                brkevn = week
             }
             if (invest>balance) {
                 invest = balance;
@@ -192,10 +192,10 @@ function calculate ( ) {
         }
     }
     if (slffnd) {
-        slffnde.innerHTML = '<strong>'+slffnd+'</strong>';
+        slffnde.innerHTML = '<strong>'+slffnd+' weeks</strong>';
     }
     if (brkevn) {
-        brkevne.innerHTML = '<strong>'+brkevn+'</strong>';
+        brkevne.innerHTML = '<strong>'+brkevn+' weeks</strong>';
     }
     else {
         brkevne.innerHTML = 'no break-even in range';
@@ -377,12 +377,12 @@ td.positive {
       </section>
 
       <section>
-        <label>Self-funding week commencing</label>
+        <label>Self-funding point</label>
         <span id="self-funding" class="summary"></span>
       </section>
 
       <section>
-        <label>Break-even week commencing</label>
+        <label>Break-even point</label>
         <span id="break-even" class="summary"></span>
       </section>
 
