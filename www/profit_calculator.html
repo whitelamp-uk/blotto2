@@ -143,6 +143,7 @@ function calculate ( ) {
     tbody.innerHTML     = '';
     for (d=now;d.getFullYear()<=(yr1+(years-1));d.setDate(d.getDate()+1)) {
         if (d.getDay()==1) {
+            row         = document.createElement ('tr');
             week++;
             k           = d.ymd ('wc');
             weeks[k].weeks = week;
@@ -153,8 +154,14 @@ function calculate ( ) {
             balance    += weeks[k].revenue;
             balance    -= weeks[k].cost;
             weeks[k].balance                = 1 * balance.toFixed(2);
-            if (!slffnd && weeks[k]['revenue']>=weeks[k]['cost']) {
-                slffnd = week
+            if (weeks[k]['revenue']>=weeks[k]['cost']) {
+                if (!slffnd) {
+                    slffnd = week
+                }
+                row.classList.add ('self-fund-yes');
+            }
+            else {
+                row.classList.add ('self-fund-no');
             }
             if (!brkevn && weeks[k].balance>=0) {
                 brkevn = week
@@ -163,7 +170,6 @@ function calculate ( ) {
                 invest = balance;
             }
 //console.log (weeks[k]);
-            row = document.createElement ('tr');
             if (weeks[k].balance<0) {
                 row.classList.add ('negative');
             }
@@ -292,9 +298,6 @@ thead {
 th {
     text-align: left;
 }
-.negative {
-    color: darkred;
-}
 td {
     padding-right: 2em;
 }
@@ -302,6 +305,15 @@ td.positive {
     color: black;
 }
 
+.negative {
+    color: darkred;
+}
+.self-fund-no {
+    background-color: hsla(40,100%,97.5%,1.0);
+}
+.self-fund-yes {
+    background-color: hsla(120,100%,97.5%,1.0);
+}
 .summary {
     display: inline-block;
     width: 9em;
