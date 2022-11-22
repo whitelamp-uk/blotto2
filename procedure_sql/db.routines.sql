@@ -52,6 +52,7 @@ BEGIN
       SUBSTR(`created`,1,7) AS `month`
      ,`email` AS `user`
      ,COUNT(DISTINCT `original_client_ref`) AS `signups_in_month`
+     ,MIN(`supporter_first_mandate`) AS `first_mandated`
      ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
      ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
     FROM `Supporters`
@@ -72,6 +73,7 @@ BEGIN
       SUBSTR(`created`,1,7) AS `month`
      ,1*REPLACE(`mobile`,'+','') AS `user`
      ,COUNT(DISTINCT `original_client_ref`) AS `signups_in_month`
+     ,MIN(`supporter_first_mandate`) AS `first_mandated`
      ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
      ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
     FROM `Supporters`
@@ -92,6 +94,7 @@ BEGIN
       SUBSTR(`created`,1,7) AS `month`
      ,CONCAT(`postcode`,' ',`address_1`) AS `user`
      ,COUNT(DISTINCT `original_client_ref`) AS `signups_in_month`
+     ,MIN(`supporter_first_mandate`) AS `first_mandated`
      ,GROUP_CONCAT(DISTINCT CONCAT(`name_first`,' ',`name_last`)) AS `names`
      ,GROUP_CONCAT(DISTINCT `original_client_ref` ORDER BY `original_client_ref`) AS `client_refs`
     FROM `Supporters`
