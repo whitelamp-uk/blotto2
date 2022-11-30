@@ -35,9 +35,10 @@ Date.prototype.futureDate = function (days) {
 function calculate ( ) {
     // Declare all internal variables and get it over with before doing anything else
     var balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost;
-    var d,days=[],delay,df,dps,expenses,i,invest=0,investe,k,inc,loaded,now,profit,row;
-    var slffnd,slffnde,start,tbody,tickets=0,total=0,week=0,weeks={},worst=0,years,yr,yr1,yrcurrent;
-    years = 5;
+    var d,days=[],delay,df,dps,expenses,i,invest=0,investe,k,inc,label,loaded,now,profit,row;
+    var section,slffnd,slffnde,span,start,tbody,tickets=0,total=0,week=0,weeks={},worst=0;
+    var years,yearse,yr,yrcount=1,yr1,yrprofits=[];
+    years = 11;
     // Pre-existing balance
     balance = 1 * document.querySelector ('[name="balance"]').value;
     // Pre-existing tickets
@@ -66,6 +67,8 @@ function calculate ( ) {
     brkevne = document.querySelector ('#break-even');
     // The peak investment element for writing out the simulation to screen
     investe = document.querySelector ('#invest');
+    // The element for writing out year-end cumulative profit
+    yearse  = document.querySelector ('#years');
     // Mean quantity of chances per sign-up
     chances = document.querySelector ('[name="chances"]').value;
     // Loop through time starting today
@@ -96,8 +99,8 @@ function calculate ( ) {
             }
             weeks[k].signed      = 1 * loaded;
             weeks[k].loaded      = loaded * (1-(cnli/100));
-            yrcurrent            = Math.floor ((d.getTime()-now.getTime())/(1000*60*60*24*365));
-            weeks[k].cost        = loaded * (1-(cnli/100)) * (cost + (yrcurrent*inc));
+            weeks[k].year        = Math.floor ((d.getTime()-now.getTime())/(1000*60*60*24*365));
+            weeks[k].cost        = loaded * (1-(cnli/100)) * (cost + (weeks[k].year*inc));
 //console.log (weeks[k]);
             // Future date for first payment
             df = d.futureDate (7*delay);
@@ -119,7 +122,7 @@ function calculate ( ) {
             // Future date for cancellation attrition
             df = new Date ();
             df = d.futureDate (7*26);
-            for (i=0;i<years;i++) {
+           for (i=0;i<years;i++) {
                 k = df.ymd ('wc');
 //console.log ('middle of year '+i+': '+k);
                 if (!weeks[k]) {
@@ -133,6 +136,7 @@ function calculate ( ) {
                         cost : 0
                     }
                 }
+                weeks[k].year = Math.floor ((df.getTime()-now.getTime())/(1000*60*60*24*365));
                 weeks[k].ticketsCancelled = 1*((1*weeks[k].ticketsCancelled)+(chances*loaded*(1-(cnli/100))*(cnla/100))).toFixed(1);
                 df.setDate (df.getDate()+(7*52));
             }
@@ -141,11 +145,12 @@ function calculate ( ) {
 //console.log ('----------------');
 //console.log ('----------------');
     tbody.innerHTML     = '';
+    yearse.innerHTML    = '';
     for (d=now;d.getFullYear()<=(yr1+(years-1));d.setDate(d.getDate()+1)) {
         if (d.getDay()==1) {
-            row         = document.createElement ('tr');
             week++;
             k           = d.ymd ('wc');
+            row         = document.createElement ('tr');
             weeks[k].weeks = week;
             tickets    += weeks[k].ticketsAdded;
             tickets    -= weeks[k].ticketsCancelled;
@@ -193,6 +198,22 @@ function calculate ( ) {
                     cell.classList.add ('positive');
                 }
                 row.appendChild (cell);
+
+
+            if (weeks[k].year>=yrcount) {
+                section = document.createElement ('section');
+                label   = document.createElement ('label');
+                label.innerHTML = 'Year ' + weeks[k].year + ' end <strong>&pound;</strong>';
+                section.appendChild (label);
+                span    = document.createElement ('span');
+                span.classList.add ('summary');
+                span.textContent = thouSepRound (weeks[k]['balance'],2,' ');
+                section.appendChild (span);
+                yearse.appendChild (section);
+                yrcount = weeks[k].year + 1;
+            }
+
+
             }
             tbody.appendChild (row);
         }
@@ -260,11 +281,26 @@ body > section {
     position: fixed;
     top: 0;
     left: 0;
+    background-color: white;
+}
+#years {
+    margin-top: 0;
+    position: fixed;
+    top: 2em;
+    left: 2em;
+    border-style: solid;
+    border-width: 1px;
+    padding: 1em;
+    background-color: white;
 }
 
 label {
     display: inline-block;
     width: 20em;
+}
+#years label {
+    display: inline-block;
+    width: 12em;
 }
 label strong {
     font-style: italic;
@@ -401,6 +437,13 @@ td.positive {
       <section>
         <label>Peak investment <strong>&pound;</strong></label>
         <span id="invest" class="summary"></span>
+      </section>
+
+      <section>
+        <details>
+          <summary>Yearly balances</summary>
+          <section id="years" onclick="this.parentElement.open=false"></section>
+        </details>
       </section>
 
     </section>
