@@ -68,6 +68,10 @@ define ( 'BLOTTO_TAX',              0.20            ); // Sales tax as a decimal
 define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
 
 
+// Campaign Monitor
+define ( 'CREATESEND_CLASS',        '/home/blotto/createsend-php/csrest_transactional_smartemail.php' );
+
+
 // Stannp snail-mail service
 define ( 'BLOTTO_STANNP',           '/home/blotto/stannp/Stannp.class.php'      );
 define ( 'BLOTTO_STANNP_COUNTRY',   'GB'        );
