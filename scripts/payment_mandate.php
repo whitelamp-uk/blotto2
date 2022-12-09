@@ -5,6 +5,7 @@ cfg ();
 require $argv[1];
 
 $interval = BLOTTO_DD_TRY_INTERVAL;
+$errors = [];
 
 echo "    Generating/posting mandate data\n";
 
@@ -64,7 +65,21 @@ try {
             try {
                 $ms = $zo->query ($qs);
                 while ($m=$ms->fetch_assoc()) {
-                    $mandates[] = $m;
+                    if (territory_permitted($m['Postcode'])) {
+                        $mandates[] = $m;
+                    }
+                    else {
+                        $e = "Postcode '{$s['Postcode']}' is outside territory '".BLOTTO_TERRITORIES_CSV."' - $ccc - for '{$s['ClientRef']}'\n";
+                        fwrite (STDERR,$e);
+                        $errors[] = $e;
+                    }
+                }
+                if ($bad=count($errors)) {
+                    $message = "The following $bad mandates have been rejected:\n";
+                    foreach ($errors as $e) {
+                        $message .= $e;
+                    }
+                    notify (BLOTTO_EMAIL_WARN_TO,"$bad rejected mandates",$message);
                 }
             }
             catch (\mysqli_sql_exception $e) {

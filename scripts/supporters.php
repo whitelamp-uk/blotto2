@@ -11,7 +11,7 @@ if (!array_key_exists(4,$argv)) {
 }
 
 $ccc = strtoupper ($argv[4]);
-
+$errors = [];
 
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
@@ -276,9 +276,11 @@ try {
     $new            = $zo->query ($qs);
     $count          = 0;
     while ($s=$new->fetch_assoc()) {
-        if (!territory_permitted($s['Postcode'],$areas)) {
-            fwrite(STDERR, "Postcode '{$s['Postcode']}' is outside territory '".BLOTTO_TERRITORIES_CSV."' - $ccc - for '{$s['ClientRef']}'\n");
-            exit (115);
+        if (!territory_permitted($s['Postcode'])) {
+            $e = "{$s['ClientRef']} - postcode {$s['Postcode']} is outside territory ".BLOTTO_TERRITORIES_CSV." - $ccc\n";
+            fwrite (STDERR,$e);
+            $errors[] = $e;
+            continue;
         }
         $cd         = esc ($s['Approved']);
         $sg         = esc ($s['Signed']);
@@ -295,17 +297,17 @@ try {
                 $sx = json_decode ($s['SysEx']);
             }
             catch (\Exception $e) {
-                fwrite (STDERR,$e->getMessage()."\n");
-                exit (116);
-            }
-            if (!$sx) {
-                fwrite (STDERR,"Could not interpret system exclusive column = '{$s['SysEx']}'\n");
-                exit (116);
+                $e = "{$s['ClientRef']} - could not interpret sysex\n";
+                fwrite (STDERR,$e);
+                $errors[] = $e;
+                continue;
             }
             if (property_exists($sx,'balance')) {
                 if (!preg_match('<^[0-9]+$>',$sx->balance) && !preg_match('<^[0-9]*\.[0-9]+$>',$sx->balance)) {
-                    fwrite (STDERR,"Could not interpret sysex->balance = '{$sx->balance}'\n");
-                    exit (116);
+                    $e = "{$s['ClientRef']} - could not interpret sysex->balance = '{$sx->balance}'\n";
+                    fwrite (STDERR,$e);
+                    $errors[] = $e;
+                    continue;
                 }
                 $bl = round ($sx->balance,2);
             }
@@ -321,8 +323,10 @@ try {
                     $dc = $dc->format ('Y-m-d');
                 }
                 catch (\Exception $e) {
-                    fwrite (STDERR,"Could not interpret sysex->first_draw_close = '{$sx->first_draw_close}'\n");
-                    exit (116);
+                    $e = "{$s['ClientRef']} - could not interpret sysex->first_draw_close = '{$sx->first_draw_close}'\n";
+                    fwrite (STDERR,$e);
+                    $errors[] = $e;
+                    continue;
                 }
             }
         }
@@ -373,8 +377,18 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (117);
+    exit (116);
 }
+
+if ($bad=count($errors)) {
+    $message = "The following $bad supporters have been rejected:\n";
+    foreach ($errors as $e) {
+        $message .= $e;
+    }
+    notify (BLOTTO_EMAIL_WARN_TO,"$bad rejected supporters",$message);
+}
+
+echo "-- SUPPORTERS BAD ROWS: $bad from $ccc --\n\n";
 
 echo "-- COUNT: $count supporters from $ccc --\n\n";
 
@@ -395,7 +409,7 @@ if (!$count) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (118);
+        exit (117);
     }
 }
 
