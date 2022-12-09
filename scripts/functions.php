@@ -793,8 +793,8 @@ function draw_first_zaffo_model ($first_collection_date,$dow=5) {
     */
     $fcd        = new DateTime ($first_collection_date);
     $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
-    // Move on to next Fri
-    $days       = (($dow+7)-$fcd->format('w')) % 7;
+    // Move on to next $dow
+    $days       = ( ($dow+7) - $fcd->format('w') ) % 7;
     if ($days==0) {
         // Even if collection date is a $dow
         $days  += 7;
