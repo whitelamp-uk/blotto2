@@ -86,7 +86,7 @@ linkCsv ('reconciliation');
 table (
     'revenue-ccc',
     'summary',
-    'Revenue breakdown '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
+    'Revenue breakdown by CCC '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
     ['CCC','Revenue '.BLOTTO_CURRENCY],
     revenue ($from,$to)
 );
