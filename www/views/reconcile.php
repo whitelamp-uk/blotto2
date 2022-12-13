@@ -73,12 +73,12 @@ linkCsv ('reconciliation');
 
       <section class="reconcile" id="reconcile-table-revenue-ccc">
         <a
-          title="Download revenue breakdown by CCC as CSV"
+          title="Download revenue by CCC as CSV"
           class="link-resource link-csv"
           download="revenue_ccc_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.csv"
           href="#"><img /></a>
         <a
-          title="Download revenue breakdown by CCC as HTML"
+          title="Download revenue by CCC as HTML"
           class="link-resource link-table"
           download="revenue_ccc_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
           href="#"><img /></a>
@@ -86,7 +86,7 @@ linkCsv ('reconciliation');
 table (
     'revenue-ccc',
     'summary',
-    'Revenue breakdown by CCC '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
+    'Revenue by CCC '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
     ['CCC','Revenue '.BLOTTO_CURRENCY],
     revenue ($from,$to)
 );
