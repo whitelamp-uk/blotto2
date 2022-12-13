@@ -46,6 +46,10 @@ table#draw-summary tbody td:nth-of-type(3),
 table#draw-summary tbody td:nth-of-type(4) {
     text-align:         right;
 }
+table#revenue-ccc thead th:nth-of-type(2),
+table#revenue-ccc tbody td:nth-of-type(2) {
+    text-align:         right;
+}
 table#draw-summary-super tbody td:nth-of-type(2),
 table#draw-summary-super tbody td:nth-of-type(3) {
     text-align:         right;

@@ -2511,6 +2511,40 @@ function result_spiel66 ($prize,$draw_closed) {
     return false;
 }
 
+function revenue ($from,$to) {
+    $price = BLOTTO_TICKET_PRICE;
+    $rows       = array ();
+    $q      = "
+      SELECT
+        `s`.`canvas_code`
+       ,ROUND(($price/100)*COUNT(`e`.`id`),2)
+      FROM `blotto_entry` AS `e`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`client_ref`=`e`.`client_ref`
+      JOIN `blotto_supporter` AS `s`
+        ON `s`.`id`=`p`.`supporter_id`
+      WHERE `e`.`draw_closed`>='$from'
+        AND `e`.`draw_closed`<='$to'
+      GROUP BY `s`.`canvas_code`
+      ORDER BY `s`.`canvas_code`
+    ";
+    $zo         = connect ();
+    if (!$zo) {
+        return $rows;
+    }
+    try {
+        $c      = $zo->query ($q);
+        while ($r=$c->fetch_assoc()) {
+            array_push ($rows,$r);
+        }
+        return $rows;
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ('revenue(): '.$e->getMessage());
+        return $rows;
+    }
+}
+
 function search ( ) {
     $type               = 's'; // s for supporter or m for mandate
     if (array_key_exists('t',$_GET)) {

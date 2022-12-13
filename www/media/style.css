@@ -787,6 +787,11 @@ form#list-aux label {
     width:              6em;
 }
 
+#reconcile-table-revenue-ccc thead th:nth-of-type(2),
+#reconcile-table-revenue-ccc tbody td:nth-of-type(2) {
+    text-align:         right;
+}
+
 #reconcile-table-draw-summary tbody td:nth-of-type(3),
 #reconcile-table-draw-summary tbody td:nth-of-type(4) {
     text-align:         right;
