@@ -1560,6 +1560,7 @@ BEGIN
      ,`s`.`created`
      ,`s`.`cancelled`
      ,`s`.`ccc`
+     ,`s`.`canvas_agent_ref`
      ,`s`.`canvas_ref`
      ,`s`.`supporter_id`
      ,`s`.`title`
@@ -1627,6 +1628,7 @@ BEGIN
      ,`s`.`created`
      ,`s`.`cancelled`
      ,`s`.`ccc`
+     ,`s`.`canvas_agent_ref`
      ,`s`.`canvas_ref`
      ,`s`.`supporter_id`
      ,`s`.`title`
