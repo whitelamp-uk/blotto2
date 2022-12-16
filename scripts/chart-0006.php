@@ -1,6 +1,6 @@
 <?php
 
-// Cumulative canvassing company activity
+// Canvassing company performance  (cumulative)
 
 // Show-off with a double-dataset doughnut
 $data       = [[],[],[]];
@@ -10,21 +10,20 @@ $q = "
     `ccc`
    ,COUNT(`current_client_ref`) AS `imports`
    ,SUM(`cancelled`='') AS `retained`
-   ,SUM(`latest_mandate_frequency`='Single') AS `single`
   FROM (
     SELECT
       `ccc`
      ,`current_client_ref`
      ,`cancelled`
-     ,`latest_mandate_frequency`
     FROM `Supporters`
+    -- Ignore one-off payments
+    WHERE `latest_mandate_frequency`!='Single'
     GROUP BY `current_client_ref`
   ) AS `s`
   GROUP BY `ccc`
   ORDER BY `imports` DESC
   ;
 ";
-// TODO: add below the data from $row['single'] above - the count of one-off payments
 try {
     $cdo->datasets = [];
     $cdo->datasets[0] = new stdClass ();
@@ -56,6 +55,7 @@ try {
     array_push ($cdo->datasets[1]->backgroundColor,$blank);
     array_push ($data[2],0);
     array_push ($cdo->datasets[2]->backgroundColor,$blank);
+    $color          = 0;
     foreach ($rs as $row) {
         $color++;
         array_push ($labels,$row['ccc'].' (retained)');

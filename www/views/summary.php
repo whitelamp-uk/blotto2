@@ -153,7 +153,7 @@ if (data8) {
         'doughnut',
         data8,
         {
-            title: "Canvassing company performance (cumulative import/retention)",
+            title: "Canvassing company performance (cumulative import/retention, ignoring single payments)",
             link: true
         }
     );

@@ -1,6 +1,6 @@
 <?php
 
-// Recent canvassing company activity
+// Cnvassing company performance (recent)
 
 $since = $p[0];
 $q = "
