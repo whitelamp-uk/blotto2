@@ -1669,7 +1669,7 @@ function is_https ( ) {
 function link_query ($target,$table,$date,$interval=null) {
     $datefields = array (
         'ANLs'             => 'tickets_issued',
-        'Cancellations'    => 'Cancelled_Date',
+        'Cancellations'    => 'cancelled_date',
         'Changes'          => 'changed_date',
         'Draws'            => 'draw_closed',
         'Insurance'        => 'draw_close_date',
