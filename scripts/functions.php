@@ -255,7 +255,9 @@ function chart2Headings ($chartObj) {
     return $arr;
 }
 
-function class_api_instance ($type,$arg_array=[]) {
+function class_api_instance ($type) {
+    $args = func_get_args ();
+    array_shift ($args);
     $types = ['EMAIL','PAY'];
     if (!in_array($type,$types)) {
         throw new \Exception ("API type '$type' is not recognised");
