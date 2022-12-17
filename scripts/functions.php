@@ -255,6 +255,40 @@ function chart2Headings ($chartObj) {
     return $arr;
 }
 
+function class_api_instance ($type,$arg_array=[]) {
+    $types = ['EMAIL','PAY'];
+    if (!in_array($type,$types)) {
+        throw new \Exception ("API type '$type' is not recognised");
+        return false;
+    }
+    $constants = get_defined_constants (true);
+    foreach ($constants['user'] as $name => $classfile) {
+        // Return an instance of the first class found
+        if (!preg_match('<^BLOTTO_'.$type.'_API_[A-Z]+$>',$name)) {
+            continue;
+        }
+        if (!$classfile) {
+            continue;
+        }
+        // Class name by convention is defined by a constant having a predictable name
+        $class      = constant ($name.'_CLASS');
+        if (!class_exists($class)) {
+            if (!is_readable($classfile)) {
+                throw new \Exception ("API file (type=$type) '$classfile' is not readable");
+                return false;
+            }
+            require $classfile;
+            if (!class_exists($class)) {
+                throw new \Exception ("API class (type=$type) '$class' does not exist");
+                return false;
+            }
+        }
+        $api = new $class (...$args);
+        return $api;
+    }
+    return false;
+}
+
 function clientref_advance ($cref) {
     $cref = explode (BLOTTO_CREF_SPLITTER,$cref);
     if (count($cref)==1) {
