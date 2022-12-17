@@ -69,7 +69,8 @@ define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
 
 
 // Campaign Monitor
-define ( 'CREATESEND_CLASS',        '/home/blotto/createsend-php/csrest_transactional_smartemail.php' );
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR',        '/opt/createsend-php/csrest_transactional_smartemail.php'   );
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CLASS',  '\Blotto\CampaignMonitor'                                   );
 
 
 // Stannp snail-mail service
