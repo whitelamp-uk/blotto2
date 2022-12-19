@@ -120,6 +120,11 @@ define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
 define ( 'BLOTTO_SELFEX_EMAIL',     'SelfExclusionYLH@MyHelpDomain.com' );
 
 
+// Campaign Monitor
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR',        '/opt/campaignmonitor-api/CampaignMonitor.php'  );
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CLASS',  '\Whitelamp\CampaignMonitor'                    );
+
+
 // Stannp snail-mail service
 define ( 'BLOTTO_STANNP',           false           );
 define ( 'BLOTTO_STANNP_PREFIX',    'ABC'           );
