@@ -13,7 +13,7 @@ CREATE TABLE `tmp_supporter` (
   `Chances` varchar(255) CHARACTER SET ascii NOT NULL,
   `PayDay` varchar(255) CHARACTER SET ascii NOT NULL,
   `Name` varchar(255) NOT NULL,
-  `SortCode` varchar(255) CHARACTER SET ascii NOT NULL,
+  `Sortcode` varchar(255) CHARACTER SET ascii NOT NULL,
   `Account` varchar(255) CHARACTER SET ascii NOT NULL,
   `Amount` varchar(255) CHARACTER SET ascii NOT NULL,
   `Freq` varchar(255) CHARACTER SET ascii NOT NULL,

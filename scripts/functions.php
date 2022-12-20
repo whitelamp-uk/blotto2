@@ -3641,8 +3641,6 @@ function update ( ) {
         return (object) ['error' => 126];
     }
     if ($type=='s') {
-      // sanity check = are the blotto_contact tables in lockstep with each other?
-      // do we have to do this select -> update or insert individually for both databases?
         $q0 = "SELECT id FROM `blotto_contact` WHERE `supporter_id` = ".escm($fields['supporter_id'])." AND DATE(`created`) = CURDATE()";
         try {
             $r          = $zom->query ($q0);
@@ -3788,10 +3786,8 @@ function update ( ) {
                     error_log ("update(): Payment API class '$class' does not exist - aborting");
                     return '{ "error" : 114 }';
                 }
-                $api        = new $class ($zo);
+                $api        = new $class ($zom); // use the make database
                 if (method_exists($api,'player_new')) {
-                    //fields [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
-
                     $q = "
                       SELECT
                            `c`.`title`
@@ -3816,41 +3812,42 @@ function update ( ) {
                          AND `c`.`created`=`clast`.`created`
                         WHERE `s`.`client_ref` = '".$fields['ClientRef']."'
                         ";
-
                     try {
-                        $rs = $zo->query ($q);
+                        $rs = $zom->query ($q);
                         $c=$rs->fetch_assoc();
                     }
                     catch (\mysqli_sql_exception $e) {
                         error_log ('update(): '.$e->getMessage());
-                        return '{ "error" : 112 }';
+                        return '{ "error" : 115 }';
                     }
-
                     // see import.supporter.sql
-                    $pn_mandate = array( // TODO get names right Sortcode or SortCode????
-                            'ClientRef' =>$ncr,
-                            'Name'      =>$fields['Name'],
-                            'SortCode'  =>($fields['Sortcode']  ?: $m['Sortcode']),
-                            'Account'   =>($fields['Account']   ?: $m['Account']),
-                            'StartDate' =>($fields['StartDate'] ?: $m['StartDate']),
-                            'Freq'      =>$fields['Freq'],
-                            'Amount'    =>$fields['Amount'],
-                            'Chances'   =>$ch,
-                            'PayDay'    =>'',
-                            'Email'     => $s['email'],
-                            'Title'     => $s['title'],
-                            'NamesGiven'   => $s['name_first'],
-                            'NamesFamily'  => $s['name_last'],
-                            'AddressLine1' => $s['address_1'],
-                            'AddressLine2' => $s['address_2'],
-                            'AddressLine3' => $s['address_3'],
-                            'Town'     => $s['town'],
-                            'County'   => $s['county'],
-                            'Postcode' => $s['postcode']
+                    $pn_mandate = [
+                            'ClientRef'            => $ncr,
+                            'ClientRefPrevious'    => $fields['ClientRef'],
+                            'Name'                 => $fields['Name'],
+                            'Sortcode'             => ($fields['Sortcode']  ?: $m['Sortcode']),
+                            'Account'              => ($fields['Account']   ?: $m['Account']),
+                            'StartDate'            => ($fields['StartDate'] ?: $m['StartDate']),
+                            'Freq'                 => $fields['Freq'],
+                            'Amount'               => $fields['Amount'],
+                            'Chances'              => $ch,
+                            'PayDay'               => '',
+                            'Email'                => $s['email'],
+                            'Title'                => $s['title'],
+                            'NamesGiven'           => $s['name_first'],
+                            'NamesFamily'          => $s['name_last'],
+                            'AddressLine1'         => $s['address_1'],
+                            'AddressLine2'         => $s['address_2'],
+                            'AddressLine3'         => $s['address_3'],
+                            'Town'                 => $s['town'],
+                            'County'               => $s['county'],
+                            'Postcode'             => $s['postcode']
 
-                       );
-                    $api->player_new ($pn_mandate, $crf);
-                    // if all good then update blotto_build_mandate on both databases
+                    ];
+                    if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
+                        error_log ("update(): failed to complete new mandate {$api->errorCode} {$api->error}");
+                        return '{ "error" : 116 }';
+                    }
                 }
             }
         }
