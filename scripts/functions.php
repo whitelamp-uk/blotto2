@@ -739,7 +739,7 @@ function draw ($draw_closed) {
         return false;
     }
     $draw->time             = $d['draw_time'];
-    $draw->prizes           = prizes ($draw_closed);
+    $draw->prizes           = prizes ($d['draw_date']);
     $draw->insure           = [];
     $draw->manual           = false;
     $draw->results          = [];
