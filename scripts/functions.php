@@ -880,7 +880,7 @@ function draw_report_render ($draw_closed,$output=true) {
     $draw->tickets          = 0;
     $draw->total            = 0;
     $draw->entries          = [];
-    foreach (prizes($draw_closed) as $p) {
+    foreach (prizes($date_draw) as $p) {
         if ($p['level_method']=='RAFF' || !is_array($p['results'])) {
             continue;
         }
@@ -4786,6 +4786,7 @@ function www_winners ($format='') {
         $q = "
           SELECT
             MAX(`draw_closed`) AS `draw_closed`
+-- TODO: this seems unnecessary
            ,DATE(drawOnOrAfter(MAX(`draw_closed`))) AS `drawn`
           FROM `$rdb`.`blotto_result`
           WHERE drawPublishAfter(drawOnOrAfter(`draw_closed`))<=NOW()
@@ -4825,6 +4826,7 @@ function www_winners ($format='') {
                     }
                 }
             }
+// TODO: $r['drawn'] could be replaced with $draw->date
             $dt                 = new DateTime ($r['drawn']);
             $results->date      = $dt->format ($format);
             $q = "
