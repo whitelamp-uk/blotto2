@@ -60,6 +60,8 @@ define ( 'BLOTTO_PREFERENCES_SEP',  '::'            ); // see supporters.php
 define ( 'BLOTTO_VERIFY_INTERVAL',  '15 MINUTE'     ); // time to use a verification code
 define ( 'BLOTTO_NONCE_MINUTES',    15              ); // duration of a nonce value
 
+define ( 'BLOTTO_ADMINER_URL',      'https://abc.lottery.example/adminer/'      ); // Used to internally email data URLs from CLI processes
+
 define ( 'BLOTTO_BANK_NAME',        'My Lottery Account'    );
 define ( 'BLOTTO_BANK_SORT',        '01-02-03'              );
 define ( 'BLOTTO_BANK_ACNR',        '12345678'              );

@@ -1,5 +1,23 @@
 <?php
 
+function adminer ( ) {
+    $terms  = func_get_args ();
+    $table  = array_shift ($terms);
+    $url    = BLOTTO_ADMINER_URL.'?'.'&db='.urlencode(BLOTTO_DB).'&select='.urlencode($table);
+    $count  = 0;
+    for ($i=0;array_key_exists($i+1,$terms);$i=$i+3) {
+        if (!array_key_exists($i+2,$terms)) {
+            $terms[$i+2] = '';
+        }
+        $url .= '&where'.urlencode('['.$count.'][col]').'='.urlencode($terms[$i]);
+        $url .= '&where'.urlencode('['.$count.'][op]').'='.urlencode($terms[$i+1]);
+        $url .= '&where'.urlencode('['.$count.'][val]').'='.urlencode($terms[$i+2]);
+        $url .= '&limit=50';
+        $count++;
+    }
+    return $url;
+}
+
 function bank_decrypt ($key,$data,&$sortcode,&$accountnr) {
     $method = 'AES-256-CBC';
     $data = base64_decode($data);
