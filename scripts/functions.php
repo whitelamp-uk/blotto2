@@ -757,7 +757,7 @@ function draw ($draw_closed) {
         return false;
     }
     $draw->time             = $d['draw_time'];
-    $draw->prizes           = prizes ($d['draw_date']);
+    $draw->prizes           = prizes ($draw_closed);
     $draw->insure           = [];
     $draw->manual           = false;
     $draw->results          = [];
@@ -898,7 +898,7 @@ function draw_report_render ($draw_closed,$output=true) {
     $draw->tickets          = 0;
     $draw->total            = 0;
     $draw->entries          = [];
-    foreach (prizes($date_draw) as $p) {
+    foreach (prizes($draw_closed) as $p) {
         if ($p['level_method']=='RAFF' || !is_array($p['results'])) {
             continue;
         }
@@ -2277,7 +2277,7 @@ function prize_pot ($draw_closed,$quids_per_thou,$verbose=false) {
     return $quids_per_thou * $r/1000; // Quids pay-out
 }
 
-function prizes ($date) {
+function prizes ($draw_closed) {
     $rdb = BLOTTO_RESULTS_DB;
     $qs = "
       SELECT
@@ -2306,8 +2306,8 @@ function prizes ($date) {
           `level`
          ,MAX(`starts`) AS `start_date`
         FROM `blotto_prize`
-        WHERE `starts`<='$date'
-          AND `expires`>='$date'
+        WHERE `starts`<='$draw_closed'
+          AND `expires`>='$draw_closed'
         GROUP BY `level`
       ) AS `current`
         ON `current`.`level`=`p`.`level`
@@ -2318,7 +2318,7 @@ function prizes ($date) {
           `prize_level`
          ,GROUP_CONCAT(`number` SEPARATOR ',') AS `results`
         FROM `$rdb`.`blotto_result`
-        WHERE `draw_closed`='$date'
+        WHERE `draw_closed`='$draw_closed'
         GROUP BY `prize_level`
       )      AS `r`
              ON `r`.`prize_level`=`p`.`level`
