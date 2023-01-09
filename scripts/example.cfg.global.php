@@ -122,3 +122,8 @@ define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed'        );
 define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json' );
 
+
+// Email providers
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CODE',   'CM'                                            );
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CLASS',  '\Whitelamp\CampaignMonitor'                    );
+

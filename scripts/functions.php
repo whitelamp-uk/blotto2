@@ -1177,6 +1177,60 @@ function draws_super ($from,$to) {
     }
 }
 
+function email_api_internal ($code=null) {
+    if ($api=email_api('CM')) {
+        // Use Campaign Monitor as default
+        return $api;
+    }
+    // Use the first found
+    return email_api ();
+}
+
+function email_api ($code=null) {
+    // If no code, return the first found with a class
+    foreach (email_apis() as $api) {
+        if (!$code) {
+            return $api;
+        }
+        if ($api->code==$code) {
+            return $api;
+        }
+    }
+    return null;
+}
+
+function email_apis ( ) {
+    // If no code, return the first found
+    $constants = get_defined_constants (true);
+    $apis = [];
+    foreach ($constants['user'] as $name=>$value) {
+        $api = new \stdClass ();
+        if (preg_match('<^BLOTTO_EMAIL_API_[A-Z]+$>',$name,$matches)) {
+            $api->file = $value;
+        }
+        else {
+            // Not an API class file
+            continue;
+        }
+        if (defined($name.'_CODE') && ($code=constant($name.'_CODE'))) {
+            $api->code = $code;
+        }
+        else {
+            // Code not found
+            continue;
+        }
+        if (defined($name.'_CLASS') && ($class=constant($name.'_CLASS'))) {
+            $api->class = $class;
+        }
+        else {
+            // Class name not found
+            continue;
+        }
+        $apis[] = $api;
+    }
+    return $apis;
+}
+
 function enter_super ($org_id,$db,$draw_closed,$entries) { 
     $dbm            = $db['make'];
     $dbf            = $db['frontend'];
