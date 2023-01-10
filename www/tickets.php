@@ -33,6 +33,19 @@ if (1) {
             $response->nonce = $nonce;
             if (www_signup_verify_store('email',$request->email,$code)) {
                 try {
+                    $api = email_api ();
+                    $api->apiKeySet ($org['signup_cm_key']);
+                    $response = $api->send (
+                        $org['signup_cm_id_verify'],
+                        $request->email,
+                        [ 'Code' => $code ]
+                    );
+                    if (!$response) {
+                        error_log ($api->errorLast);
+                        $response->e    = $e_default;
+                        $response->eCode = 102;
+                    }
+/*
                     $result = campaign_monitor (
                         $org['signup_cm_key'],
                         $org['signup_cm_id_verify'],
@@ -45,6 +58,7 @@ if (1) {
                         $response->e    = $e_default;
                         $response->eCode = 102;
                     }
+*/
                 }
                 catch (\Exception $e) {
                     $response->e        = $e_default;

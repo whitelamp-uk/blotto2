@@ -111,23 +111,6 @@ function campaign_monitor ($key,$campaign_id,$to,$data) {
     );
 }
 
-function campaign_monitor_bounces ($time_from,$time_to) {
-    if (!class_exists('\CS_REST_Transactional_SmartEmail')) {
-        throw new \Exception ('Class \CS_REST_Transactional_SmartEmail not found');
-        return false;
-    }
-    $cm         = new \CS_REST_Transactional_SmartEmail (
-        $campaign_id,
-        ['api_key'=>$key]
-    );
-    return $cm->get_bounces_or_whatever (
-        [
-// ????
-        ],
-        'unchanged'
-    );
-}
-
 function cfg ( ) {
     global $argv;
     if (!array_key_exists(1,$argv)) {
@@ -271,42 +254,6 @@ function chart2Headings ($chartObj) {
         array_push ($arr,$d->label);
     }
     return $arr;
-}
-
-function class_api_instance ($type) {
-    $args = func_get_args ();
-    array_shift ($args);
-    $types = ['EMAIL','PAY'];
-    if (!in_array($type,$types)) {
-        throw new \Exception ("API type '$type' is not recognised");
-        return false;
-    }
-    $constants = get_defined_constants (true);
-    foreach ($constants['user'] as $name => $classfile) {
-        // Return an instance of the first class found
-        if (!preg_match('<^BLOTTO_'.$type.'_API_[A-Z]+$>',$name)) {
-            continue;
-        }
-        if (!$classfile) {
-            continue;
-        }
-        // Class name by convention is defined by a constant having a predictable name
-        $class      = constant ($name.'_CLASS');
-        if (!class_exists($class)) {
-            if (!is_readable($classfile)) {
-                throw new \Exception ("API file (type=$type) '$classfile' is not readable");
-                return false;
-            }
-            require $classfile;
-            if (!class_exists($class)) {
-                throw new \Exception ("API class (type=$type) '$class' does not exist");
-                return false;
-            }
-        }
-        $api = new $class (...$args);
-        return $api;
-    }
-    return false;
 }
 
 function clientref_advance ($cref) {
@@ -1177,22 +1124,12 @@ function draws_super ($from,$to) {
     }
 }
 
-function email_api_internal ($code=null) {
-    if ($api=email_api('CM')) {
-        // Use Campaign Monitor as default
-        return $api;
-    }
-    // Use the first found
-    return email_api ();
-}
-
 function email_api ($code=null) {
     // If no code, return the first found with a class
-    foreach (email_apis() as $api) {
-        if (!$code) {
-            return $api;
-        }
-        if ($api->code==$code) {
+    foreach (email_apis() as $a) {
+        if (!$code || $a->code==$code) {
+            require_once $a->file;
+            $api = new $a->class ();
             return $api;
         }
     }
