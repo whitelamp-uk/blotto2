@@ -34,6 +34,10 @@ input[type=submit] {
     font-size:         1.25em;
     font-weight:       bold;
 }
+input.size {
+    width: 4em;
+}
+
 
 table thead tr td, table thead tr th {
     background-color:  var(--blotto-color-bgd-row-odd);
