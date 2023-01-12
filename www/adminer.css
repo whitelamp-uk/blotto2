@@ -154,12 +154,18 @@ a, a:visited {
     display:           none;
 }
 
-.footer > div > fieldset:nth-of-type(3), .footer > div > fieldset:nth-of-type(4), .footer > div > fieldset:nth-of-type(5) {
+/* Suppress edit/clone buttons */
+.footer > div > fieldset {
     display:           none;
 }
-
-.footer > div > fieldset input {
-    display:           none;
+.footer > div > fieldset:first-of-type {
+    display:           inline-block;
+}
+.footer > div > fieldset:first-of-type input {
+    visibility:        hidden;
+}
+.footer > div > fieldset:last-of-type {
+    display:           inline-block;
 }
 
 #routines, #routines + p, #routines + p + p {
