@@ -417,6 +417,7 @@ BEGIN
      ,IFNULL(`c`.`Last_Payment`,'') AS `payment_last`
      ,IFNULL(`m`.`Provider`,'') AS `mandate_provider`
      ,IFNULL(`m`.`RefNo`,'') AS `mandate_reference`
+     ,IFNULL(`m`.`RefOrig`,'') AS `mandate_reference_provider`
      ,IFNULL(`m`.`Created`,'') AS `mandate_created`
      ,IFNULL(`m`.`StartDate`,'') AS `mandate_startdate`
      ,IFNULL(`m`.`Freq`,'') AS `mandate_frequency`
@@ -465,7 +466,7 @@ BEGIN
     LEFT JOIN `crucible_ticket_zaffo`.`blotto_ticket` AS `t`
            ON `t`.`mandate_provider`=`m`.`Provider`
           AND `t`.`client_ref`=`m`.`ClientRef`
-          AND `t`.`org_id`=2
+          AND `t`.`org_id`={{BLOTTO_ORG_ID}}
     -- One-off payments are not applicable
     WHERE `m`.`Freq`!='Single' OR `m`.`Freq` IS NULL
     GROUP BY `client_ref`,`ticket_number`
