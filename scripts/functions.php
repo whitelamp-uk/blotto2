@@ -3867,7 +3867,7 @@ function update ( ) {
                     ";
                 try {
                     $rs = $zom->query ($q);
-                    $c=$rs->fetch_assoc ();
+                    $s=$rs->fetch_assoc ();
                     $message .= "A replacement mandate has been created (change of amount/frequency): $ncr\n";
                     $message .= "The replaced mandate must be cancelled.\n";
                 }
@@ -3898,9 +3898,12 @@ function update ( ) {
                             'County'               => $s['county'],
                             'Postcode'             => $s['postcode']
                     ];
+error_log (print_r($pn_mandate,true));
+/*
                     if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
                         $error = "Failed to complete new mandate {$api->errorCode} {$api->error}";
                     }
+*/
                 }
             }
         }
