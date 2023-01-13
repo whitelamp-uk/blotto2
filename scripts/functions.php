@@ -3831,7 +3831,7 @@ function update ( ) {
                         if (is_readable($a->file)) {
                             require_once $a->file;
                             // Instantiate if possible and the class has the method
-                            if (class_exists($a->class) && method_exists($api,'player_new')) {
+                            if (class_exists($a->class) && method_exists($a->class,'player_new')) {
                                 $api = new $a->class ($zom); // use the make database
                                 break;
                             }
