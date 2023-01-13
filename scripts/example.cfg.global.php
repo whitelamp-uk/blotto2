@@ -89,25 +89,35 @@ define ( 'STANNP_REDACT_SCOPE_LEN', 4           );
 
 // Global - Paypal
 define ( 'PAYPAL_CODE',             'PYPL'      ); // CCC and Provider
+define ( 'PAYPAL_DD',               false       ); // Does not offer direct debit
+define ( 'PAYPAL_BUY',              true        ); // Offers web integration
 define ( 'PAYPAL_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'PAYPAL_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'PAYPAL_CALLBACK_TO',      30          ); // Confirmation time-out
 
 // Global - RSM
-define ( 'BLOTTO_PAY_API_RSM_TABLE',    'rsm_mandate'       );
+define ( 'BLOTTO_PAY_API_RSM_SELECT', 'SELECT DISTINCT(`ClientRef`) AS `crf` FROM `rsm_mandate`' );
+define ( 'RSM_CODE',                'RSM'       ); // Provider code
+define ( 'RSM_DD',                  true        ); // Offers direct debit
+define ( 'RSM_BUY',                 false       ); // Does not offer web integration
 define ( 'RSM_URL',                 'https://rsm5.rsmsecure.com/ddcm/ddcmApi.php'   );
 define ( 'RSM_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
 define ( 'RSM_TABLE_MANDATE',       'blotto_build_mandate'      );
 define ( 'RSM_TABLE_COLLECTION',    'blotto_build_collection'   );
 
-
 // Global - Paysuite
-define ( 'BLOTTO_PAY_API_PST_TABLE',    'paysuite_mandate'  );
-
-
+define ( 'BLOTTO_PAY_API_PST_SELECT', 'SELECT DISTINCT(`ClientRef`) AS `crf` FROM `paysuite_mandate` WHERE LENGTH(IFNULL(`ContractGuid`,""))>0 AND `ContractGuid`!=`ClientRef`' );
+define ( 'PST_CODE',                   'PST'                ); // Provider code
+define ( 'PST_DD',                  true        ); // Offers direct debit
+define ( 'PST_BUY',                 false       ); // Does not offer web integration
+define ( 'PST_TABLE_MANDATE',       'blotto_build_mandate'            );
+define ( 'PST_TABLE_COLLECTION',    'blotto_build_collection'         );
+define ( 'PST_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
 
 // Global - Stripe
 define ( 'STRIPE_CODE',             'STRP'      ); // CCC and Provider
+define ( 'STRIPE_DD',               false       ); // Does not offer direct debit
+define ( 'STRIPE_BUY',              true        ); // Offers web integration
 define ( 'STRIPE_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.json' );
@@ -116,8 +126,6 @@ define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up g
 */
 
 // Global - all payment providers
-define ( 'BLOTTO_PAY_API_RSM_TABLE',    'rsm_mandate'       );
-define ( 'BLOTTO_PAY_API_PST_TABLE',    'paysuite_mandate'  );
 define ( 'BLOTTO_DD_TRY_INTERVAL',  '14 DAY'     );
 define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );

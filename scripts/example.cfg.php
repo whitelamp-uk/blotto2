@@ -87,7 +87,6 @@ define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'   );
 // Organisation - Paypal
 define ( 'BLOTTO_PAY_API_PAYPAL',           '/path/to/paypal-api/PayApi.php' );
 define ( 'BLOTTO_PAY_API_PAYPAL_CLASS',     '\Blotto\Paypal\PayApi'         );
-define ( 'BLOTTO_PAY_API_PAYPAL_BUY',       true        ); // Provide integration
 define ( 'PAYPAL_EMAIL',            'paypal.account@my.domain'              );
 define ( 'PAYPAL_ERROR_LOG',        false       );
 define ( 'PAYPAL_REFNO_OFFSET',     200000000   );
@@ -96,7 +95,6 @@ define ( 'PAYPAL_DEV_MODE',         true        );
 // Organisation - Stripe
 define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-api/PayApi.php' );
 define ( 'BLOTTO_PAY_API_STRIPE_CLASS',     '\Blotto\Stripe\PayApi'         );
-define ( 'BLOTTO_PAY_API_STRIPE_BUY',       true        ); // Provide integration
 define ( 'STRIPE_INIT_FILE',        '/path/to/stripe-php-7.77.0/init.php'   );
 define ( 'STRIPE_ERROR_LOG',        false       );
 define ( 'STRIPE_REFNO_OFFSET',     100000000   );
