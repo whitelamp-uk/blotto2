@@ -3035,7 +3035,7 @@ function stannp_mail_anls ( ) {
         `a`.*
       FROM `ANLs` AS `a`
       JOIN `blotto_player` AS `p`
-        ON (`p`.`letter_batch_ref` IS NULL OR `p`.`letter_batch_ref`='')
+        ON `p`.`letter_status`='email_failed'
        AND `p`.`client_ref`=`a`.`ClientRef`
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
@@ -3649,6 +3649,7 @@ function update ( ) {
     if (!$zo || !$zom) {
         return (object) ['error' => 126];
     }
+    // SUPPORTER UPDATE
     if ($type=='s') {
         $q0 = "SELECT id FROM `blotto_contact` WHERE `supporter_id` = ".escm($fields['supporter_id'])." AND DATE(`created`) = CURDATE()";
         try {
@@ -3718,152 +3719,158 @@ function update ( ) {
             return '{ "error" : 108 }';
         }
         return '{ "ok" : true }';
+        // Supporter update ends
     }
-    if ($type=='m') { // TODO: this stuff should not happen if the mandate provider is not DD-based
-        $crf = esc ($fields['ClientRef']);
-        $ncr = esc (clientref_advance($fields['ClientRef']));
-        $qs = "
-          SELECT
-            *
-          FROM `blotto_build_mandate`
-          WHERE `ClientRef`='$crf'
-          ORDER BY `Created` DESC
-          LIMIT 0,1
-        ";  // ClientRef is unique - remove last lines of query?
-        try {
-            $ms = $zo->query ($qs);
-            $m = null;
-            if(!($m=$ms->fetch_assoc())) {
-                return '{ "error" : 109 }';
+    // MANDATE UPDATE
+    // Not a supporter update (type==s above)
+    // Therefore this is a mandate update (type==m)
+    // TODO: this stuff should not happen if the mandate provider is not DD-based
+    $crf = esc ($fields['ClientRef']);
+    $ncr = esc (clientref_advance($fields['ClientRef']));
+    $qs = "
+      SELECT
+        *
+      FROM `blotto_build_mandate`
+      WHERE `ClientRef`='$crf'
+      ORDER BY `Created` DESC
+      LIMIT 0,1
+    ";  // ClientRef is unique - remove last lines of query?
+    try {
+        $ms = $zo->query ($qs);
+        $m = null;
+        if(!($m=$ms->fetch_assoc())) {
+            return '{ "error" : 109 }';
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ('update(): '.$e->getMessage());
+        return '{ "error" : 110 }';
+    }
+    $ddr = esc ($m['RefOrig']);
+    $ndr = 'SOMETHING UNIQUE!';
+    $q = "INSERT INTO `blotto_bacs` SET ";
+    $keys = [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+    foreach ($keys as $k) {
+        if (!array_key_exists($k,$_POST)) {
+            return '{ "error" : 111 }';
+        }
+        $q .= "`$k`='".esc($fields[$k],BLOTTO_CONFIG_DB)."',";
+    }
+    // Use the bespoke function chances()
+    $ch  = intval (chances($fields['Freq'],$fields['Amount']));
+    $onm = $m['Name'];
+    $osc = $m['Sortcode'];
+    $oac = $m['Account'];
+    // get old freq and amount
+    $q .= "`Chances`=$ch,";
+    $q .= "`OldDDRef`='$ddr',";
+    $q .= "`OldName`='$onm',";
+    $q .= "`OldSortcode`='$osc',";
+    $q .= "`OldAccount`='$oac',";
+    $q .= "`NewDDRef`='$ndr',";
+    $q .= "`NewClientRef`='$ncr',";
+    $q .= "`org_id`=$oid,";
+    $upd = esc ($usr,BLOTTO_CONFIG_DB);
+    $q .= "`updater`='$upd';\n";
+    try {
+        $update = $zoc->query ($q);
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ('update(): '.$e->getMessage());
+        return '{ "error" : 112 }';
+    }
+    $message            = "Record added to `$dbc`.`blotto_bacs` for old client ref ".$fields['ClientRef']."\n";
+    $message           .= "Caution: Do you need to modify supporter contact details?\n";
+    $error              = null;
+    // if freq or amount have changed
+    // instantiate pay api (see payment_mandate.php) and call player_new
+    if ($m['Freq']!=$fields['Freq'] || $m['Amount']!=$fields['Amount']) {
+        $constants      = get_defined_constants (true);
+        $apis           = 0;
+        $mandate_count  = 0;
+        foreach ($constants['user'] as $name => $classfile) {
+            if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
+                continue;
             }
-        }
-        catch (\mysqli_sql_exception $e) {
-            error_log ('update(): '.$e->getMessage());
-            return '{ "error" : 110 }';
-        }
-        $ddr = esc ($m['RefOrig']);
-        $ndr = 'SOMETHING UNIQUE!';
-        $q = "INSERT INTO `blotto_bacs` SET ";
-        $keys = [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
-        foreach ($keys as $k) {
-            if (!array_key_exists($k,$_POST)) {
-                return '{ "error" : 111 }';
-            }
-            $q .= "`$k`='".esc($fields[$k],BLOTTO_CONFIG_DB)."',";
-        }
-        // Use the bespoke function chances()
-        $ch  = intval (chances($fields['Freq'],$fields['Amount']));
-        $onm = $m['Name'];
-        $osc = $m['Sortcode'];
-        $oac = $m['Account'];
-        // get old freq and amount
-        $q .= "`Chances`=$ch,";
-        $q .= "`OldDDRef`='$ddr',";
-        $q .= "`OldName`='$onm',";
-        $q .= "`OldSortcode`='$osc',";
-        $q .= "`OldAccount`='$oac',";
-        $q .= "`NewDDRef`='$ndr',";
-        $q .= "`NewClientRef`='$ncr',";
-        $q .= "`org_id`=$oid,";
-        $upd = esc ($usr,BLOTTO_CONFIG_DB);
-        $q .= "`updater`='$upd';\n";
-        try {
-            $update = $zoc->query ($q);
-        }
-        catch (\mysqli_sql_exception $e) {
-            error_log ('update(): '.$e->getMessage());
-            return '{ "error" : 112 }';
-        }
-        // if freq or amount have changed
-        // instantiate pay api (see payment_mandate.php) and call player_new
-        if ($m['Freq'] != $fields['Freq'] || $m['Amount'] != $fields['Amount']) {
-            $constants      = get_defined_constants (true);
-            $apis           = 0;
-            $mandate_count  = 0;
-            foreach ($constants['user'] as $name => $classfile) {
-                if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
-                    continue;
-                }
-                if (!is_readable($classfile)) {
-                    error_log ("update(): Payment API file '$classfile' is not readable - aborting");
-                    return '{ "error" : 113 }';
-                }
-                error_log ("update(): processing payment API class file: $classfile");
+            if (is_readable($classfile)) {
                 require $classfile;
                 $class      = constant ($name.'_CLASS');
-                if (!class_exists($class)) {
-                    error_log ("update(): Payment API class '$class' does not exist - aborting");
-                    return '{ "error" : 114 }';
-                }
-                $api        = new $class ($zom); // use the make database
-                if (method_exists($api,'player_new')) {
-                    $q = "
-                      SELECT
-                           `c`.`title`
-                          ,`c`.`name_first`
-                          ,`c`.`name_last`
-                          ,`c`.`email`
-                          ,`c`.`address_1`
-                          ,`c`.`address_2`
-                          ,`c`.`address_3`
-                          ,`c`.`postcode`
-                      FROM `blotto_supporter` AS `s`
-                        JOIN (
+                if (class_exists($class)) {
+                    $api        = new $class ($zom); // use the make database
+                    if (method_exists($api,'player_new')) {
+                        $q = "
                           SELECT
-                            `supporter_id`
-                           ,MAX(`created`) AS `created`
-                          FROM `blotto_contact`
-                          GROUP BY `supporter_id`
-                        ) AS `clast`
-                          ON `clast`.`supporter_id`=`s`.`id`
-                        JOIN `blotto_contact` AS `c`
-                          ON `c`.`supporter_id`=`clast`.`supporter_id`
-                         AND `c`.`created`=`clast`.`created`
-                        WHERE `s`.`client_ref` = '".$fields['ClientRef']."'
-                        ";
-                    try {
-                        $rs = $zom->query ($q);
-                        $c=$rs->fetch_assoc();
+                               `c`.`title`
+                              ,`c`.`name_first`
+                              ,`c`.`name_last`
+                              ,`c`.`email`
+                              ,`c`.`address_1`
+                              ,`c`.`address_2`
+                              ,`c`.`address_3`
+                              ,`c`.`postcode`
+                          FROM `blotto_supporter` AS `s`
+                            JOIN (
+                              SELECT
+                                `supporter_id`
+                               ,MAX(`created`) AS `created`
+                              FROM `blotto_contact`
+                              GROUP BY `supporter_id`
+                            ) AS `clast`
+                              ON `clast`.`supporter_id`=`s`.`id`
+                            JOIN `blotto_contact` AS `c`
+                              ON `c`.`supporter_id`=`clast`.`supporter_id`
+                             AND `c`.`created`=`clast`.`created`
+                            WHERE `s`.`client_ref` = '".$fields['ClientRef']."'
+                            ";
+                        try {
+                            $rs = $zom->query ($q);
+                            $c=$rs->fetch_assoc ();
+                            $message .= "A replacement mandate has been created (change of amount/frequency): $ncr\n";
+                            $message .= "The replaced mandate must be cancelled.\n";
+                        }
+                        catch (\mysqli_sql_exception $e) {
+                            $error = $e->getMessage ();
+                        }
+                        // see import.supporter.sql
+                        if (!$error) {
+                            $pn_mandate = [
+                                    'ClientRef'            => $ncr,
+                                    'ClientRefPrevious'    => $fields['ClientRef'],
+                                    'Name'                 => $fields['Name'],
+                                    'Sortcode'             => ($fields['Sortcode']  ?: $m['Sortcode']),
+                                    'Account'              => ($fields['Account']   ?: $m['Account']),
+                                    'StartDate'            => ($fields['StartDate'] ?: $m['StartDate']),
+                                    'Freq'                 => $fields['Freq'],
+                                    'Amount'               => $fields['Amount'],
+                                    'Chances'              => $ch,
+                                    'PayDay'               => '',
+                                    'Email'                => $s['email'],
+                                    'Title'                => $s['title'],
+                                    'NamesGiven'           => $s['name_first'],
+                                    'NamesFamily'          => $s['name_last'],
+                                    'AddressLine1'         => $s['address_1'],
+                                    'AddressLine2'         => $s['address_2'],
+                                    'AddressLine3'         => $s['address_3'],
+                                    'Town'                 => $s['town'],
+                                    'County'               => $s['county'],
+                                    'Postcode'             => $s['postcode']
+                            ];
+                            if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
+                                $error = "Failed to complete new mandate {$api->errorCode} {$api->error}";
+                            }
+                        }
                     }
-                    catch (\mysqli_sql_exception $e) {
-                        error_log ('update(): '.$e->getMessage());
-                        return '{ "error" : 115 }';
-                    }
-                    // see import.supporter.sql
-                    $pn_mandate = [
-                            'ClientRef'            => $ncr,
-                            'ClientRefPrevious'    => $fields['ClientRef'],
-                            'Name'                 => $fields['Name'],
-                            'Sortcode'             => ($fields['Sortcode']  ?: $m['Sortcode']),
-                            'Account'              => ($fields['Account']   ?: $m['Account']),
-                            'StartDate'            => ($fields['StartDate'] ?: $m['StartDate']),
-                            'Freq'                 => $fields['Freq'],
-                            'Amount'               => $fields['Amount'],
-                            'Chances'              => $ch,
-                            'PayDay'               => '',
-                            'Email'                => $s['email'],
-                            'Title'                => $s['title'],
-                            'NamesGiven'           => $s['name_first'],
-                            'NamesFamily'          => $s['name_last'],
-                            'AddressLine1'         => $s['address_1'],
-                            'AddressLine2'         => $s['address_2'],
-                            'AddressLine3'         => $s['address_3'],
-                            'Town'                 => $s['town'],
-                            'County'               => $s['county'],
-                            'Postcode'             => $s['postcode']
-
-                    ];
-                    if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
-                        error_log ("update(): failed to complete new mandate {$api->errorCode} {$api->error}");
-                        return '{ "error" : 116 }';
-                    }
+                }
+                else {
+                    $error = "Payment API class '$class' does not exist";
                 }
             }
+            else {
+                $error = "Payment API file '$classfile' is not readable";
+            }
         }
-
-        if (!defined('BLOTTO_EMAIL_BACS_TO')) {
-            return '{ "ok" : true }';
-        }
+    }
+    if (defined('BLOTTO_EMAIL_BACS_TO')) {
         $headers = null;
         if (defined('BLOTTO_EMAIL_FROM')) {
             $headers = "From: ".BLOTTO_EMAIL_FROM."\n";
@@ -3871,12 +3878,15 @@ function update ( ) {
         mail (
             BLOTTO_EMAIL_BACS_TO,
             BLOTTO_BRAND." BACS change request for ".BLOTTO_ORG_NAME,
-            "Record added to `$dbc`.`blotto_bacs` for old client ref ".$fields['ClientRef']."\n".
-            "Caution: Do you need to modify supporter contact details?\n",
+            $message,
             $headers
         );
-        return '{ "ok" : true }';
     }
+    if ($error) {
+        error_log ("update(): $error");
+        return '{ "error" : 113 }';
+    }
+    return '{ "ok" : true }';
 }
 
 function valid_date ($date,$format='Y-m-d') {
