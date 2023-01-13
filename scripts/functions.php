@@ -2743,6 +2743,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
          ,`m`.`Amount`
          ,`m`.`Freq`
          ,CONCAT('***',SUBSTR(`m`.`Sortcode`,-3),'/*****',SUBSTR(`m`.`Account`,-3))
+         ,`m`.`Provider`
        ) AS `Mandate`
     ";
     if ($type=='s') {
@@ -3759,7 +3760,7 @@ function update ( ) {
     }
     // MANDATE UPDATE
     if ($type=='m') {
-        // TODO: this stuff should not happen if the mandate provider is not DD-based
+        // The new mandate provider must be the old mandate provider
         $crf = esc ($fields['ClientRef']);
         $ncr = esc (clientref_advance($fields['ClientRef']));
         $qs = "

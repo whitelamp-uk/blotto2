@@ -21,6 +21,7 @@
         </table>
 
         <form id="change-mandate">
+          <input type="hidden" name="Provider" />
           <input type="hidden" name="ClientRef" />
           <button id="post-mandate">Post change request</button>
           <button class="form-close">Cancel</button>

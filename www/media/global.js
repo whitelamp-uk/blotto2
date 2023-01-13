@@ -132,8 +132,9 @@ function mandateSelectResult (responseText) {
     }
     form = document.getElementById ('change-mandate');
     form.ClientRef.value = response.data[0].ClientRef;
+    form.Provider.value = response.data[0].Provider;
     heading = form.querySelector ('thead th:nth-of-type(2)');
-    heading.textContent = response.data[0].ClientRef;
+    heading.textContent = response.data[0].Provider+' - '+response.data[0].ClientRef;
     response.data[0].Sortcode = '';
     response.data[0].Account = '';
     fields = {
