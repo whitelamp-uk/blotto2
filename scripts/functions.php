@@ -3901,11 +3901,9 @@ function update ( ) {
                             'Postcode'             => $s['postcode']
                     ];
 error_log (print_r($pn_mandate,true));
-/*
                     if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
                         $error = "Failed to complete new mandate {$api->errorCode} {$api->error}";
                     }
-*/
                 }
             }
         }
