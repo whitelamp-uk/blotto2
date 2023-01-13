@@ -3850,6 +3850,8 @@ function update ( ) {
                       ,`c`.`address_1`
                       ,`c`.`address_2`
                       ,`c`.`address_3`
+                      ,`c`.`town`
+                      ,`c`.`county`
                       ,`c`.`postcode`
                   FROM `blotto_supporter` AS `s`
                     JOIN (
