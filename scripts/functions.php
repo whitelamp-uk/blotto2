@@ -2144,6 +2144,7 @@ function pay_apis ( ) {
             continue;
         }
         $apis[$code] = new \stdClass ();
+        $apis[$code]->code = $code;
         $apis[$code]->name = ucwords (strtolower($matches[1]));
         $apis[$code]->file = $file;
         $apis[$code]->class = $class;
@@ -3760,7 +3761,6 @@ function update ( ) {
     }
     // MANDATE UPDATE
     if ($type=='m') {
-        // The new mandate provider must be the old mandate provider
         $crf = esc ($fields['ClientRef']);
         $ncr = esc (clientref_advance($fields['ClientRef']));
         $qs = "
@@ -3819,91 +3819,92 @@ function update ( ) {
         $message           .= "Caution: Do you need to modify supporter contact details?\n";
         $error              = null;
         // if freq or amount have changed
-        // instantiate pay api (see payment_mandate.php) and call player_new
         if ($m['Freq']!=$fields['Freq'] || $m['Amount']!=$fields['Amount']) {
-            $constants      = get_defined_constants (true);
-            $apis           = 0;
-            $mandate_count  = 0;
-            foreach ($constants['user'] as $name => $classfile) {
-                if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
-                    continue;
-                }
-                if (is_readable($classfile)) {
-                    require $classfile;
-                    $class      = constant ($name.'_CLASS');
-                    if (class_exists($class)) {
-                        $api        = new $class ($zom); // use the make database
-                        if (method_exists($api,'player_new')) {
-                            $q = "
-                              SELECT
-                                   `c`.`title`
-                                  ,`c`.`name_first`
-                                  ,`c`.`name_last`
-                                  ,`c`.`email`
-                                  ,`c`.`address_1`
-                                  ,`c`.`address_2`
-                                  ,`c`.`address_3`
-                                  ,`c`.`postcode`
-                              FROM `blotto_supporter` AS `s`
-                                JOIN (
-                                  SELECT
-                                    `supporter_id`
-                                   ,MAX(`created`) AS `created`
-                                  FROM `blotto_contact`
-                                  GROUP BY `supporter_id`
-                                ) AS `clast`
-                                  ON `clast`.`supporter_id`=`s`.`id`
-                                JOIN `blotto_contact` AS `c`
-                                  ON `c`.`supporter_id`=`clast`.`supporter_id`
-                                 AND `c`.`created`=`clast`.`created`
-                                WHERE `s`.`client_ref` = '".$fields['ClientRef']."'
-                                ";
-                            try {
-                                $rs = $zom->query ($q);
-                                $c=$rs->fetch_assoc ();
-                                $message .= "A replacement mandate has been created (change of amount/frequency): $ncr\n";
-                                $message .= "The replaced mandate must be cancelled.\n";
-                            }
-                            catch (\mysqli_sql_exception $e) {
-                                $error = $e->getMessage ();
-                            }
-                            // see import.supporter.sql
-                            if (!$error) {
-                                $pn_mandate = [
-                                        'ClientRef'            => $ncr,
-                                        'ClientRefPrevious'    => $fields['ClientRef'],
-                                        'Name'                 => $fields['Name'],
-                                        'Sortcode'             => ($fields['Sortcode']  ?: $m['Sortcode']),
-                                        'Account'              => ($fields['Account']   ?: $m['Account']),
-                                        'StartDate'            => ($fields['StartDate'] ?: $m['StartDate']),
-                                        'Freq'                 => $fields['Freq'],
-                                        'Amount'               => $fields['Amount'],
-                                        'Chances'              => $ch,
-                                        'PayDay'               => '',
-                                        'Email'                => $s['email'],
-                                        'Title'                => $s['title'],
-                                        'NamesGiven'           => $s['name_first'],
-                                        'NamesFamily'          => $s['name_last'],
-                                        'AddressLine1'         => $s['address_1'],
-                                        'AddressLine2'         => $s['address_2'],
-                                        'AddressLine3'         => $s['address_3'],
-                                        'Town'                 => $s['town'],
-                                        'County'               => $s['county'],
-                                        'Postcode'             => $s['postcode']
-                                ];
-                                if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
-                                    $error = "Failed to complete new mandate {$api->errorCode} {$api->error}";
-                                }
+            // instantiate pay api
+            $api = false;
+            foreach (pay_apis() as $a) {
+                // The new mandate provider must be the old mandate provider
+                if ($a->code==$fields['Provider']) {
+                    // It must be a DD provider
+                    if ($a->dd) {
+                        // Include if possible and needed
+                        if (is_readable($a->file)) {
+                            require_once $a->file;
+                            // Instantiate if possible and the class has the method
+                            if (class_exists($a->class) && method_exists($api,'player_new')) {
+                                $api = new $a->class ($zom); // use the make database
+                                break;
                             }
                         }
                     }
-                    else {
-                        $error = "Payment API class '$class' does not exist";
+                }
+            }
+error_log ("API = ".print_r($api,true));
+            // call player_new
+            if ($api) {
+/*
+                $q = "
+                  SELECT
+                       `c`.`title`
+                      ,`c`.`name_first`
+                      ,`c`.`name_last`
+                      ,`c`.`email`
+                      ,`c`.`address_1`
+                      ,`c`.`address_2`
+                      ,`c`.`address_3`
+                      ,`c`.`postcode`
+                  FROM `blotto_supporter` AS `s`
+                    JOIN (
+                      SELECT
+                        `supporter_id`
+                       ,MAX(`created`) AS `created`
+                      FROM `blotto_contact`
+                      GROUP BY `supporter_id`
+                    ) AS `clast`
+                      ON `clast`.`supporter_id`=`s`.`id`
+                    JOIN `blotto_contact` AS `c`
+                      ON `c`.`supporter_id`=`clast`.`supporter_id`
+                     AND `c`.`created`=`clast`.`created`
+                    WHERE `s`.`client_ref` = '".$fields['ClientRef']."'
+                    ";
+                try {
+                    $rs = $zom->query ($q);
+                    $c=$rs->fetch_assoc ();
+                    $message .= "A replacement mandate has been created (change of amount/frequency): $ncr\n";
+                    $message .= "The replaced mandate must be cancelled.\n";
+                }
+                catch (\mysqli_sql_exception $e) {
+                    $error = $e->getMessage ();
+                }
+                // see import.supporter.sql
+                if (!$error) {
+                    $pn_mandate = [
+                            'ClientRef'            => $ncr,
+                            'ClientRefPrevious'    => $fields['ClientRef'],
+                            'Name'                 => $fields['Name'],
+                            'Sortcode'             => ($fields['Sortcode']  ?: $m['Sortcode']),
+                            'Account'              => ($fields['Account']   ?: $m['Account']),
+                            'StartDate'            => ($fields['StartDate'] ?: $m['StartDate']),
+                            'Freq'                 => $fields['Freq'],
+                            'Amount'               => $fields['Amount'],
+                            'Chances'              => $ch,
+                            'PayDay'               => '',
+                            'Email'                => $s['email'],
+                            'Title'                => $s['title'],
+                            'NamesGiven'           => $s['name_first'],
+                            'NamesFamily'          => $s['name_last'],
+                            'AddressLine1'         => $s['address_1'],
+                            'AddressLine2'         => $s['address_2'],
+                            'AddressLine3'         => $s['address_3'],
+                            'Town'                 => $s['town'],
+                            'County'               => $s['county'],
+                            'Postcode'             => $s['postcode']
+                    ];
+                    if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
+                        $error = "Failed to complete new mandate {$api->errorCode} {$api->error}";
                     }
                 }
-                else {
-                    $error = "Payment API file '$classfile' is not readable";
-                }
+*/
             }
         }
         if (defined('BLOTTO_EMAIL_BACS_TO')) {
