@@ -88,6 +88,7 @@ define ( 'STANNP_REDACT_SCOPE_LEN', 4           );
 /*
 
 // Global - Paypal
+define ( 'PAYPAL_CODE',             'PYPL'      ); // CCC and Provider
 define ( 'PAYPAL_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'PAYPAL_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'PAYPAL_CALLBACK_TO',      30          ); // Confirmation time-out
@@ -106,6 +107,7 @@ define ( 'BLOTTO_PAY_API_PST_TABLE',    'paysuite_mandate'  );
 
 
 // Global - Stripe
+define ( 'STRIPE_CODE',             'STRP'      ); // CCC and Provider
 define ( 'STRIPE_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.json' );
