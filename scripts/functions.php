@@ -3839,10 +3839,8 @@ function update ( ) {
                     }
                 }
             }
-error_log ("API = ".print_r($api,true));
             // call player_new
             if ($api) {
-/*
                 $q = "
                   SELECT
                        `c`.`title`
@@ -3904,7 +3902,6 @@ error_log ("API = ".print_r($api,true));
                         $error = "Failed to complete new mandate {$api->errorCode} {$api->error}";
                     }
                 }
-*/
             }
         }
         if (defined('BLOTTO_EMAIL_BACS_TO')) {
