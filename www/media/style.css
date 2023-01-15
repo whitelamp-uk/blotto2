@@ -52,7 +52,7 @@ h2, h3, caption {
 
 h2 {
     font-size:          var(--blotto-dfn-fsz-title);
-    font-weght:         var(--blotto-dfn-fwt-title);
+    font-weight:        var(--blotto-dfn-fwt-title);
 }
 
 h3, caption {
@@ -186,6 +186,27 @@ button, input[type="submit"] {
     color:              var(--blotto-color-fgd-button);
     font-size:          var(--blotto-font-size-button-default);
     font-weight:        var(--blotto-dfn-fwt-default);
+}
+
+section.update-message {
+    display:            none;
+    position:           absolute;
+    z-index:            1000;
+    margin:             3em 1em 1em 1em;
+    left:               0;
+    top:                0;
+    width:              0;
+    height:             0;
+    background-color:   var(--blotto-color-bgd-body);
+    padding:            2em;
+    overflow:           hidden;
+}
+section.update-message.active {
+    display:            block;
+    width:              28em;
+    height:             auto;
+    border-style:       solid;
+    border-width:       1px;
 }
 
 #options a {
@@ -534,6 +555,13 @@ form#list-aux label {
 }
 
 
+img.close {
+    content: url('./close.png');  
+    width:              1.2em;
+    height:             auto;
+    cursor:             pointer;
+}
+
 #list h2 {
     margin-bottom:      1.4em;
 }
@@ -651,11 +679,6 @@ form#list-aux label {
 
 .changed, .changed tr, .changed th, .changed td {
     background-color:   var(--blotto-color-bgd-message-wrn) !important;
-    color:              var(--blotto-color-fgd-message);
-}
-
-.updated, .updated tr, .updated th, .updated td {
-    background-color:   var(--blotto-color-bgd-message-ok) !important;
     color:              var(--blotto-color-fgd-message);
 }
 

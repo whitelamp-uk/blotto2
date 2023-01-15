@@ -125,16 +125,16 @@ function cfg ( ) {
 }
 
 function chances_weekly ($frequency,$amount) {
-    if ($frequency=='Monthly') {
+    if ($frequency=='Monthly' || $frequency==1) {
         $ratio = 4.34;
     }
-    elseif ($frequency=="Quarterly") {
+    elseif ($frequency=="Quarterly" || $frequency==3) {
         $ratio = 13;
     }
-    elseif ($frequency=="Six Monthly") {
+    elseif ($frequency=="Six Monthly" || $frequency==6) {
         $ratio = 26;
     }
-    elseif ($frequency=="Annually") {
+    elseif ($frequency=="Annually" || $frequency==12) {
         $ratio = 52;
     }
     else {
@@ -2735,6 +2735,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
          ,`s`.`postcode`
          ,`s`.`dob`
        ) AS `Supporter`
+       ,`m`.`Freq`
        ,CONCAT_WS(
           ' '
          ,`m`.`Status`
@@ -2860,7 +2861,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
 function select ($type) {
     $cref = $_GET['r'];
     if (!$cref) {
-        return '{ "error" : 104 }';
+        return '{ "error" : 102 }';
     }
     $response = new stdClass ();
     $response->data = array ();
@@ -2913,13 +2914,19 @@ function select ($type) {
     try {
         $rs = $zo->query ($q);
         while ($r=$rs->fetch_assoc()) {
+            if (array_key_exists('Sortcode',$r)) {
+                     $r['Sortcode'] = '***'.substr($r['Sortcode'],-3);
+            }
+            if (array_key_exists('Account',$r)) {
+                     $r['Account'] = '*****'.substr($r['Account'],-3);
+            }
             array_push ($response->data,(object) $r);
         }
     }
     catch (\mysqli_sql_exception $e) {
         error_log ('select(): '.$q);
         error_log ('select(): '.$e->getMessage());
-        return '{ "error" : 105 }';
+        return '{ "error" : 103 }';
     }
     if ($type=='s') {
         $response->fields = fields ();
@@ -3673,7 +3680,7 @@ function tickets ($provider_code,$refno,$cref,$qty) {
 
 function update ( ) {
     if (!array_key_exists('t',$_GET) || !in_array($_GET['t'],['m','s'])) {
-        return '{ "error" : 106 }';
+        return "{ \"error\" : 104, \"errorMessage\" : \"Update called with incorrect parameters\" }";
     }
     $oid                = BLOTTO_ORG_ID;
     $type               = $_GET['t'];
@@ -3685,13 +3692,14 @@ function update ( ) {
     $zom                = connect (BLOTTO_MAKE_DB);
     $zo                 = connect ();
     if (!$zo || !$zom) {
-        return (object) ['error' => 126];
+        error_log ($e->getMessage());
+        return "{ \"error\" : 105, \"errorMessage\" : \"Could not connect to database\" }";
     }
     // SUPPORTER UPDATE
     if ($type=='s') {
-        $q0 = "SELECT id FROM `blotto_contact` WHERE `supporter_id` = ".escm($fields['supporter_id'])." AND DATE(`created`) = CURDATE()";
+        $qs = "SELECT id FROM `blotto_contact` WHERE `supporter_id` = ".escm($fields['supporter_id'])." AND DATE(`created`) = CURDATE()";
         try {
-            $r          = $zom->query ($q0);
+            $r          = $zom->query ($qs);
             if ($r->num_rows) {
               $row      = $r->fetch_assoc();
               $curc     = $row['id'];
@@ -3701,12 +3709,11 @@ function update ( ) {
               $curc     = 0;
               $q        = "INSERT INTO `blotto_contact` SET ";
             }
-            $qf         = "";
             foreach ($fields as $f=>$val) {
-                $qf    .= "`$f`='".escm($val)."',";
+// TODO: blotto_contact.dob is date null
+                $q     .= "`$f`='".escm($val)."',";
             }
-            $qf        .= "`updater`='".escm($usr)."'";
-            $q          = $q.$qf;
+            $q        .= "`updater`='".escm($usr)."'";
             if ($curc) {
                 $q     .= " WHERE id = ".$curc;
             }
@@ -3714,10 +3721,11 @@ function update ( ) {
             $zo->query ($q);
         }
         catch (\mysqli_sql_exception $e) {
-            error_log ('update(): '.$e->getMessage());
-            return '{ "error" : 107 }';
+            error_log ($e->getMessage());
+            return "{ \"error\" : 106, \"errorMessage\" : \"Could not update contact details\" }";
         }
         $fieldnames = fields ();
+// TODO: Supporters.dob is varchar not null
         $dob = "null";
         if ($fields['dob']) {
             $dob = esc ($fields['dob']);
@@ -3753,14 +3761,21 @@ function update ( ) {
             $update = $zo->query ($q);
         }
         catch (\mysqli_sql_exception $e) {
-            error_log ('update(): '.$e->getMessage());
-            return '{ "error" : 108 }';
+            error_log ($e->getMessage());
+            return "{ \"error\" : 107, \"errorMessage\" : \"Could not update contact details\" }";
         }
-        return '{ "ok" : true }';
+        return "{ \"ok\" : true }";
         // Supporter update ends
     }
     // MANDATE UPDATE
     if ($type=='m') {
+        $created = false;
+        if (strpos($fields['Sortcode'],'*')!==false) {
+            $fields['Sortcode'] = '';
+        }
+        if (strpos($fields['Account'],'*')!==false) {
+            $fields['Account'] = '';
+        }
         $crf = esc ($fields['ClientRef']);
         $ncr = esc (clientref_advance($fields['ClientRef']));
         $qs = "
@@ -3768,6 +3783,7 @@ function update ( ) {
             *
           FROM `blotto_build_mandate`
           WHERE `ClientRef`='$crf'
+            AND `Freq`!='Single'
           ORDER BY `Created` DESC
           LIMIT 0,1
         ";  // ClientRef is unique - remove last lines of query?
@@ -3775,25 +3791,31 @@ function update ( ) {
             $ms = $zo->query ($qs);
             $m = null;
             if(!($m=$ms->fetch_assoc())) {
-                return '{ "error" : 109 }';
+                return "{ \"error\" : 108, \"errorMessage\" : \"Could not find mandate details\" }";
             }
         }
         catch (\mysqli_sql_exception $e) {
-            error_log ('update(): '.$e->getMessage());
-            return '{ "error" : 110 }';
+            error_log ($e->getMessage());
+            return "{ \"error\" : 109, \"errorMessage\" : \"Could not select mandate details\" }";
         }
         $ddr = esc ($m['RefOrig']);
         $ndr = 'SOMETHING UNIQUE!';
-        $q = "INSERT INTO `blotto_bacs` SET ";
         $keys = [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+        // Insert change request
+        $q = "INSERT INTO `blotto_bacs` SET ";
         foreach ($keys as $k) {
-            if (!array_key_exists($k,$_POST)) {
-                return '{ "error" : 111 }';
+            if (!array_key_exists($k,$_POST) || !strlen($_POST[$k])) {
+                return "{ \"error\" : 110, \"errorMessage\" : \"Data missing for change request: $k\" }";
             }
             $q .= "`$k`='".esc($fields[$k],BLOTTO_CONFIG_DB)."',";
         }
         // Use the bespoke function chances()
-        $ch  = intval (chances($fields['Freq'],$fields['Amount']));
+        try {
+            $ch  = intval (chances($fields['Freq'],$fields['Amount']));
+        }
+        catch (\Exception $e) {
+            return "{ \"error\" : 111, \"errorMessage\" : \"Could not calculate chances\" }";
+        }
         $onm = $m['Name'];
         $osc = $m['Sortcode'];
         $oac = $m['Account'];
@@ -3813,9 +3835,9 @@ function update ( ) {
         }
         catch (\mysqli_sql_exception $e) {
             error_log ('update(): '.$e->getMessage());
-            return '{ "error" : 112 }';
+            return "{ \"error\" : 112, \"errorMessage\" : \"Could not insert change request\" }";
         }
-        $message            = "Record added to `$dbc`.`blotto_bacs` for old client ref ".$fields['ClientRef']."\n";
+        $message            = "Change request added for old client ref ".$fields['ClientRef']."\n";
         $message           .= "Caution: Do you need to modify supporter contact details?\n";
         $error              = null;
         // if freq or amount have changed
@@ -3833,6 +3855,7 @@ function update ( ) {
                             // Instantiate if possible and the class has the method
                             if (class_exists($a->class) && method_exists($a->class,'player_new')) {
                                 $api = new $a->class ($zom); // use the make database
+                                $api_code = $a->code;
                                 break;
                             }
                         }
@@ -3841,7 +3864,7 @@ function update ( ) {
             }
             // call player_new
             if ($api) {
-                $q = "
+                $qs = "
                   SELECT
                        `c`.`title`
                       ,`c`.`name_first`
@@ -3868,13 +3891,15 @@ function update ( ) {
                     WHERE `s`.`client_ref` = '".$fields['ClientRef']."'
                     ";
                 try {
-                    $rs = $zom->query ($q);
+                    $rs = $zom->query ($qs);
                     $s=$rs->fetch_assoc ();
                     $message .= "A replacement mandate has been created (change of amount/frequency): $ncr\n";
                     $message .= "The replaced mandate must be cancelled.\n";
                 }
                 catch (\mysqli_sql_exception $e) {
-                    $error = $e->getMessage ();
+                    $errno = 113;
+                    error_log ($e->getMessage());
+                    $error = "Failed to select supporter data";
                 }
                 // see import.supporter.sql
                 if (!$error) {
@@ -3900,9 +3925,39 @@ function update ( ) {
                             'County'               => $s['county'],
                             'Postcode'             => $s['postcode']
                     ];
-error_log (print_r($pn_mandate,true));
-                    if (!$api->player_new($pn_mandate,BLOTTO_DB)) {
-                        $error = "Failed to complete new mandate {$api->errorCode} {$api->error}";
+                    ob_start (); // API methods spouts bumf to STDOUT
+                    $rtn = $api->player_new ($pn_mandate,BLOTTO_DB);
+                    // TODO: perhaps blotto2 should have a web log; for now just use the error log
+                    error_log ("New player API code=$api_code");
+                    error_log (ob_get_contents());
+                    ob_end_clean ();
+                    if ($rtn===null) {
+                        $errno = 114;
+                        $error = "Failed to create new mandate: API error {$api->errorCode}";
+                    }
+                    elseif ($rtn===false) {
+                        $created = true;
+                        $errno = 115;
+                        $error = "Created mandate but failed to complete other processes: API error {$api->errorCode}";
+                    }
+                    else {
+                        $created = true;
+                        // Set the core RefNo
+                        $qu = "
+                            UPDATE `blotto_build_collection`
+                            SET
+                              `RefNo`=CONCAT($oid,digitsOnly(`RefOrig`))
+                            WHERE `ClientRef`='$ncr'
+                        ";
+                        try {
+                            $zom->query ($qu);
+                            $zo->query ($qu);
+                        }
+                        catch (\mysqli_sql_exception $e) {
+                            $errno = 116;
+                            error_log ($e->getMessage());
+                            $error = "Failed to set the core RefNo";
+                        }
                     }
                 }
             }
@@ -3920,12 +3975,11 @@ error_log (print_r($pn_mandate,true));
             );
         }
         if ($error) {
-            error_log ("update(): $error");
-            return '{ "error" : 113 }';
+            return "{ \"error\" : $errno, \"errorMessage\" : \"$error\", \"created\" : $created }";
         }
-        return '{ "ok" : true }';
+        return "{ \"ok\" : true, \"created\" : $created }";
     }
-    return '{ "error" : 114 }';
+    return "{ \"error\" : 117, \"errorMessage\" : \"Update type '$t' not recognised\", \"created\" : $created }";
 }
 
 function valid_date ($date,$format='Y-m-d') {

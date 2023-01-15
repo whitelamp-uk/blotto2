@@ -113,7 +113,10 @@ function mandateSelect (evt) {
 }
 
 function mandateSelectResult (responseText) {
-    var body,cancel,cell,day,fields,fname,form,heading,i,input,option,response,row,select;
+    var body,cancel,cell,day,field,fields,fname,form,heading,i,input,msg,option,response,row,select;
+    msg = document.querySelector ('.update-message');
+    msg.classList.remove ('active');
+    msg.innerHTML = '';
     try {
         response = JSON.parse (responseText);
     }
@@ -131,12 +134,15 @@ function mandateSelectResult (responseText) {
         return;
     }
     form = document.getElementById ('change-mandate');
+    fields = form.querySelectorAll ('button,input,select');
+    for (field of fields) {
+        field.disabled = false;
+    }
+    form.classList.remove ('changed');
     form.ClientRef.value = response.data[0].ClientRef;
     form.Provider.value = response.data[0].Provider;
     heading = form.querySelector ('thead th:nth-of-type(2)');
     heading.textContent = response.data[0].Provider+' - '+response.data[0].ClientRef;
-    response.data[0].Sortcode = '';
-    response.data[0].Account = '';
     fields = {
         Name: "Account name",
         Sortcode: "Bank sort code",
@@ -157,14 +163,20 @@ function mandateSelectResult (responseText) {
             select = document.createElement ('select');
             select.setAttribute ('name',fname);
             option = document.createElement ('option');
-            option.value = 'Monthly';
+            option.value = '1';
             option.textContent = 'Monthly';
             select.appendChild (option);
             option = document.createElement ('option');
-            option.value = 'Annually';
+            option.value = '12';
             option.textContent = 'Annually';
             select.appendChild (option);
             cell.appendChild (select);
+            if (response.data[0]['Freq']=='Monthly') {
+                select.selectedIndex = 0;
+            }
+            if (response.data[0]['Freq']=='Annually') {
+                select.selectedIndex = 1;
+            }
         }
         else if (fname=='StartDate') {
             day = new Date(Date.now()+1000*60*60*24*7); // 1 week
@@ -191,6 +203,9 @@ function mandateUpdate (form) {
     var data,query,xhttp;
     query = './?update&t=m&r=' + form.ClientRef.value;
     data = new FormData (form);
+    if (!form.classList.contains('changed')) {
+        return;
+    }
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
         if (this.readyState==4 && this.status==200) {
@@ -207,9 +222,6 @@ function mandateUpdate (form) {
 }
 
 function mandateUpdateResult (responseText) {
-    var form,table;
-    form = document.getElementById ('change-mandate');
-    table = form.querySelector ('table');
     try {
         results = JSON.parse (responseText);
     }
@@ -217,18 +229,13 @@ function mandateUpdateResult (responseText) {
         if (responseText.indexOf('<!doctype html>')!==false) {
             // Looks like we have logged out or session has expired
             window.top.location.href = './';
+            return;
         }
         console.log ('Error: '+responseText);
-        message ('Update request failed','err');
+        updateView ('m',{ error : null, errorMessage : "Update request failed (unspecified error)" });
         return;
     }
-    if ('error' in results) {
-        message ('Update failed error='+results.error,'err');
-        return;
-    }
-    message ('BACS request posted - mandate available 5 working days');
-    form.classList.add ('updated');
-    form.classList.remove ('changed');
+    updateView ('m',results);
 }
 
 function message (msg,type='ok') {
@@ -380,7 +387,12 @@ function supporterSearchResults (responseText) {
                 link.textContent = results[i][key];
                 link.setAttribute ('href','#');
                 link.setAttribute ('data-clientref',results[i][key]);
-                link.addEventListener ('click',fn);
+                if (fn==window.mandateSelect && results[i].Freq=='Single') {
+                    link.addEventListener ('click',function(evt){message('This mandate was for a single payment','ok')});
+                }
+                else {
+                    link.addEventListener ('click',fn);
+                }
                 cell.appendChild (link);
             }
             else {
@@ -408,7 +420,11 @@ function supporterSelect (evt) {
 }
 
 function supporterSelectResult (responseText) {
-    var body,cancel,cell,fields,fname,form,heading,i,input,response,row,tips;
+    var body,cancel,cell,field,fields,fname,form,heading,i,input,msg,response,row,tips;
+    msg = document.querySelector ('.update-message');
+    msg.classList.remove ('active');
+    msg.innerHTML = '';
+    msg.classList.remove ('error');
     try {
         response = JSON.parse (responseText);
     }
@@ -426,6 +442,11 @@ function supporterSelectResult (responseText) {
         return;
     }
     form = document.getElementById ('change-supporter');
+    fields = form.querySelectorAll ('button,input,select');
+    for (field of fields) {
+        field.disabled = false;
+    }
+    form.classList.remove ('changed');
     form.supporter_id.value = response.data[0].supporter_id;
     heading = form.querySelector ('thead th:nth-of-type(2)');
     heading.textContent = response.data[0].client_ref;
@@ -479,38 +500,39 @@ function supporterUpdate (form) {
     var data,query,xhttp;
     query = './?update&t=s&r=' + form.supporter_id.value;
     data = new FormData (form);
+    if (!form.classList.contains('changed')) {
+        return;
+    }
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
         if (this.readyState==4 && this.status==200) {
             supporterUpdateResult (xhttp.responseText);
         }
     };
-    xhttp.open ('POST',query,true);
-    xhttp.send (data);
+    try {
+        xhttp.open ('POST',query,true);
+        xhttp.send (data);
+    }
+    catch (e) {
+        console.log (e.message);
+    }
 }
 
 function supporterUpdateResult (responseText) {
-    var form,table;
-    form = document.getElementById ('change-supporter');
-    table = form.querySelector ('table');
     try {
         results = JSON.parse (responseText);
     }
     catch (e) {
-        if (responseText.trim().indexOf('<!doctype html>')===0) {
+        if (responseText.indexOf('<!doctype html>')!==false) {
             // Looks like we have logged out or session has expired
             window.top.location.href = './';
+            return;
         }
-        message ('Update request failed','err');
+        console.log ('Error: '+responseText);
+        updateView ('s',{ error : null, errorMessage : "Update request failed (unspecified error)" });
         return;
     }
-    if ('error' in results) {
-        message ('Update failed error='+results.error,'err');
-        return;
-    }
-    message ('Details successfully updated');
-    form.classList.add ('updated');
-    form.classList.remove ('changed');
+    updateView ('s',results);
 }
 
 function topCheck ( ) {
@@ -530,11 +552,77 @@ function unloading ( ) {
 
 function updateChange (evt) {
     evt.currentTarget.classList.add ('changed');
-    evt.currentTarget.classList.remove ('updated');
 }
 
 function updateHandle (formId) {
     document.getElementById(formId).addEventListener ('input',window.updateChange);
 }
 
+function updateView (type,results) {
+    var err,field,fields,form,however,img,p,section,txt;
+    section = document.querySelector ('section.update-message');
+    if (type=='s') {
+        form = document.getElementById ('change-supporter');
+    }
+    if (type=='m') {
+        form = document.getElementById ('change-mandate');
+    }
+    if (results.ok || results.created) {
+        form.classList.remove ('changed');
+        fields = form.querySelectorAll ('button,input,select');
+        for (field of fields) {
+            field.disabled = true;
+        }
+        fields = form.querySelectorAll ('.form-close');
+        for (field of fields) {
+            field.disabled = false;
+        }
+    }
+    txt = [];
+    if (type=='s') {
+        if (results.ok) {
+            txt.push ('Supporter details have been updated successfully');
+        }
+    }
+    if (type=='m') {
+        if (results.created) {
+            however = true;
+            txt.push ('A replacement mandate has been created - mandate will be available within 5 working days');
+            txt.push ('A BACS request has been posted to the administrator to cancel the old mandate');
+        }
+        else {
+            if (results.error>=111) {
+                however = true;
+                txt.push ('A BACS request has been posted to the administrator');
+            }
+        }
+    }
+    if (results.errorMessage) {
+        section.classList.add ('error');
+        err = '';
+        if (results.error) {
+            err = results.error + ' ';
+        } 
+        err += results.errorMessage;
+        if (however) {
+            txt.push ('However, an error occurred: '+err);
+        }
+        else {
+            txt.push ('An error occurred: '+err);
+        }
+        if (results.error!=111) { // 111 is a missing field value
+            txt.push ('Please copy this full message into an email to your administrator');
+        }
+    }
+    img = document.createElement ('img');
+    img.classList.add ('close');
+    img.addEventListener ('click',function(evt){evt.currentTarget.parentElement.classList.remove('active')});
+    section.appendChild (img);
+    for (i=0;txt[i];i++) {
+        p = document.createElement ('p');
+        p.innerText = txt[i];
+        section.appendChild (p);
+    }
+    section.classList.add ('active');
+}
 

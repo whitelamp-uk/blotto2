@@ -21,9 +21,10 @@
         </table>
 
         <form id="change-supporter">
+          <section class="update-message"></section>
           <input type="hidden" name="supporter_id" />
           <button id="post-supporter" name="update">Update</button>
-          <button class="form-close">Cancel</button>
+          <button class="form-close">Close</button>
           <table>
             <thead>
               <tr>

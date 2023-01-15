@@ -21,10 +21,11 @@
         </table>
 
         <form id="change-mandate">
+          <section class="update-message"></section>
           <input type="hidden" name="Provider" />
           <input type="hidden" name="ClientRef" />
           <button id="post-mandate">Post change request</button>
-          <button class="form-close">Cancel</button>
+          <button class="form-close">Close</button>
           <table>
             <thead>
               <tr>
