@@ -35,12 +35,12 @@ if (1) {
                 try {
                     $api = email_api ();
                     $api->apiKeySet ($org['signup_cm_key']);
-                    $response = $api->send (
+                    $emref = $api->send (
                         $org['signup_cm_id_verify'],
                         $request->email,
                         [ 'Code' => $code ]
                     );
-                    if (!$response) {
+                    if (!$emref) {
                         error_log ($api->errorLast);
                         $response->e    = $e_default;
                         $response->eCode = 102;
