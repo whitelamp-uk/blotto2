@@ -388,7 +388,7 @@ function supporterSearchResults (responseText) {
                 link.setAttribute ('href','#');
                 link.setAttribute ('data-clientref',results[i][key]);
                 if (fn==window.mandateSelect && results[i].Freq=='Single') {
-                    link.addEventListener ('click',function(evt){message('This mandate was for a single payment','ok')});
+                    link.addEventListener ('click',function(evt){message('This mandate was for a single payment','err')});
                 }
                 else {
                     link.addEventListener ('click',fn);
