@@ -34,7 +34,7 @@ if (1) {
             if (www_signup_verify_store('email',$request->email,$code)) {
                 try {
                     $api = email_api ();
-                    $api->apiKeySet ($org['signup_cm_key']);
+                    $api->keySet ($org['signup_cm_key']);
                     $emref = $api->send (
                         $org['signup_cm_id_verify'],
                         $request->email,
