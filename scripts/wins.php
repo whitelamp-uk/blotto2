@@ -6,10 +6,10 @@ require $argv[1];
 
 
 try {
-    if (defined('BLOTTO_STANNP') && BLOTTO_STANNP) {
+    if (defined('BLOTTO_SNAILMAIL') && BLOTTO_SNAILMAIL) {
         // Stannp API is active
-        if (defined('BLOTTO_STANNP_TPL_WIN') && BLOTTO_STANNP_TPL_WIN) {
-            require BLOTTO_STANNP_CLASS;
+        if (defined('BLOTTO_SNAILMAIL_TPL_WIN') && BLOTTO_SNAILMAIL_TPL_WIN) {
+            require BLOTTO_SNAILMAIL_API_STANNP;
             tee ("    Updating Wins.letter_status using Stannp\n");
             stannp_status_wins ();
             tee ("    Sending winner letters using Stannp\n");

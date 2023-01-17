@@ -12,10 +12,10 @@ require $argv[1];
 
 
 try {
-    if (defined('BLOTTO_STANNP') && BLOTTO_STANNP) {
+    if (defined('BLOTTO_SNAILMAIL') && BLOTTO_SNAILMAIL) {
         // Stannp API is active
-        if (defined('BLOTTO_STANNP_TPL_ANL') && BLOTTO_STANNP_TPL_ANL) {
-            require BLOTTO_STANNP_CLASS;
+        if (defined('BLOTTO_SNAILMAIL_TPL_ANL') && BLOTTO_SNAILMAIL_TPL_ANL) {
+            require BLOTTO_SNAILMAIL_API_STANNP;
             tee ("    Updating ANLs.letter_status using Stannp\n");
             stannp_status_anls ();
             tee ("    Sending ANLs using Stannp\n");

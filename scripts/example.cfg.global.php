@@ -24,7 +24,8 @@ define ( 'BLOTTO_EMAIL_BACS_TO',    'bacs@mysite.co.uk'                         
 define ( 'BLOTTO_EMAIL_TO',         'support@mysite.co.uk'                      );
 define ( 'BLOTTO_EMAIL_REPORT_DAY', 'Mon'               );
 define ( 'BLOTTO_EMAIL_WINS_ON',    true                );
-define ( 'BLOTTO_MYSQLDUMP_AUTH',   '/root/mysqldump.auth'                      );
+define ( 'BLOTTO_EMAIL_BOUNCE_DELAY', 180               ); // Seconds to sleep before checking ANL email bounces, mostly OK in 3 minutes
+define ( 'BLOTTO_POSTCODE_PREG',    '^[A-Z][A-Z]?[0-9][A-Z0-9]?[0-9][A-Z][A-Z]$' );
 define ( 'BLOTTO_LOG_DAYS',         30                                          );
 define ( 'BLOTTO_TMP_DIR',          '/tmp'              );
 
@@ -75,12 +76,19 @@ define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR',        '/opt/createsend-php/csrest_
 define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CLASS',  '\Blotto\CampaignMonitor'                                   );
 
 
+// Snailmail
+define ( 'BLOTTO_SNAILMAIL_COUNTRY',    'GB'                );
+define ( 'BLOTTO_SNAILMAIL_RM_FIELDS',  'email,mobile,telephone'                    );
+
+
 // Stannp snail-mail service
+
+// Deprecated
 define ( 'BLOTTO_STANNP',           '/home/blotto/stannp/Stannp.class.php'      );
 define ( 'BLOTTO_STANNP_COUNTRY',   'GB'        );
-define ( 'STANNP_POSTCODE_PREG',    '^[A-z]{1,2}[0-9]{1,2}\s?[0-9][A-z]{2}$'    );
-define ( 'STANNP_TIMEOUT',          60          );
 define ( 'BLOTTO_STANNP_RM_FIELDS', 'email,mobile,telephone'                    );
+
+define ( 'STANNP_TIMEOUT',          60          );
 // Minimum length of left-match to campaign names for redaction limiting
 define ( 'STANNP_REDACT_SCOPE_LEN', 4           );
 

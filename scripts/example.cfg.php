@@ -120,14 +120,18 @@ define ( 'BLOTTO_SELFEX_EMAIL',     'SelfExclusionYLH@MyHelpDomain.com' );
 define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR',        '/opt/campaignmonitor-api/CampaignMonitor.php'  );
 
 
-// Stannp snail-mail service
-define ( 'BLOTTO_STANNP',           false           );
-define ( 'BLOTTO_STANNP_PREFIX',    'ABC'           );
-define ( 'BLOTTO_STANNP_TPL_ANL',   123             );
-define ( 'BLOTTO_STANNP_TPL_WIN',   123             );
-define ( 'BLOTTO_STANNP_FROM_ANL',  '2021-10-25'    );
-define ( 'BLOTTO_STANNP_FROM_WIN',  '2021-10-25'    );
-define ( 'STANNP_ERROR_LOG',        true            );
+// Snailmail
+define ( 'BLOTTO_SNAILMAIL',            false           );
+define ( 'BLOTTO_SNAILMAIL_PREFIX',     'ABC'           );
+define ( 'BLOTTO_SNAILMAIL_TPL_ANL',    123             );
+define ( 'BLOTTO_SNAILMAIL_TPL_WIN',    123             );
+define ( 'BLOTTO_SNAILMAIL_FROM_ANL',   '2021-10-25'    );
+define ( 'BLOTTO_SNAILMAIL_FROM_WIN',   '2021-10-25'    );
+
+// Stannp snailmail service
+define ( 'BLOTTO_SNAILMAIL_API_STANNP',         '/opt/stannp-api/Stannp.php'     );
+define ( 'BLOTTO_SNAILMAIL_API_STANNP_CLASS',   '\Whitelamp\Stannp'        );
+define ( 'STANNP_ERROR_LOG',            true            );
 
 
 // Fees

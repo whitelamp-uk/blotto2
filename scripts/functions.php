@@ -3045,10 +3045,10 @@ function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
         $array2d[$i]['city']            = $row['town'];
         // Country is not given in the blank mailpiece draft.
         // Which is odd - so here it is anyway just in case
-        $array2d[$i]['country']         = BLOTTO_STANNP_COUNTRY;
+        $array2d[$i]['country']         = BLOTTO_SNAILMAIL_COUNTRY;
         // `postcode` has the same name in blottoland so needs no transformation
         // Remove undesirable fields (consider GDPR for example)
-        $undesirable = explode (',',BLOTTO_STANNP_RM_FIELDS);
+        $undesirable = explode (',',BLOTTO_SNAILMAIL_RM_FIELDS);
         foreach ($undesirable as $u) {
             if (array_key_exists($u,$row)) {
                 unset ($array2d[$i][$u]);
@@ -3059,22 +3059,23 @@ function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
 }
 
 function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
-    if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
+    if (!defined('BLOTTO_SNAILMAIL') || !BLOTTO_SNAILMAIL) {
         // API is not active
         return ['recipients'=>0];
     }
-    $prefix = BLOTTO_STANNP_PREFIX.'-'.gethostname().'-'.$name.'-';
+    $prefix = BLOTTO_SNAILMAIL_PREFIX.'-'.gethostname().'-'.$name.'-';
     $name = $prefix.date('Y-m-d--H:i:s');
     // Transform arrays by reference (arguments above)
     stannp_fields_merge ($recipients,$ref_key,$refs);
     // Do it
-    $stannp = new \Whitelamp\Stannp ();
+    $class = BLOTTO_SNAILMAIL_API_STANNP_CLASS;
+    $stannp = new $class ();
     // Return value is just a summary
     return $stannp->campaign_create ($name,$template_id,$recipients);
 }
 
 function stannp_mail_anls ( ) {
-    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $earliest = BLOTTO_SNAILMAIL_FROM_ANL;
     $q = "
       SELECT
         `a`.*
@@ -3101,7 +3102,7 @@ function stannp_mail_anls ( ) {
     if (!count($recipients)) {
         return ['recipients'=>0];
     }
-    $batch = stannp_mail ($recipients, 'ANLs', BLOTTO_STANNP_TPL_ANL,'ClientRef',$refs);
+    $batch = stannp_mail ($recipients, 'ANLs', BLOTTO_SNAILMAIL_TPL_ANL,'ClientRef',$refs);
     if (!$batch['recipients']) {
         return $batch;
     }
@@ -3131,7 +3132,7 @@ function stannp_mail_anls ( ) {
 }
 
 function stannp_mail_wins ( ) {
-    $earliest = BLOTTO_STANNP_FROM_WIN;
+    $earliest = BLOTTO_SNAILMAIL_FROM_WIN;
     $q = "
       SELECT
         `w`.*
@@ -3161,7 +3162,7 @@ function stannp_mail_wins ( ) {
     if (!count($recipients)) {
         return ['recipients'=>0];
     }
-    $batch = stannp_mail ($recipients, 'Wins', BLOTTO_STANNP_TPL_WIN,'entry_id',$refs);
+    $batch = stannp_mail ($recipients, 'Wins', BLOTTO_SNAILMAIL_TPL_WIN,'entry_id',$refs);
     if (!$batch['recipients']) {
         return $batch;
     }
@@ -3195,11 +3196,12 @@ function stannp_mail_wins ( ) {
 
 function stannp_status ($batch_names) {
     $refs = [];
-    if (!defined('BLOTTO_STANNP') || !BLOTTO_STANNP) {
+    if (!defined('BLOTTO_SNAILMAIL') || !BLOTTO_SNAILMAIL) {
         // API is not active
         return $refs;
     }
-    $stannp = new \Whitelamp\Stannp ();
+    $class = BLOTTO_SNAILMAIL_API_STANNP_CLASS;
+    $stannp = new $class ();
     foreach ($batch_names as $campaign_name) {
         $refs[$campaign_name] = [];
         $recipients = $stannp->campaign ($campaign_name) ['recipient_list'];
@@ -3219,7 +3221,7 @@ function stannp_status ($batch_names) {
 }
 
 function stannp_status_anls ($live=false) {
-    $earliest = BLOTTO_STANNP_FROM_ANL;
+    $earliest = BLOTTO_SNAILMAIL_FROM_ANL;
     $batches = [];
     $c = connect (BLOTTO_MAKE_DB);
     if ($live) {
@@ -3290,7 +3292,7 @@ function stannp_status_anls ($live=false) {
 }
 
 function stannp_status_wins ($live=false) {
-    $earliest = BLOTTO_STANNP_FROM_WIN;
+    $earliest = BLOTTO_SNAILMAIL_FROM_WIN;
     $batches = [];
     $c = connect (BLOTTO_MAKE_DB);
     // Get winners
