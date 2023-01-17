@@ -3081,7 +3081,7 @@ function stannp_mail_anls ( ) {
         `a`.*
       FROM `ANLs` AS `a`
       JOIN `blotto_player` AS `p`
-        ON `p`.`letter_status`='email_failed'
+        ON (`p`.`letter_batch_ref` IS NULL OR `p`.`letter_batch_ref`='')
        AND `p`.`client_ref`=`a`.`ClientRef`
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
