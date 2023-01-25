@@ -13,11 +13,39 @@ $org = org ();
 $earliest = BLOTTO_ANL_EMAIL_FROM;
 $email = false;
 $count = 0;
+$recipients = [];
 
 
 
-// Find an email API to use
-$api = email_api ();
+if ($org['signup_cm_key'] && $org['anl_cm_id']) {
+    // Find an email API to use
+    $api = email_api ();
+    // Find ANLs to email
+    $qs = "
+      SELECT
+        `a`.*
+      FROM `ANLs` AS `a`
+      JOIN `blotto_player` AS `p`
+        ON (`p`.`letter_status`='' OR `p`.`letter_status` IS NULL)
+       AND `p`.`client_ref`=`a`.`ClientRef`
+      WHERE `a`.`tickets_issued`>='$earliest'
+      ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
+    ";
+    echo $qs;
+    try {
+        $rows = $zo->query ($qs);
+        while ($r=$rows->fetch_assoc()) {
+            $recipients[] = $r;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        fwrite (STDERR,$e->getMessage()."\n");
+        exit (102);
+    }
+}
+else {
+    tee ("    Missing email configuration for ANLs - see `blotto_org`.`signup_cm_key` and `blotto_org`.`anl_cm_id`\n");
+}
 if ($api) {
     if (defined('BLOTTO_ANL_EMAIL') && BLOTTO_ANL_EMAIL) {
         $email = true;
@@ -29,32 +57,6 @@ if ($api) {
 }
 else {
     tee ("    No email API found for ANLs\n");
-}
-
-
-
-// Find ANLs to email
-$qs = "
-  SELECT
-    `a`.*
-  FROM `ANLs` AS `a`
-  JOIN `blotto_player` AS `p`
-    ON (`p`.`letter_status`='' OR `p`.`letter_status` IS NULL)
-   AND `p`.`client_ref`=`a`.`ClientRef`
-  WHERE `a`.`tickets_issued`>='$earliest'
-  ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
-";
-echo $qs;
-$recipients = [];
-try {
-    $rows = $zo->query ($qs);
-    while ($r=$rows->fetch_assoc()) {
-        $recipients[] = $r;
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$e->getMessage()."\n");
-    exit (102);
 }
 
 
