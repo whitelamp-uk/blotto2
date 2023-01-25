@@ -4521,9 +4521,9 @@ function www_logout ( ) {
 
 function www_pay_apis ( ) {
     $apis = [];
-    foreach (pay_apis() as $api) {
+    foreach (pay_apis() as $code => $api) {
         if ($api->integrated) {
-            $apis[] = $api;
+            $apis[$code] = $api;
         }
     }
     return $apis;
