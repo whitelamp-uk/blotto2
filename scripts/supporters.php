@@ -18,26 +18,6 @@ if (!$zo) {
     exit (102);
 }
 
-/*
-TODO: delete this
-
-// TEMPORARY CODE TO FILL HOLES IN canvas_agent_ref
-$qu = "
-  UPDATE `blotto_supporter`
-  SET `canvas_agent_ref`=SUBSTR(`client_ref`,3,4)
-  WHERE `canvas_agent_ref` IS NULL
-     OR `canvas_agent_ref`=''
-";
-try {
-    $zo->query ($qu);
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR, $qu."\n".$zo->error."\n");
-    exit (127);
-}
-// END OF TEMPORARY CODE
-*/
-
 
 $qs = "
   SELECT
@@ -59,33 +39,6 @@ try {
             fwrite (STDERR,"Supporter import: `tmp_supporter`.`ClientRef` is compulsory - $ccc\n");
             exit (103);
         }
-/*
-
-TODO: Some attempt to sanity check formats and values
-by something based roughly on the theme below.
-
-        if (str_replace(' ','',$c['FirstName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesGiven` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-        if (str_replace(' ','',$c['LastName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesFamily` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-        if (str_replace(' ','',$c['AddressLine1'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`AddressLine1` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-        if (str_replace(' ','',$c['Town'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`Town` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-        if (str_replace(' ','',$c['Postcode'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`Postcode` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-*/
-
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -184,6 +137,32 @@ catch (\mysqli_sql_exception $e) {
 
 
 
+$qs = "
+  SELECT
+    `ClientRef`
+  FROM `tmp_supporter`
+  WHERE `Town` IS NULL
+     OR `Town`=''
+  ;
+";
+try {
+    $check = $zo->query ($qs);
+    $crfs = [];
+    while ($c=$check->fetch_assoc()) {
+        $crfs[] = $c['ClientRef'];
+    }
+    if (count($crfs)) {
+        fwrite (STDERR,"Missing town for ClientRefs: ".implode(', ',$crfs)."\n");
+        exit (113);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (114);
+}
+
+
+
 $phonere='^\\\\+?[0-9]+$';
 $qs = "
   SELECT
@@ -199,12 +178,12 @@ try {
     $check = $zo->query ($qs);
     if ($c=$check->fetch_assoc()) {
         fwrite (STDERR,"Mobile number '".$c['Mobile']."' is illegal for ".$c['ClientRef']."\n");
-        exit (111);
+        exit (115);
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (112);
+    exit (116);
 }
 
 // MySQL regexp needs double escaping for reasons not yet fathomed...
@@ -222,35 +201,58 @@ try {
     $check = $zo->query ($qs);
     if ($c=$check->fetch_assoc()) {
         fwrite(STDERR, "Telephone number '".$c['Telephone']."' is illegal for ".$c['ClientRef']."\n");
-        exit (113);
+        exit (117);
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (114);
+    exit (118);
 }
 
-/*
+$regexp = BLOTTO_POSTCODE_PREG;
 $qs = "
   SELECT
-    `Postcode`
+    `ClientRef`
   FROM `tmp_supporter`
-  WHERE REPLACE(`Postcode`,' ','') NOT REGEXP '^[A-Z][A-Z]?[0-9][0-9]?[0-9][A-Z][A-Z]$'
-  LIMIT 0,1
+  WHERE REPLACE(UPPER(`Postcode`),' ','') NOT REGEXP '$regexp'
   ;
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
-        fwrite(STDERR, "Poscode ".$c['Postcode']." is not valid\n");
-        exit (115);
+    $crfs = [];
+    while ($c=$check->fetch_assoc()) {
+        $crfs[] = $c['ClientRef'];
+    }
+    if (count($crfs)) {
+        fwrite (STDERR,"Incorrect postcode format for ClientRefs: ".implode(', ',$crfs)."\n");
+        exit (119);
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (116);
+    exit (120);
 }
+
+
+/*
+
+TODO: Missing values
+by something based roughly on the theme below.
+
+        if (str_replace(' ','',$c['FirstName'])=='') {
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesGiven` is compulsory - $ccc - {$c['ClientRef']}\n");
+            exit (103);
+        }
+        if (str_replace(' ','',$c['LastName'])=='') {
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesFamily` is compulsory - $ccc - {$c['ClientRef']}\n");
+            exit (103);
+        }
+        if (str_replace(' ','',$c['AddressLine1'])=='') {
+            fwrite(STDERR, "Supporter import: `tmp_supporter`.`AddressLine1` is compulsory - $ccc - {$c['ClientRef']}\n");
+            exit (103);
+        }
 */
+
 
 
 echo "\nUSE `".BLOTTO_MAKE_DB."`\n\n";
@@ -377,7 +379,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (116);
+    exit (121);
 }
 
 if ($bad=count($errors)) {
@@ -409,7 +411,7 @@ if (!$count) {
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (117);
+        exit (122);
     }
 }
 

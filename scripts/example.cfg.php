@@ -106,18 +106,23 @@ define ( 'STRIPE_DEV_MODE',         true        );
 */
 
 // Organisation - all payment providers
-define ( 'BLOTTO_DEV_MODE',         false       ); // Dummy online payment form population
-define ( 'BLOTTO_DEV_PAY_FREEZE',   false       ); // Leave blotto_build_* alone
-define ( 'CAMPAIGN_MONITOR',        '/path/to/createsend-php/csrest_transactional_smartemail.php' );
-define ( 'DATA8_USERNAME',          ''          );
-define ( 'DATA8_PASSWORD',          ''          );
-define ( 'DATA8_COUNTRY',           'GB'        );
-define ( 'VOODOOSMS',               '/home/blotto/voodoosms/SMS.class.php' );
-define ( 'BLOTTO_SELFEX_EMAIL',     'SelfExclusionYLH@MyHelpDomain.com' );
+define ( 'BLOTTO_DEV_MODE',             false       ); // Dummy online payment form population
+define ( 'BLOTTO_DEV_PAY_FREEZE',       false       ); // Leave blotto_build_* alone
+define ( 'CAMPAIGN_MONITOR',            '/path/to/createsend-php/csrest_transactional_smartemail.php' );
+define ( 'CAMPAIGN_MONITOR_TIMELINE',   '/path/to/createsend-php/csrest_transactional_timeline.php' );
+define ( 'DATA8_USERNAME',              ''          );
+define ( 'DATA8_PASSWORD',              ''          );
+define ( 'DATA8_COUNTRY',               'GB'        );
+define ( 'VOODOOSMS',                   '/home/blotto/voodoosms/SMS.class.php' );
+define ( 'BLOTTO_SELFEX_EMAIL',         'SelfExclusionYLH@MyHelpDomain.com' );
 
+
+// Email
+define ( 'BLOTTO_ANL_EMAIL',            false           );
+define ( 'BLOTTO_ANL_EMAIL_FROM',       '2023-01-25'    );
 
 // Campaign Monitor
-define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR',        '/opt/campaignmonitor-api/CampaignMonitor.php'  );
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR', '/opt/campaignmonitor-api/CampaignMonitor.php'  );
 
 
 // Snailmail

@@ -1468,7 +1468,12 @@ function invoice_game ($draw_closed_date,$output=true) {
             ";
             $previous           = $zo->query ($qs);
             $previous           = $previous->fetch_assoc ();
-            $previous           = $previous['previous'];
+            if ($previous) {
+                $previous       = $previous['previous'];
+            }
+            else {
+                $previous       = '0000-00-00';
+            }
             $qs = "
               SELECT
                 COUNT(`ClientRef`) AS `loaded`
@@ -3017,71 +3022,25 @@ function sms ($org,$to,$message,&$diagnostic) {
     return $sms->send ($to,$message,$org['signup_sms_from'],$diagnostic);
 }
 
-function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
-    foreach ($array2d as $i=>$row) {
-        // Player refs `ClientRef`/`client_ref` interchangeable
-        if (array_key_exists('ClientRef',$row)) {
-            $array2d[$i]['client_ref']  = $row['ClientRef'];
-            $array2d[$i]['ref_id']      = $array2d[$i]['client_ref'];
-        }
-        elseif (array_key_exists('client_ref',$row)) {
-            $array2d[$i]['ClientRef']  = $row['client_ref'];
-            $array2d[$i]['ref_id']      = $array2d[$i]['ClientRef'];
-        }
-        else {
-            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
-            return false;
-        }
-        $refs[]                         = $row[$ref_key];
-        // Stannp address window (ie compulsory fields)
-        //     https://dash.stannp.com/designer/mailpiece/A4
-        //     Select "A blank canvas"
-        $array2d[$i]['full_name']       = $row['title'].' '.$row['name_first'].' '.$row['name_last'];
-        $array2d[$i]['job_title']       = '';
-        $array2d[$i]['company']         = '';
-        $array2d[$i]['address1']        = $row['address_1'];
-        $array2d[$i]['address2']        = $row['address_2'];
-        $array2d[$i]['address3']        = $row['address_3'];
-        $array2d[$i]['city']            = $row['town'];
-        // Country is not given in the blank mailpiece draft.
-        // Which is odd - so here it is anyway just in case
-        $array2d[$i]['country']         = BLOTTO_SNAILMAIL_COUNTRY;
-        // `postcode` has the same name in blottoland so needs no transformation
-        // Remove undesirable fields (consider GDPR for example)
-        $undesirable = explode (',',BLOTTO_SNAILMAIL_RM_FIELDS);
-        foreach ($undesirable as $u) {
-            if (array_key_exists($u,$row)) {
-                unset ($array2d[$i][$u]);
-            }
-        }
-    }
-    return true;
-}
-
-function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
-    if (!defined('BLOTTO_SNAILMAIL') || !BLOTTO_SNAILMAIL) {
-        // API is not active
-        return ['recipients'=>0];
-    }
-    $prefix = BLOTTO_SNAILMAIL_PREFIX.'-'.gethostname().'-'.$name.'-';
-    $name = $prefix.date('Y-m-d--H:i:s');
-    // Transform arrays by reference (arguments above)
-    stannp_fields_merge ($recipients,$ref_key,$refs);
-    // Do it
-    $class = BLOTTO_SNAILMAIL_API_STANNP_CLASS;
-    $stannp = new $class ();
-    // Return value is just a summary
-    return $stannp->campaign_create ($name,$template_id,$recipients);
-}
-
-function stannp_mail_anls ( ) {
+function snailmail_anls ( ) {
+    // Currently hard-wired single snailmail service (procedural functions that call stannp-api)
+    require_once BLOTTO_SNAILMAIL_API_STANNP;
     $earliest = BLOTTO_SNAILMAIL_FROM_ANL;
+    // Snailmail service should only find ANLs where emailing was skipped or the email bounced
     $q = "
       SELECT
         `a`.*
       FROM `ANLs` AS `a`
       JOIN `blotto_player` AS `p`
-        ON (`p`.`letter_batch_ref` IS NULL OR `p`.`letter_batch_ref`='')
+        -- letter_status=email_skipped or letter_status=email_bounced is set immediately in anls.php
+        -- letter_status=snailmail is set immediately in update SQL below
+        -- also see anls.php
+        ON (
+             `p`.`letter_status`='email_skipped'  -- email was off but new emailing code ran
+          OR `p`.`letter_status`='email_bounced'  -- email was sent but bounced
+          OR `p`.`letter_status`=''               -- just in case
+          OR `p`.`letter_status` IS NULL          -- presumably issued before BLOTTO_ANL_EMAIL_FROM
+        )
        AND `p`.`client_ref`=`a`.`ClientRef`
       WHERE `a`.`tickets_issued`>='$earliest'
       ORDER BY `a`.`tickets_issued`,`a`.`ClientRef`
@@ -3114,6 +3073,8 @@ function stannp_mail_anls ( ) {
       SET
         `p_in`.`letter_batch_ref`='$name'
        ,`p_out`.`letter_batch_ref`='$name'
+        `p_in`.`letter_status`='snailmail'
+       ,`p_out`.`letter_status`='snailmail'
       WHERE `p_in`.`client_ref` IN (
         '".implode("','",$refs)."'
       );
@@ -3131,8 +3092,86 @@ function stannp_mail_anls ( ) {
     return $batch;
 }
 
-function stannp_mail_wins ( ) {
+function snailmail_anls_status ($live=false) {
+    // Currently hard-wired single snailmail service (procedural functions that call stannp-api)
+    require_once BLOTTO_SNAILMAIL_API_STANNP;
+    $earliest = BLOTTO_SNAILMAIL_FROM_ANL;
+    $batches = [];
+    $c = connect (BLOTTO_MAKE_DB);
+    if ($live) {
+        $c_live = connect (BLOTTO_DB);
+    }
+    // Snailmail service should ignore ANLs having email related status or already delivered by snailmail
+    $q = "
+      SELECT
+        DISTINCT `p`.`letter_batch_ref` AS `batch`
+      FROM `blotto_player` AS `p`
+      JOIN `ANLs` AS `a`
+        ON `p`.`client_ref`=`a`.`ClientRef`
+       AND `a`.`tickets_issued`>='$earliest'
+      WHERE `p`.`letter_batch_ref` IS NOT NULL
+        AND `p`.`letter_batch_ref`!=''
+        AND `p`.`letter_status` NOT LIKE 'email%'
+        AND `p`.`letter_status`!='delivered'
+      ORDER BY `batch`
+    ";
+//    echo $q;
+    try {
+        $rows = $c->query ($q);
+        while ($row=$rows->fetch_assoc()) {
+            $batches[] = $row['batch'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    if (!count($batches)) {
+        return;
+    }
+    $statuses = stannp_status ($batches);
+    if (count($statuses) && $live){
+        $c_live = connect (BLOTTO_DB);
+    }
+    foreach ($statuses as $batch=>$refs) {
+        foreach ($refs as $status=>$crefs) {
+            $status = $c->escape_string ($status);
+            foreach ($crefs as $i=>$ref) {
+                $crefs[$i] = $c->escape_string ($ref);
+            }
+            $q = "
+              UPDATE `blotto_player` AS `p_in`
+              JOIN `ANLs` AS `p_out`
+                ON `p_out`.`ClientRef`=`p_in`.`client_ref`
+              SET
+                `p_in`.`letter_status`='$status'
+               ,`p_out`.`letter_status`='$status'
+              WHERE `p_in`.`client_ref` IN (
+                '".implode("','",$crefs)."'
+              );
+            ";
+            echo $q;
+            try {
+                $c->query ($q);
+                if ($live) {
+                    // Make the data web accessible right now
+                    $c_live->query ($q);
+                }
+            }
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage()."\n");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function snailmail_wins ( ) {
+    // Currently hard-wired single snailmail service (procedural functions that call stannp-api)
+    require_once BLOTTO_SNAILMAIL_API_STANNP;
     $earliest = BLOTTO_SNAILMAIL_FROM_WIN;
+    // Snailmail service should ignore wins where there is a status of any lind
     $q = "
       SELECT
         `w`.*
@@ -3194,108 +3233,13 @@ function stannp_mail_wins ( ) {
     return $batch;
 }
 
-function stannp_status ($batch_names) {
-    $refs = [];
-    if (!defined('BLOTTO_SNAILMAIL') || !BLOTTO_SNAILMAIL) {
-        // API is not active
-        return $refs;
-    }
-    $class = BLOTTO_SNAILMAIL_API_STANNP_CLASS;
-    $stannp = new $class ();
-    foreach ($batch_names as $campaign_name) {
-        $refs[$campaign_name] = [];
-        $recipients = $stannp->campaign ($campaign_name) ['recipient_list'];
-        if (is_array($recipients)) {
-            foreach ($recipients as $r) {
-                if (!array_key_exists($r['mailpiece_status'],$refs[$campaign_name])) {
-                    $refs[$campaign_name][$r['mailpiece_status']] = [];
-                }
-                $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
-            }
-        }
-        else {
-            fwrite (STDERR,"WARNING: campaign $campaign_name was not found\n");
-        }
-    }
-    return $refs;
-}
-
-function stannp_status_anls ($live=false) {
-    $earliest = BLOTTO_SNAILMAIL_FROM_ANL;
-    $batches = [];
-    $c = connect (BLOTTO_MAKE_DB);
-    if ($live) {
-        $c_live = connect (BLOTTO_DB);
-    }
-    $q = "
-      SELECT
-        DISTINCT `p`.`letter_batch_ref` AS `batch`
-      FROM `blotto_player` AS `p`
-      JOIN `ANLs` AS `a`
-        ON `p`.`client_ref`=`a`.`ClientRef`
-       AND `a`.`tickets_issued`>='$earliest'
-      WHERE `p`.`letter_batch_ref` IS NOT NULL
-        AND `p`.`letter_batch_ref`!=''
-        AND (`p`.`letter_status`!='delivered' OR `p`.`letter_status` IS NULL OR `p`.`letter_status`='')
-      ORDER BY `batch`
-    ";
-//    echo $q;
-    try {
-        $rows = $c->query ($q);
-        while ($row=$rows->fetch_assoc()) {
-            $batches[] = $row['batch'];
-        }
-    }
-    catch (\mysqli_sql_exception $e) {
-        throw new \Exception ($e->getMessage());
-        return false;
-    }
-    if (!count($batches)) {
-        return;
-    }
-    $statuses = stannp_status ($batches);
-    if (count($statuses) && $live){
-        $c_live = connect (BLOTTO_DB);
-    }
-    foreach ($statuses as $batch=>$refs) {
-        foreach ($refs as $status=>$crefs) {
-            $status = $c->escape_string ($status);
-            foreach ($crefs as $i=>$ref) {
-                $crefs[$i] = $c->escape_string ($ref);
-            }
-            $q = "
-              UPDATE `blotto_player` AS `p_in`
-              JOIN `ANLs` AS `p_out`
-                ON `p_out`.`ClientRef`=`p_in`.`client_ref`
-              SET
-                `p_in`.`letter_status`='$status'
-               ,`p_out`.`letter_status`='$status'
-              WHERE `p_in`.`client_ref` IN (
-                '".implode("','",$crefs)."'
-              );
-            ";
-            echo $q;
-            try {
-                $c->query ($q);
-                if ($live) {
-                    // Make the data web accessible right now
-                    $c_live->query ($q);
-                }
-            }
-            catch (\mysqli_sql_exception $e) {
-                throw new \Exception ($e->getMessage()."\n");
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-function stannp_status_wins ($live=false) {
+function snailmail_wins_status ($live=false) {
+    // Currently hard-wired single snailmail service (procedural functions that call stannp-api)
+    require_once BLOTTO_SNAILMAIL_API_STANNP;
     $earliest = BLOTTO_SNAILMAIL_FROM_WIN;
     $batches = [];
     $c = connect (BLOTTO_MAKE_DB);
-    // Get winners
+    // Snailmail service should ignore wins already delivered
     $q = "
       SELECT
         DISTINCT `w`.`letter_batch_ref` AS `batch`
@@ -3365,6 +3309,90 @@ function stannp_status_wins ($live=false) {
         }
     }
     return true;
+}
+
+function stannp_fields_merge (&$array2d,$ref_key,&$refs=[]) {
+    // Stannp-specific jiggery pokery
+    foreach ($array2d as $i=>$row) {
+        // Player refs `ClientRef`/`client_ref` interchangeable
+        if (array_key_exists('ClientRef',$row)) {
+            $array2d[$i]['client_ref']  = $row['ClientRef'];
+            $array2d[$i]['ref_id']      = $array2d[$i]['client_ref'];
+        }
+        elseif (array_key_exists('client_ref',$row)) {
+            $array2d[$i]['ClientRef']  = $row['client_ref'];
+            $array2d[$i]['ref_id']      = $array2d[$i]['ClientRef'];
+        }
+        else {
+            throw new \Exception ("Either `ClientRef` or `client_ref` is compulsory");
+            return false;
+        }
+        $refs[]                         = $row[$ref_key];
+        // Stannp address window (ie compulsory fields)
+        //     https://dash.stannp.com/designer/mailpiece/A4
+        //     Select "A blank canvas"
+        $array2d[$i]['full_name']       = $row['title'].' '.$row['name_first'].' '.$row['name_last'];
+        $array2d[$i]['job_title']       = '';
+        $array2d[$i]['company']         = '';
+        $array2d[$i]['address1']        = $row['address_1'];
+        $array2d[$i]['address2']        = $row['address_2'];
+        $array2d[$i]['address3']        = $row['address_3'];
+        $array2d[$i]['city']            = $row['town'];
+        // Country is not given in the blank mailpiece draft.
+        // Which is odd - so here it is anyway just in case
+        $array2d[$i]['country']         = BLOTTO_SNAILMAIL_COUNTRY;
+        // `postcode` has the same name in blottoland so needs no transformation
+        // Remove undesirable fields (consider GDPR for example)
+        $undesirable = explode (',',BLOTTO_SNAILMAIL_RM_FIELDS);
+        foreach ($undesirable as $u) {
+            if (array_key_exists($u,$row)) {
+                unset ($array2d[$i][$u]);
+            }
+        }
+    }
+    return true;
+}
+
+function stannp_mail ($recipients,$name,$template_id,$ref_key,&$refs) {
+    if (!defined('BLOTTO_SNAILMAIL') || !BLOTTO_SNAILMAIL) {
+        // API is not active
+        return ['recipients'=>0];
+    }
+    $prefix = BLOTTO_SNAILMAIL_PREFIX.'-'.gethostname().'-'.$name.'-';
+    $name = $prefix.date('Y-m-d--H:i:s');
+    // Transform arrays by reference (arguments above)
+    stannp_fields_merge ($recipients,$ref_key,$refs);
+    // Do it
+    $class = BLOTTO_SNAILMAIL_API_STANNP_CLASS;
+    $stannp = new $class ();
+    // Return value is just a summary
+    return $stannp->campaign_create ($name,$template_id,$recipients);
+}
+
+function stannp_status ($batch_names) {
+    $refs = [];
+    if (!defined('BLOTTO_SNAILMAIL') || !BLOTTO_SNAILMAIL) {
+        // API is not active
+        return $refs;
+    }
+    $class = BLOTTO_SNAILMAIL_API_STANNP_CLASS;
+    $stannp = new $class ();
+    foreach ($batch_names as $campaign_name) {
+        $refs[$campaign_name] = [];
+        $recipients = $stannp->campaign ($campaign_name) ['recipient_list'];
+        if (is_array($recipients)) {
+            foreach ($recipients as $r) {
+                if (!array_key_exists($r['mailpiece_status'],$refs[$campaign_name])) {
+                    $refs[$campaign_name][$r['mailpiece_status']] = [];
+                }
+                $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
+            }
+        }
+        else {
+            fwrite (STDERR,"WARNING: campaign $campaign_name was not found\n");
+        }
+    }
+    return $refs;
 }
 
 function statement ($stmt,$output=true) {
@@ -4490,8 +4518,8 @@ function www_letter_status_refresh ( ) {
     $log = "";
     ob_start ();
     try {
-        stannp_status_anls (true);
-        stannp_status_wins (true);
+        snailmail_anls_status (true);
+        snailmail_wins_status (true);
     }
     catch (\Exception $e) {
         $log = $e->getMessage()."\n";

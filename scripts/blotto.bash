@@ -598,7 +598,7 @@ then
     abort_on_error 31b $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    echo "32. Send ANLs to postal service"
+    echo "32. Send ANLs to email service, send bounces to snailmail service"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec anls.php
     abort_on_error 32 $?
