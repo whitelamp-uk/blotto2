@@ -4797,7 +4797,7 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
         }
     }
     $org = org ();
-    if ($_POST['postcode'] && !territory_permitted($postcode)) {
+    if ($_POST['postcode'] && !territory_permitted($_POST['postcode'])) {
         set_once ($go,'about');
         $e[]        = 'Sorry - we are not allowed to sell lottery tickets to your address';
     }
