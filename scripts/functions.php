@@ -4549,9 +4549,9 @@ function www_logout ( ) {
 
 function www_pay_apis ( ) {
     $apis = [];
-    foreach (pay_apis() as $api) {
+    foreach (pay_apis() as $code => $api) {
         if ($api->integrated) {
-            $apis[] = $api;
+            $apis[$code] = $api;
         }
     }
     return $apis;
@@ -4825,7 +4825,7 @@ function www_validate_signup ($org,&$e=[],&$go=null) {
         }
     }
     $org = org ();
-    if ($_POST['postcode'] && !territory_permitted($postcode)) {
+    if ($_POST['postcode'] && !territory_permitted($_POST['postcode'])) {
         set_once ($go,'about');
         $e[]        = 'Sorry - we are not allowed to sell lottery tickets to your address';
     }

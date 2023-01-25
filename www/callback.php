@@ -13,15 +13,15 @@ if (defined('VOODOOSMS') && VOODOOSMS) {
 header ('Content-Type: text/plain');
 
 if (!array_key_exists('provider',$_GET)) {
-    http_response_code (404);
-    echo "Resource not found\n";
+    http_response_code (400);
+    echo "Bad request: no provider specified\n";
     exit;
 }
 
-$apis = www_pay_apis ();
+$apis = www_pay_apis (); error_log(print_r($apis,true));
 if (!array_key_exists($_GET['provider'],$apis)) {
-    http_response_code (404);
-    echo "Resource not found\n";
+    http_response_code (400);
+    echo "Bad request: provider invalid\n";
     exit;
 }
 
