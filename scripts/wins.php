@@ -9,20 +9,19 @@ try {
     if (defined('BLOTTO_SNAILMAIL') && BLOTTO_SNAILMAIL) {
         // Stannp API is active
         if (defined('BLOTTO_SNAILMAIL_TPL_WIN') && BLOTTO_SNAILMAIL_TPL_WIN) {
-            require BLOTTO_SNAILMAIL_API_STANNP;
-            tee ("    Updating Wins.letter_status using Stannp\n");
-            stannp_status_wins ();
-            tee ("    Sending winner letters using Stannp\n");
-            $results = stannp_mail_wins ();
+            tee ("    Updating Wins.letter_status using snailmail\n");
+            snailmail_wins_status ();
+            tee ("    Sending winner letters using snailmail\n");
+            $results = snailmail_wins ();
             tee ("      {$results['recipients']} mailpieces\n");
             print_r ($results);
         }
         else {
-            tee ("    No postal API is active for winner letters\n");
+            tee ("    No postal API template for winners\n");
         }
     }
     else {
-        tee ("    No postal API is active\n");
+        tee ("    No postal API is active for winners\n");
     }
 }
 catch (\Exception $e) {
