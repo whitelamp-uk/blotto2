@@ -18,7 +18,7 @@ if (!array_key_exists('provider',$_GET)) {
     exit;
 }
 
-$apis = www_pay_apis (); error_log(print_r($apis,true));
+$apis = www_pay_apis ();
 if (!array_key_exists($_GET['provider'],$apis)) {
     http_response_code (400);
     echo "Bad request: provider invalid\n";
