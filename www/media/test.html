@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+  <head>
+    <script defer src="./campaign.js"></script>
+    <style>
+form.campaign-either-or .options {
+    display: table-cell;
+    box-sizing: border-box;
+    border-style: solid;
+    border-width: 1px 1px 1px 0;
+    vertical-align: top;
+}
+form.campaign-either-or .options:first-child {
+    border-width: 1px 1px 1px 1px;
+    vertical-align: top;
+}
+form.campaign-either-or .options > div {
+    padding: 0.2em 0.5em 0.2em 0.5em;
+}
+form.campaign-either-or .options > div.heading {
+    box-sizing: inherit;
+    width: 100%;
+    border-style: solid;
+    border-width: 0 0 1px 0;
+    padding: 0.5em 0.5em 0.5em 0.5em;
+}
+form.campaign-either-or .inputs > div {
+    margin: 0.2em;
+}
+form.campaign-either-or .inputs label {
+    display: inline-block;
+    width: 14em;
+}
+.campaign-or .next {
+    cursor: pointer;
+}
+    </style>
+  </head>
+  <body>
+
+    <form id="campaign-form-1" class="campaign-either-or">
+
+      <section class="options">
+        <div class="heading">
+          <input type="checkbox" id="campaign-all-title" /><label for="campaign-all-title"></label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-title-Miss" /><label for="campaign-title-Miss">Miss</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-title-Mr" /><label for="campaign-title-Mr">Mr</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-title-Mrs" /><label for="campaign-title-Mrs">Mrs</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-title-Ms" /><label for="campaign-title-Ms">Ms</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-title-Mx" /><label for="campaign-title-Mx">Mx</label>
+        </div>
+      </section>
+
+      <section class="options">
+        <div class="heading">
+          <input type="checkbox" id="campaign-all-ccc" /><label for="campaign-all-ccc"></label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-ccc-BB" /><label for="campaign-ccc-BB">BB</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-ccc-OBB" /><label for="campaign-ccc-OBB">OBB</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-ccc-OSHC" /><label for="campaign-ccc-OSHC">OSHC</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-ccc-PBB" /><label for="campaign-ccc-PBB">PBB</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-ccc-SHC" /><label for="campaign-ccc-SHC">SHC</label>
+        </div>
+      </section>
+
+      <section class="options">
+        <div class="heading">
+          <input type="checkbox" id="campaign-all-active" /><label for="campaign-all-active"></label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-active-ACTIVE" /><label for="campaign-active-ACTIVE" />Active</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-active-DEAD" /><label for="campaign-active-DEAD">Inactive</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-active-" /><label for="campaign-active-">[unknown]</label>
+        </div>
+      </section>
+
+      <section class="options">
+        <div class="heading">
+          <input type="checkbox" id="campaign-all-mandate_missing" /><label for="campaign-all-mandate_missing"></label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-mandate_missing-MISSING" /><label for="campaign-active-ACTIVE" />Missing</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-mandate_missing-" /><label for="campaign-active-ACTIVE" />Found</label>
+        </div>
+      </section>
+
+      <section class="options">
+        <div class="heading">
+          <input type="checkbox" id="campaign-all-status" /><label for="campaign-all-status"></label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-status-NEW" /><label for="campaign-status-NEW">New</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-status-LIVE" /><label for="campaign-status-LIVE">Live</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-status-CANCELLED" /><label for="campaign-status-CANCELLED">Cancelled</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-status-DELETED" /><label for="campaign-status-DELETED">Deleted</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-status-" /><label for="campaign-status-">[unknown]</label>
+        </div>
+      </section>
+
+      <section class="options">
+        <div class="heading">
+          <input type="checkbox" id="campaign-all-chances" /><label for="campaign-all-chances"></label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-chances-1" /><label for="campaign-chances-1" />1</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-chances-2" /><label for="campaign-chances-2">2</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-chances-3" /><label for="campaign-chances-3">3</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-chances-4" /><label for="campaign-chances-4">4</label>
+        </div>
+      </section>
+
+      <section class="options">
+        <div class="heading">
+          <input type="checkbox" id="campaign-all-winnings" /><label for="campaign-all-winnings"></label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-winnings-10" /><label for="campaign-winnings-1" />10</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-winnings-100" /><label for="campaign-winnings-2">100</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-winnings-1000" /><label for="campaign-winnings-3">1000</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-winnings-2500" /><label for="campaign-winnings-4">25000</label>
+        </div>
+        <div>
+          <input type="checkbox" id="campaign-winnings-" /><label for="campaign-winnings-">[never won]</label>
+        </div>
+      </section>
+
+      <section class="inputs">
+      </section>
+
+    </form>
+
+    <section class="campaign-or">
+      <span class="next">OR</span>
+    </section>
+
+  </body>
+</html>
+
+
+
+

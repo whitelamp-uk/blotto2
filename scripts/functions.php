@@ -3073,7 +3073,7 @@ function snailmail_anls ( ) {
       SET
         `p_in`.`letter_batch_ref`='$name'
        ,`p_out`.`letter_batch_ref`='$name'
-        `p_in`.`letter_status`='snailmail'
+       ,`p_in`.`letter_status`='snailmail'
        ,`p_out`.`letter_status`='snailmail'
       WHERE `p_in`.`client_ref` IN (
         '".implode("','",$refs)."'
@@ -3214,8 +3214,11 @@ function snailmail_wins ( ) {
         ON `w_out_2`.`entry_id`=`w_in`.`entry_id`
       SET
         `w_in`.`letter_batch_ref`='$name'
+       ,`w_in`.`letter_status`='snailmail'
        ,`w_out_1`.`letter_batch_ref`='$name'
+       ,`w_out_1`.`letter_status`='snailmail'
        ,`w_out_2`.`letter_batch_ref`='$name'
+       ,`w_out_2`.`letter_status`='snailmail'
       WHERE `w_in`.`entry_id` IN (
         ".implode(",",$refs)."
       );
