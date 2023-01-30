@@ -445,6 +445,10 @@ form#change-supporter input {
     width:              30em;
 }
 
+#about {
+    float:              left;
+}
+
 #list button, a.draw-report, a.invoice, a.statement {
     color:              var(--blotto-color-fgd-button-lst);
 }
@@ -518,7 +522,12 @@ form#change-supporter input {
     width:              calc(100% - 2em - var(--blotto-content-margin-left));
 }
 
-.content > h2 {
+.content.about {
+    width:              auto;
+}
+
+.content > h2,
+.content.about h2 {
     box-sizing:         border-box;
     margin:             0 0 1em 0;
     padding:            0;
