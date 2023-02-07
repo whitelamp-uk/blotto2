@@ -327,6 +327,7 @@ then
 
         echo "     9. Generate supporter temp table SQL for $sdr/$dir"
         start=$SECONDS
+        # $prg finds the last file in the import directory
         /usr/bin/php $prg $sw "$cfg" sql import.supporter.sql "$sdr/$dir" > $tmp
         abort_on_error 9 $? $tmp
         cat $tmp
