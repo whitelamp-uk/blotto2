@@ -11,7 +11,8 @@ if (!array_key_exists(4,$argv)) {
 }
 
 $ccc = strtoupper ($argv[4]);
-$errors = [];
+$errors = '';
+$supporters = [];
 
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {
@@ -19,25 +20,64 @@ if (!$zo) {
 }
 
 
+// Compulsory fields
+$required = [
+    'ClientRef',
+    'NamesGiven',
+    'NamesFamily',
+    'AddressLine1',
+    'Town',
+    'Postcode',
+];
+foreach ($required as $field) {
+    $qs = "
+      SELECT
+        *
+      FROM `tmp_supporter`
+      WHERE REPLACE(`$field`,' ','')=''
+         OR `$field` IS NULL
+      ;
+    ";
+    try {
+        $check = $zo->query ($qs);
+        if ($check->num_rows) {
+            $errors .= "`$field` is compulsory\n";
+            while ($c=$check->fetch_assoc()) {
+                if (str_replace(' ','',$c[$field])=='') {
+                    $errors .= "    {$c['ClientRef']} {$c['NamesFamily']}";
+                }
+            }
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+        exit (103);
+    }
+}
+
+
+// ClientRef duplication
 $qs = "
   SELECT
-    *
-  FROM `tmp_supporter`
-  WHERE REPLACE(`ClientRef`,' ','')=''
-     OR REPLACE(`NamesGiven`,' ','')=''
-     OR REPLACE(`NamesFamily`,' ','')=''
-     OR REPLACE(`AddressLine1`,' ','')=''
-     OR REPLACE(`Town`,' ','')=''
-     OR REPLACE(`Postcode`,' ','')=''
-  LIMIT 0,1
+    `s2`.`ClientRef`
+   ,COUNT(`s1`.`ClientRef`) AS `instances`
+  FROM `tmp_supporter_dbh` AS `s1`
+  JOIN (
+    SELECT
+      DISTINCT `ClientRef`
+    FROM `tmp_supporter_dbh`
+  ) AS `s2`
+    ON `s2`.`ClientRef`=`s1`.`ClientRef`
+  GROUP BY `ClientRef`
+  HAVING `instances`>0
   ;
 ";
 try {
     $check = $zo->query ($qs);
-    while ($c=$check->fetch_assoc()) {
-        if (str_replace(' ','',$c['ClientRef'])=='') {
-            fwrite (STDERR,"Supporter import: `tmp_supporter`.`ClientRef` is compulsory - $ccc\n");
-            exit (103);
+    if ($check->num_rows) {
+        $errors .= "`ClientRef` must be unique\n";
+        while ($c=$check->fetch_assoc()) {
+            $errors .= "    {$c['ClientRef']} x {$c['instances']}\n";
         }
     }
 }
@@ -47,23 +87,47 @@ catch (\mysqli_sql_exception $e) {
 }
 
 
+
+// ClientRef validation [regexp]
+$crm = BLOTTO_CREF_MATCH;
 $qs = "
   SELECT
-    *
-  FROM (
-    SELECT
-      COUNT(*) AS `rows`
-     ,COUNT(DISTINCT `ClientRef`) AS `refs`
-    FROM `tmp_supporter` AS `t`
-  ) as `cf`
-  WHERE `cf`.`refs`!=`cf`.`rows`
+    `ClientRef`
+  FROM `tmp_supporter`
+  WHERE `ClientRef` NOT REGEXP '$crm'
   ;
 ";
 try {
     $check = $zo->query ($qs);
-    if ($check->fetch_assoc()) {
-        fwrite (STDERR,"Client reference column is not unique\n");
-        exit (105);
+    if ($check->num_rows) {
+        $errors .= "`ClientRef` does not match <$crm>\n";
+        while ($c=$check->fetch_assoc()) {
+            $errors .= "    {$c['ClientRef']}\n";
+        }
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (105);
+}
+
+// ClientRef validation [splitter character(s) for player incrementing]
+$splitter = BLOTTO_CREF_SPLITTER;
+$qs = "
+  SELECT
+    `ClientRef`
+  FROM `tmp_supporter`
+  -- First players only
+  WHERE `ClientRef` LIKE '%$splitter%'
+  ;
+";
+try {
+    $check = $zo->query ($qs);
+    if ($check->num_rows) {
+        $errors .= "`ClientRef` (original) contains the reserved character sequence '$splitter'\n";
+        while ($c=$check->fetch_assoc()) {
+            $errors .= "    {$c['ClientRef']}\n";
+        }
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -71,20 +135,66 @@ catch (\mysqli_sql_exception $e) {
     exit (106);
 }
 
-$crm = BLOTTO_CREF_MATCH;
+// Chances validation
 $qs = "
   SELECT
     `ClientRef`
+   ,`Chances`
   FROM `tmp_supporter`
-  WHERE `ClientRef` NOT REGEXP '$crm'
-  LIMIT 0,1
+  WHERE `Chances` NOT REGEXP '^[0-9]+$'
+  -- sanity
+     OR `Chances`>10
   ;
 ";
 try {
     $check = $zo->query ($qs);
-    if ($c=$check->fetch_assoc()) {
-        fwrite (STDERR,"Client reference '".$c['ClientRef']."' contains illegal characters\n");
-        exit (107);
+    if ($check->num_rows) {
+        $errors .= "`Chances` are out of range\n";
+        while ($c=$check->fetch_assoc()) {
+            $errors .= "    {$c['ClientRef']} x {$c['Chances']}\n";
+        }
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (107);
+}
+
+// Phone validation (optional field)
+// MySQL regexp needs double escaping for reasons not yet fathomed...
+$phonere='^\\\\+?[0-9]+$';
+$qs = "
+  SELECT
+    `ClientRef`
+   ,`Mobile`
+  FROM `tmp_supporter`
+  WHERE (
+           REPLACE(`Mobile`,' ','')!=''
+       AND `Mobile` IS NOT NULL
+       AND (
+            REPLACE(`Mobile`,' ','') NOT REGEXP '$phonere'
+         OR LENGTH(REPLACE(`Mobile`,' ',''))<10
+         OR LENGTH(REPLACE(`Mobile`,' ',''))>16
+       )
+  )
+     OR (
+           REPLACE(`Telephone`,' ','')!=''
+       AND `Telephone` IS NOT NULL
+       AND (
+            REPLACE(`Telephone`,' ','') NOT REGEXP '$phonere'
+         OR LENGTH(REPLACE(`Telephone`,' ',''))<10
+         OR LENGTH(REPLACE(`Telephone`,' ',''))>16
+       )
+     )
+  ;
+";
+try {
+    $check = $zo->query ($qs);
+    if ($check->num_rows) {
+        $$errors .= "`Mobile` and/or `Telephone` invalid\n";
+        while ($c=$check->fetch_assoc()) {
+            $errors .= "    {$c['ClientRef']} {$c['Mobile']} {$c['Telephone']}\n";
+        }
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -92,177 +202,31 @@ catch (\mysqli_sql_exception $e) {
     exit (108);
 }
 
-$splitter = BLOTTO_CREF_SPLITTER;
-$qs = "
-  SELECT
-    `ClientRef`
-  FROM `tmp_supporter`
-  WHERE `ClientRef` LIKE '%$splitter%'
-  LIMIT 0,1
-  ;
-";
-try {
-    $check = $zo->query ($qs);
-    if ($c=$check->fetch_assoc()) {
-        fwrite (STDERR,"Client reference ".$c['ClientRef']." contains the reserved character sequence '$splitter' \n");
-        exit (109);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (110);
-}
-
-$qs = "
-  SELECT
-    `ClientRef`
-   ,`Chances`
-  FROM `tmp_supporter`
-  WHERE `Chances` IS NULL
-     OR `Chances`<1
-  LIMIT 0,1
-  ;
-";
-try {
-    $check = $zo->query ($qs);
-    if ($c=$check->fetch_assoc()) {
-        fwrite (STDERR,"Chances='".$c['Chances']."' is illegal for ".$c['ClientRef']."\n");
-        exit (111);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (112);
-}
-
-
-
-$qs = "
-  SELECT
-    `ClientRef`
-  FROM `tmp_supporter`
-  WHERE `Town` IS NULL
-     OR `Town`=''
-  ;
-";
-try {
-    $check = $zo->query ($qs);
-    $crfs = [];
-    while ($c=$check->fetch_assoc()) {
-        $crfs[] = $c['ClientRef'];
-    }
-    if (count($crfs)) {
-        fwrite (STDERR,"Missing town for ClientRefs: ".implode(', ',$crfs)."\n");
-        exit (113);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (114);
-}
-
-
-
-$phonere='^\\\\+?[0-9]+$';
-$qs = "
-  SELECT
-    `ClientRef`
-   ,`Mobile`
-  FROM `tmp_supporter`
-  WHERE REPLACE(`Mobile`,' ','') NOT REGEXP '$phonere'
-    AND REPLACE(`Mobile`,' ','')!=''
-  LIMIT 0,1
-  ;
-";
-try {
-    $check = $zo->query ($qs);
-    if ($c=$check->fetch_assoc()) {
-        fwrite (STDERR,"Mobile number '".$c['Mobile']."' is illegal for ".$c['ClientRef']."\n");
-        exit (115);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (116);
-}
-
-// MySQL regexp needs double escaping for reasons not yet fathomed...
-$qs = "
-  SELECT
-    `ClientRef`
-   ,`Telephone`
-  FROM `tmp_supporter`
-  WHERE REPLACE(REPLACE(`Telephone`,'-',''),' ','') NOT REGEXP '$phonere'
-    AND REPLACE(`Telephone`,' ','')!=''
-  LIMIT 0,1
-  ;
-";
-try {
-    $check = $zo->query ($qs);
-    if ($c=$check->fetch_assoc()) {
-        fwrite(STDERR, "Telephone number '".$c['Telephone']."' is illegal for ".$c['ClientRef']."\n");
-        exit (117);
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (118);
-}
-
+// Postcode validation
 $regexp = BLOTTO_POSTCODE_PREG;
 $qs = "
   SELECT
     `ClientRef`
   FROM `tmp_supporter`
+  WHERE REPLACE(`Postcode`,' ','')!=''
+    AND `Postcode` IS NOT NULL
   WHERE REPLACE(UPPER(`Postcode`),' ','') NOT REGEXP '$regexp'
   ;
 ";
 try {
     $check = $zo->query ($qs);
-    $crfs = [];
-    while ($c=$check->fetch_assoc()) {
-        $crfs[] = $c['ClientRef'];
-    }
-    if (count($crfs)) {
-        fwrite (STDERR,"Incorrect postcode format for ClientRefs: ".implode(', ',$crfs)."\n");
-        exit (119);
+    if ($check->num_rows) {
+        $errors .= "`Postcode` invalid\n";
+        while ($c=$check->fetch_assoc()) {
+            $errors .= "    {$c['ClientRef']} {$c['Postcode']}\n";
+        }
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (120);
+    exit (109);
 }
 
-
-/*
-
-TODO: Missing values
-by something based roughly on the theme below.
-
-        if (str_replace(' ','',$c['FirstName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesGiven` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-        if (str_replace(' ','',$c['LastName'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`NamesFamily` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-        if (str_replace(' ','',$c['AddressLine1'])=='') {
-            fwrite(STDERR, "Supporter import: `tmp_supporter`.`AddressLine1` is compulsory - $ccc - {$c['ClientRef']}\n");
-            exit (103);
-        }
-*/
-
-
-
-echo "\nUSE `".BLOTTO_MAKE_DB."`\n\n";
-
-
-echo "
-ALTER TABLE `blotto_contact`
-DROP INDEX IF EXISTS `search_idx`
-;
-";
 
 $qs = "
   SELECT
@@ -276,21 +240,14 @@ $qs = "
 ";
 try {
     $new            = $zo->query ($qs);
-    $count          = 0;
     while ($s=$new->fetch_assoc()) {
         if (!territory_permitted($s['Postcode'])) {
-            $e = "{$s['ClientRef']} - postcode {$s['Postcode']} is outside territory ".BLOTTO_TERRITORIES_CSV." - $ccc\n";
-            fwrite (STDERR,$e);
-            $errors[] = $e;
+            $errors .= "{$s['ClientRef']} - postcode {$s['Postcode']} is outside territory ".BLOTTO_TERRITORIES_CSV." - $ccc\n";
             continue;
         }
-        $cd         = esc ($s['Approved']);
-        $sg         = esc ($s['Signed']);
-        $ap         = esc ($s['Approved']);
-        $ch         = intval ($s['Chances']);
-        $ca         = '';
-        $cv         = '';
-        $bl         = 0.00;
+        $s['ca'] = '';
+        $s['cv'] = '';
+        $s['bl'] = 0.00;
         if (trim($s['SysEx'])) {
             // blotto currently has three sys-ex messages beyond the FLC standard
             // A JSON object is expected
@@ -299,25 +256,21 @@ try {
                 $sx = json_decode ($s['SysEx']);
             }
             catch (\Exception $e) {
-                $e = "{$s['ClientRef']} - could not interpret sysex\n";
-                fwrite (STDERR,$e);
-                $errors[] = $e;
+                $errors .= "{$s['ClientRef']} - could not interpret sysex\n";
                 continue;
             }
             if (property_exists($sx,'balance')) {
                 if (!preg_match('<^[0-9]+$>',$sx->balance) && !preg_match('<^[0-9]*\.[0-9]+$>',$sx->balance)) {
-                    $e = "{$s['ClientRef']} - could not interpret sysex->balance = '{$sx->balance}'\n";
-                    fwrite (STDERR,$e);
-                    $errors[] = $e;
+                    $errors .= "{$s['ClientRef']} - could not interpret sysex->balance = '{$sx->balance}'\n";
                     continue;
                 }
-                $bl = round ($sx->balance,2);
+                $s['bl'] = round ($sx->balance,2);
             }
             if (property_exists($sx,'cc_agent_ref')) {
-                $ca = esc ($sx->cc_agent_ref);
+                $s['ca'] = esc ($sx->cc_agent_ref);
             }
             if (property_exists($sx,'cc_ref')) {
-                $cv = esc ($sx->cc_ref);
+                $s['cv'] = esc ($sx->cc_ref);
             }
             if (property_exists($sx,'first_draw_close')) {
                 try {
@@ -325,95 +278,82 @@ try {
                     $dc = $dc->format ('Y-m-d');
                 }
                 catch (\Exception $e) {
-                    $e = "{$s['ClientRef']} - could not interpret sysex->first_draw_close = '{$sx->first_draw_close}'\n";
-                    fwrite (STDERR,$e);
-                    $errors[] = $e;
+                    $errors .= "{$s['ClientRef']} - could not interpret sysex->first_draw_close = '{$sx->first_draw_close}'\n";
                     continue;
                 }
             }
         }
-        $cr         = esc ($s['ClientRef']);
-        $tt         = esc ($s['Title']);
-        if (in_array($s['EasternOrder'],['','0','N','n'])) {
-            $nf     = esc ($s['NamesGiven']);
-            $nl     = esc ($s['NamesFamily']);
-        }
-        else {
-            $nf     = esc ($s['NamesFamily']);
-            $nl     = esc ($s['NamesGiven']);
-        }
-        $em         = esc ($s['Email']);
-        $mb         = esc (str_replace('-',' ',$s['Mobile']));
-        $tl         = esc (str_replace('-',' ',$s['Telephone']));
-        $a1         = esc (trim($s['AddressLine1']));
-        $a2         = esc (trim($s['AddressLine2']));
-        $a3         = esc (trim($s['AddressLine3']));
-        $tn         = esc (trim($s['Town']));
-        $cn         = esc (trim($s['County']));
-        $pc         = esc (trim($s['Postcode']));
-        $cy         = esc (trim($s['Country']));
-        $db         = "null";
-        if (preg_match('<^[0-9]{4}-[0-9]{2}-[0-9]{2}$>',$s['DOB'])) {
-            $db     = "'{$s['DOB']}'";
-        }
-        $ps         = explode (BLOTTO_PREFERENCES_SEP,trim($s['Preferences']));
-        for ($i=0;$i<10;$i++) {
-            if (array_key_exists($i,$ps)) {
-                ${'p'.$i} = esc (trim($ps[$i]));
-            }
-            else {
-                ${'p'.$i} = '';
-            }
-        }
-        echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`projected_chances`,`canvas_code`,`canvas_agent_ref`,`canvas_ref`,`client_ref`) VALUES\n";
-        echo "  ('$cd','$sg','$ap','$ch','$ccc','$ca','$cv','$cr');\n";
-        echo "SET @sid = LAST_INSERT_ID();\n";
-        echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`,`opening_balance`) VALUES\n";
-        echo "  (@sid,'$cr',$bl);\n\n";
-        // First contact should not be `created` = timestamp of when this script runs
-        // Rather it should be `created` = when supporter is notionally created
-        echo "INSERT INTO `blotto_contact` (`created`,`supporter_id`,`title`,`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`county`,`postcode`,`country`,`dob`,`p0`,`p1`,`p2`,`p3`,`p4`,`p5`,`p6`,`p7`,`p8`,`p9`) VALUES\n";
-        echo "  ('$cd 03:00:00',@sid,'$tt','$nf','$nl','$em','$mb','$tl','$a1','$a2','$a3','$tn','$cn','$pc','$cy',$db,'$p0','$p1','$p2','$p3','$p4','$p5','$p6','$p7','$p8','$p9');\n\n";
-        $count++;
+        $supporters[] = $s;
     }
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (121);
+    exit (110);
 }
 
-if ($bad=count($errors)) {
-    $message = "The following $bad supporters have been rejected:\n";
-    foreach ($errors as $e) {
-        $message .= $e;
+
+if ($errors) {
+    notify (BLOTTO_EMAIL_WARN_TO,"Rejected import from $ccc",$errors);
+    fwrite (STDERR,"Rejected import from $ccc\n");
+    // Skip import without aborting
+    exit (0);
+}
+
+
+echo "\nUSE `".BLOTTO_MAKE_DB."`;\n\n";
+echo "ALTER TABLE `blotto_contact` DROP INDEX IF EXISTS `search_idx`;\n\n";
+foreach ($supporters as $s) {
+    $cd         = esc ($s['Approved']);
+    $sg         = esc ($s['Signed']);
+    $ap         = esc ($s['Approved']);
+    $ch         = intval ($s['Chances']);
+    $cr         = esc ($s['ClientRef']);
+    $tt         = esc ($s['Title']);
+    if (in_array($s['EasternOrder'],['','0','N','n'])) {
+        $nf     = esc ($s['NamesGiven']);
+        $nl     = esc ($s['NamesFamily']);
     }
-    notify (BLOTTO_EMAIL_WARN_TO,"$bad rejected supporters",$message);
-}
-
-echo "-- SUPPORTERS BAD ROWS: $bad from $ccc --\n\n";
-
-echo "-- COUNT: $count supporters from $ccc --\n\n";
-
-if (!$count) {
-    $qs = "
-      SELECT
-        COUNT(*) AS `rows`
-      FROM `tmp_supporter`
-      ;
-    ";
-    try {
-        $rows = $zo->query ($qs);
-        $rows = $rows->fetch_assoc ()['rows'];
-        fwrite (STDERR,"$rows rows of data found for $ccc\n");
-        if ($rows<5) {
-            fwrite (STDERR,"WARNING: very little data was found for $ccc\n");
+    else {
+        $nf     = esc ($s['NamesFamily']);
+        $nl     = esc ($s['NamesGiven']);
+    }
+    $em         = esc ($s['Email']);
+    $mb         = esc (str_replace('-',' ',$s['Mobile']));
+    $tl         = esc (str_replace('-',' ',$s['Telephone']));
+    $a1         = esc (trim($s['AddressLine1']));
+    $a2         = esc (trim($s['AddressLine2']));
+    $a3         = esc (trim($s['AddressLine3']));
+    $tn         = esc (trim($s['Town']));
+    $cn         = esc (trim($s['County']));
+    $pc         = esc (trim($s['Postcode']));
+    $cy         = esc (trim($s['Country']));
+    $db         = "null";
+    if (preg_match('<^[0-9]{4}-[0-9]{2}-[0-9]{2}$>',$s['DOB'])) {
+        $db     = "'{$s['DOB']}'";
+    }
+    $ps         = explode (BLOTTO_PREFERENCES_SEP,trim($s['Preferences']));
+    for ($i=0;$i<10;$i++) {
+        if (array_key_exists($i,$ps)) {
+            ${'p'.$i} = esc (trim($ps[$i]));
+        }
+        else {
+            ${'p'.$i} = '';
         }
     }
-    catch (\mysqli_sql_exception $e) {
-        fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-        exit (122);
-    }
+    echo "INSERT INTO `blotto_supporter` (`created`,`signed`,`approved`,`projected_chances`,`canvas_code`,`canvas_agent_ref`,`canvas_ref`,`client_ref`) VALUES\n";
+    echo "  ('$cd','$sg','$ap','$ch','$ccc','{$s['ca']}','{$s['cv']}','$cr');\n";
+    echo "SET @sid = LAST_INSERT_ID();\n";
+    echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`,`opening_balance`) VALUES\n";
+    echo "  (@sid,'$cr',{$s['bl']});\n\n";
+    // First contact should not be `created` = timestamp of when this script runs
+    // Rather it should be `created` = when supporter is notionally created
+    echo "INSERT INTO `blotto_contact` (`created`,`supporter_id`,`title`,`name_first`,`name_last`,`email`,`mobile`,`telephone`,`address_1`,`address_2`,`address_3`,`town`,`county`,`postcode`,`country`,`dob`,`p0`,`p1`,`p2`,`p3`,`p4`,`p5`,`p6`,`p7`,`p8`,`p9`) VALUES\n";
+    echo "  ('$cd 03:00:00',@sid,'$tt','$nf','$nl','$em','$mb','$tl','$a1','$a2','$a3','$tn','$cn','$pc','$cy',$db,'$p0','$p1','$p2','$p3','$p4','$p5','$p6','$p7','$p8','$p9');\n\n";
+    $count++;
 }
+
+
+echo "-- COUNT: ".count($supporters)." supporters from $ccc --\n\n";
 
 echo "
 CREATE FULLTEXT INDEX `search_idx`
