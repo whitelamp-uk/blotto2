@@ -77,10 +77,24 @@ if ($today->format('D')==$dow) {
             echo "        Created directory '$dir'\n";
             $qs = "
               SELECT
-                *
+                COUNT(*) AS `changes`
               FROM `Changes`
               WHERE `changed_date`>='$start'
                 AND `changed_date`<='$end'
+                AND `ccc`='$code'
+              ;
+            ";
+            echo $qs."\n";
+            $r['count'] = $zo->query ($qs);
+            $r['count'] = $r['count']->fetch_assoc()['changes'];
+            $qs = "
+              SELECT
+                *
+              FROM `Changes`
+--              WHERE `changed_date`>='$start'
+--                AND `changed_date`<='$end'
+-- Now a cumulative report
+              WHERE `changed_date`<='$end'
                 AND `ccc`='$code'
               ORDER BY `changed_date`,`canvas_ref`,`chance_number`
               ;
@@ -90,7 +104,7 @@ if ($today->format('D')==$dow) {
             while ($row=$rows->fetch_assoc()) {
                 $changes[]  = $row;
             }
-            $r['count']     = count ($changes);
+            $r['count_cum'] = count ($changes);
             echo "        {$r['count']} changes for $code\n";
             $headers        = [];
             $file           = $dir.'/'.$r['filename'];
@@ -129,11 +143,11 @@ if ($today->format('D')==$dow) {
     echo "    ".count($emails)." files to send\n";
     foreach ($emails as $file=>$r) {
         echo "    Emailing CCR for {$r['ccr_ccc']} to {$r['ccr_email']}\n";
-        if ($r['count']>0) {
+        if ($r['count_cum']>0) {
             mail_attachments (
                 $r['ccr_email'],
-                "Canvassing Company Return from ".strtoupper($org_code)."@".BLOTTO_BRAND." w/e {$r['end']}",
-                "The canvassing company return - CCR - reports any ticket changes logged last period for recently-joined supporters (".BLOTTO_CC_NOTIFY." from sign-up)",
+                "Canvassing Company Return from ".BLOTTO_BRAND." for ".strtoupper(BLOTTO_ORG_USER)."/{$r['ccr_ccc']} w/e {$r['end']}",
+                "CCR attached has {$r['count']} ticket changes logged last period (cancellations are ".BLOTTO_CC_NOTIFY." from sign-up)",
                 [$file]
             );
             exec ("rm -f '$file'");
@@ -141,8 +155,8 @@ if ($today->format('D')==$dow) {
         else {
             mail (
                 $r['ccr_email'],
-                "Canvassing Company Return from ".BLOTTO_BRAND." for ".strtoupper(BLOTTO_ORG_USER)."/".$r['ccr_ccc']." w/e {$r['end']}",
-                "The canvassing company return - CCR - reports that no ticket changes were logged for ".strtoupper(BLOTTO_ORG_USER)."/".$r['ccr_ccc']." last period",
+                "Canvassing Company Return from ".BLOTTO_BRAND." for ".strtoupper(BLOTTO_ORG_USER)."/{$r['ccr_ccc']} w/e {$r['end']}",
+                "CCR has no ticket changes recorded",
                 "From: ".BLOTTO_EMAIL_FROM.PHP_EOL
             );
         }
