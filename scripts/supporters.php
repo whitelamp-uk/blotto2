@@ -191,7 +191,7 @@ $qs = "
 try {
     $check = $zo->query ($qs);
     if ($check->num_rows) {
-        $$errors .= "`Mobile` and/or `Telephone` invalid\n";
+        $errors .= "`Mobile` and/or `Telephone` invalid\n";
         while ($c=$check->fetch_assoc()) {
             $errors .= "    {$c['ClientRef']} {$c['Mobile']} {$c['Telephone']}\n";
         }
