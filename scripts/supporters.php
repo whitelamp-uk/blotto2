@@ -69,7 +69,7 @@ $qs = "
   ) AS `s2`
     ON `s2`.`ClientRef`=`s1`.`ClientRef`
   GROUP BY `ClientRef`
-  HAVING `instances`>0
+  HAVING `instances`>1
   ;
 ";
 try {
