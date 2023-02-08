@@ -70,7 +70,7 @@ try {
         $cref = esc ($r['ClientRef']);
         $recipients[$i]['cref'] = $cref;
         $recipients[$i]['emref'] = false;
-        if ($email) {
+        if ($email && $r['email']) {
             echo "    Emailing {$r['ClientRef']} {$r['email']}\n";
             $emref = $api->send (
                 $org['anl_cm_id'],
@@ -108,7 +108,12 @@ try {
             }
         }
         else {
-            echo "    Email skipped for {$r['ClientRef']} {$r['email']}\n";
+            if ($r['email']) {
+                echo "    Email skipped for {$r['ClientRef']} {$r['email']}\n";
+            }
+            else {
+                echo "    Email skipped for {$r['ClientRef']} (no email address)\n";
+            }
             $qu = "
               UPDATE `blotto_player`
               SET
