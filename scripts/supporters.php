@@ -61,11 +61,11 @@ $qs = "
   SELECT
     `s2`.`ClientRef`
    ,COUNT(`s1`.`ClientRef`) AS `instances`
-  FROM `tmp_supporter_dbh` AS `s1`
+  FROM `tmp_supporter` AS `s1`
   JOIN (
     SELECT
       DISTINCT `ClientRef`
-    FROM `tmp_supporter_dbh`
+    FROM `tmp_supporter`
   ) AS `s2`
     ON `s2`.`ClientRef`=`s1`.`ClientRef`
   GROUP BY `ClientRef`
