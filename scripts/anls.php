@@ -104,7 +104,6 @@ try {
             }
             else {
                 tee ("    Email for {$r['ClientRef']} failed: {$api->errorLast}\n");
-                fwrite (STDERR,$e->getMessage()."\n");
                 exit (102);
             }
         }
