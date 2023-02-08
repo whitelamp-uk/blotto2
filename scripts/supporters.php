@@ -208,9 +208,9 @@ $qs = "
   SELECT
     `ClientRef`
   FROM `tmp_supporter`
-  WHERE REPLACE(`Postcode`,' ','')!=''
+  WHERE `Postcode`!=''
     AND `Postcode` IS NOT NULL
-  WHERE REPLACE(UPPER(`Postcode`),' ','') NOT REGEXP '$regexp'
+    AND REPLACE(UPPER(`Postcode`),' ','') NOT REGEXP '$regexp'
   ;
 ";
 try {
