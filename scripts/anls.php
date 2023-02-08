@@ -160,7 +160,7 @@ if ($count) {
         foreach ($recipients as $i=>$r) {
             if ($r['emref']) {
                 echo "    Get bounce status for {$r['ClientRef']} {$r['email']}\n";
-                $received = $api->received ($r['emref']);
+                $received = $api->received ($org['anl_cm_id'],$r['emref']);
                 if ($api->errorLast) {
                     tee ("    Email status for {$r['ClientRef']} failed: {$api->errorLast}\n");
                     fwrite (STDERR,$api->errorLast."\n");
