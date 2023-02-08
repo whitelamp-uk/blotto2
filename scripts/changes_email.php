@@ -111,7 +111,7 @@ if ($today->format('D')==$dow) {
             $file           = str_replace('{{o}}',BLOTTO_ORG_USER,$file);
             $file           = str_replace('{{d}}',$end,$file);
             $file           = str_replace('{{c}}',strtoupper($code),$file);
-            if ($r['count']>0) {
+            if ($r['count_cum']>0) {
                 echo "        Creating CSV file '$file'\n";
                 $fp             = fopen ($file,'w');
                 if (!$fp) {
