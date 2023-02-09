@@ -144,12 +144,7 @@ catch (\mysqli_sql_exception $e) {
 
 // SLEEP - Wait for bounces to propagate
 if ($count) {
-    $zo->close ();
     sleep (BLOTTO_EMAIL_BOUNCE_DELAY);
-    $zo = connect (BLOTTO_MAKE_DB);
-    if (!$zo) {
-        exit (104);
-    }
 }
 
 
