@@ -1477,8 +1477,8 @@ function invoice_game ($draw_closed_date,$output=true) {
             $qs = "
               SELECT
                 COUNT(`ClientRef`) AS `loaded`
-               ,IFNULL(SUM(`letter_batch_ref` LIKE 'email%'),0) AS `letters_anl_email`
-               ,IFNULL(SUM(`letter_batch_ref` LIKE 'sms%'),0) AS `letters_anl_sms`
+               ,IFNULL(SUM(`letter_status`='email_received'),0) AS `letters_anl_email`
+               ,IFNULL(SUM(`letter_status`='sms_received'),0) AS `letters_anl_sms`
                ,IFNULL(SUM(`letter_batch_ref` NOT  LIKE 'email%' AND `letter_batch_ref` NOT LIKE 'sms%'),0) AS `letters_anl_post`
               FROM `ANLs`
               WHERE `tickets_issued`<='$draw_closed_date'
