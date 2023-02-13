@@ -529,6 +529,23 @@ END $$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `changesSummary`$$
+CREATE PROCEDURE `changesSummary` (
+)
+BEGIN
+  SELECT
+    DATE_ADD(`changed_date`,INTERVAL(0-WEEKDAY(`changed_date`)) DAY) AS `wc`
+   ,SUM(`milestone`='created') AS `imports`
+   ,SUM(`milestone`='cancellation') AS `cancellations`
+   ,SUM(`milestone`='reinstatement') AS `reinstatements`
+    FROM `Changes`
+    GROUP BY `wc`
+    ORDER BY `wc`
+  ;
+END $$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `draws`$$
 CREATE PROCEDURE `draws` (
 )
