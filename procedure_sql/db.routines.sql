@@ -531,16 +531,37 @@ END $$
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `changesSummary`$$
 CREATE PROCEDURE `changesSummary` (
+  IN      `canvassingCompanyCode` varchar(8) CHARACTER SET 'ascii'
 )
 BEGIN
+  DROP TABLE IF EXISTS `blotto_changes_summary_tmp`
+  ;
+  CREATE TABLE `blotto_changes_summary_tmp` AS
+    SELECT
+      DATE_ADD(`changed_date`,INTERVAL(0-WEEKDAY(`changed_date`)) DAY) AS `wc`
+     ,`milestone`
+     ,IF(`milestone`='created',0,`collected_times`) AS `collected_times`
+     ,SUM(`milestone`='created') AS `imports`
+     ,SUM(`milestone`='cancellation') AS `cancellations`
+     ,SUM(`milestone`='reinstatement') AS `reinstatements`
+      FROM `Changes`
+      WHERE `ccc`=canvassingCompanyCode
+        AND `milestone` IN ('created','cancellation','reinstatement')
+      GROUP BY `wc`,`milestone`,`collected_times`
+      ORDER BY `wc`,`milestone`='created' DESC,`milestone`,`collected_times`
+  ;
+  -- Eventually we will modify blotto_update and blotto_change to store nr of collections *before* reinstatements
+  -- Until then:
+  UPDATE `blotto_changes_summary_tmp`
+  SET
+    `reinstatements`=`reinstatements`-1
+  WHERE `milestone`='reinstatement'
+  ;
   SELECT
-    DATE_ADD(`changed_date`,INTERVAL(0-WEEKDAY(`changed_date`)) DAY) AS `wc`
-   ,SUM(`milestone`='created') AS `imports`
-   ,SUM(`milestone`='cancellation') AS `cancellations`
-   ,SUM(`milestone`='reinstatement') AS `reinstatements`
-    FROM `Changes`
-    GROUP BY `wc`
-    ORDER BY `wc`
+    *
+  FROM `blotto_changes_summary_tmp`
+  ;
+  DROP TABLE `blotto_changes_summary_tmp`
   ;
 END $$
 
