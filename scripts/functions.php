@@ -1509,7 +1509,7 @@ function invoice_game ($draw_closed_date,$output=true) {
             $loaded,
             loading_fee ($loaded)
         ];
-        if (defined('BLOTTO_FEE_ANL_EMAIL') && BLOTTO_FEE_ANL_EMAIL>0) {
+        if (defined('BLOTTO_FEE_ANL_EMAIL')) {
             $invoice->items[] = [
                 "Email advanced notification letters",
                 $letters_anl_email,
