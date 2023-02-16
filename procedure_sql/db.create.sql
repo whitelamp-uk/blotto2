@@ -176,6 +176,35 @@ SET
 ;
 
 
+CREATE TABLE IF NOT EXISTS `blotto_schedule` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `org_code` char(16) CHARACTER SET ascii NOT NULL COMMENT 'References org table',
+  `filename` varchar(255) CHARACTER SET ascii NOT NULL COMMENT 'Use {{d}} to denote report end date',
+  `format` char(16) CHARACTER SET ascii NOT NULL COMMENT 'Empty = every day',
+  `start_value` char(16) CHARACTER SET ascii NOT NULL COMMENT 'This should match format on scheduled start date',
+  `interval` char(16) CHARACTER SET ascii NOT NULL COMMENT 'PHP DateInterval determining date range',
+  `type` char(16) CHARACTER SET ascii NOT NULL,
+  `email` varchar(254) CHARACTER SET ascii DEFAULT NULL,
+  `statement_overwrite` tinyint(1) unsigned DEFAULT NULL COMMENT '1 = recycle the file name',
+  `statement_heading` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Use {{d}} to denote report end date',
+  `ccr_ccc` char(16) CHARACTER SET ascii DEFAULT NULL,
+  `notes` text COLLATE utf8_unicode_ci,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT IGNORE INTO `blotto_schedule` (`id`, `org_code`, `filename`, `format`, `start_value`, `interval`, `type`, `email`, `statement_overwrite`, `statement_heading`, `ccr_ccc`, `notes`) VALUES
+(1, '', '', 'j',  '1',  'P1Y',  'user_activity',  NULL, NULL, NULL, NULL, 'Provides Gambling Commission compliance regarding the monitoring of problem gambling. The monitoring date range ends on the day before the monitoring takes place and the date `interval` is subtracted to give the start of the monitoring period. For example `interval`=\'P1Y\' can be read as \"year to date yesterday\".'),
+(2, '', '{{o}}_y-t-d_statement_latest.html',  '', '', 'P12M', 'statement',  NULL, 1,  '{{on}} - lottery proceeds YTD',  NULL, NULL),
+(3, '', '{{o}}_m-e_statement_latest.html',  'j',  '1',  'P1M',  'statement',  NULL, 1,  '{{on}} - lottery proceeds for month',  NULL, NULL),
+(4, '', '{{o}}_w-e_statement_latest.html',  'D',  'Mon',  'P7D',  'statement',  NULL, 1,  '{{on}} - lottery proceeds for week', NULL, NULL),
+(5, '', '{{o}}_{{d}}_statement_calendar.html',  'm-d',  '01-01',  'P12M', 'statement',  NULL, 0,  '{{on}} - lottery proceeds y/e {{d}}',  NULL, NULL),
+(6, '', '{{o}}_{{d}}_statement_regulatory_period.html', 'm-d',  '11-10',  'P12M', 'statement',  NULL, 0,  '{{on}} - regulatory period y/e {{d}}', NULL, NULL),
+(7, '', '{{o}}_{{d}}_statement_tax_period.html',  'm-d',  '04-06',  'P12M', 'statement',  NULL, 0,  '{{on}} - taxation period y/e {{d}}', NULL, NULL),
+(8, 'ylh',  'ylh_{{d}}_statement_accounting_period.html ',  'm-d',  '??-??',  'P12M', 'statement',  NULL, 0,  '{{on}} - accounting period y/e {{d}}', NULL, NULL),
+(9, 'ylh',  '{{o}}_w-e_{{d}}_canvassing_company_return.{{c}}.csv',  'D',  'Mon',  'P7D',  'ccr',  'ylh-ccr@myorg',  NULL, NULL, 'BB', NULL);
+
+
+
 
 USE `{{BLOTTO_TICKET_DB}}`
 ;
