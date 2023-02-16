@@ -538,28 +538,38 @@ BEGIN
   ;
   CREATE TABLE `blotto_changes_summary_tmp` AS
     SELECT
-      DATE_ADD(`changed_date`,INTERVAL(0-WEEKDAY(`changed_date`)) DAY) AS `wc`
+      `changed_date`
      ,`milestone`
-     ,IF(`milestone`='created',0,`collected_times`) AS `collected_times`
-     ,SUM(`milestone`='created') AS `imports`
-     ,SUM(`milestone`='cancellation') AS `cancellations`
-     ,SUM(`milestone`='reinstatement') AS `reinstatements`
+  -- Eventually we will modify Changes to store nr of collections at the milestone rather than now
+  -- Until then:
+     ,IF(
+        `milestone`='created'
+       ,0
+  -- Eventually we will modify blotto_update and blotto_change to store nr of collections *before* reinstatements
+  -- Until then:
+       ,IF(
+          `milestone`='reinstatement'
+         ,IF(`collected_times`=0,`collected_times`,`collected_times`-1)
+         ,`collected_times`
+        )
+      ) AS `payments`
+     ,1*(`milestone`='created') AS `import`
+     ,1*(`milestone`='cancellation') AS `cancel`
+     ,1*(`milestone`='reinstatement') AS `reinstate`
       FROM `Changes`
       WHERE `ccc`=canvassingCompanyCode
         AND `milestone` IN ('created','cancellation','reinstatement')
-      GROUP BY `wc`,`milestone`,`collected_times`
-      ORDER BY `wc`,`milestone`='created' DESC,`milestone`,`collected_times`
-  ;
-  -- Eventually we will modify blotto_update and blotto_change to store nr of collections *before* reinstatements
-  -- Until then:
-  UPDATE `blotto_changes_summary_tmp`
-  SET
-    `reinstatements`=`reinstatements`-1
-  WHERE `milestone`='reinstatement'
   ;
   SELECT
-    *
-  FROM `blotto_changes_summary_tmp`
+    DATE_ADD(`changed_date`,INTERVAL(0-WEEKDAY(`changed_date`)) DAY) AS `wc`
+   ,`milestone`
+   ,`payments`
+   ,SUM(`import`) AS `imports`
+   ,SUM(`cancel`) AS `cancellations`
+   ,SUM(`reinstate`) AS `reinstatements`
+    FROM `blotto_changes_summary_tmp`
+    GROUP BY `wc`,`milestone`,`payments`
+    ORDER BY `wc`,`milestone`='created' DESC,`milestone`,`payments`
   ;
   DROP TABLE `blotto_changes_summary_tmp`
   ;
