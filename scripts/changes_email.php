@@ -29,7 +29,7 @@ if ($today->format('D')==$dow) {
        ,`start_value`
        ,`interval`
        ,`type`
-       ,`ccr_email`
+       ,`email`
        ,`ccr_ccc`
       FROM `$cdb`.`blotto_schedule`
       WHERE `type`='ccr'
@@ -142,10 +142,10 @@ if ($today->format('D')==$dow) {
     }
     echo "    ".count($emails)." files to send\n";
     foreach ($emails as $file=>$r) {
-        echo "    Emailing CCR for {$r['ccr_ccc']} to {$r['ccr_email']}\n";
+        echo "    Emailing CCR for {$r['ccr_ccc']} to {$r['email']}\n";
         if ($r['count_cum']>0) {
             mail_attachments (
-                $r['ccr_email'],
+                $r['email'],
                 "Canvassing Company Return from ".BLOTTO_BRAND." for ".strtoupper(BLOTTO_ORG_USER)."/{$r['ccr_ccc']} w/e {$r['end']}",
                 "CCR attached has {$r['count']} ticket changes logged last period (cancellations are ".BLOTTO_CC_NOTIFY." from sign-up)",
                 [$file]
@@ -154,7 +154,7 @@ if ($today->format('D')==$dow) {
         }
         else {
             mail (
-                $r['ccr_email'],
+                $r['email'],
                 "Canvassing Company Return from ".BLOTTO_BRAND." for ".strtoupper(BLOTTO_ORG_USER)."/{$r['ccr_ccc']} w/e {$r['end']}",
                 "CCR has no ticket changes recorded",
                 "From: ".BLOTTO_EMAIL_FROM.PHP_EOL
