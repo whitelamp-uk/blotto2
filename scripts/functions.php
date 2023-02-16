@@ -3426,12 +3426,14 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
        ,`game_is`.`draws`
        ,`game_is`.`paid_out`
        ,`game_is`.`winners`
-       ,SUM(IFNULL(`game_is`.`winners_posted`,0)) AS `winners_posted`
+       ,SUM(IFNULL(`game_is`.`winners_post`,0)) AS `winners_post`
        ,`supporter`.`starting_balances`
        ,IFNULL(`pre`.`collected`,0) AS `collections_before`
        ,IFNULL(`post`.`collected`,0) AS `collections_during`
-       ,`anl`.`quantity` AS `anls`
-       ,SUM(IFNULL(`anl`.`posted`,0)) AS `anls_posted`
+       ,`anl`.`quantity` AS `loaded`
+       ,SUM(IFNULL(`anl`.`email`,0)) AS `anls_email`
+       ,SUM(IFNULL(`anl`.`sms`,0)) AS `anls_sms`
+       ,SUM(IFNULL(`anl`.`post`,0)) AS `anls_post`
       FROM (
         SELECT
           COUNT(`id`) AS `plays`
@@ -3446,7 +3448,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
          ,COUNT(`e`.`id`) AS `plays`
          ,SUM(`w`.`winnings`) AS `paid_out`
          ,SUM(`w`.`winners`) AS `winners`
-         ,SUM(`w`.`posted`) AS `winners_posted`
+         ,SUM(`w`.`posted`) AS `winners_post`
         FROM `blotto_entry` AS `e`
         LEFT JOIN (
           SELECT
@@ -3489,8 +3491,10 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
         ON 1
       LEFT JOIN (
         SELECT
-          COUNT(*) AS `quantity`
-         ,SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0) AS `posted`
+          COUNT(`ClientRef`) AS `quantity`
+         ,IFNULL(SUM(`letter_status`='email_received'),0) AS `email`
+         ,IFNULL(SUM(`letter_status`='sms_received'),0) AS `sms`
+         ,IFNULL(SUM(`letter_status` NOT  LIKE 'email%' AND `letter_status` NOT LIKE 'sms%'),0) AS `post`
         FROM `ANLs`
         WHERE `tickets_issued`>='$day_first'
           AND `tickets_issued`<='$day_last'
@@ -3513,11 +3517,13 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $return            += $played;
     $return            -= $stats['paid_out'];
     $expend             = 0;
-    $expend_loading     = loading_fee($stats['anls']) * $stats['anls'];
+    $expend_loading     = loading_fee($stats['loaded']) * $stats['loaded'];
     $expend            += $expend_loading;
-    $expend_anls        = BLOTTO_FEE_ANL/100 * $stats['anls_posted'];
+    $expend_anls        = BLOTTO_FEE_ANL/100 * $stats['anls_post'];
+    $expend_anls       += BLOTTO_FEE_ANL_SMS/100 * $stats['anls_sms'];
+    $expend_anls       += BLOTTO_FEE_ANL_EMAIL/100 * $stats['anls_email'];
     $expend            += $expend_anls;
-    $expend_winlets     = BLOTTO_FEE_WL/100 * $stats['winners_posted'];
+    $expend_winlets     = BLOTTO_FEE_WL/100 * $stats['winners_post'];
     $expend            += $expend_winlets;
     $expend_email       = BLOTTO_FEE_CM/100 * $stats['draws'];
     $expend            += $expend_email;
