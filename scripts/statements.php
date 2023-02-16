@@ -120,6 +120,15 @@ try {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$html);
                 fclose ($fp);
+                if (!$w['statement_overwrite']) {
+                    // Email the one-off statement
+                    mail_attachments (
+                        BLOTTO_FEE_EMAIL,
+                        BLOTTO_BRAND." statement {$w['from']} thru {$w['to']}",
+                        "Please find your statement attached.\n\n",
+                        [$file]
+                    );
+                }
             }
             else {
                 fwrite (STDERR,"No statement HTML was generated: ({$w['from']},{$w['to']},{$w['statement_heading']})\n");
