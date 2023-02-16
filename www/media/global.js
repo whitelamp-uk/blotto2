@@ -610,7 +610,7 @@ function updateView (type,results) {
         else {
             txt.push ('An error occurred: '+err);
         }
-        if (results.error!=111) { // 111 is a missing field value
+        if (results.error!=110) { // 110 is a missing field value
             txt.push ('Please copy this full message into an email to your administrator');
         }
     }

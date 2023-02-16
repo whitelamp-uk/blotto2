@@ -3839,6 +3839,7 @@ function update ( ) {
         $q = "INSERT INTO `blotto_bacs` SET ";
         foreach ($keys as $k) {
             if (!array_key_exists($k,$_POST) || !strlen($_POST[$k])) {
+                // This error code must remain stable because it is used for client-side logic in global.js::updateView()
                 return "{ \"error\" : 110, \"errorMessage\" : \"Data missing for change request: $k\" }";
             }
             $q .= "`$k`='".esc($fields[$k],BLOTTO_CONFIG_DB)."',";
