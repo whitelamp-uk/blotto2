@@ -61,6 +61,14 @@ try {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$inv);
                 fclose ($fp);
+                if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
+                    mail_attachments (
+                        BLOTTO_FEE_EMAIL,
+                        BLOTTO_BRAND." invoice (game services)",
+                        "Game invoice for draw period closing {$draw['draw_closed']}",
+                        [$file]
+                    );
+                }
             }
         }
         // Raise invoice (pass on cost) of paying out to winners
@@ -72,6 +80,14 @@ try {
                     $fp = fopen ($file,'w');
                     fwrite ($fp,$inv);
                     fclose ($fp);
+                    if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
+                        mail_attachments (
+                            BLOTTO_FEE_EMAIL,
+                            BLOTTO_BRAND." invoice (payout of winnings)",
+                            "Payout invoice for draw period closing {$draw['draw_closed']}",
+                            [$file]
+                        );
+                    }
                 }
             }
         }
@@ -126,12 +142,19 @@ try {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$inv);
                 fclose ($fp);
+                // Email as attachment
+                mail_attachments (
+                    BLOTTO_FEE_EMAIL,
+                    BLOTTO_BRAND." invoice (custom)",
+                    "Custom invoice raised {$custom['raised']}",
+                    [$file]
+                );
             }
         }
     }
 }
 catch (\Exception $e) {
-    fwrite (STDERR,"Failed to create invoices without errors\n");
+    fwrite (STDERR,"Failed to create custom invoices without errors\n");
     fwrite (STDERR,$e->getMessage()."\n");
     // Do not abort build for this
 }
