@@ -338,22 +338,22 @@ BEGIN
   SET @reconcile    = ( @balOpen + @collections ) - ( @played + @balClose )
   ;
   INSERT INTO `blotto_calculation` ( `item`, `units`, `amount`, `notes` )  VALUES
-    ( 'head_reconcile',     '',     '',                              'Reconciliation'                 ),
-    ( 'draw_first',         '',     DATE_FORMAT(@first,'%Y %b %d'),  'first draw in this period'      ),
-    ( 'draw_last',          '',     DATE_FORMAT(@last,'%Y %b %d'),   'last draw in this period'       ),
-    ( 'draws',              '',     dp(@weeks,0),                    'draws in this period'           ),
-    ( 'amount_per_play',    'GBP',  dp(@perplay/100,2),              'charge per play'                ),
-    ( 'plays',              '',     @plays,                          'total plays in this period'     ),
-    ( 'balances_opening',   'GBP',  dp(@balOpen,2),                  '+ player opening balances'      ),
-    ( 'collected',          'GBP',  dp(@collections,2),              '+ collected this period'        ),
-    ( 'play_value',         'GBP',  dp(0-@played,2),                 '− played this period'           ),
-    ( 'balances_closing',   'GBP',  dp(0-@balClose,2),               '− player closing balances'      ),
-    ( 'reconciliation',     'GBP',  dp(@reconcile,2),                '≡ to be reconciled'             ),
-    ( 'head_return',        '',     '',                              'Return'                         ),
-    ( 'revenue',            'GBP',  dp(@played,2),                   '+ revenue from plays'           ),
-    ( 'winnings',           'GBP',  dp(0-@payout,2),                 '− paid out (except superdraws)' ),
-    ( 'fees',               'GBP',  dp(0-@fees,2),                   '− superdraw fees'               ),
-    ( 'nett',               'GBP',  dp(@nett,2),                     '≡ return generated'             )
+    ( 'head_reconcile',     '',     '',                              'Reconciliation'                         ),
+    ( 'draw_first',         '',     DATE_FORMAT(@first,'%Y %b %d'),  'first draw in this period'              ),
+    ( 'draw_last',          '',     DATE_FORMAT(@last,'%Y %b %d'),   'last draw in this period'               ),
+    ( 'draws',              '',     dp(@weeks,0),                    'draws in this period'                   ),
+    ( 'amount_per_play',    'GBP',  dp(@perplay/100,2),              'charge per play'                        ),
+    ( 'plays',              '',     @plays,                          'total plays in this period'             ),
+    ( 'balances_opening',   'GBP',  dp(@balOpen,2),                  '+ player opening balances'              ),
+    ( 'collected',          'GBP',  dp(@collections,2),              '+ collected this period'                ),
+    ( 'play_value',         'GBP',  dp(0-@played,2),                 '− played this period'                   ),
+    ( 'balances_closing',   'GBP',  dp(0-@balClose,2),               '− player closing balances'              ),
+    ( 'reconciliation',     'GBP',  dp(@reconcile,2),                '≡ to be reconciled'                     ),
+    ( 'head_return',        '',     '',                              'Return'                                 ),
+    ( 'revenue',            'GBP',  dp(@played,2),                   '+ revenue from plays'                   ),
+    ( 'winnings',           'GBP',  dp(0-@payout,2),                 '− paid out (except superdraws)'         ),
+    ( 'fees',               'GBP',  dp(0-@fees,2),                   '− superdraw fees'                       ),
+    ( 'nett',               'GBP',  dp(@nett,2),                     '≡ return generated (before charges)'    )
   ;
   SELECT
     *
