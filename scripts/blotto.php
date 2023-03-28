@@ -165,8 +165,9 @@ if ($argv[3]=='import.supporter.sql') {
     }
     define ('BLOTTO_CSV_S',$argv[4].'/'.$m[0]);
     if (!filesize(BLOTTO_CSV_S)) {
-        fwrite (STDERR,"File '".BLOTTO_CSV_S."' is empty - skipping ".$argv[3]."\n");
-        exit (0);
+        /*fwrite (STDERR,"File '".BLOTTO_CSV_S."' is empty - skipping ".$argv[3]."\n");
+        exit (0);*/
+        fwrite (STDERR,"File '".BLOTTO_CSV_S."' is empty - NOT skipping ".$argv[3]."\n");
     }
 }
 else if ($argv[3]=='import.mandate.sql' || $argv[3]=='import.collection.sql') {
