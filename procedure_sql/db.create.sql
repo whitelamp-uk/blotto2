@@ -54,6 +54,15 @@ CREATE TABLE IF NOT EXISTS `blotto_bacs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+CREATE TABLE IF NOT EXISTS `blotto_fee` (
+  `fee` varchar(64) CHARACTER SET ascii NOT NULL,
+  `starts` date NOT NULL DEFAULT '2000-01-01',
+  `val` varchar(64) CHARACTER SET ascii DEFAULT NULL,
+  PRIMARY KEY (`fee`,`starts`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
+
 CREATE TABLE IF NOT EXISTS `blotto_help` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `comments` text NOT NULL,

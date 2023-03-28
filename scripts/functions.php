@@ -1305,6 +1305,51 @@ function env_is_cli() {
     return false;
 }
 
+function fee_periods ($fee,$from,$to) {
+    $rdb = BLOTTO_RESULTS_DB;
+    $qs = "
+      SELECT
+        *
+      FROM `blotto_fee`
+      WHERE `fee`='$fee'
+      ORDER BY `starts`
+      ;
+    ";
+    try {
+        $zo = connect (BLOTTO_MAKE_DB);
+        $fs = $zo->query ($qs);
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage());
+        return false;
+    }
+    $periods = [];
+    while ($f=$fs->fetch_assoc()) {
+        if (count($periods)) {
+            $date = new \DateTime ($f['starts']);
+            $date->sub (new \DateInterval ('P1D'));
+            $periods[count($periods)-1]['to'] = $date->format ('Y-m-d');
+        }
+        $periods[] = ['starts'=>$f['starts'],'from'=>$f['starts'],'defn'=>$f['defn']];
+    }
+    if (count($periods)) {
+        $periods[count($periods)-1]['to'] = '2099-12-31';
+    }
+    while (count($periods) && $periods[0]['to']<$from) {
+        array_shift ($periods);
+    }
+    if (count($periods)) {
+        $periods[0]['from'] = $from;
+    }
+    while (count($periods) && $periods[count($periods)-1]['from']>$to) {
+        array_pop ($periods);
+    }
+    if (count($periods)) {
+        $periods[count($periods)-1]['to'] = $to;
+    }
+    return $periods;
+}
+
 function file_write ($file,$contents) {
     if (file_exists($file)) {
         fwrite (STDERR,debug_backtrace()[1]['function']."(\n");
