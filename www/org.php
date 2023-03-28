@@ -3,8 +3,8 @@
 require './bridge.php';
 require BLOTTO_WWW_FUNCTIONS;
 require BLOTTO_WWW_CONFIG;
-if (defined('BLOTTO_STANNP') && BLOTTO_STANNP) {
-    require BLOTTO_STANNP_CLASS;
+if (defined('BLOTTO_SNAILMAIL') && BLOTTO_SNAILMAIL) {
+    require BLOTTO_SNAILMAIL_API_STANNP;
 }
 
 $options       = array (
