@@ -57,6 +57,7 @@ define ( 'BLOTTO_DAY_LAST',         null                );  // Last date due day
 //define ( 'BLOTTO_WIN_FIRST',        '2016-01-01'        );  // Only report wins/reconciliations on or after this date
 define ( 'BLOTTO_WEEK_ENDED',       5                   );  // Reports up to and including Friday
 define ( 'BLOTTO_DRAW_CLOSE_1',     '2016-07-08'        );  // First draw close for the game
+define ( 'BLOTTO_DRAW_EMAIL',       'ylh-invoicing@thefundraisingfoundry.com' );
 define ( 'BLOTTO_INSURE',           true                );  // Use insurance
 define ( 'BLOTTO_INSURE_DAYS',      0                   );  // Days before draw close to close insurance
 define ( 'BLOTTO_INSURE_FROM',      '2001-01-01'        );  // First draw requiring insurance (advance if insurance introduced mid-game)

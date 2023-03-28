@@ -56,6 +56,14 @@ try {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$dr);
                 fclose ($fp);
+                if (defined('BLOTTO_DRAW_EMAIL') && BLOTTO_DRAW_EMAIL) {
+                    mail_attachments (
+                        BLOTTO_DRAW_EMAIL,
+                        BLOTTO_BRAND." draw report",
+                        "Draw report for draw closed {$draw['draw_closed']}",
+                        [$file]
+                    );
+                }
             }
         }
     }
