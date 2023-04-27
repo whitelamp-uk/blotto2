@@ -268,14 +268,9 @@ function clientref_advance ($cref) {
 }
 
 function collection_startdate ($today,$payday) {
-    // Calculating from today, complying with DD rules
-    // 1 day to collect created mandate from RSM
-    // 1 day for printing and dispatch
-    // 2 days in case its a weekend
-    // 2 days for 2nd class delivery
-    // 10 days cooling-off after delivery
+    // Calculating from today, complying with DD cooling-off rules
     $dt = new \DateTime ($today);
-    $dt->add (new \DateInterval('P16D'));
+    $dt->add (new \DateInterval(BLOTTO_DD_COOL_OFF_DAYS));
     if (intval($dt->format('j'))>28) {
         // End of month so add more days
         for ($i=0;$i<3;$i++) {

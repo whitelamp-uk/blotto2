@@ -64,6 +64,15 @@ define ( 'BLOTTO_INSURE_FROM',      '2001-01-01'        );  // First draw requir
 define ( 'BLOTTO_CC_NOTIFY',        '10 MONTH'          );  // MySQL interval notify CC of ticket changes
 // BLOTTO_PAY_DELAY and rsm-api's RSM_PAY_INTERVAL are both needed
 define ( 'BLOTTO_PAY_DELAY',        'P2D'               );  // From DateDue to credit "available" (DateInterval)
+// First collection date calculation
+/*
+    1 day to collect created mandate from DD provider
+    1 day for printing and dispatch
+    2 days in case its a weekend
+    2 days for 2nd class delivery
+*/
+define ( 'BLOTTO_DD_COOL_OFF_DAYS', 'P16D'              );  // Plus 10 days for buyer's regret (this is a DateInterval)
+
 
 define ( 'BLOTTO_CREF_MATCH',       '^[A-z0-9_]+$'      );  // Original supporter reference restriction
 define ( 'BLOTTO_CREF_SPLITTER',    '-'                 );  // Split mandate detection character sequence
