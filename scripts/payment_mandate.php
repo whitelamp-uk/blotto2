@@ -69,7 +69,7 @@ try {
                         $mandates[] = $m;
                     }
                     else {
-                        $e = "Postcode '{$s['Postcode']}' is outside territory '".BLOTTO_TERRITORIES_CSV."' - $ccc - for '{$s['ClientRef']}'\n";
+                        $e = "Postcode '{$m['Postcode']}' is outside territory '".BLOTTO_TERRITORIES_CSV."' - $ccc - for '{$m['ClientRef']}'\n";
                         fwrite (STDERR,$e);
                         $errors[] = $e;
                     }
