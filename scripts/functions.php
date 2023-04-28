@@ -755,6 +755,10 @@ function draw_first_asap ($first_collection_date) {
     // the same day unless a delay is required for insurance
     // Use the bespoke function
     $draw_closes    = draw_upcoming ($first_collection_date);
+    // Cannot be before the first draw for the game
+    if ($draw_closes<BLOTTO_DRAW_CLOSE_1) {
+        $draw_closes = BLOTTO_DRAW_CLOSE_1;
+    }
     if (!defined('BLOTTO_INSURE') || !BLOTTO_INSURE || BLOTTO_INSURE_DAYS<1) {
         return $draw_closes;
     }
@@ -798,7 +802,12 @@ function draw_first_zaffo_model ($first_collection_date,$dow=5) {
     // Move on 21 more days
     $days      += 21;
     $fcd->add (new DateInterval('P'.$days.'D'));
-    return $fcd->format ('Y-m-d');
+    $dc = $fcd->format ('Y-m-d');
+    // Cannot be before the first draw for the game
+    if ($dc<BLOTTO_DRAW_CLOSE_1) {
+        $dc = BLOTTO_DRAW_CLOSE_1;
+    }
+    return $dc;
 }
 
 function draw_report ($draw,$output=true) {
