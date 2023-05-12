@@ -4150,29 +4150,26 @@ function weeks ($dow,$date1,$date2=null,$format='Y-m-d') {
 }
 
 function win_last ( ) {
-    $yesterday = day_yesterday()->format('Y-m-d');
+    $w = null;
     $zo = connect ();
-    if (!$zo) {
-        return $yesterday;
-    }
-    $qs = "
-      SELECT
-        MAX(`draw_closed`) AS `last`
-      FROM `Wins`
-    ";
-    try {
-        $w = $zo->query ($qs);
-        $w = $w->fetch_assoc ();
-        if (!$w) {
-            return false;
+    if ($zo) {
+        $qs = "
+          SELECT
+            MAX(`draw_closed`) AS `last`
+          FROM `Wins`
+        ";
+        try {
+            $w = $zo->query ($qs);
+            $w = $w->fetch_assoc ();
+            $w = $w['last'];
+        }
+        catch (\mysqli_sql_exception $e) {
+            error_log ($qs."\n".$e->getMessage());
         }
     }
-    catch (\mysqli_sql_exception $e) {
-        error_log ($qs."\n".$e->getMessage());
-        return $yesterday;
-    }
-    if ($w['last'] && $w['last']<$yesterday) {
-        return $w['last'];
+    $yesterday = day_yesterday()->format('Y-m-d');
+    if ($w && $w<$yesterday) {
+        return $w;
     }
     return $yesterday;
 }
