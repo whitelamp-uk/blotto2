@@ -457,11 +457,16 @@ function day_one ($for_wins=false) {
                 $s = $c;
             }
         }
-        if ($for_wins && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
-            // Handles legacy scenario (eg. SHC) where tickets got changed
-            // Before the change date, winnings are no longer derivable by deterministic calculation
-            // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
-            $s = BLOTTO_WIN_FIRST;
+        if ($for_wins) {
+            if (BLOTTO_DRAW_CLOSE_1>$s) {
+                $s = BLOTTO_DRAW_CLOSE_1;
+            }
+            if (defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
+                // Handles legacy scenario (eg. SHC) where tickets got changed
+                // Before the change date, winnings are no longer derivable by deterministic calculation
+                // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
+                $s = BLOTTO_WIN_FIRST;
+            }
         }
     }
     catch (\mysqli_sql_exception $e) {
@@ -617,7 +622,6 @@ function download_csv ( ) {
     }
     if ($cond) {
         $cond       = "AND `draw_closed`>='".BLOTTO_WIN_FIRST."'\n";
-        $cond       = "AND `draw_closed`>='".BLOTTO_DRAW_CLOSE_1."'\n";
     }
     else {
         $cond       = "";

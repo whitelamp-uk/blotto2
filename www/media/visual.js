@@ -193,11 +193,22 @@ function chartRender (canvasId,type,cdo,options) {
                     }
                 }
             ]
-        }
+        };
         if ('yratio' in options && options.yratio && !options.zero) {
             range = chartRange (cdo,options.yratio);
             opts.scales.yAxes[0].ticks.suggestedMin = range.min;
             opts.scales.yAxes[0].ticks.suggestedMax = range.max;
+        }
+        if ('ystacked' in options && options.ystacked) {
+            if (!('scales' in opts)) {
+                opts.scales = {
+                };
+            }
+            if (!('yAxes' in opts.scales)) {
+                opts.scales.yAxes = [
+                ];
+            }
+            opts.scales.yAxes.stacked = true;
         }
     }
     if (options.link) {
