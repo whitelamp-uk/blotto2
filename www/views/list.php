@@ -19,21 +19,23 @@ $last       = false;
 $dates      = [];
 
 
-if ($table=='ANLs' || $table=='Wins') {
-    www_letter_status_refresh ();
+if ($day1) {
+    if ($table=='ANLs' || $table=='Wins') {
+        www_letter_status_refresh ();
+    }
+    if ($table=='Insurance') {
+        $day2   = new DateTime ();
+        $day2->add (new DateInterval('P7D'));
+        $day2   = $day2->format ('Y-m-d');
+    }
+    elseif ($table=='Wins') {
+        $day2   = new DateTime (win_last());
+        $day2->add (new DateInterval('P7D'));
+        $day2   = $day2->format ('Y-m-d');
+    }
+    $days       = array_reverse (weeks(BLOTTO_WEEK_ENDED,$day1,$day2));
+    $months     = array_reverse (months($day1,$day2));
 }
-if ($table=='Insurance') {
-    $day2   = new DateTime ();
-    $day2->add (new DateInterval('P7D'));
-    $day2   = $day2->format ('Y-m-d');
-}
-elseif ($table=='Wins') {
-    $day2   = new DateTime (win_last());
-    $day2->add (new DateInterval('P7D'));
-    $day2   = $day2->format ('Y-m-d');
-}
-$days       = array_reverse (weeks(BLOTTO_WEEK_ENDED,$day1,$day2));
-$months     = array_reverse (months($day1,$day2));
 
 if (array_key_exists(0,$days)) {
     $latest = $days[0];
