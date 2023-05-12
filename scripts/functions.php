@@ -458,10 +458,10 @@ function day_one ($for_wins=false) {
             }
         }
         if ($for_wins) {
-            if (BLOTTO_DRAW_CLOSE_1>$s) {
+            if ($s && BLOTTO_DRAW_CLOSE_1>$s) {
                 $s = BLOTTO_DRAW_CLOSE_1;
             }
-            if (defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
+            if ($s && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
                 // Handles legacy scenario (eg. SHC) where tickets got changed
                 // Before the change date, winnings are no longer derivable by deterministic calculation
                 // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
@@ -472,7 +472,10 @@ function day_one ($for_wins=false) {
     catch (\mysqli_sql_exception $e) {
         $s = null;
     }
-    return new DateTime ($s);
+    if ($s) {
+        return new DateTime ($s);
+    }
+    return day_yesterday()->format ('Y-m-d');
 }
 
 function day_tomorrow ($date=null) {
