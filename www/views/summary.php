@@ -69,8 +69,7 @@ if (data3) {
         {
             title: 'Recent recruitment and cancellation (except one-off payments)',
             link: true,
-            zero: true,
-            ystacked: true
+            zero: true
         }
     );
     console.log ('Rendered data3');

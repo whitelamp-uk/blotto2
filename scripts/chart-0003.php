@@ -63,34 +63,14 @@ try {
     $cdo->datasets[0]->label = 'Supporters recruited';
     $cdo->datasets[0]->data = $data[0];
     $cdo->datasets[0]->backgroundColor = 1;
-    $cdo->datasets[0]->stack = 1;
     $cdo->datasets[1] = new stdClass ();
     $cdo->datasets[1]->label = 'Cancellations';
     $cdo->datasets[1]->data = $data[1];
     $cdo->datasets[1]->backgroundColor = 2;
-    $cdo->datasets[1]->stack = 2;
     $cdo->datasets[2] = new stdClass ();
     $cdo->datasets[2]->label = 'Nett';
     $cdo->datasets[2]->data = $data[2];
     $cdo->datasets[2]->backgroundColor = 3;
-    $cdo->datasets[2]->stack = 3;
-
-
-
-    $cdo->datasets[3] = $cdo->datasets[0];
-    $cdo->datasets[3]->backgroundColor = 6;
-    $cdo->datasets[3]->stack = 3;
-/*
-
-    $cdo->datasets[4] = $cdo->datasets[0];
-    $cdo->datasets[4]->backgroundColor = 5;
-    $cdo->datasets[4]->stack = 1;
-
-    $cdo->datasets[5] = $cdo->datasets[0];
-    $cdo->datasets[5]->backgroundColor = 6;
-    $cdo->datasets[5]->stack = 2;
-*/
-
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());
