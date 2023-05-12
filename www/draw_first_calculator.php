@@ -61,7 +61,7 @@ if ($reverse) {
     while (1) {
         $dt->sub (new \DateInterval('P1D'));
         $importdate = $dt->format ('Y-m-d');
-        if (($dc1=calcdraw1())==$dc1date) {
+        if (($dc1=calcdraw1())<=$dc1date) {
             break;
         }
     }
