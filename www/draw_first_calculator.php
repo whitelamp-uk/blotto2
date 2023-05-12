@@ -45,7 +45,7 @@ else {
     $importdate     = gmdate ('Y-m-d');
     $payday         = 1;
     $deliverydays   = 6;
-    $cooloff        = 10;
+    $cooloff        = 5;
     $dcday          = 5;
     $insuredays     = 0;
     $model          = 'accrue';
