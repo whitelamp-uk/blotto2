@@ -475,7 +475,7 @@ function day_one ($for_wins=false) {
     if ($s) {
         return new DateTime ($s);
     }
-    return day_yesterday()->format ('Y-m-d');
+    return day_yesterday ();
 }
 
 function day_tomorrow ($date=null) {
