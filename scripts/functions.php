@@ -616,7 +616,8 @@ function download_csv ( ) {
         array_push ($data,"IFNULL(`{$fn['Field']}`,'')");
     }
     if ($cond) {
-        $cond       = "AND `draw_closed`>'".BLOTTO_WIN_FIRST."'\n";
+        $cond       = "AND `draw_closed`>='".BLOTTO_WIN_FIRST."'\n";
+        $cond       = "AND `draw_closed`>='".BLOTTO_DRAW_CLOSE_1."'\n";
     }
     else {
         $cond       = "";
