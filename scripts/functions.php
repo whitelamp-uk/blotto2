@@ -442,11 +442,23 @@ function day_one ($for_wins=false) {
     if (!$zo) {
         return false;
     }
+    $s = null;
     try {
         if (defined('BLOTTO_RBE_ORGS')) {
             // RBEs only have entries and winners
             $s = $zo->query ("SELECT MIN(`draw_closed`) AS `d1` FROM `blotto_entry`");
             $s = $s->fetch_assoc()['d1'];
+        }
+        elseif ($for_wins) {
+            if (day_yesterday()->format('Y-m-d')>=BLOTTO_DRAW_CLOSE_1) {
+                $s = BLOTTO_DRAW_CLOSE_1;
+                if (defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
+                    // Handles legacy scenario (eg. SHC) where tickets got changed
+                    // Before the change date, winnings are no longer derivable by deterministic calculation
+                    // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
+                    $s = BLOTTO_WIN_FIRST;
+                }
+            }
         }
         else {
             $s = $zo->query ("SELECT MIN(`created`) AS `d1` FROM `blotto_supporter`");
@@ -475,7 +487,7 @@ function day_one ($for_wins=false) {
     if ($s) {
         return new DateTime ($s);
     }
-    return day_yesterday ();
+    return null;
 }
 
 function day_tomorrow ($date=null) {
