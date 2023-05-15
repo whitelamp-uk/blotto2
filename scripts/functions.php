@@ -4089,6 +4089,7 @@ function update ( ) {
         if ($send && defined('BLOTTO_EMAIL_BACS_TO')) {
             if ($fields['Name']!=$m['Name']) {
                 $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
+                $message .= "Old name: {$m['Name']}, new name: {$fields['Name']}\n";
             }
             if ($fields['Sortcode']!=$m['Sortcode'] || $fields['Account']!=$m['Account']) {
                 $message .= "The mandate sort code and/or account name has changed.\n";
