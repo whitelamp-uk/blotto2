@@ -3878,6 +3878,7 @@ function update ( ) {
     }
     // MANDATE UPDATE
     if ($type=='m') {
+        $error = null;
         $created = false;
         if (strpos($fields['Sortcode'],'*')!==false) {
             $fields['Sortcode'] = '';
@@ -3947,11 +3948,10 @@ function update ( ) {
             error_log ('update(): '.$e->getMessage());
             return "{ \"error\" : 112, \"errorMessage\" : \"Could not insert change request\" }";
         }
-        $message            = "Change request added for old client ref ".$fields['ClientRef']."\n";
-        $message           .= "Caution: Do you need to modify supporter contact details?\n";
-        $error              = null;
+        $send               = false;
         // if freq or amount have changed
-        if ($m['Freq']!=$fields['Freq'] || $m['Amount']!=$fields['Amount']) {
+        if ($fields['Freq']!=$m['Freq'] || $fields['Amount']!=$m['Amount']) {
+            $message  = "BACS change for client ref ".$fields['ClientRef']."\n";
             // instantiate pay api
             $api = false;
             foreach (pay_apis() as $a) {
@@ -3970,6 +3970,7 @@ function update ( ) {
                             }
                         }
                     }
+                    break;
                 }
             }
             // call player_new
@@ -4003,8 +4004,9 @@ function update ( ) {
                 try {
                     $rs = $zom->query ($qs);
                     $s=$rs->fetch_assoc ();
-                    $message .= "A replacement mandate has been created (change of amount/frequency): $ncr\n";
-                    $message .= "The replaced mandate must be cancelled.\n";
+                    $message .= "A replacement mandate has been created automatically (change of amount/frequency): $ncr\n";
+                    $message .= "This request has been recorded in the BACS table.\n";
+                    $message .= "Currently the replaced mandate must be cancelled manually.\n";
                 }
                 catch (\mysqli_sql_exception $e) {
                     $errno = 113;
@@ -4047,8 +4049,10 @@ function update ( ) {
                     }
                     elseif ($rtn===false) {
                         $created = true;
+                        $send = true;
                         $errno = 115;
-                        $error = "Created mandate but failed to complete other processes: API error {$api->errorCode}";
+                        $error = "Created mandate but failed to complete other processes: API error {$api->errorCode} - report this as a technical fault";
+                        $message .= $error."\n";
                     }
                     else {
                         $created = true;
@@ -4066,13 +4070,29 @@ function update ( ) {
                         catch (\mysqli_sql_exception $e) {
                             $errno = 116;
                             error_log ($e->getMessage());
-                            $error = "Failed to set the core RefNo";
+                            $error = "Created mandate but failed to set the core mandate table RefNo - report this as a technical fault";
+                            $message .= $error."\n";
                         }
                     }
                 }
             }
         }
-        if (defined('BLOTTO_EMAIL_BACS_TO')) {
+        else {
+            $send = true;
+            $message .= "A mandate modification has been requested: $crf\n";
+            $message .= "This request has been recorded in the BACS table.\n";
+            $message .= "Currently this request must be processed manually.\n";
+            if ($fields['StartDate']) {
+                $message .= "A start date has been specified.\n";
+            }
+        }
+        if ($send && defined('BLOTTO_EMAIL_BACS_TO')) {
+            if ($fields['Name']!=$m['Name']) {
+                $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
+            }
+            if ($fields['Sortcode']!=$m['Sortcode'] || $fields['Account']!=$m['Account']) {
+                $message .= "The mandate sort code and/or account name has changed.\n";
+            }
             $headers = null;
             if (defined('BLOTTO_EMAIL_FROM')) {
                 $headers = "From: ".BLOTTO_EMAIL_FROM."\n";
