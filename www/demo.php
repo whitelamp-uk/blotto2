@@ -178,7 +178,7 @@ $org_code = array_shift ($org_code);
         #lottery-signup-dd-heading {
             position: absolute;
             left: var(--lottery-left);
-            top: 100vh;
+            top: 105vh;
             width: calc(100vw - 1em - var(--lottery-left));
             margin: 0;
         }            
@@ -186,7 +186,7 @@ $org_code = array_shift ($org_code);
             position: absolute;
             box-sizing: border-box;
             left: var(--lottery-left);
-            top: calc(var(--lottery-top) + 100vh);
+            top: calc(var(--lottery-top) + 105vh);
             margin: 0;
             width: calc(100vw - 1em - var(--lottery-left));
             height: calc(100vh - var(--lottery-top));
