@@ -1,4 +1,10 @@
-<!doctype html>
+<?php
+require '../config.www.php';
+$org_code = explode ('/',BLOTTO_WWW_CONFIG);
+$org_code = array_pop ($org_code);
+$org_code = explode ('.',$org_code);
+$org_code = array_shift ($org_code);
+?><!doctype html>
 <html class="no-js" lang="">
   <head>
     <meta charset="utf-8" />
@@ -158,8 +164,9 @@
 
 
 
+      <h4 id="lottery-signup-dd-heading">Get one-off-payment lottery tickets</h4>
+
 <!-- 3. TICKETS (DIRECT DEBIT MANDATE) -->
-<!--
       <style>
         /* Example CSS */
         :root {
@@ -168,18 +175,18 @@
             /* Move the sign-up form down by a certain amount */
             --lottery-top: 2em;
         }
-        #lottery-signup-heading {
+        #lottery-signup-dd-heading {
             position: absolute;
             left: var(--lottery-left);
-            top: 0em;
+            top: 100vh;
             width: calc(100vw - 1em - var(--lottery-left));
             margin: 0;
         }            
-        #lottery-signup {
+        #lottery-signup-dd {
             position: absolute;
             box-sizing: border-box;
             left: var(--lottery-left);
-            top: var(--lottery-top);
+            top: calc(var(--lottery-top) + 100vh);
             margin: 0;
             width: calc(100vw - 1em - var(--lottery-left));
             height: calc(100vh - var(--lottery-top));
@@ -193,8 +200,7 @@
        * Use css=[my stylesheet URL] to override form styling
        * Replace ??? with your organisation code LOWER CASE
       >
-      <iframe id="lottery-signup" src="https://sss.burdenandburden.co.uk/?o=???&p=LT&amp;css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
--->
+      <iframe id="lottery-signup-dd" src="https://sss.burdenandburden.co.uk/?o=<?php echo $org_code; ?>&p=LT&amp;css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
       <!-- 3 ENDS -->
 
 
