@@ -465,7 +465,7 @@ function day_one ($for_wins=false) {
             $s = $s->fetch_assoc()['d1'];
             $c = $zo->query ("SELECT MIN(`DateDue`) AS `d1` FROM `blotto_build_collection`");
             $c = $c->fetch_assoc()['d1'];
-            if ($c<$s) {
+            if ($c && $c<$s) {
                 $s = $c;
             }
         }
