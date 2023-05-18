@@ -13,7 +13,7 @@ $tables         = array (
 
 $days       = [];
 $months     = [];
-$day1       = day_one($table=='Wins')->format ('Y-m-d');
+$day1       = day_one ($table=='Wins');
 $day2       = null;
 $last       = false;
 $dates      = [];
