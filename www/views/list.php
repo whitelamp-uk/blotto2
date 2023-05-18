@@ -20,6 +20,7 @@ $dates      = [];
 
 
 if ($day1) {
+    $day1 = $day1->format ('Y-m-d');
     if ($table=='ANLs' || $table=='Wins') {
         www_letter_status_refresh ();
     }
