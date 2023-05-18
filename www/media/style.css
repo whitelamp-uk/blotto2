@@ -777,6 +777,10 @@ img.close {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
 }
 
+#reconcile > h2:first-of-type {
+    position: absolute;
+}
+
 #reconcile > form {
     position: fixed;
 }
