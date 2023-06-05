@@ -98,7 +98,9 @@ elseif ($session=www_session($timestamp)) {
     }
     // Update if that option
     if ($opt=='update') {
-        echo update ();
+        $str = update ();
+        error_log (__FILE__.' '.__LINE__.' org.update '.print_r($str, true));
+        echo $str;
         exit;
     }
     // Invoice if that option

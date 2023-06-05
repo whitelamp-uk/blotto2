@@ -104,8 +104,12 @@ function mandateSelect (evt) {
     query = './?search&t=m&r=' + evt.target.dataset.clientref;
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
-        if (this.readyState==4 && this.status==200) {
-            mandateSelectResult (xhttp.responseText);
+        if (this.readyState==4) {
+            if (this.status==200) {
+                mandateSelectResult (xhttp.responseText);
+            } else {
+                updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
+            }
         }
     };
     xhttp.open ('GET',query,true);
@@ -208,8 +212,12 @@ function mandateUpdate (form) {
     }
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
-        if (this.readyState==4 && this.status==200) {
-            mandateUpdateResult (xhttp.responseText);
+        if (this.readyState==4) {
+            if (this.status==200) {
+                mandateUpdateResult (xhttp.responseText);
+            } else {
+                updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
+            }
         }
     };
     try {
@@ -316,8 +324,12 @@ function supporterSearch (elementId) {
     query = './?search&' + form2Query(form);
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
-        if (this.readyState==4 && this.status==200) {
-            supporterSearchResults (xhttp.responseText);
+        if (this.readyState==4) {
+            if (this.status==200) {
+                supporterSearchResults (xhttp.responseText);
+            } else {
+                updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
+            }
         }
     };
     xhttp.open ('GET',query,true);
@@ -411,10 +423,14 @@ function supporterSelect (evt) {
     query = './?search&t=s&r=' + evt.target.dataset.clientref;
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
-        if (this.readyState==4 && this.status==200) {
-            supporterSelectResult (xhttp.responseText);
+        if (this.readyState==4) {
+            if (this.status==200) {
+                supporterSelectResult (xhttp.responseText);
+            } else {
+                updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
+            }
         }
-    };
+    };    
     xhttp.open ('GET',query,true);
     xhttp.send ();
 }
@@ -505,8 +521,12 @@ function supporterUpdate (form) {
     }
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
-        if (this.readyState==4 && this.status==200) {
-            supporterUpdateResult (xhttp.responseText);
+        if (this.readyState==4) {
+            if (this.status==200) {
+                supporterUpdateResult (xhttp.responseText);
+            } else {
+                updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
+            }
         }
     };
     try {

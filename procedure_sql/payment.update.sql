@@ -1,7 +1,8 @@
 
 USE `{{BLOTTO_MAKE_DB}}`
 ;
-
+-- TODO check if this is wanted; paysuite-api sets RefNo up from the get-go. Other payment providers
+-- could be changed to do the same.  Possibly this is legacy zaffo code.
 UPDATE `blotto_build_mandate`
 SET
   `RefNo`=CONCAT({{BLOTTO_ORG_ID}},digitsOnly(`RefOrig`))
@@ -10,6 +11,7 @@ SET
 ALTER TABLE `blotto_build_mandate`
 ADD PRIMARY KEY (`Provider`,`RefNo`)
 ;
+-- end TODO
 
 CREATE FULLTEXT INDEX `search_idx`
 ON `blotto_build_mandate` (

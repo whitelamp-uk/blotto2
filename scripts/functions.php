@@ -3879,7 +3879,7 @@ function update ( ) {
     // MANDATE UPDATE
     if ($type=='m') {
         $error = null;
-        $created = false;
+        $created = "false";
         if (strpos($fields['Sortcode'],'*')!==false) {
             $fields['Sortcode'] = '';
         }
@@ -4048,14 +4048,14 @@ function update ( ) {
                         $error = "Failed to create new mandate: API error {$api->errorCode}";
                     }
                     elseif ($rtn===false) {
-                        $created = true;
+                        $created = "true";
                         $send = true;
                         $errno = 115;
                         $error = "Created mandate but failed to complete other processes: API error {$api->errorCode} - report this as a technical fault";
                         $message .= $error."\n";
                     }
                     else {
-                        $created = true;
+                        $created = "true";
                         // Set the core RefNo
                         $qu = "
                             UPDATE `blotto_build_collection`
@@ -4070,7 +4070,7 @@ function update ( ) {
                         catch (\mysqli_sql_exception $e) {
                             $errno = 116;
                             error_log ($e->getMessage());
-                            $error = "Created mandate but failed to set the core mandate table RefNo - report this as a technical fault";
+                            $error = "Created mandate but failed to set the core collection table RefNo - report this as a technical fault";
                             $message .= $error."\n";
                         }
                     }
@@ -4529,6 +4529,11 @@ function www_auth ($db,&$time,&$err,&$msg) {
     $time               = time ();
     if (!isset($_SESSION)) {
         www_session_start ();
+    }
+    $zo = connect (BLOTTO_DB);
+    if (!$zo) {
+        $err            = 'Database down - please contact technical support';
+        return false;
     }
     $zo = connect (BLOTTO_DB,$_POST['un'],$_POST['pw'],true,true);
     if (!$zo) {
