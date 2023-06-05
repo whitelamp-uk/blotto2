@@ -13,13 +13,14 @@ $tables         = array (
 
 $days       = [];
 $months     = [];
-$day1       = day_one($table=='Wins')->format ('Y-m-d');
+$day1       = day_one ($table=='Wins');
 $day2       = null;
 $last       = false;
 $dates      = [];
 
 
 if ($day1) {
+    $day1 = $day1->format ('Y-m-d');
     if ($table=='ANLs' || $table=='Wins') {
         www_letter_status_refresh ();
     }

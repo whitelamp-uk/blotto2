@@ -180,6 +180,14 @@ prm="$(dirname $0)/mail.php"
 echo "Temp file: $tmp"
 
 
+# Maintenance check
+if [ -f "$(dirname "$drp")/blotto.maintenance" ]
+then
+    abort_on_error MAINTENANCE 127
+    exit
+fi
+
+
 # Processes
 if [ "$manual" ]
 then

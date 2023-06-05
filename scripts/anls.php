@@ -168,7 +168,7 @@ if ($count) {
                           UPDATE `blotto_player`
                           SET
                             `letter_status`='email_received'
-                          WHERE `client_ref`='$cref'
+                          WHERE `client_ref`='{$r['cref']}'
                           LIMIT 1
                         ";
                         echo $qu."\n";
@@ -177,7 +177,7 @@ if ($count) {
                           UPDATE `ANLs`
                           SET
                             `letter_status`='email_received'
-                          WHERE `ClientRef`='$cref'
+                          WHERE `ClientRef`='{$r['cref']}'
                           LIMIT 1
                         ";
                         echo $qu."\n";
@@ -189,7 +189,7 @@ if ($count) {
                           SET
                             -- Snailmail is triggered by this status
                             `letter_status`='email_bounced'
-                          WHERE `client_ref`='$cref'
+                          WHERE `client_ref`='{$r['cref']}'
                           LIMIT 1
                         ";
                         echo $qu."\n";
@@ -198,7 +198,7 @@ if ($count) {
                           UPDATE `ANLs`
                           SET
                             `letter_status`='email_bounced'
-                          WHERE `ClientRef`='$cref'
+                          WHERE `ClientRef`='{$r['cref']}'
                           LIMIT 1
                         ";
                         echo $qu."\n";

@@ -1,7 +1,13 @@
 <?php
 $supersum   = "summary";
-$day1       = day_one(true)->format ('Y-m-d');
 $daye       = day_yesterday()->format ('Y-m-d');
+$day1       = day_one (true);
+if ($day1) {
+    $day1   = $day1->format ('Y-m-d');
+}
+else {
+    $day1   = $daye;
+}
 $dayy       = substr($daye,0,4).'-01-01';
 if (array_key_exists('from',$_GET)) {
     $from   = $_GET['from'];

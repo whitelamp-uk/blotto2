@@ -10,7 +10,7 @@ if (cookie2end('blotto_end')) {
     define ( 'BLOTTO_ADMINER_DB', '' );
 }
 else {
-    define ( 'BLOTTO_ADMINER_PW', cookie2pwd('blotto_key') );
+    define ( 'BLOTTO_ADMINER_PW', cookie2pwd ('blotto_key') );
     define ( 'BLOTTO_ADMINER_UN', cookie2value ('blotto_usr') );
     define ( 'BLOTTO_ADMINER_DB', cookie2value ('blotto_dbn') );
 }
@@ -22,9 +22,11 @@ function adminer_object ( ) {
     include_once "/var/www/adminer/plugins/plugin.php";
     include_once "/var/www/adminer/plugins/adminer-frames.php";
     include_once "/var/www/adminer/plugins/adminer-unloading.php";
+    include_once "/var/www/adminer/plugins/blotto-maintenance.php";
     $plugins = [
         new AdminerFrames,
-        new AdminerUnloading
+        new AdminerUnloading,
+        new BlottoMaintenance
     ];
     class AdminerCustomization extends AdminerPlugin {
         function loginForm() {

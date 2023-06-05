@@ -25,7 +25,7 @@ try {
     }
 }
 catch (\Exception $e) {
-    fwrite (STDERR,$e->getMessage()."\n");
+    tee ($e->getMessage()."\n");
     exit (101);
 }
 

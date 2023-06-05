@@ -7,6 +7,10 @@ if (defined('BLOTTO_SNAILMAIL') && BLOTTO_SNAILMAIL) {
     require BLOTTO_SNAILMAIL_API_STANNP;
 }
 
+// Maintenance per software instance
+$maintenance   = file_exists (dirname(BLOTTO_WWW_FUNCTIONS).'/../blotto.maintenance');
+// Inhibit per org
+$inhibit       = file_exists (BLOTTO_WWW_CONFIG.'.inhibit');
 $options       = array (
     'wait',
     'summary',
@@ -60,7 +64,10 @@ if (array_key_exists('auth',$_POST)) {
 }
 
 
-if (file_exists(BLOTTO_WWW_CONFIG.'.inhibit')) {
+if ($maintenance) {
+    $path = './?maintenance';
+}
+elseif ($inhibit) {
     $path = './?wait';
 }
 elseif ($session=www_session($timestamp)) {
@@ -141,8 +148,8 @@ function init ( ) {
         setTimeout ('init()',500);
         return;
     }
-<?php if(file_exists(BLOTTO_WWW_CONFIG.'.inhibit') || !$session || !count($_GET) || array_key_exists('P',$_GET)): ?>
-<?php     if($session && !file_exists(BLOTTO_WWW_CONFIG.'.inhibit')): ?>
+<?php if($maintenance || $inhibit || !$session || !count($_GET) || array_key_exists('P',$_GET)): ?>
+<?php     if($session && !$maintenance && !$inhibit): ?>
 
     setFrame ('<?php echo $path; ?>');
 <?php     endif; ?>
@@ -168,7 +175,10 @@ function init ( ) {
 
 <?php
 
-if (file_exists(BLOTTO_WWW_CONFIG.'.inhibit')) {
+if ($maintenance) {
+    require __DIR__.'/views/maintenance.php';
+}
+elseif ($inhibit) {
     require __DIR__.'/views/wait.php';
 }
 elseif (!$session) {
