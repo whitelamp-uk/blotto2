@@ -3,7 +3,11 @@
 (
     function () {
         var format,url,xhttp;
-        format          = document.getElementById('lottery-winners-latest').dataset.dateformat;
+        format          = document.getElementById ('lottery-winners-latest');
+        if (!format) {
+            return;
+        }
+        format          = format.dataset.dateformat;
         xhttp           = new XMLHttpRequest ();
         xhttp.onreadystatechange = function ( ) {
             if (this.readyState==4 && this.status==200) {
