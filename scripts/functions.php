@@ -5022,7 +5022,7 @@ function www_winners ($format='') {
         ";
         $rs = connect()->query ($q);
         $r = $rs->fetch_assoc ();
-        if ($r) {
+        if ($r && $r['draw_closed']) {
             $draw = draw ($r['draw_closed']);
             // Get the lowest level for each group
             foreach ($draw->prizes as $p) {
