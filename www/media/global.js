@@ -610,11 +610,12 @@ function updateView (type,results) {
             txt.push ('A replacement mandate has been created - mandate will be available within 5 working days');
             txt.push ('A BACS request has been posted to the administrator to cancel the old mandate');
         }
-        else {
-            if (results.error>=111) {
-                however = true;
-                txt.push ('A BACS request has been posted to the administrator');
-            }
+        else if (results.ok) {
+            txt.push ('A BACS request has been posted to the administrator');
+        }
+        else if (results.error>=111) {
+            however = true;
+            txt.push ('A BACS request has been posted to the administrator');
         }
     }
     if (results.errorMessage) {
