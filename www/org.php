@@ -63,6 +63,22 @@ if (array_key_exists('auth',$_POST)) {
     www_auth (BLOTTO_DB,$timestamp,$err,$msg);
 }
 
+// Parse options and table
+foreach ($options as $o) {
+    if (array_key_exists($o,$_GET)) {
+        $opt   = $o;
+        if ($opt!='list') {
+            break;
+        }
+        if (in_array($_GET['list'],$list)) {
+            $table   = $_GET['list'];
+        }
+        else {
+            $opt = false;
+        }
+        break;
+    }
+}
 
 if ($maintenance) {
     $path = './?maintenance';
@@ -71,27 +87,11 @@ elseif ($inhibit) {
     $path = './?wait';
 }
 elseif ($session=www_session($timestamp)) {
-    // Parse options, if a session
     $path = './?load';
-    foreach ($options as $o) {
-        if (array_key_exists($o,$_GET)) {
-            $opt   = $o;
-            if ($opt!='list') {
-                break;
-            }
-            if (in_array($_GET['list'],$list)) {
-                $table   = $_GET['list'];
-            }
-            else {
-                $opt = false;
-            }
-            break;
-        }
-    }
     // Report if that option
     if ($opt=='report') {
         $err = report ();
-        $err = 'Sorry - download failed: '.$err;
+        $err = 'Sorry - report failed: '.$err;
     }
     // Download if that option
     if ($opt=='download') {
@@ -127,7 +127,19 @@ elseif ($session=www_session($timestamp)) {
     }
 }
 else {
-    $path = './?login';
+    if (array_key_exists($opt,['download','report','invoice','statement','drawreport'])) {
+        header ('Content-Type: text/plain');
+        echo "Your login has expired\n";
+        exit;
+    }
+    elseif (array_key_exists($opt,['search','update'])) {
+        header ('Content-Type: text/plain');
+        echo "{ \"error\" : 127, \"errorMessage\" : \"Your login has expired\" }";;
+        exit;
+    }
+    else {
+        $path = './?login';
+    }
 }
 
 
