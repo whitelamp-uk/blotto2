@@ -70,6 +70,68 @@ END$$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `retention`$$
+CREATE PROCEDURE `retention` (
+)
+BEGIN
+  SELECT
+    `r`.`growth`
+   ,`r`.`active_supporters`
+   ,`r`.`month`
+   ,`r`.`months_retained`
+   ,`r`.`cancellations`
+   ,`r`.`cancellations_normalised`
+   ,ROUND(SUM(`r`.`cancellations_normalised`) OVER (PARTITION BY `r`.`month`),2) AS `cancellations_total`
+  FROM (
+    SELECT
+      `candidates`.`signed_month` AS `month`
+     ,`candidates`.`growth`
+     ,`candidates`.`active_supporters`
+     ,IFNULL(`attrition`.`months_retained`,0) AS `months_retained`
+     ,IFNULL(`attrition`.`shrinkage`,0) AS `cancellations`
+     ,IFNULL(ROUND(100*`attrition`.`shrinkage`/`candidates`.`active_supporters`,3),0) AS `cancellations_normalised`
+    FROM (
+      SELECT
+        `s1`.`signed_month`
+       ,COUNT(`s1`.`supporter_id`)-SUM(`s1`.`cancelled_month`=`s1`.`signed_month`) AS `growth`
+       ,SUM(COUNT(`s1`.`supporter_id`)-SUM(`s1`.`cancelled_month`=`s1`.`signed_month`)) OVER (ORDER BY `s1`.`signed_month`) AS `active_supporters`
+      FROM (
+        SELECT
+          `supporter_id`
+         ,SUBSTR(`signed`,1,7) AS `signed_month`
+         ,SUBSTR(`cancelled`,1,7) AS `cancelled_month`
+        FROM `Supporters`
+        GROUP BY `supporter_id`
+      ) AS `s1`
+      GROUP BY `signed_month`
+    ) AS `candidates`
+    LEFT JOIN (
+      SELECT
+        `s2`.`cancelled_month`
+       ,COUNT(`s2`.`supporter_id`) AS `shrinkage`
+       ,TIMESTAMPDIFF(MONTH,CONCAT(`s2`.`signed_month`,'-01'),CONCAT(`s2`.`cancelled_month`,'-01')) AS `months_retained`
+      FROM (
+        SELECT
+          `supporter_id`
+         ,SUBSTR(`signed`,1,7) AS `signed_month`
+         ,SUBSTR(`cancelled`,1,7) AS `cancelled_month`
+        FROM `Supporters`
+        WHERE `cancelled` IS NOT NULL
+          AND `cancelled`!=''
+          AND `cancelled`!='0000-00-00'
+        GROUP BY `supporter_id`
+      ) AS `s2`
+      GROUP BY `cancelled_month`,`months_retained`
+    ) AS `attrition`
+      ON `attrition`.`cancelled_month`=`candidates`.`signed_month`
+    GROUP BY `month`,`months_retained`
+  ) AS `r`
+  ORDER BY `month`,`months_retained`
+  ;
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `supportersHavingNoMandate`$$
 CREATE PROCEDURE `supportersHavingNoMandate` (
 )
