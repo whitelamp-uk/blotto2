@@ -38,6 +38,10 @@ function bank_decrypt ($key,$data,&$sortcode,&$accountnr) {
     }
 }
 
+function blotto_dir ( ) {
+    return realpath (__DIR__.'/..');
+}
+
 function built_at ($sql_date_format,$db=BLOTTO_DB) {
     $zo = connect ();
     if (!$zo) {
