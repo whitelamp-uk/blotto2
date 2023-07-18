@@ -176,6 +176,11 @@ else {
     nonce_set ('mobile');
 }
 
+if ($_SERVER['QUERY_STRING']=='finished') {
+    $step = 3;
+}
+
+
 // Output front end
 ?><!doctype html>
 <html class="no-js" lang="">
@@ -239,7 +244,10 @@ window.location.href = '#<?php echo $go; ?>';
     if ($step==1) {
         require __DIR__.'/views/signup.php';
     }
-    elseif ($step==2) {
+    elseif ($step==3) {
+        require __DIR__.'/views/finished.php';
+    }
+    else {
         $api->start ($error);
     }
 ?>
