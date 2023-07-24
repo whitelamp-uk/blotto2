@@ -95,13 +95,33 @@ define ( 'STANNP_REDACT_SCOPE_LEN', 4           );
 
 /*
 
+
+// WEB PAYMENT PROVIDERS
+
 // Global - Paypal
 define ( 'PAYPAL_CODE',             'PYPL'      ); // CCC and Provider
 define ( 'PAYPAL_DD',               false       ); // Does not offer direct debit
-define ( 'PAYPAL_BUY',              true        ); // Offers web integration
 define ( 'PAYPAL_TABLE_MANDATE',    'blotto_build_mandate'      );
 define ( 'PAYPAL_TABLE_COLLECTION', 'blotto_build_collection'   );
 define ( 'PAYPAL_CALLBACK_TO',      30          ); // Confirmation time-out
+
+// Global - Stripe
+define ( 'STRIPE_CODE',             'STRP'      ); // CCC and Provider
+define ( 'STRIPE_DD',               false       ); // Does not offer direct debit
+define ( 'STRIPE_TABLE_MANDATE',    'blotto_build_mandate'      );
+define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
+define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.json' );
+define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up getting safe IPs
+
+// Global - Cardnet
+define ( 'CARDNET_CODE',             'CDNT'      ); // CCC and Provider
+define ( 'CARDNET_DD',               false       ); // Does not offer direct debit
+define ( 'CARDNET_TABLE_MANDATE',    'blotto_build_mandate'      );
+define ( 'CARDNET_TABLE_COLLECTION', 'blotto_build_collection'   );
+
+
+
+// BACS payment providers
 
 // Global - RSM
 define ( 'BLOTTO_PAY_API_RSM_SELECT', 'SELECT DISTINCT(`ClientRef`) AS `crf` FROM `rsm_mandate`' );
@@ -121,15 +141,6 @@ define ( 'PST_BUY',                 false       ); // Does not offer web integra
 define ( 'PST_TABLE_MANDATE',       'blotto_build_mandate'            );
 define ( 'PST_TABLE_COLLECTION',    'blotto_build_collection'         );
 define ( 'PST_PAY_INTERVAL',        '2 DAY' ); // Ignore recent collections - see BACS behaviour
-
-// Global - Stripe
-define ( 'STRIPE_CODE',             'STRP'      ); // CCC and Provider
-define ( 'STRIPE_DD',               false       ); // Does not offer direct debit
-define ( 'STRIPE_BUY',              true        ); // Offers web integration
-define ( 'STRIPE_TABLE_MANDATE',    'blotto_build_mandate'      );
-define ( 'STRIPE_TABLE_COLLECTION', 'blotto_build_collection'   );
-define ( 'STRIPE_CALLBACK_IPS_URL', 'https://stripe.com/files/ips/ips_webhooks.json' );
-define ( 'STRIPE_CALLBACK_IPS_TO',  30          ); // seconds before giving up getting safe IPs
 
 */
 

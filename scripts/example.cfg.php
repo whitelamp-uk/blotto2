@@ -80,7 +80,14 @@ define ( 'BLOTTO_CANCEL_RULE',      '2 MONTH'           );  // Used to define wh
 define ( 'BLOTTO_CANCEL_LEGACY',    0                   );  // 1 = use BLOTTO_CANCEL_RULE even if DD cancelled
 
 
-// rsm-api, an RSM payment class
+
+/*
+
+// BACS PAYMENT PROVIDERS
+
+
+
+// rsm-api, an RSM2000 payment class
 define ( 'BLOTTO_PAY_API_RSM',          '/some/path/to/rsm-api/PayApi.php'  );
 define ( 'BLOTTO_PAY_API_RSM_CLASS',    '\Blotto\Rsm\PayApi'                );
 define ( 'RSM_USER',                    '***_rsm_api'                       );
@@ -89,19 +96,64 @@ define ( 'RSM_ERROR_LOG',               false                               );
 define ( 'RSM_FILE_DEBOGON',            __DIR__.'/***.cfg.bogons.rsm.sql'   );
 
 
-/*
 
-// Organisation - Paypal
+// paysuite-api, an Access Paysuite class
+// Used by core handling of API
+define ( 'BLOTTO_PAY_API_PST',          '/some/paysuite-api/PayApi.php'   );
+define ( 'BLOTTO_PAY_API_PST_CLASS',    '\Blotto\Paysuite\PayApi'         );
+// This is only required if balances are needed for draws before the migration can be completed
+//define ( 'PST_MIGRATE_PREG',            null            ); // ClientRefs like this are in transit eg ClientRefs matching '^STG[0-9]+$'
+define ( 'PST_MIGRATE_DATE',            '2022-05-03'    ); // Push the pending data (agree with Paysuite)
+
+define ( 'PST_LIVE_URL',                'https://ecm3.eazycollect.co.uk/api/v3/client/client_code/' );
+define ( 'PST_LIVE_API_KEY',            '*************************'       );
+define ( 'PST_LIVE_SCHEDULE',           'Standard DD Schedule - Rolling'  );
+define ( 'PST_LIVE_SCHEDULE_1',         'Standard DD Schedule - Rolling'  );
+define ( 'PST_LIVE_SCHEDULE_3',         '3-Monthly'                       );
+define ( 'PST_LIVE_SCHEDULE_6',         '6-Monthly'                       );
+define ( 'PST_LIVE_SCHEDULE_12',        '12-Monthly'                      );
+
+define ( 'PST_TEST_URL',                'https://playpen.eazycollect.co.uk/api/v3/client/client_code/' );
+define ( 'PST_TEST_API_KEY',            '*************************'       );
+define ( 'PST_TEST_SCHEDULE',           'Default Schedule'                );
+define ( 'PST_TEST_SCHEDULE_1',         'Default Schedule'                );
+define ( 'PST_TEST_SCHEDULE_3',         '3-Monthly'                       );
+define ( 'PST_TEST_SCHEDULE_6',         '6-Monthly'                       );
+define ( 'PST_TEST_SCHEDULE_12',        '12-Monthly'                      );
+
+define ( 'PST_URL',                     PST_TEST_URL                      );
+define ( 'PST_API_KEY',                 PST_TEST_API_KEY                  );
+define ( 'PST_SCHEDULE',                PST_TEST_SCHEDULE                 );
+define ( 'PST_SCHEDULE_1',              PST_TEST_SCHEDULE_1               );
+define ( 'PST_SCHEDULE_3',              PST_TEST_SCHEDULE_3               );
+define ( 'PST_SCHEDULE_6',              PST_TEST_SCHEDULE_6               );
+define ( 'PST_SCHEDULE_12',             PST_TEST_SCHEDULE_12              );
+
+define ( 'PST_ERROR_LOG',               false                             );
+define ( 'PST_FILE_DEBOGON',            '/my/debogon.sql'                 ); // No bogon-handling feature yet
+define ( 'PST_REFNO_OFFSET',            100000000                         ); // What to add to mandate ID to provide an integer RefNo for the core code
+
+
+
+// WEB PAYMENT PROVIDERS
+
+
+
+// paypal-api, a Paypal class
 define ( 'BLOTTO_PAY_API_PAYPAL',           '/path/to/paypal-api/PayApi.php' );
 define ( 'BLOTTO_PAY_API_PAYPAL_CLASS',     '\Blotto\Paypal\PayApi'         );
+define ( 'PAYPAL_BUY',              false       ); // Allow web integration (only allow one provider)?
 define ( 'PAYPAL_EMAIL',            'paypal.account@my.domain'              );
 define ( 'PAYPAL_ERROR_LOG',        false       );
 define ( 'PAYPAL_REFNO_OFFSET',     200000000   );
 define ( 'PAYPAL_DEV_MODE',         true        );
 
-// Organisation - Stripe
+
+
+// stripe-api, a Stripe class
 define ( 'BLOTTO_PAY_API_STRIPE',           '/path/to/stripe-api/PayApi.php' );
 define ( 'BLOTTO_PAY_API_STRIPE_CLASS',     '\Blotto\Stripe\PayApi'         );
+define ( 'STRIPE_BUY',              false       ); // Allow web integration (only allow one provider)?
 define ( 'STRIPE_INIT_FILE',        '/path/to/stripe-php-7.77.0/init.php'   );
 define ( 'STRIPE_ERROR_LOG',        false       );
 define ( 'STRIPE_REFNO_OFFSET',     100000000   );
@@ -109,6 +161,28 @@ define ( 'STRIPE_DESCRIPTION',      'My Org Lottery'      );
 define ( 'STRIPE_SECRET_KEY',       ''          );
 define ( 'STRIPE_PUBLIC_KEY',       ''          );
 define ( 'STRIPE_DEV_MODE',         true        );
+
+
+
+// cardnet-api, a Cardnet class (only tried with Lloyds Cardnet)
+define ( 'BLOTTO_PAY_API_CARDNET',       '/home/dom/cardnet-api/PayApi.php'   );
+define ( 'BLOTTO_PAY_API_CARDNET_CLASS', '\Blotto\Cardnet\PayApi'             );
+define ( 'CARDNET_BUY',              false       ); // Allow web integration (only allow one provider)?
+define ( 'CARDNET_CMPLN_EML',        false       ); // Send completion message by email
+define ( 'CARDNET_CMPLN_MOB',        false       ); // Send completion message by SMS
+define ( 'CARDNET_CMPLN_EML_CM_ID',  ''          );
+define ( 'CARDNET_ERROR_LOG',        true        );
+define ( 'CARDNET_REFNO_OFFSET',     100000000   );
+define ( 'CARDNET_DESCRIPTION',      'Derby & Burton Lottery'                );
+define ( 'CARDNET_PRODUCT_NAME',     'ONE-OFF-LOTTERY-PAYMENT'               );
+define ( 'CARDNET_URL',      'https://test.ipg-online.com/connect/gateway/processing' );
+define ( 'CARDNET_STORE_ID', '2220540981' );
+define ( 'CARDNET_SECRET',   '**********' );
+define ( 'CARDNET_DEV_MODE', true );
+define ( 'CARDNET_RESPONSE', 'https://dev.thefundraisingfoundry.com/dom/crucible/ffd/www/cardnet-finished.php');
+define ( 'CARDNET_CALLBACK', 'https://dev.thefundraisingfoundry.com/dom/crucible/ffd/www/callback.php?provider='.CARDNET_CODE);
+
+
 
 */
 
