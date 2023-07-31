@@ -16,19 +16,6 @@ if (array_key_exists('f',$_GET)) {
 
 $w = www_winners ($f);
 
-if ($w->number_matches && count($w->number_matches)) {
-    table (
-        'lottery-results-latest-table',
-        '',
-        'Results for '.$w->date,
-        ['Prize','Number'],
-        $w->number_matches,
-        true,
-        false,
-        $w->classes->number_matches
-    );
-}
-
 table (
     'lottery-winners-latest-table',
     '',
@@ -39,4 +26,17 @@ table (
     false,
     $w->classes->winners
 );
+
+if ($w->number_matches && count($w->number_matches)) {
+    table (
+        'lottery-results-latest-table',
+        '',
+        'Draw results for '.$w->date,
+        ['Prize','Number'],
+        $w->number_matches,
+        true,
+        false,
+        $w->classes->number_matches
+    );
+}
 
