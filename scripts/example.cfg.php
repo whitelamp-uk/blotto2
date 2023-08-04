@@ -158,6 +158,7 @@ define ( 'STRIPE_INIT_FILE',        '/path/to/stripe-php-7.77.0/init.php'   );
 define ( 'STRIPE_ERROR_LOG',        false       );
 define ( 'STRIPE_REFNO_OFFSET',     100000000   );
 define ( 'STRIPE_DESCRIPTION',      'My Org Lottery'      );
+define ( 'STRIPE_FROM',             '2001-01-01'          ); // Ignore stuff before a certain date
 define ( 'STRIPE_SECRET_KEY',       ''          );
 define ( 'STRIPE_PUBLIC_KEY',       ''          );
 define ( 'STRIPE_DEV_MODE',         true        );
@@ -174,6 +175,7 @@ define ( 'CARDNET_CMPLN_EML_CM_ID',  ''          );
 define ( 'CARDNET_ERROR_LOG',        true        );
 define ( 'CARDNET_REFNO_OFFSET',     100000000   );
 define ( 'CARDNET_DESCRIPTION',      'Derby & Burton Lottery'                );
+define ( 'CARDNET_FROM',             '2001-01-01'                            ); // Ignore stuff before a certain date
 define ( 'CARDNET_PRODUCT_NAME',     'ONE-OFF-LOTTERY-PAYMENT'               );
 define ( 'CARDNET_URL',      'https://test.ipg-online.com/connect/gateway/processing' );
 define ( 'CARDNET_STORE_ID', '2220540981' );
