@@ -33,7 +33,7 @@
 
           <p>Reported message: <?php echo htmlspecialchars ($api->errorMessage()); ?></p>
 
-          <p>You can try again <a href="./tickets/php">here</a>.</p>
+          <p>You can try again <a href="./tickets.php">here</a>.</p>
 
         </div>
 
