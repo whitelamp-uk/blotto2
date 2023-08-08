@@ -127,12 +127,33 @@ header ('Content-Security-Policy: frame-ancestors '.BLOTTO_WWW_IFRAME_SOURCES);
 $apis = www_pay_apis ();
 //print_r ($apis);
 
-
 $step = 1;
 $error = [];
 $go = null;
-if (count($_POST)) {
+$api_code = false;
 
+if (array_key_exists('gdpr',$_POST)) {
+    // Our form
+    //    elseif (!array_key_exists('nonce_signup',$_POST) || !nonce_challenge('signup',$_POST['nonce_signup'])) {
+    if (!array_key_exists('nonce_signup',$_POST)) {
+        // Probably just an attempt to refresh stage 2
+        $error[] = 'Please post the form again';
+    }
+
+    elseif (www_validate_signup($org,$error,$go)) { // args 2 & 3 optional by reference
+        $step = 2;
+    }
+
+}
+else {
+    // No AJAX or POST so new nonces are allowed
+    nonce_set ('signup');
+    nonce_set ('email');
+    nonce_set ('mobile');
+}
+
+if (array_key_exists('gdpr',$_POST)) {
+    // Our form
     $api_found = false;
     foreach ($apis as $api_code=>$api_object) {
         if (array_key_exists($api_code,$_POST)) {
@@ -143,42 +164,31 @@ if (count($_POST)) {
     }
     if (!$api_found) {
         error_log ('Payment API could not be identified');
+        error_log (print_r($_POST, true));
         $error[] = $e_default;
     }
-
-//    elseif (!array_key_exists('nonce_signup',$_POST) || !nonce_challenge('signup',$_POST['nonce_signup'])) {
-elseif (!array_key_exists('nonce_signup',$_POST)) {
-        // Probably just an attempt to refresh stage 2
-        $error[] = 'Please post the form again';
-    }
-
-    elseif (www_validate_signup($org,$error,$go)) { // args 2 & 3 optional by reference
-        $api = null;
-        try {
-            $file = $apis[$api_code]->file;
-            $class = $apis[$api_code]->class;
-            require $file;
-            $api = new $class (connect(BLOTTO_MAKE_DB),$org);
-            $step = 2;
-        }
-        catch (Exception $e) {
-            error_log ($e->getMessage());
-            $error[] = $e_default;
-        }
-    }
-
 }
-
-else {
-    // No AJAX or POST so new nonces are allowed
-    nonce_set ('signup');
-    nonce_set ('email');
-    nonce_set ('mobile');
-}
-
-if ($_SERVER['QUERY_STRING']=='finished') {
+elseif (array_key_exists('finished',$_GET)) {
+    // Provider finish
+    $api_code = $_GET['finished'];
     $step = 3;
 }
+
+if (!count($error) && $api_code) {
+    $api = null;
+    try {
+        $file = $apis[$api_code]->file;
+        $class = $apis[$api_code]->class;
+        require $file;
+        $api = new $class (connect(BLOTTO_MAKE_DB),$org);
+    }
+    catch (Exception $e) {
+        error_log ($e->getMessage());
+        $error[] = $e_default;
+    }
+}
+
+
 
 
 // Output front end
@@ -193,7 +203,7 @@ if ($_SERVER['QUERY_STRING']=='finished') {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link rel="apple-touch-icon" href="./icon.png" />
-    <?php if (count($_POST)) { ?>
+    <?php if (count($_POST) && $api_code == 'STRP') { ?>
       <script src="https://js.stripe.com/v3/"></script>
     <?php } ?>
     <link rel="author" href="http://www.whitelamp.com/" />
