@@ -1,7 +1,7 @@
 
 
 function closeHandle (evt) {
-    evt.target.parentElement.parentElement.removeChild (evt.target.parentElement);
+    evt.currentTarget.parentElement.parentElement.removeChild (evt.currentTarget.parentElement);
 }
 
 function codeHandle (evt) {
