@@ -8,29 +8,22 @@ if (!$v['draws']) {
 }
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 try {
-    $date_fatal_error = null;
-    $first_draw_dates = www_signup_dates ($org,$date_error);
+    $first_draw_dates = www_signup_dates ($org,$error);
 }
 catch (\Exception $e) {
-    $date_fatal_error = "Sorry - that request could not be processed";
+    error_log ($e->getMessage());
+    $error = "Sorry - that request could not be processed";
 }
 ?>
 
-<?php if($date_fatal_error): ?>
+<?php if($error): ?>
 
     <div class="error">
       <button data-close><img /></button>
-      <p><?php echo htmlspecialchars ($date_fatal_error); ?></p>
+      <p><?php echo htmlspecialchars ($error); ?></p>
     </div>
 
 <?php else: ?>
-
-<?php   if($date_error): ?>
-    <div class="error">
-      <button data-close><img /></button>
-      <p><?php echo htmlspecialchars ($date_error); ?></p>
-    </div>
-<?php   endif; ?>
 
     <form class="signup" method="post" action="" <?php if (array_key_exists('demo',$_GET)): ?> onclick="alert('This is just to demonstrate integration!');return false" onsubmit="alert('This is just to demonstrate integration!');return false" <?php endif; ?> >
       <input type="hidden" name="nonce_signup" value="<?php echo nonce('signup'); ?>" />

@@ -4749,7 +4749,7 @@ function www_signup_dates ($org,&$e) {
         }
         if (!count($dates)) {
             // At least one date passed but no dates are in scope
-            throw new \Exception ("No dates are in scope");
+            $e = "No date passed is in scope";
             return false;
         }
     }
