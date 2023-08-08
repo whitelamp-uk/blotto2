@@ -4890,10 +4890,15 @@ function www_validate_phone ($number,$type,&$e) {
     );
     $params['options']['Option'][] = [ "Name" => "UseMobileValidation", "Value" => false ];
     $params['options']['Option'][] = [ "Name" => "UseLineValidation",   "Value" => false ];
-    $client = new \SoapClient ("https://webservices.data-8.co.uk/InternationalTelephoneValidation.asmx?WSDL");
+    $client = new \SoapClient ("https://webservices.data-8.co.uk/PhoneValidation.asmx?WSDL");
     $result = $client->IsValid($params);
     if ($result->IsValidResult->Status->Success == false) {
-        $e[] = "Error trying to validate phone number: ".$result->Status->ErrorMessage;
+        if (isset($result->Status->ErrorMessage)) {
+            $e[] = "Error trying to validate phone number: ".$result->Status->ErrorMessage;
+        } else {
+            $e[] = "A technical problem occurred during phone number validation. Please contact us.";
+            error_log(print_r($result,true));
+        }
         return false;
     }
     if ($result->IsValidResult->Result->ValidationResult=='Invalid') {

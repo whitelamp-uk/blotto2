@@ -8,19 +8,19 @@ if (!$v['draws']) {
 }
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
 try {
-    $first_draw_dates = www_signup_dates ($org,$error);
+    $first_draw_dates = www_signup_dates ($org,$signup_error);
 }
 catch (\Exception $e) {
     error_log ($e->getMessage());
-    $error = "Sorry - that request could not be processed";
+    $signup_error = "Sorry - that request could not be processed";
 }
 ?>
 
-<?php if($error): ?>
+<?php if($signup_error): ?>
 
     <div class="error">
       <button data-close><img /></button>
-      <p><?php echo htmlspecialchars ($error); ?></p>
+      <p><?php echo htmlspecialchars ($signup_error); ?></p>
     </div>
 
 <?php else: ?>
