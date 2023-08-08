@@ -4704,8 +4704,13 @@ function www_signup_dates ($org,&$e) {
     if (array_key_exists('d',$_GET)) {
         $c = connect ();
         foreach (explode(',',$_GET['d']) AS $d) {
+            $d = trim ($d);
+            if (!preg_match('<^[0-9]{4}-[0-9]{2}-[0-9]{2}$>',$d)) {
+                $e = "'$d' has an incorrect format - should be yyyy-mm-dd";
+                return false;
+            }
             try {
-                $d = new \DateTime (trim($d));
+                $d = new \DateTime ($d);
             }
             catch (\Exception $e) {
                 $e = "'$d' is not a valid date to pass";
