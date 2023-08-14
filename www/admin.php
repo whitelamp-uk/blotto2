@@ -1,13 +1,13 @@
 <?php
 
 $cfgs                       = glob ('/home/blotto/config/*.cfg.php');
-$configs                    = array ();
+$configs                    = [];
 foreach ($cfgs as $cfg) {
     $lines                  = file ($cfg);
     $name                   = 'Unnamed';
     foreach ($lines as $line) {
         if (strpos($line,'BLOTTO_ORG_NAME')) {
-            $matches        = array ();
+            $matches        = [];
             preg_match ("<,\s+'(.*)'>",$line,$matches);
             if (array_key_exists(1,$matches)) {
                 $name       = $matches[1];
@@ -18,7 +18,7 @@ foreach ($cfgs as $cfg) {
     $configs[$cfg]          = $name;
 }
 
-$errors = array (
+$errors = [
     UPLOAD_ERR_INI_SIZE     => "PHP upload_max_filesize directive was exceeded",
     UPLOAD_ERR_FORM_SIZE    => "HTML MAX_FILE_SIZE directive was exceeded",
     UPLOAD_ERR_PARTIAL      => "Only partially uploaded",
@@ -26,7 +26,7 @@ $errors = array (
     UPLOAD_ERR_NO_TMP_DIR   => "No upload temporary directory",
     UPLOAD_ERR_CANT_WRITE   => "Failed to write temporary file",
     UPLOAD_ERR_EXTENSION    => "Prevented by unknown PHP extension"
-);
+];
 
 
 $error = false;
@@ -68,7 +68,7 @@ if (count($_POST)) {
 }
 
 
-$calendar = array ();
+$calendar = [];
 exec ("/usr/bin/php '".__DIR__."/rsm.calendar.php'",$calendar); 
 
 

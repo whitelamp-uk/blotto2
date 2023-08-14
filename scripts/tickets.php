@@ -72,7 +72,7 @@ try {
                 fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
                 exit (102);
             }
-            array_push ($tickets,$new);
+            $tickets[] = $new;
             break;
         }
     }

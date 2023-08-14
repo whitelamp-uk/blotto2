@@ -27,7 +27,7 @@ $qs = "
   ;
 ";
 
-$columns = array ();
+$columns = [];
 try {
     $cols = $zo->query ($qs);
     while ($c=$cols->fetch_assoc()) {

@@ -50,7 +50,7 @@ try {
             if (!array_key_exists($m['Created'],$starts)) {
                 $starts[$m['Created']] = [];
             }
-            array_push ($starts[$m['Created']],$m['player_id']);
+            $starts[$m['Created']][] = $m['player_id'];
         }
         if (!$m['projected_first_draw_close']) {
             // Build-up some player balance before entering the game
@@ -80,7 +80,7 @@ BTW the last bit of this script (updating chances line 151) might want to happen
             if (!array_key_exists($close,$firsts)) {
                 $firsts[$close] = [];
             }
-            array_push ($firsts[$close],$m['supporter_id']);
+            $firsts[$close][] = $m['supporter_id'];
         }
     }
 }
@@ -135,7 +135,7 @@ try {
         if (!array_key_exists($date,$firsts)) {
             $firsts[$date]  = [];
         }
-        array_push ($firsts[$date],$p['id']);
+        $firsts[$date][]    = $p['id'];
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -177,7 +177,7 @@ try {
         if (!array_key_exists($chances,$chances_options)) {
             $chances_options[$chances]  = [];
         }
-        array_push ($chances_options[$chances],$p['id']);
+        $chances_options[$chances][] = $p['id'];
     }
 }
 catch (\mysqli_sql_exception $e) {

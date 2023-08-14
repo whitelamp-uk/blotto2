@@ -1,6 +1,6 @@
 <?php
 
-$tables         = array (
+$tables         = [
     'ANLs'             => 'ANLs by issue date',
     'Cancellations'    => 'Cancellations by cancel date',
     'Changes'          => 'Canvassing company returns by date',
@@ -9,7 +9,7 @@ $tables         = array (
     'Supporters'       => 'Supporters by create date',
     'Updates'          => 'CRM data by date updated',
     'Wins'             => 'Winners by draw close date'
-);
+];
 
 $org_code   = BLOTTO_ORG_USER;
 $days       = [];
@@ -96,13 +96,13 @@ else {
 
 foreach ($months as $m=>$month) {
     if (!array_key_exists($m,$dates)) {
-        $dates[$m] = array ();
+        $dates[$m] = [];
     }
     foreach ($days as $f) {
         if (substr($f,0,8)!=substr($m,0,8)) {
             continue;
         }
-        array_push ($dates[$m],$f);
+        $dates[$m][] = $f;
     }
     $dates[$m] = array_reverse ($dates[$m]);
 }

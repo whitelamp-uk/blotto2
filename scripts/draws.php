@@ -194,7 +194,7 @@ while ($d=$ds->fetch_assoc()) {
         if ($p['level_method']=='RAFF') {
             // Raffle prizes
             for ($i=0;$i<$p['quantity'];$i++) {
-                array_push ($raffleprizes,$p);
+                $raffleprizes[] = $p;
             }
         }
         elseif ($p['results_manual']) {
@@ -242,11 +242,11 @@ while ($d=$ds->fetch_assoc()) {
             // Random results seem to have worked so:
             notarise (
                 $draw->closed,
-                array (
+                [
                     'prizes' => $nrmatchprizes,
                     'results' => $results_nrmatch,
                     'verify_url' => BLOTTO_TRNG_API_VERIFY
-                ),
+                ],
                 'results_nrmatch.json'
             );
             file_write (BLOTTO_PROOF_DIR.'/'.$draw->closed.'/random_nrmatch.info.txt',$trng_proof);
@@ -295,7 +295,7 @@ while ($d=$ds->fetch_assoc()) {
         elseif ($mp['rollover_cap'] && $mp['rollover_count']>=$mp['rollover_cap']) {
             // Rollover becomes an ad hoc raffle
             $abf                = 0;
-            array_push ($rolloverprizes,$mp);
+            $rolloverprizes[]   = $mp;
         }
         elseif ($mp['rollover_count']<$mp['rollover_cap']) {
             // Prize has rollover capability to do it
@@ -338,11 +338,11 @@ while ($d=$ds->fetch_assoc()) {
             // That seems to have worked so:
             notarise (
                 $draw->closed,
-                array (
+                [
                     'prizes' => $rolloverprizes,
                     'results' => $results_rollover,
                     'verify_url' => BLOTTO_TRNG_API_VERIFY
-                ),
+                ],
                 'results_rollover.json'
             );
             file_write (BLOTTO_PROOF_DIR.'/'.$draw->closed.'/random_rollover.info.txt',$trng_proof);
@@ -375,11 +375,11 @@ while ($d=$ds->fetch_assoc()) {
             // That seems to have worked so:
             notarise (
                 $draw->closed,
-                array (
+                [
                     'prizes' => $raffleprizes,
                     'results' => $results_raffle,
                     'verify_url' => BLOTTO_TRNG_API_VERIFY
-                ),
+                ],
                 'results_raffle.json'
             );
             file_write (BLOTTO_PROOF_DIR.'/'.$draw->closed.'/random_raffle.info.txt',$trng_proof);

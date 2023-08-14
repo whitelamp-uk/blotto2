@@ -4,8 +4,8 @@
 
 
 function get_args (&$argv,&$switches) {
-    $switches   = array ();
-    $new        = array ();
+    $switches   = [];
+    $new        = [];
     foreach ($argv as $v) {
         if (strpos($v,'--')===0) {
             $v = explode ('=',substr($v,2));
@@ -22,21 +22,21 @@ function get_args (&$argv,&$switches) {
             }
             continue;
         }
-        array_push ($new,$v);
+        $new[] = $v;
     }
     $argv = $new;
 }
 get_args ($argv,$Sw);
 
 
-$options = array (
+$options = [
     "sql"
    ,"exec"
-);
+];
 
 // Allowed SQL and PHP files
-$file = array (
-    "sql" => array (
+$file = [
+    "sql" => [
         'BESPOKE'
        ,'db.create.anonymiser.sql'
        ,'db.create.sql'
@@ -58,9 +58,9 @@ $file = array (
        ,'payment.create.sql'
        ,'payment.update.sql'
        ,'results.export.sql'
-    ),
+    ],
 
-    "exec" => array (
+    "exec" => [
         'anls.php'
        ,'bogons.php'
        ,'cache.php'
@@ -87,11 +87,11 @@ $file = array (
        ,'wins.php'
 // INTERIM:
        ,'superdraw_export.php'
-    )
-);
+    ]
+];
 
 // SQL instantiation
-$vars = array (
+$vars = [
     'BLOTTO_ADMIN_USER'
    ,'BLOTTO_ANONYMISER_DB'
    ,'BLOTTO_CANCEL_RULE'
@@ -115,7 +115,7 @@ $vars = array (
    ,'BLOTTO_RESULTS_DB'
    ,'BLOTTO_TICKET_DB'
    ,'BLOTTO_TICKET_PRICE'
- );
+];
 
 if (!array_key_exists(1,$argv)) {
     fwrite (STDERR,"CONFIG FILE NOT GIVEN\n");

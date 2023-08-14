@@ -22,15 +22,15 @@ $q = "
 
 try {
     $rows           = $zo->query ($q);
-    $values         = array ();
+    $values         = [];
     $signed         = 0;
     while ($row=$rows->fetch_assoc()) {
-        array_push ($values,$row);
+        $values[]   = $row;
         $signed    += $row['imports'];
     }
     foreach ($values as $row) {
-       array_push ($labels,$row['ccc']);
-       array_push ($data[0],1*$row['imports']);
+       $labels[]    = $row['ccc'];
+       $data[0][]   = 1 * $row['imports'];
     }
     $cdo->labels = $labels;
     $cdo->datasets = [];

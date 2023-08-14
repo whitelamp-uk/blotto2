@@ -46,7 +46,7 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
 
     tee ("    Comparing checksum $cks with $csu\n");
 
-    $options = array (
+    $options = [
         CURLOPT_POST            => 0,
         CURLOPT_HEADER          => 0,
         CURLOPT_URL             => $csu,
@@ -55,7 +55,7 @@ if (defined('BLOTTO_TICKET_CHKSUM')) {
         CURLOPT_RETURNTRANSFER  => 1,
         CURLOPT_FORBID_REUSE    => 1,
         CURLOPT_TIMEOUT         => 10,
-    );    
+    ];
 
     $crl = curl_init ();
     curl_setopt_array ($crl,$options);
@@ -165,7 +165,7 @@ $players = [];
 try {
     $ps = $zo->query ($qs);
     while ($p=$ps->fetch_assoc()) {
-        array_push ($players,$p);
+        $players[] = $p;
     }
 }
 catch (\mysqli_sql_exception $e) {

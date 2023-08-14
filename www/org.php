@@ -11,7 +11,7 @@ if (defined('BLOTTO_SNAILMAIL') && BLOTTO_SNAILMAIL) {
 $maintenance   = file_exists (dirname(BLOTTO_WWW_FUNCTIONS).'/../blotto.maintenance');
 // Inhibit per org
 $inhibit       = file_exists (BLOTTO_WWW_CONFIG.'.inhibit');
-$options       = array (
+$options       = [
     'wait',
     'summary',
     'reconcile',
@@ -33,8 +33,8 @@ $options       = array (
     'statements',
     'statement',
     'about'
-);
-$list          = array (
+];
+$list          = [
     'ANLs',
     'Cancellations',
     'Changes',
@@ -43,12 +43,12 @@ $list          = array (
     'Supporters',
     'Updates',
     'Wins'
-);
+];
 $session       = null;
 $opt           = false;
 $table         = false;
-$results       = array ();
-$msg           = array ();
+$results       = [];
+$msg           = [];
 $err           = '';
 
 

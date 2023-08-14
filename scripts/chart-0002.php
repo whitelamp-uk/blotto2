@@ -64,18 +64,18 @@ $q = "
 ";
 
 try {
-    $rows = $zo->query ($q);
-    $values = array ();
-    $total = 0;
+    $rows           = $zo->query ($q);
+    $values         = [];
+    $total          = 0;
     while ($row=$rows->fetch_assoc()) {
-        array_push ($values,$row);
-        $total += $row['players'];
+        $values[]   = $row;
+        $total     += $row['players'];
     }
     foreach ($values as $row) {
-       $label  = number_format(100*$row['players']/$total,2).'% of players';
-       $label .= ' with '.$row['tickets'].' ticket'.plural($row['tickets']);
-       array_push ($labels,$label);
-       array_push ($data[0],1*$row['players']);
+       $label       = number_format(100*$row['players']/$total,2).'% of players';
+       $label      .= ' with '.$row['tickets'].' ticket'.plural($row['tickets']);
+       $labels[]    = $label;
+       $data[0][]   = 1 * $row['players'];
     }
     $cdo->labels = $labels;
     $cdo->datasets = [];
