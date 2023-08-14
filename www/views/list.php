@@ -11,12 +11,60 @@ $tables         = array (
     'Wins'             => 'Winners by draw close date'
 );
 
+$org_code   = BLOTTO_ORG_USER;
 $days       = [];
 $months     = [];
 $day1       = day_one ($table=='Wins');
 $day2       = null;
 $last       = false;
 $dates      = [];
+$dow        = BLOTTO_WEEK_ENDED;
+if ($table=='Changes') {
+    // From/to days for reporting are different - defined in org config by start_value
+    $zo = connect (BLOTTO_CONFIG_DB);
+    if ($zo) {
+        // Get the first found weekly CCR schedule
+        $qs = "
+          SELECT
+            `format`
+           ,`start_value`
+          FROM `blotto_schedule`
+          WHERE `type`='ccr'
+            AND `org_code`='$org_code'
+            AND ( `interval`='P7D' OR `interval`='P1W' )
+          LIMIT 0,1
+          ;
+        ";
+        try {
+            $schedule = $zo->query ($qs);
+            $schedule = $schedule->fetch_assoc ();
+            if ($schedule) {
+                // Today
+                $try = new \DateTime ();
+                // Wind forward to next start day for this schedule
+                $count = 0;
+                while ($try->format($schedule['format'])!=$schedule['start_value']) {
+                    // Next schedule start day
+                    $try->add (new \DateInterval('P1D'));
+                    // Sanity
+                    $count++;
+                    if ($count>7) {
+                        throw new \Exception ('Insane start_value or format');
+                    }
+                }
+                // Previous day is week-ended day
+                $try->sub (new \DateInterval('P1D'));
+                $dow = $try->format ('w');
+            }
+        }
+        catch (\mysqli_sql_exception $e) {
+            error_log ('Error retrieving day of week from CCR schedule: '.$e->getMessage());
+        }
+        catch (\Exception $e) {
+            error_log ('Error retrieving day of week from CCR schedule: '.$e->getMessage());
+        }
+    }
+}
 
 
 if ($day1) {
@@ -34,7 +82,7 @@ if ($day1) {
         $day2->add (new DateInterval('P7D'));
         $day2   = $day2->format ('Y-m-d');
     }
-    $days       = array_reverse (weeks(BLOTTO_WEEK_ENDED,$day1,$day2));
+    $days       = array_reverse (weeks($dow,$day1,$day2));
     $months     = array_reverse (months($day1,$day2));
 }
 
