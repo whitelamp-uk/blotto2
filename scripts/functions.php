@@ -74,7 +74,7 @@ function calculate ($start=null,$end=null) {
         $dt         = new DateTime ();
         $end        = $dt->format ('Y-m-d');
     }
-    $results        = array ();
+    $results        = [];
     $zo         = connect (BLOTTO_DB,BLOTTO_UN,BLOTTO_PW,true);
     if (!$zo) {
         return $results;
@@ -87,11 +87,11 @@ function calculate ($start=null,$end=null) {
         return $results;
     }
     while ($r=$c->fetch_assoc()) {
-        $item   = array (
+        $item = [
             'units' => $r['units'],
             'amount' => $r['amount'],
             'notes' => $r['notes']
-        );
+        ];
         $results[$r['item']] = $item;
     }
     return $results;
@@ -238,12 +238,12 @@ function chart2Array ($chartObj) {
         foreach ($chartObj->datasets as $j=>$d) {
             foreach ($d->data as $k=>$v) {
                 if ($k==$i) {
-                    array_push ($row,$v);
+                    $row[] = $v;
                     continue;
                 }
             }
         }
-        array_push ($arr,$row);
+        $arr[] = $row;
     }
     return $arr;
 }
@@ -252,10 +252,10 @@ function chart2Headings ($chartObj) {
     $arr = ['{{XHEAD}}'];
     foreach ($chartObj->datasets as $i=>$d) {
         if (!array_key_exists('label',$d) || !$d->label) {
-            array_push ($arr,'Unspecified');
+            $arr[] = 'Unspecified';
             continue;
         }
-        array_push ($arr,$d->label);
+        $arr[] = $d->label;
     }
     return $arr;
 }
@@ -267,7 +267,7 @@ function clientref_advance ($cref) {
     }
     $number = array_pop ($cref);
     $number += 1;
-    array_push ($cref,str_pad($number,4,'0',STR_PAD_LEFT));
+    $cref[] = str_pad ($number,4,'0',STR_PAD_LEFT);
     return implode (BLOTTO_CREF_SPLITTER,$cref);
 }
 
@@ -314,10 +314,10 @@ function connect ($db=BLOTTO_DB,$un=BLOTTO_UN,$pw=BLOTTO_PW,$temp=false,$auth=fa
         }
     }
     if (!$Co) {
-        $Co = array ();
+        $Co = [];
     }
     if (!array_key_exists($db,$Co)) {
-        $Co[$db] = array ();
+        $Co[$db] = [];
     }
     if (!array_key_exists($un,$Co[$db])) {
         $Co[$db][$un] = null;
@@ -404,12 +404,12 @@ function csv_write ($file,$array2d,$headers=false) {
         if ($headers) {
             $headers = [];
             foreach ($array as $h=>$v) {
-                array_push ($headers,$h);
+                $headers[] = $h;
             }
-            array_push ($arrays,$headers);
+            $arrays[] = $headers;
             $headers = false;
         }
-        array_push ($arrays,$array);
+        $arrays[] = $array;
     }
     $csv = csv ($arrays);
     $fp = fopen ($file,'w');
@@ -545,7 +545,7 @@ function dom_elements_by_class ($elmt,$class_name,&$elmts) {
     }
     $classes            = explode (' ',$elmt->getAttribute('class'));
     if (in_array($class_name,$classes)) {
-        array_push ($elmts,$elmt);
+        $elmts[] = $elmt;
     }
     foreach ($elmt->childNodes as $child) {
         dom_elements_by_class ($child,$class_name,$elmts);
@@ -632,12 +632,12 @@ function download_csv ( ) {
     $data           = [];
     while ($fn=$fs->fetch_assoc()) {
         if ($gp && $fn['Field']=='ticket_number') {
-            array_push ($headings,"'ticket_numbers' AS `ticket_numbers`");
-            array_push ($data,"IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')");
+            $headings[] = "'ticket_numbers' AS `ticket_numbers`";
+            $data[] = "IFNULL(GROUP_CONCAT(`ticket_number` SEPARATOR ', '),'')";
             continue;
         }
-        array_push ($headings,"'{$fn['Field']}' AS `{$fn['Field']}`");
-        array_push ($data,"IFNULL(`{$fn['Field']}`,'')");
+        $headings[] = "'{$fn['Field']}' AS `{$fn['Field']}`";
+        $data[] = "IFNULL(`{$fn['Field']}`,'')";
     }
     if ($cond) {
         $cond       = "AND `draw_closed`>='".BLOTTO_WIN_FIRST."'\n";
@@ -741,14 +741,14 @@ function draw ($draw_closed) {
         $group              = substr ($p['level_method'],-1);
         $draw->prizes[$level]['group'] = $group;
         if ($p['insure']) {
-            array_push ($draw->insure,$level);
+            $draw->insure[] = $level;
         }
         if ($p['results_manual']) {
             // If any prize level is manual
             // and without a bespoke function,
             // both group and draw are manual
             $draw->manual   = $group;
-            array_push ($draw->manual_groups,$group);
+            $draw->manual_groups[] = $group;
         }
         if (count($p['results'])) {
              $draw->results[$group] = true;
@@ -756,7 +756,7 @@ function draw ($draw_closed) {
         if (!array_key_exists($group,$draw->groups)) {
             $draw->groups[$group] = [];
         }
-        array_push ($draw->groups[$group],$level);
+        $draw->groups[$group][] = $level;
     }
     // Every prize level in a manual group should be manual
     foreach ($draw->prizes as $level=>$p) {
@@ -1056,7 +1056,7 @@ function draw_upcoming_weekly ($dow,$today=null) {
 }
 
 function draws ($from,$to) {
-    $rows       = array ();
+    $rows       = [];
     $q      = "
       SELECT
         DATE_FORMAT(`draw_closed`,'%Y %b %d')
@@ -1075,7 +1075,7 @@ function draws ($from,$to) {
     try {
         $c      = $zo->query ($q);
         while ($r=$c->fetch_assoc()) {
-            array_push ($rows,$r);
+            $rows[] = $r;
         }
         return $rows;
     }
@@ -1117,14 +1117,14 @@ function draws_outstanding ( ) {
         if ($date>=$range['future']) {
             break;
         }
-        array_push ($dates,$date);
+        $dates[]    = $date;
         $date       = day_tomorrow($date)->format('Y-m-d');
     }
     return $dates;
 }
 
 function draws_super ($from,$to) {
-    $rows       = array ();
+    $rows       = [];
     $q      = "
       SELECT
         DATE_FORMAT(`draw_closed`,'%Y %b %d')
@@ -1142,7 +1142,7 @@ function draws_super ($from,$to) {
     try {
         $c      = $zo->query ($q);
         while ($r=$c->fetch_assoc()) {
-            array_push ($rows,$r);
+            $rows[] = $r;
         }
         return $rows;
     }
@@ -1296,7 +1296,7 @@ function escm ($str) {
 function fields ( ) {
     $dbc = BLOTTO_CONFIG_DB;
     $oid = BLOTTO_ORG_ID;
-    $fields = array ();
+    $fields = [];
     $zo = connect ();
     if (!$zo) {
         return $fields;
@@ -1311,7 +1311,7 @@ function fields ( ) {
     try {
         $fs = $zo->query ($q);
         while ($f=$fs->fetch_assoc()) {
-            array_push ($fields,(object) $f);
+            $fields[] = (object) $f;
         }
     }
     catch (\mysqli_sql_exception $e) {
@@ -1791,7 +1791,7 @@ function is_https ( ) {
 }
 
 function link_query ($target,$table,$date,$interval=null) {
-    $datefields = array (
+    $datefields = [
         'ANLs'             => 'tickets_issued',
         'Cancellations'    => 'cancelled_date',
         'Changes'          => 'changed_date',
@@ -1800,7 +1800,7 @@ function link_query ($target,$table,$date,$interval=null) {
         'Supporters'       => 'created',
         'Updates'          => 'updated',
         'Wins'             => 'draw_closed'
-    );
+    ];
     $datefield = $datefields[$table];
     $table = table_name ($table);
     if (!$table) {
@@ -2288,7 +2288,7 @@ function players_new (&$players,&$tickets,$oid=BLOTTO_ORG_ID,$db=null) {
         while ($p=$ps->fetch_assoc()) {
             $tickets   += $p['qty'];
             $p['db']    = $db;
-            array_push ($players,$p);
+            $players[]  = $p;
         }
     }
     catch (\mysqli_sql_exception $e) {
@@ -2511,16 +2511,16 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
     }
     $s                              = curl_setopt_array (
         $c,
-        array (
+        [
             CURLOPT_RETURNTRANSFER  => true,
             CURLOPT_VERBOSE         => false,
             CURLOPT_NOPROGRESS      => true,
             CURLOPT_FRESH_CONNECT   => true,
             CURLOPT_CONNECTTIMEOUT  => BLOTTO_TRNG_API_TIMEOUT,
             CURLOPT_POST            => true,
-            CURLOPT_HTTPHEADER      => array (BLOTTO_TRNG_API_HEADER),
+            CURLOPT_HTTPHEADER      => [BLOTTO_TRNG_API_HEADER],
             CURLOPT_POSTFIELDS      => json_encode ($request)
-        )
+        ]
     );
     if (!$s) {
         throw new \Exception ('Failed to curl_setopt_array()');
@@ -2593,7 +2593,7 @@ function report ( ) {
     if (!array_key_exists('xh',$_GET) || !$_GET['xh']) {
         return 'invalid request - no x-axis heading given';
     }
-    $p          = array ();
+    $p          = [];
     foreach ($_GET as $k=>$v) {
         if (preg_match('<^p[0-9]+$>',$k)) {
             $p[substr($k,1)] = $v;
@@ -2674,7 +2674,7 @@ function result_spiel66 ($prize,$draw_closed) {
 
 function revenue ($from,$to) {
     $price = BLOTTO_TICKET_PRICE;
-    $rows       = array ();
+    $rows       = [];
     $q      = "
       SELECT
         `s`.`canvas_code`
@@ -2696,7 +2696,7 @@ function revenue ($from,$to) {
     try {
         $c      = $zo->query ($q);
         while ($r=$c->fetch_assoc()) {
-            array_push ($rows,$r);
+            $rows[] = $r;
         }
         return $rows;
     }
@@ -2749,7 +2749,7 @@ function search ( ) {
         }
         if (strlen($term_alphanum)) {
             if (strlen($term_alphanum) >= BLOTTO_SEARCH_CREF_MIN) {
-                array_push ($crefterms,esc($term_alphanum));
+                $crefterms[] = esc ($term_alphanum);
             }
             // If not expert, allow @ sign (but see below on that one!) and maybe others
             if (!$expert) {
@@ -2770,7 +2770,7 @@ function search ( ) {
         // https://stackoverflow.com/questions/25088183/mysql-fulltext-search-with-symbol-produces-error-syntax-error-unexpected
         $term = str_replace ('@',' +',$term); // 
         if (strlen($term)) {
-            array_push ($terms,esc($term));
+            $terms[] = esc ($term);
         }
     }
     if ($tooshort) {
@@ -2925,7 +2925,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     try {
         $result = $zo->query ($qs.$qt.$qw.$qg.$qo.$ql);
         while ($r=$result->fetch_assoc()) {
-            array_push ($rows,$r);
+            $rows[] = $r;
         }
     }
     catch (\mysqli_sql_exception $e) {
@@ -2943,8 +2943,8 @@ function select ($type) {
         return '{ "error" : 102 }';
     }
     $response = new stdClass ();
-    $response->data = array ();
-    $response->fields = array ();
+    $response->data = [];
+    $response->fields = [];
     $zo = connect ();
     $cref = esc (explode(BLOTTO_CREF_SPLITTER,$cref)[0]);
     $match = '^'.$cref.BLOTTO_CREF_SPLITTER.'[0-9]{4}$';
@@ -2999,7 +2999,7 @@ function select ($type) {
             if (array_key_exists('Account',$r)) {
                      $r['Account'] = '*****'.substr($r['Account'],-3);
             }
-            array_push ($response->data,(object) $r);
+            $response->data[] = (object) $r;
         }
     }
     catch (\mysqli_sql_exception $e) {
@@ -3693,9 +3693,9 @@ function table_name ($generic_name) {
     global $Tablenames;
     if (!$Tablenames) {
         $ts         = connect()->query ('SHOW TABLES');
-        $Tablenames = array ();
+        $Tablenames = [];
         while ($t=$ts->fetch_array(MYSQLI_NUM)) {
-            array_push ($Tablenames,$t[0]);
+            $Tablenames[] = $t[0];
         }
     }
     foreach ($Tablenames as $t) {
@@ -3780,7 +3780,7 @@ function tickets ($provider_code,$refno,$cref,$qty) {
                 ";
                 $zo->query ($qi);
                 if ($zo->affected_rows > 0) {  // if new number inserted
-                    array_push ($tickets,$new);
+                    $tickets[] = $new;
                     break;
                 }
             }
@@ -4329,17 +4329,14 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
                     }
                     $qw   .= "({$e['id']},'{$e['ticket_number']}',{$prizewon['level']},'{$prizewon['starts']}',$amount),";
                     if ($rbe) {
-                        array_push (
-                            $wins,
-                            array (
-                                'entry_id'      => $eid,
-                                'number'        => $entry['ticket_number'],
-                                'prize_level'   => $p['level'],
-                                'prize_starts'  => $p['starts'],
-                                'prize_name'    => $p['name'],
-                                'amount'        => $amount
-                            )
-                        );
+                        $wins[] = [
+                            'entry_id'      => $eid,
+                            'number'        => $entry['ticket_number'],
+                            'prize_level'   => $p['level'],
+                            'prize_starts'  => $p['starts'],
+                            'prize_name'    => $p['name'],
+                            'amount'        => $amount
+                        ];
                     }
                 }
             }
@@ -4417,17 +4414,14 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
         $qr            .= "('{$entry['draw_closed']}',drawOnOrAfter('{$entry['draw_closed']}'),{$p['level']},'{$entry['ticket_number']}'),";
         $qw            .= "($eid,'{$entry['ticket_number']}',{$p['level']},'{$p['starts']}',$amount),";
         if ($rbe) {
-            array_push (
-                $wins,
-                array (
-                    'entry_id'      => $eid,
-                    'number'        => $entry['ticket_number'],
-                    'prize_level'   => $p['level'],
-                    'prize_starts'  => $p['starts'],
-                    'prize_name'    => $p['name'],
-                    'amount'        => $amount
-                )
-            );
+            $wins[] = [
+                'entry_id'      => $eid,
+                'number'        => $entry['ticket_number'],
+                'prize_level'   => $p['level'],
+                'prize_starts'  => $p['starts'],
+                'prize_name'    => $p['name'],
+                'amount'        => $amount
+            ];
         }
     }
     $qr                 = substr ($qr,0,-1);
@@ -4473,7 +4467,7 @@ function winnings_super ($wins,$type) {
         foreach ($wins as $w) {
             $seid           = $w['entry_id'];
             $winners[$seid] = $w;
-            array_push ($super_entry_ids,$seid);
+            $super_entry_ids[] = $seid;
         }
         // Only the superdraw winners for this database should be inserted
         $qs = "
@@ -4554,7 +4548,7 @@ function www_auth ($db,&$time,&$err,&$msg) {
     setcookie ('blotto_dbn',BLOTTO_DB,0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_key',pwd2cookie($_POST['pw']),0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_usr',$_POST['un'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
-    array_push ($msg,'Welcome, '.$_POST['un'].', to '.BLOTTO_ORG_NAME.' lottery system');
+    $msg[] = 'Welcome, '.$_POST['un'].', to '.BLOTTO_ORG_NAME.' lottery system';
     return true;
 }
 
@@ -4763,7 +4757,7 @@ function www_signup_dates ($org,&$e) {
 
 function www_signup_vars ( ) {
     $dev_mode = defined('BLOTTO_DEV_MODE') && BLOTTO_DEV_MODE;
-    $vars = array (
+    $vars = [
         'title'              => !$dev_mode ? '' : 'Mr',
         'name_first'         => !$dev_mode ? '' : 'Mickey',
         'name_last'          => !$dev_mode ? '' : 'Mouse',
@@ -4790,7 +4784,7 @@ function www_signup_vars ( ) {
         'terms'              => !$dev_mode ? '' : 'on',
         'age'                => !$dev_mode ? '' : 'on',
         'signed'             => !$dev_mode ? '' : '',
-    );
+    ];
     foreach ($_POST as $k=>$v) {
         $vars[$k] = $v;
     }
