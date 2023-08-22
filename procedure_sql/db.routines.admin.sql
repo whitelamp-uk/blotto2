@@ -4,6 +4,43 @@ USE `{{BLOTTO_CONFIG_DB}}`
 ;
 
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `blottoRetention`$$
+CREATE PROCEDURE `blottoRetention` (
+  IN    `fromMonthNr` int(11) unsigned
+ ,IN    `thruMonthNr` int(11) unsigned
+)
+BEGIN
+  SELECT
+    fromMonthNr as `From month`
+   ,thruMonthNr as `thru month`
+   ,ROUND(AVG(`r`.`cancellations_normalised`),2) AS `cancellations_percent_avg`
+  FROM `blotto_retention` AS `r`
+  JOIN (
+    SELECT
+      IFNULL(CONCAT(MIN(`month`),'-01'),CURDATE()) AS `start`
+    FROM `blotto_retention`
+  ) AS `m`
+  WHERE TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))>=fromMonthNr
+    AND TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))<=thruMonthNr
+  ;
+  SELECT
+    fromMonthNr as `From month`
+   ,thruMonthNr as `thru month`
+   ,IF(`r`.`months_retained`<0,0,`r`.`months_retained`) AS `retention_months`
+   ,ROUND(AVG(`r`.`cancellations_normalised`),2) AS `cancellations_percent_avg`
+  FROM `blotto_retention` AS `r`
+  JOIN (
+    SELECT
+      IFNULL(CONCAT(MIN(`month`),'-01'),CURDATE()) AS `start`
+    FROM `blotto_retention`
+  ) AS `m`
+  WHERE TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))>=fromMonthNr
+    AND TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))<=thruMonthNr
+  GROUP BY `retention_months`
+  ;
+END$$
+
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `blottoUser`$$
