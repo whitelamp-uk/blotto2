@@ -74,8 +74,13 @@ DROP PROCEDURE IF EXISTS `retention`$$
 CREATE PROCEDURE `retention` (
 )
 BEGIN
+  DELETE FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_retention`
+  WHERE `org`=UPPER('{{BLOTTO_ORG_USER}}')
+  ;
+  INSERT INTO `{{BLOTTO_CONFIG_DB}}`.`blotto_retention`
   SELECT
-    `r`.`growth`
+    UPPER('{{BLOTTO_ORG_USER}}') AS `org`
+   ,`r`.`growth`
    ,`r`.`active_supporters`
    ,`r`.`month`
    ,`r`.`months_retained`
@@ -126,6 +131,12 @@ BEGIN
       ON `attrition`.`cancelled_month`=`candidates`.`signed_month`
     GROUP BY `month`,`months_retained`
   ) AS `r`
+  ORDER BY `month`,`months_retained`
+  ;
+  SELECT
+    *
+  FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_retention`
+  WHERE `org`=UPPER('{{BLOTTO_ORG_USER}}')
   ORDER BY `month`,`months_retained`
   ;
 END$$
