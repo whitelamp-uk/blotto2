@@ -185,6 +185,18 @@ SET
 ;
 
 
+CREATE TABLE IF NOT EXISTS `blotto_retention` (
+  `org` char(16) CHARACTER SET ascii NOT NULL,
+  `growth` int(10) DEFAULT 0,
+  `active_supporters` int(10) DEFAULT 0,
+  `month` char(16) CHARACTER SET ascii NOT NULL,
+  `months_retained`  int(10) DEFAULT 0,
+  `cancellations` int(10) DEFAULT 0,
+  `cancellations_normalised` decimal(7,3) DEFAULT 0.000,
+  `cancellations_total` decimal(8,2) DEFAULT 0.00,
+  PRIMARY KEY (`org`,`month`,`months_retained`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `blotto_schedule` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_code` char(16) CHARACTER SET ascii NOT NULL COMMENT 'References org table',
