@@ -523,7 +523,13 @@ BEGIN
   ADD KEY `client_ref` (`client_ref`)
   ;
   ALTER TABLE `Changes`
-  MODIFY `collected_last` char(16) CHARACTER SET ascii NOT NULL
+  DROP COLUMN `collected_last`
+  ;
+  ALTER TABLE `Changes`
+  DROP COLUMN `collected_times`
+  ;
+  ALTER TABLE `Changes`
+  DROP COLUMN `collected_amount`
   ;
 END $$
 
