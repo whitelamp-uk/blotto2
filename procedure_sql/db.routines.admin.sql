@@ -14,30 +14,26 @@ BEGIN
   SELECT
     fromMonthNr as `From month`
    ,thruMonthNr as `thru month`
-   ,ROUND(AVG(`r`.`cancellations_normalised`),2) AS `cancellations_percent_avg`
-  FROM `blotto_retention` AS `r`
-  JOIN (
+   ,ROUND(AVG(`r`.`cancellations_total`),2) AS `cancellations_percent_avg`
+  FROM (
     SELECT
-      IFNULL(CONCAT(MIN(`month`),'-01'),CURDATE()) AS `start`
+      `month_nr`
+     ,`cancellations_total`
     FROM `blotto_retention`
-  ) AS `m`
-  WHERE TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))>=fromMonthNr
-    AND TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))<=thruMonthNr
+    GROUP BY `month_nr`
+  ) AS `r`
+  WHERE `r`.`month_nr`>=fromMonthNr
+    AND `r`.`month_nr`<=thruMonthNr
   ;
   SELECT
     fromMonthNr as `From month`
    ,thruMonthNr as `thru month`
-   ,IF(`r`.`months_retained`<0,0,`r`.`months_retained`) AS `retention_months`
-   ,ROUND(AVG(`r`.`cancellations_normalised`),2) AS `cancellations_percent_avg`
-  FROM `blotto_retention` AS `r`
-  JOIN (
-    SELECT
-      IFNULL(CONCAT(MIN(`month`),'-01'),CURDATE()) AS `start`
-    FROM `blotto_retention`
-  ) AS `m`
-  WHERE TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))>=fromMonthNr
-    AND TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))<=thruMonthNr
-  GROUP BY `retention_months`
+   ,`months_retained`
+   ,ROUND(AVG(`cancellations_normalised`),2) AS `cancellations_percent_avg`
+  FROM `blotto_retention`
+  WHERE `month_nr`>=fromMonthNr
+    AND `month_nr`<=thruMonthNr
+  GROUP BY `months_retained`
   ;
 END$$
 

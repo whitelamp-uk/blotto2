@@ -83,6 +83,7 @@ BEGIN
    ,`r`.`growth`
    ,`r`.`active_supporters`
    ,`r`.`month`
+   ,null AS `month_nr`
    ,`r`.`months_retained`
    ,`r`.`cancellations`
    ,`r`.`cancellations_normalised`
@@ -132,6 +133,17 @@ BEGIN
     GROUP BY `month`,`months_retained`
   ) AS `r`
   ORDER BY `month`,`months_retained`
+  ;
+  UPDATE `{{BLOTTO_CONFIG_DB}}`.`blotto_retention` AS `r`
+  JOIN (
+    SELECT
+      IFNULL(CONCAT(MIN(`month`),'-01'),CURDATE()) AS `start`
+    FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_retention`
+    WHERE `org`=UPPER('{{BLOTTO_ORG_USER}}')
+  ) AS `m`
+  SET
+    `month_nr`=(TIMESTAMPDIFF(MONTH,`m`.`start`,DATE(CONCAT(`r`.`month`,'-01')))+1)
+  WHERE `org`=UPPER('{{BLOTTO_ORG_USER}}')
   ;
   SELECT
     *
