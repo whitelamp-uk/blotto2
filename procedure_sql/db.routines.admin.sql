@@ -72,6 +72,8 @@ CREATE PROCEDURE `blottoRetentionTruncate` (
 BEGIN
   TRUNCATE `blotto_retention`
   ;
+  SELECT 'blotto_retention has been truncated' AS `Done`
+  ;
 END$$
 
 
