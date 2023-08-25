@@ -523,7 +523,10 @@ BEGIN
   ADD KEY `client_ref` (`client_ref`)
   ;
   ALTER TABLE `Changes`
-  DROP COLUMN `collected_times`
+  DROP COLUMN `collected_last`
+  ;
+  ALTER TABLE `Changes`
+  DROP COLUMN `collected_amount`
   ;
 END $$
 
