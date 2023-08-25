@@ -39,6 +39,43 @@ END$$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `blottoRetentionPeriodically`$$
+CREATE PROCEDURE `blottoRetentionPeriodically` (
+)
+BEGIN
+  SELECT
+    ROUND(1+(`month_nr`-(`month_nr`%12))/12) AS `Year nr`
+   ,ROUND(AVG(`cancellations_normalised`),2) AS `Avg cancellations %`
+  FROM `blotto_retention`
+  GROUP BY `Year nr`
+  ;
+  SELECT
+    1+(`month_nr`%12) AS `Month nr`
+   ,ROUND(AVG(`cancellations_normalised`),2) AS `Avg cancellations %`
+  FROM `blotto_retention`
+  GROUP BY `Month nr`
+  ;
+  SELECT
+    ROUND(1+(`month_nr`-(`month_nr`%12))/12) AS `Year nr`
+   ,1+(`month_nr`%12) AS `Month nr`
+   ,ROUND(AVG(`cancellations_normalised`),2) AS `Avg cancellations %`
+  FROM `blotto_retention`
+  GROUP BY `Year nr`,`Month nr`
+  ;
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `blottoRetentionTruncate`$$
+CREATE PROCEDURE `blottoRetentionTruncate` (
+)
+BEGIN
+  TRUNCATE `blotto_retention`
+  ;
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `blottoUser`$$
 CREATE PROCEDURE `blottoUser` (
   IN    `orgCode` varchar(64) character set ascii
