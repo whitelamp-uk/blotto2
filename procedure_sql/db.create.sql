@@ -399,8 +399,9 @@ CREATE TABLE IF NOT EXISTS `blotto_verification` (
 
 CREATE TABLE IF NOT EXISTS `blotto_update` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `updated` date NOT NULL,
+  `updated` date NULL,
   `milestone` char(16) CHARACTER SET ascii NOT NULL,
+  `milestone_date` date NULL,
   `supporter_id` int(11) unsigned NOT NULL,
   `player_id` int(11) unsigned DEFAULT NULL,
   `contact_id` int(11) unsigned DEFAULT NULL,
@@ -408,6 +409,7 @@ CREATE TABLE IF NOT EXISTS `blotto_update` (
   UNIQUE KEY `updated_milestone_supporter_player_contact` (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`),
   KEY `updated` (`updated`),
   KEY `milestone` (`milestone`),
+  KEY `milestone_date` (`milestone_date`),
   KEY `supporter_id` (`supporter_id`),
   KEY `player_id` (`player_id`),
   KEY `contact_id` (`contact_id`),

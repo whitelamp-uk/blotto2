@@ -8,7 +8,7 @@ SET foreign_key_checks=0;
 
 CREATE TABLE IF NOT EXISTS `blotto_change` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `changed_date` date NOT NULL,
+  `changed_date` date NULL,
   `client_ref` varchar(64) CHARACTER SET ascii,
   `ccc` char(4) CHARACTER SET ascii NOT NULL,
   `canvas_agent_ref` char(16) CHARACTER SET ascii,
@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `blotto_change` (
   `supporter_id` int(11) unsigned NOT NULL,
   `update_id` int(11) unsigned NOT NULL,
   `milestone` char(16) CHARACTER SET ascii,
+  `milestone_date` date NULL,
   `collected_last` date NULL,
   `collected_times` int(11) unsigned NOT NULL DEFAULT 0,
   `collected_amount` decimal(8,2) NOT NULL DEFAULT 0.00,
@@ -34,7 +35,8 @@ CREATE TABLE IF NOT EXISTS `blotto_change` (
   KEY `ccc` (`ccc`),
   KEY `supporter_id` (`supporter_id`),
   KEY `update_id` (`update_id`),
-  KEY `milestone` (`milestone`)
+  KEY `milestone` (`milestone`),
+  KEY `milestone_date` (`milestone_date`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8
 ;
 

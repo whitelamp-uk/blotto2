@@ -523,6 +523,12 @@ BEGIN
   ADD KEY `client_ref` (`client_ref`)
   ;
   ALTER TABLE `Changes`
+  ADD KEY `milestone` (`milestone`)
+  ;
+  ALTER TABLE `Changes`
+  ADD KEY `milestone_date` (`milestone_date`)
+  ;
+  ALTER TABLE `Changes`
   DROP COLUMN `collected_last`
   ;
   ALTER TABLE `Changes`
@@ -1362,10 +1368,11 @@ CREATE PROCEDURE `updates` (
 BEGIN
   -- `milestone`='created'
   INSERT IGNORE INTO `blotto_update`
-    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      `s`.`created`
+      CURDATE()
      ,'created'
+     ,`s`.`created`
      ,`s`.`id`
      ,`p`.`id`
      ,MIN(`c`.`id`)
@@ -1379,10 +1386,11 @@ BEGIN
   ;
   -- `milestone`='first_collection'
   INSERT IGNORE INTO `blotto_update`
-    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      `cln`.`DateDue`
+      CURDATE()
      ,'first_collection'
+     ,`cln`.`DateDue`
      ,`s`.`id`
      ,MIN(`p`.`id`)
      ,MIN(`c`.`id`)
@@ -1403,10 +1411,11 @@ BEGIN
   ;
   -- `milestone`='bacs_change'
   INSERT IGNORE INTO `blotto_update`
-    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      `p`.`started`
+      CURDATE()
      ,'bacs_change'
+     ,`p`.`started`
      ,`s`.`id`
      ,`p`.`id`
      ,MAX(`c`.`id`)
@@ -1421,10 +1430,11 @@ BEGIN
   ;
   -- `milestone`='contact_change'
   INSERT IGNORE INTO `blotto_update`
-    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      DATE(`c`.`created`)
+      CURDATE()
      ,'contact_change'
+     ,DATE(`c`.`created`)
      ,`s`.`id`
      ,MAX(`p`.`id`)
      ,`c`.`id`
@@ -1447,10 +1457,11 @@ BEGIN
   ;
   -- `milestone`='cancellation'
   INSERT IGNORE INTO `blotto_update`
-    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      `cnl`.`cancelled_date`
+      CURDATE()
      ,'cancellation'
+     ,`cnl`.`cancelled_date`
      ,`s`.`id`
      ,`p`.`id`
      ,MAX(`c`.`id`)
@@ -1470,10 +1481,11 @@ BEGIN
   CREATE TABLE `blotto_update_tmp` LIKE `blotto_update`
   ;
   INSERT IGNORE INTO `blotto_update_tmp`
-    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
       CURDATE()
      ,'reinstatement'
+     ,CURDATE()
      ,`s`.`id`
      ,MAX(`p`.`id`)
      ,MAX(`c`.`id`)
@@ -1500,10 +1512,11 @@ BEGIN
     GROUP BY `s`.`id`
   ;
   INSERT IGNORE INTO `blotto_update`
-    (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`)
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
       `updated`
      ,`milestone`
+     ,`milestone_date`
      ,`supporter_id`
      ,`player_id`
      ,`contact_id`
@@ -1520,6 +1533,7 @@ BEGIN
      ,`u`.`supporter_id`
      ,IF(`milestone`='contact_change',`c`.`updater`,'SYSTEM') AS `updater`
      ,`u`.`milestone`
+     ,`u`.`milestone_date`
      ,`s`.`signed`
      ,`s`.`created`
      ,`s`.`cancelled`
@@ -1579,6 +1593,12 @@ BEGIN
   ;
   ALTER TABLE `Updates`
   ADD PRIMARY KEY (`updated`,`client_ref_orig`,`milestone`,`client_ref`)
+  ;
+  ALTER TABLE `Updates`
+  ADD KEY `client_ref` (`client_ref`)
+  ;
+  ALTER TABLE `Updates`
+  ADD KEY `milestone_date` (`milestone_date`)
   ;
   ALTER TABLE `Updates`
   ADD KEY `updater` (`updater`)
