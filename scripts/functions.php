@@ -770,10 +770,16 @@ function draw ($draw_closed) {
     return $draw;
 }
 
-function draw_first_asap ($first_collection_date) {
+function draw_first_asap ($first_collection_date,$delay=null) {
     if (!function_exists('draw_upcoming')) {
         throw new \Exception ("Function draw_upcoming() was not found");
         return false;
+    }
+    // If a delay period is required (eg direct debit)
+    if ($delay) {
+        $dt = new \DateTime ($first_collection_date);
+        $dt->add (new \DateInterval($delay));
+        $first_collection_date = $dt->format ('Y-m-d');
     }
     // Money received may be used in a draw closing on
     // the same day unless a delay is required for insurance
@@ -3053,8 +3059,10 @@ function signup ($org,$s,$ccc,$cref,$first_draw_close) {
           "
         );
         $dob = "null";
+        $yob = "null";
         if ($s['dob']) {
             $dob = "'{$s['dob']}'";
+            $yob = intval (substr($s['dob'],0,4));
         }
         $c->query (
           "
@@ -3073,6 +3081,7 @@ function signup ($org,$s,$ccc,$cref,$first_draw_close) {
              ,`county`='{$s['county']}'
              ,`postcode`='{$s['postcode']}'
              ,`dob`=$dob
+             ,`yob`=$yob
              ,`p{$org['pref_nr_email']}`='{$s['pref_email']}'
              ,`p{$org['pref_nr_sms']}`='{$s['pref_sms']}'
              ,`p{$org['pref_nr_post']}`='{$s['pref_post']}'

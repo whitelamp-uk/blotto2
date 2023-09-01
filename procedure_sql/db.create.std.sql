@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `blotto_contact` (
   `postcode` varchar(255) DEFAULT NULL,
   `country` varchar(255) DEFAULT NULL,
   `dob` date DEFAULT NULL,
+  `yob` smallint(4) unsigned DEFAULT NULL,
   `p0` varchar(255) NOT NULL,
   `p1` varchar(255) NOT NULL,
   `p2` varchar(255) NOT NULL,
