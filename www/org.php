@@ -127,12 +127,12 @@ elseif ($session=www_session($timestamp)) {
     }
 }
 else {
-    if (array_key_exists($opt,['download','report','invoice','statement','drawreport'])) {
+    if ($opt && array_key_exists($opt,['download','report','invoice','statement','drawreport'])) {
         header ('Content-Type: text/plain');
         echo "Your login has expired\n";
         exit;
     }
-    elseif (array_key_exists($opt,['search','update'])) {
+    elseif ($opt && array_key_exists($opt,['search','update'])) {
         header ('Content-Type: text/plain');
         echo "{ \"error\" : 127, \"errorMessage\" : \"Your login has expired\" }";;
         exit;
