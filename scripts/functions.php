@@ -3477,7 +3477,12 @@ function stannp_status ($batch_names) {
             }
         }
         else {
-            fwrite (STDERR,"WARNING: campaign $campaign_name was not found or has no recipients\n");
+            if (defined('STDERR')) {
+                fwrite (STDERR,"WARNING: campaign $campaign_name was not found or has no recipients\n");
+            }
+            else {
+                error_log ("WARNING: campaign $campaign_name was not found or has no recipients");
+            }
         }
     }
     return $refs;
