@@ -2908,10 +2908,13 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
       LIMIT 0,$limit
     ";
     if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qt $qw");
+        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qt $qw $qg $ql");
+//        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qt $qw");
+        $result = $zo->query ($qc.$qt.$qw.$qg.$ql);
     }
     try {
-        $result = $zo->query ($qc.$qt.$qw);
+        $result = $zo->query ($qc.$qt.$qw.$qg.$ql);
+//        $result = $zo->query ($qc.$qt.$qw);
         $rows =$result->fetch_assoc()['rows'];
     }
     catch (\mysqli_sql_exception $e) {
