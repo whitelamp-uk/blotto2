@@ -25,6 +25,7 @@
           <input type="hidden" name="Provider" />
           <input type="hidden" name="ClientRef" />
           <button id="post-mandate">Post change request</button>
+          <button id="cancel-mandate">Cancel mandate</button>
           <button class="form-close">Close</button>
           <table>
             <thead>
