@@ -2800,6 +2800,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         throw new \Exception ('{ "error" : 122 }');
         return false;
     }
+
+    // TODO (perhaps) use count() rather than num_rows
     $qc = "
       SELECT
         IFNULL(`s`.`current_client_ref`,`m`.`ClientRef`) AS `ClientRef`
@@ -2902,56 +2904,45 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         ";
     }
     $qo = "
-      ORDER BY IFNULL(`p`.`client_ref`,`m`.`ClientRef`) DESC
+      ORDER BY `s`.`name_last`
     ";
     $ql = "
       LIMIT 0,$limit
     ";
-    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qt $qw $qg");
-//        error_log ("Search SQL [1] (search_result(), type=$type): $qc $qt $qw");
-        $result = $zo->query ($qc.$qt.$qw.$qg);
-    }
+
+    $qry = $qc.$qt.$qw.$qg;
     try {
-        //$qry = $qc.$qt.$qw.$qg.$ql;
-        $qry = $qc.$qt.$qw.$qg;
         $result = $zo->query ($qry);
-        error_log($qry);
         if ($result) {
             $rows = $result->num_rows;
         } else {
             $rows = 0;
         }
-    error_log ("rows ".$rows);
     }
     catch (\mysqli_sql_exception $e) {
-        error_log ('search_result(): $qc $qt $qw');
+        error_log ('search_result(): '.$qry);
         error_log ('search_result(): '.$e->getMessage());
         throw new \Exception ('{ "error" : 123 }');
         return false;
     }
+
     if ($rows>$limit || $rows == 0) {
         throw new \Exception ('{ "count": '.$rows.' }');
         return false;
     }
-    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ("Search SQL [2] (search_result(), type=$type): $qs $qt $qw $qg $qo $ql");
-    }
-    $rows = [];
+
+    $qry = $qs.$qt.$qw.$qg.$qo.$ql;
     try {
-        //error_log($qs.$qt.$qw.$qg.$qo.$ql);
-        $result = $zo->query ($qs.$qt.$qw.$qg.$qo.$ql);
-        while ($r=$result->fetch_assoc()) {
-            $rows[] = $r;
-        }
-        error_log(" counted: ".count($rows));
+        $result = $zo->query ($qry);
+        $rows = $result->fetch_all(MYSQLI_ASSOC);
     }
     catch (\mysqli_sql_exception $e) {
-        error_log ('search_result(): $qs $qt $qw $qg $qo $ql');
+        error_log ('search_result(): '.$qry);
         error_log ('search_result(): '.$e->getMessage());
         throw new \Exception ('{ "error" : 124 }');
         return false;
     }
+
     return json_encode ($rows,JSON_PRETTY_PRINT);
 }
 
@@ -3005,9 +2996,7 @@ function select ($type) {
           ON `player`.`supporter_id`=`s`.`id`
       ";
     }
-    if (defined('BLOTTO_LOG_SEARCH_SQL') && BLOTTO_LOG_SEARCH_SQL) {
-        error_log ("Search SQL [3] (select(), type=$type): $q");
-    }
+
     try {
         $rs = $zo->query ($q);
         while ($r=$rs->fetch_assoc()) {
@@ -3910,6 +3899,9 @@ function update ( ) {
     }
     // MANDATE UPDATE
     if ($type=='m') {
+        if (!empty(['CancelMandate'])) {
+
+        }
         $error = null;
         $created = "false";
         if (strpos($fields['Sortcode'],'*')!==false) {
