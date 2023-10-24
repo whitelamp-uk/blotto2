@@ -20,10 +20,19 @@ if (defined('BLOTTO_EMAIL_FROM')) {
     $headers = "From: ".BLOTTO_EMAIL_FROM."\n";
 }
 
+$warning = '';
+if (defined('BLOTTO_DEV_PAY_FREEZE') && BLOTTO_DEV_PAY_FREEZE) {
+    $warning = " with warning(s)";
+}
+$body = "Message$warning at ".date('Y-m-d H:i:s')."\n".$argv[2]."\n";
+if (defined('BLOTTO_DEV_PAY_FREEZE') && BLOTTO_DEV_PAY_FREEZE) {
+    $body .= "Warning: BLOTTO_DEV_PAY_FREEZE=true so no payment data was processed and no cancellations were calculated.\n";
+}
+
 mail (
     BLOTTO_EMAIL_WARN_TO,
     BLOTTO_BRAND." - Status report for ".BLOTTO_ORG_NAME." from ".BLOTTO_MC_NAME,
-    "Message at ".date('Y-m-d H:i:s')." was:\n".$argv[2],
+    $body,
     $headers
 );
 

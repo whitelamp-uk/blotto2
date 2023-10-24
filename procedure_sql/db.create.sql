@@ -406,7 +406,7 @@ CREATE TABLE IF NOT EXISTS `blotto_update` (
   `player_id` int(11) unsigned DEFAULT NULL,
   `contact_id` int(11) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `updated_milestone_supporter_player_contact` (`updated`,`milestone`,`supporter_id`,`player_id`,`contact_id`),
+  UNIQUE KEY `milestone_date_supporter_player_contact` (`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`),
   KEY `updated` (`updated`),
   KEY `milestone` (`milestone`),
   KEY `milestone_date` (`milestone_date`),

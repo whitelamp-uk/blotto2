@@ -496,9 +496,14 @@ then
     echo "    CALL anls();"
     mariadb $dbm                                      <<< "CALL anls();"
     abort_on_error 26a $?
-    echo "    CALL cancellationsByRule();"
-    mariadb $dbm                                      <<< "CALL cancellationsByRule();"
-    abort_on_error 26b $?
+    if [ "$pfz" = "" ]
+    then
+        echo "    CALL cancellationsByRule();"
+        mariadb $dbm                                  <<< "CALL cancellationsByRule();"
+        abort_on_error 26b $?
+    else
+        echo "BLOTTO_DEV_PAY_FREEZE==true so not calling cancellationsByRule()"
+    fi
     echo "    CALL draws();"
     mariadb $dbm                                      <<< "CALL draws();"
     abort_on_error 26c $?

@@ -78,7 +78,10 @@ $qs = "
          ON `c`.`update_id`=`u`.`id`
   WHERE `c`.`update_id` IS NULL
   GROUP BY `u`.`id`
-  HAVING `u`.`updated`<=`last_interested`
+-- Used to be:
+-- HAVING `u`.`updated`<=`last_interested`
+-- TODO is this now right?
+  HAVING `u`.`milestone_date`<=`last_interested`
   ;
 ";
 try {
