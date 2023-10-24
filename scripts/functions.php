@@ -2761,7 +2761,10 @@ function search ( ) {
             if (!$expert) {
                 // Add \- to allow dashes through
                 $term_alphanum_extended = preg_replace('<[^A-z0-9\-@]>', '', $term);
-                if (strpos($term_alphanum_extended,'-') !== false) {
+                if (strpos($term_alphanum_extended,'@') !== false) {
+                    $term = '+"'.$term.'"'; 
+                }
+                elseif (strpos($term_alphanum_extended,'-') !== false) {
                     $term = '+"'.$term_alphanum_extended.'"'; 
                 }
                 else {
@@ -2774,7 +2777,8 @@ function search ( ) {
             continue;
         }
         // https://stackoverflow.com/questions/25088183/mysql-fulltext-search-with-symbol-produces-error-syntax-error-unexpected
-        $term = str_replace ('@',' +',$term); // 
+        // but since then it was breaking it
+        //$term = str_replace ('@',' +',$term); // 
         if (strlen($term)) {
             $terms[] = esc ($term);
         }
@@ -3840,7 +3844,7 @@ function update ( ) {
               $q        = "INSERT INTO `blotto_contact` SET ";
             }
             foreach ($fields as $f=>$val) {
-// TODO: blotto_contact.dob is date null
+            // TODO: blotto_contact.dob is date null
                 $q     .= "`$f`='".escm($val)."',";
             }
             $q        .= "`updater`='".escm($usr)."'";
@@ -3855,7 +3859,7 @@ function update ( ) {
             return "{ \"error\" : 106, \"errorMessage\" : \"Could not update contact details\" }";
         }
         $fieldnames = fields ();
-// TODO: Supporters.dob is varchar not null
+        // TODO: Supporters.dob is varchar not null
         $dob = "null";
         if ($fields['dob']) {
             $dob = esc ($fields['dob']);
@@ -3898,29 +3902,17 @@ function update ( ) {
         // Supporter update ends
     }
     // MANDATE UPDATE
-    if ($type=='m') {
-        if (!empty(['CancelMandate'])) {
-
-        }
+    elseif ($type=='m') {
         $error = null;
         $created = "false";
-        if (strpos($fields['Sortcode'],'*')!==false) {
-            $fields['Sortcode'] = '';
-        }
-        if (strpos($fields['Account'],'*')!==false) {
-            $fields['Account'] = '';
-        }
+        $cancellation = !empty($fields['CancelMandate']);
         $crf = esc ($fields['ClientRef']);
-        $ncr = esc (clientref_advance($fields['ClientRef']));
         $qs = "
           SELECT
             *
           FROM `blotto_build_mandate`
           WHERE `ClientRef`='$crf'
-            AND `Freq`!='Single'
-          ORDER BY `Created` DESC
-          LIMIT 0,1
-        ";  // ClientRef is unique - remove last lines of query?
+        ";  // ClientRef is unique - no need for further constraints
         try {
             $ms = $zo->query ($qs);
             $m = null;
@@ -3932,24 +3924,58 @@ function update ( ) {
             error_log ($e->getMessage());
             return "{ \"error\" : 109, \"errorMessage\" : \"Could not select mandate details\" }";
         }
+
+        if ($m['Freq'] == 'Single') { // TODO renumber error messages? For now use same as it would have been before
+            return "{ \"error\" : 108, \"errorMessage\" : \"This mandate was for a single payment\" }";   
+        }
+
         $ddr = esc ($m['RefOrig']);
         $ndr = 'SOMETHING UNIQUE!';
         $keys = [ 'ClientRef','Name','Sortcode','Account','Freq','Amount','StartDate' ];
+        if ($cancellation) {
+            $fields['Name'] = $m['Name'];
+            $fields['Sortcode'] = '';
+            $fields['Account'] = '';
+            $fields['Freq'] = '0';
+            $fields['Amount'] = '0';
+            $fields['StartDate'] = date('Y-m-d');
+            $ch = 0;
+            $ncr = '';
+        }
+        else {
+            if (strpos($fields['Sortcode'],'*')!==false) {
+                $fields['Sortcode'] = '';
+            }
+            if (strpos($fields['Account'],'*')!==false) {
+                $fields['Account'] = '';
+            }
+            if  ($fields['Name'] == $m['Name']
+              && $fields['Freq'] == $m['Freq']
+              && $fields['Amount'] == $m['Amount']
+              && ($fields['Sortcode'] == $m['Sortcode'] || $fields['Sortcode'] == '')
+              && ($fields['Account'] == $m['Account'] || $fields['Account'] == '') ) {
+                return "{ \"error\" : 110, \"errorMessage\" : \"No changes have been requested!\" }"; // NB 110 as below suppresses the "email your admin"
+            }
+
+            // Use the bespoke function chances()
+            try {
+                $ch  = intval (chances($fields['Freq'],$fields['Amount']));
+            }
+            catch (\Exception $e) {
+                return "{ \"error\" : 111, \"errorMessage\" : \"Could not calculate chances\" }";
+            }
+            $ncr = esc (clientref_advance($fields['ClientRef']));
+        }
         // Insert change request
         $q = "INSERT INTO `blotto_bacs` SET ";
         foreach ($keys as $k) {
-            if (!array_key_exists($k,$_POST) || !strlen($_POST[$k])) {
-                // This error code must remain stable because it is used for client-side logic in global.js::updateView()
-                return "{ \"error\" : 110, \"errorMessage\" : \"Data missing for change request: $k\" }";
+            if (empty($fields['CancelMandate'])) {
+                if (empty($_POST[$k])) { //(!array_key_exists($k,$_POST) || !strlen($_POST[$k])) {
+                    // This error code must remain stable because it is used for client-side logic in global.js::updateView()
+                    return "{ \"error\" : 110, \"errorMessage\" : \"Data missing for change request: $k\" }";
+                }
             }
             $q .= "`$k`='".esc($fields[$k],BLOTTO_CONFIG_DB)."',";
-        }
-        // Use the bespoke function chances()
-        try {
-            $ch  = intval (chances($fields['Freq'],$fields['Amount']));
-        }
-        catch (\Exception $e) {
-            return "{ \"error\" : 111, \"errorMessage\" : \"Could not calculate chances\" }";
         }
         $onm = $m['Name'];
         $osc = $m['Sortcode'];
@@ -3973,32 +3999,38 @@ function update ( ) {
             return "{ \"error\" : 112, \"errorMessage\" : \"Could not insert change request\" }";
         }
         $send               = false;
-        // if freq or amount have changed
-        if ($fields['Freq']!=$m['Freq'] || $fields['Amount']!=$m['Amount']) {
-            $message  = "BACS change for client ref ".$fields['ClientRef']."\n";
-            // instantiate pay api
-            $api = false;
-            foreach (pay_apis() as $a) {
-                // The new mandate provider must be the old mandate provider
-                if ($a->code==$fields['Provider']) {
-                    // It must be a DD provider
-                    if ($a->dd) {
-                        // Include if possible and needed
-                        if (is_readable($a->file)) {
-                            require_once $a->file;
-                            // Instantiate if possible and the class has the method
-                            if (class_exists($a->class) && method_exists($a->class,'player_new')) {
-                                $api = new $a->class ($zom); // use the make database
-                                $api_code = $a->code;
-                                break;
-                            }
+
+        // instantiate pay api
+        $api = false;
+        foreach (pay_apis() as $a) {
+            // The new mandate provider must be the old mandate provider
+            if ($a->code==$fields['Provider']) {
+                // It must be a DD provider
+                if ($a->dd) {
+                    // Include if possible and needed
+                    if (is_readable($a->file)) {
+                        require_once $a->file;
+                        // Instantiate if possible and the class has either method
+                        if (class_exists($a->class) && (method_exists($a->class,'player_new') || method_exists($a->class,'cancel_mandate'))) {
+                            $api = new $a->class ($zom); // use the make database
+                            $api_code = $a->code;
+                            break;
                         }
                     }
-                    break;
                 }
+                break;
             }
+        }
+
+        if ($cancellation  && method_exists($api, 'cancel_mandate')) {
+            $response = $api->cancel_mandate($crf); //TODO error handling
+            error_log(print_r($response, true));
+        }
+        // if freq or amount have changed
+        elseif ($fields['Freq']!=$m['Freq'] || $fields['Amount']!=$m['Amount']) {
+            $message  = "BACS change for client ref ".$fields['ClientRef']."\n";
             // call player_new
-            if ($api) {
+            if (method_exists($api,'player_new')) {
                 $qs = "
                   SELECT
                        `c`.`title`
@@ -4080,6 +4112,7 @@ function update ( ) {
                     }
                     else {
                         $created = "true";
+                        //TODO - is this right?  How can there be anything in the collection table with the new clientref?
                         // Set the core RefNo
                         $qu = "
                             UPDATE `blotto_build_collection`
@@ -4100,17 +4133,21 @@ function update ( ) {
                     }
                 }
             }
+            else { // no player_new so send email
+                $send = true;
+            }
         }
         else {
             $send = true;
+        }
+
+        if ($send && defined('BLOTTO_EMAIL_BACS_TO')) {
             $message .= "A mandate modification has been requested: $crf\n";
             $message .= "This request has been recorded in the BACS table.\n";
             $message .= "Currently this request must be processed manually.\n";
             if ($fields['StartDate']) {
                 $message .= "A start date has been specified.\n";
             }
-        }
-        if ($send && defined('BLOTTO_EMAIL_BACS_TO')) {
             if ($fields['Name']!=$m['Name']) {
                 $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
                 $message .= "Old name: {$m['Name']}, new name: {$fields['Name']}\n";
@@ -4134,7 +4171,7 @@ function update ( ) {
         }
         return "{ \"ok\" : true, \"created\" : $created }";
     }
-    return "{ \"error\" : 117, \"errorMessage\" : \"Update type '$t' not recognised\", \"created\" : $created }";
+    //return "{ \"error\" : 117, \"errorMessage\" : \"Update type '$t' not recognised\", \"created\" : $created }"; confirm as obsolete please?
 }
 
 function valid_date ($date,$format='Y-m-d') {
