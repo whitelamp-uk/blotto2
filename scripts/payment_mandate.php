@@ -47,17 +47,21 @@ try {
               SELECT
                 `cand`.*
               FROM `tmp_supporter` AS `cand`
+--              LEFT JOIN `blotto_supporter` AS `s`
+-- a mandate is a weak entity compared to a supporter
+              JOIN `blotto_supporter` AS `s`
+                ON `s`.`client_ref`=`cand`.`ClientRef`
               LEFT JOIN (
                 $select
               ) AS `m`
                 ON `m`.`crf`=`cand`.`ClientRef`
-              LEFT JOIN `blotto_supporter` AS `s`
-                     ON `s`.`client_ref`=`cand`.`ClientRef`
               -- No mandate exists
               WHERE `m`.`crf` IS NULL
                 AND (
                 -- Either no supporter exists
-                     `s`.`id` IS NULL
+--                     `s`.`id` IS NULL
+-- was made obsolete by above change
+                     1
                 -- Or the supporter was inserted recently
                   OR `s`.`inserted`>DATE_SUB(NOW(),INTERVAL $interval)
               )
