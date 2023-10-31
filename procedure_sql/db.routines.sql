@@ -169,6 +169,7 @@ BEGIN
       FROM `blotto_player` AS `ip`
       JOIN `blotto_supporter` AS `is`
         ON `is`.`id`=`ip`.`supporter_id`
+       AND `is`.`mandate_blocked`=0
       JOIN (
         SELECT
           `supporter_id`
