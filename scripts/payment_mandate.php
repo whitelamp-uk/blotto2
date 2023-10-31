@@ -51,6 +51,8 @@ try {
 -- a mandate is a weak entity compared to a supporter
               JOIN `blotto_supporter` AS `s`
                 ON `s`.`client_ref`=`cand`.`ClientRef`
+-- do not create mandate if supporter is blocked
+               AND `s`.`mandate_blocked`=0
               LEFT JOIN (
                 $select
               ) AS `m`
