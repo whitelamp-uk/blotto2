@@ -73,6 +73,7 @@ $file = [
        ,'entries.php'
        ,'invoices.php'
        ,'legends.php'
+       ,'mandates_check.php'
        ,'manual.php'
        ,'payment_fetch.php'
        ,'payment_mandate.php'

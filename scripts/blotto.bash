@@ -415,10 +415,16 @@ then
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "17. Complete a final player check"
+    echo "17. Complete final player and mandate checks"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players_check.php -q
     abort_on_error 17 $?
+    # This is a warning system - do not abort
+    /usr/bin/php $prg $sw "$cfg" exec mandates_check.php -q
+    if [ "$?" != "0"]
+    then
+        echo "        Bad mandate(s) were found (or mandates_check.php failed)"
+    fi
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 fi
