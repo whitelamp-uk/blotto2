@@ -61,7 +61,7 @@ try {
                 -- Either no supporter exists
 --                     `s`.`id` IS NULL
 -- was made obsolete by above change
-                     1
+                     0
                 -- Or the supporter was inserted recently
                   OR `s`.`inserted`>DATE_SUB(NOW(),INTERVAL $interval)
               )
