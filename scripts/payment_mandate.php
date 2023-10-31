@@ -6,6 +6,7 @@ require $argv[1];
 
 $interval = BLOTTO_DD_TRY_INTERVAL;
 $errors = [];
+$api = false;
 
 echo "    Generating/posting mandate data\n";
 
@@ -110,7 +111,7 @@ try {
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
-    if (!$api->errorCode) {
+    if (!$api || !$api->errorCode) {
         // Unexpected error
         exit (104);
     }
