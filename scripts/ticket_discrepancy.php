@@ -141,6 +141,9 @@ $qs = "
      ,''
     ) AS `ticket_numbers`
   FROM `$mdb`.`blotto_player` AS `p`
+  JOIN `$mdb`.`blotto_supporter` AS `s`
+    ON `s`.`id`=`p`.`supporter_id`
+   AND `s`.`mandate_blocked`=0
   JOIN `$mdb`.`blotto_build_mandate` AS `m`
     ON `m`.`ClientRef`=`p`.`client_ref`
   LEFT JOIN `$tdb`.`blotto_ticket` AS `t`
