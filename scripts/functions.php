@@ -3998,7 +3998,10 @@ function update ( ) {
             error_log ('update(): '.$e->getMessage());
             return "{ \"error\" : 112, \"errorMessage\" : \"Could not insert change request\" }";
         }
-        $send               = false;
+
+        // whatever happens from now on, we send an email
+        $send =  defined('BLOTTO_EMAIL_BACS_TO');
+        $message  = "BACS change for client ref ".$fields['ClientRef']."\n";
 
         // instantiate pay api
         $api = false;
@@ -4022,13 +4025,17 @@ function update ( ) {
             }
         }
 
-        if ($cancellation  && method_exists($api, 'cancel_mandate')) {
-            $response = $api->cancel_mandate($crf); //TODO error handling
-            error_log(print_r($response, true));
-        }
+        if ($cancellation) {
+            if (method_exists($api, 'cancel_mandate')) {
+                $response = $api->cancel_mandate($crf); //TODO error handling
+                $message .= "API cancel_mandate() called, response was ".print_r($response, true)."\n";
+                error_log(print_r($response, true));
+            } else {
+                $message .= "Cancellation requested, must be done manually\n";
+            }
+        } 
         // if freq or amount have changed
         elseif ($fields['Freq']!=$m['Freq'] || $fields['Amount']!=$m['Amount']) {
-            $message  = "BACS change for client ref ".$fields['ClientRef']."\n";
             // call player_new
             if (method_exists($api,'player_new')) {
                 $qs = "
@@ -4060,14 +4067,13 @@ function update ( ) {
                 try {
                     $rs = $zom->query ($qs);
                     $s=$rs->fetch_assoc ();
-                    $message .= "A replacement mandate has been created automatically (change of amount/frequency): $ncr\n";
-                    $message .= "This request has been recorded in the BACS table.\n";
-                    $message .= "Currently the replaced mandate must be cancelled manually.\n";
                 }
                 catch (\mysqli_sql_exception $e) {
                     $errno = 113;
                     error_log ($e->getMessage());
                     $error = "Failed to select supporter data";
+                    $message .= $error."\n";
+                    $message .= "Could not create new mandate\n";
                 }
                 // see import.supporter.sql
                 if (!$error) {
@@ -4102,59 +4108,59 @@ function update ( ) {
                     if ($rtn===null) {
                         $errno = 114;
                         $error = "Failed to create new mandate: API error {$api->errorCode}";
+                        $message .= $error."\n";
                     }
                     elseif ($rtn===false) {
                         $created = "true";
-                        $send = true;
                         $errno = 115;
                         $error = "Created mandate but failed to complete other processes: API error {$api->errorCode} - report this as a technical fault";
                         $message .= $error."\n";
                     }
                     else {
                         $created = "true";
-                        //TODO - is this right?  How can there be anything in the collection table with the new clientref?
-                        // Set the core RefNo
+                        // update client_ref
                         $qu = "
                             UPDATE `blotto_build_collection`
-                            SET
-                              `RefNo`=CONCAT($oid,digitsOnly(`RefOrig`))
-                            WHERE `ClientRef`='$ncr'
-                        ";
+                            SET `ClientRef`='$ncr'
+                            WHERE `RefOrig`= '$ddr'
+                              ";
                         try {
                             $zom->query ($qu);
                             $zo->query ($qu);
+                            $message .= "Created mandate with player_new()\n";
                         }
                         catch (\mysqli_sql_exception $e) {
                             $errno = 116;
                             error_log ($e->getMessage());
-                            $error = "Created mandate but failed to set the core collection table RefNo - report this as a technical fault";
+                            $error = "Created mandate but failed to set the core collection table ClientRef - report this as a technical fault";
                             $message .= $error."\n";
+                        }
+                        if (method_exists($api, 'cancel_mandate')) {
+                            $response = $api->cancel_mandate($crf); //TODO error handling
+                            $message .= "API cancel_mandate() called, response was ".print_r($response, true)."\n";
+                            error_log(print_r($response, true));
+                        } else {
+                            $message .= "Old mandate must be cancelled manually\n";
                         }
                     }
                 }
             }
-            else { // no player_new so send email
-                $send = true;
-            }
-        }
-        else {
-            $send = true;
         }
 
-        if ($send && defined('BLOTTO_EMAIL_BACS_TO')) {
-            $message .= "A mandate modification has been requested: $crf\n";
-            $message .= "This request has been recorded in the BACS table.\n";
-            $message .= "Currently this request must be processed manually.\n";
-            if ($fields['StartDate']) {
-                $message .= "A start date has been specified.\n";
+        if ($send) {
+            if (!$cancellation) {
+                if ($fields['StartDate']) {
+                    $message .= "A start date has been specified.\n";
+                }
+                if ($fields['Name']!=$m['Name']) {
+                    $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
+                    $message .= "Old name: {$m['Name']}, new name: {$fields['Name']}\n";
+                }
+                if ($fields['Sortcode']!=$m['Sortcode'] || $fields['Account']!=$m['Account']) {
+                    $message .= "The mandate sort code and/or account name has changed.\n";
+                }
             }
-            if ($fields['Name']!=$m['Name']) {
-                $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
-                $message .= "Old name: {$m['Name']}, new name: {$fields['Name']}\n";
-            }
-            if ($fields['Sortcode']!=$m['Sortcode'] || $fields['Account']!=$m['Account']) {
-                $message .= "The mandate sort code and/or account name has changed.\n";
-            }
+
             $headers = null;
             if (defined('BLOTTO_EMAIL_FROM')) {
                 $headers = "From: ".BLOTTO_EMAIL_FROM."\n";

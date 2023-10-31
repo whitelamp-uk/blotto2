@@ -154,6 +154,7 @@ function mandateSelectResult (responseText) {
         Freq: "Payment frequency",
         Amount: "Payment amount",
         StartDate: "Start date",
+        CancelMandate: "Terminate Mandate",
     }
     body = form.querySelector ('tbody');
     body.innerHTML = '';
@@ -190,6 +191,22 @@ function mandateSelectResult (responseText) {
             input.min = day.toISOString().split("T")[0];
             cell.appendChild (input);
         }
+        else if (fname=='CancelMandate') {
+            input = document.createElement ('input');
+            input.setAttribute ('type','checkbox');
+            input.setAttribute ('name',fname);
+            input.setAttribute ('style',"text-align:left");
+            cell.appendChild (input);
+            input.addEventListener('change', function() {
+                form = document.getElementById ('change-mandate');
+                myfields = form.querySelectorAll ('input[type=text],input[type=date],select'); // get all others
+                for (myfield of myfields) {
+                    myfield.disabled = this.checked;
+                }
+                console.log("myfields");
+                console.log(myfields);
+            });
+        }
         else {
             input = document.createElement ('input');
             input.setAttribute ('type','text');
@@ -209,6 +226,11 @@ function mandateUpdate (form) {
     data = new FormData (form);
     if (!form.classList.contains('changed')) {
         return;
+    }
+    if (form.CancelMandate.checked) {
+        if (!confirm("You are terminating this mandate.\nAre you sure?\nClick OK if you are.")) {
+            return;
+        }
     }
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
@@ -241,6 +263,7 @@ function mandateUpdateResult (responseText) {
         }
         console.log ('Error: '+responseText);
         updateView ('m',{ error : null, errorMessage : "Update request failed (unspecified error)" });
+                console.log ('safdad ');
         return;
     }
     updateView ('m',results);
@@ -318,6 +341,7 @@ function submitHandler (evt) {
     }
 }
 
+// used in both mandate and supporter searches!
 function supporterSearch (elementId) {
     var form,query,xhttp;
     form = document.getElementById(elementId).form;
@@ -326,6 +350,7 @@ function supporterSearch (elementId) {
     xhttp.onreadystatechange = function ( ) {
         if (this.readyState==4) {
             if (this.status==200) {
+console.log(xhttp);
                 supporterSearchResults (xhttp.responseText);
             } else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
@@ -363,11 +388,14 @@ function supporterSearchResults (responseText) {
         results = JSON.parse (responseText);
     }
     catch (e) {
-        if (responseText.indexOf('<!doctype html>')!==false) {
-            // Looks like we have logged out or session has expired
-            window.top.location.href = './';
+        if (responseText.indexOf('<!doctype html>')>=0) {
+            // Looks like we have logged out or session has expired but log in case the server has broken
+            console.log ('Response text is HTML instead of JSON: '+responseText);
+            alert ('Sorry, it looks like your login has expired');
+            return;
         }
-        console.log ('Error: '+responseText);
+        console.log ('Error (s): '+responseText);
+        console.trace();
         message ('Search request failed','err');
         return;
     }
@@ -579,6 +607,7 @@ function updateHandle (formId) {
 }
 
 function updateView (type,results) {
+    console.log("a");
     var err,field,fields,form,however,img,p,section,txt;
     section = document.querySelector ('section.update-message');
     if (type=='s') {
@@ -635,6 +664,9 @@ function updateView (type,results) {
             txt.push ('Please copy this full message into an email to your administrator');
         }
     }
+    console.log("b");
+
+    section.innerHTML = "";
     img = document.createElement ('img');
     img.classList.add ('close');
     img.addEventListener ('click',function(evt){evt.currentTarget.parentElement.classList.remove('active')});
@@ -644,6 +676,7 @@ function updateView (type,results) {
         p.innerText = txt[i];
         section.appendChild (p);
     }
+    console.log("c");
     section.classList.add ('active');
 }
 
