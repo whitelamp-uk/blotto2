@@ -44,7 +44,9 @@ while ($m=$ms->fetch_assoc()) {
     $crf     = esc ($crf);
     $crforig = esc ($crforig);
     $qs = "
-      SELECT `id`
+      SELECT
+        `id`
+       ,`mandate_blocked`
       FROM `blotto_supporter`
       WHERE `client_ref`='$crforig'
       LIMIT 0,1
@@ -53,11 +55,15 @@ while ($m=$ms->fetch_assoc()) {
     try {
         $orig = $zo->query ($qs);
         if ($s=$orig->fetch_assoc()) {
-            echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
-            echo "  ({$s['id']},'$crf');\n";
-            continue;
+            if ($s['mandate_blocked']) {
+                fwrite (STDERR,"Player not required for blocked supporter with original ClientRef '$crforig'\n");
+            }
+            else {
+                echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
+                echo "  ({$s['id']},'$crf');\n";
+            }
         }
-        fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
+        fwrite (STDERR,"No supporter found (or mandate blocked) for original ClientRef '$crforig' to create player for '$crf'\n");
         exit (104);
     }
     catch (\mysqli_sql_exception $e) {
