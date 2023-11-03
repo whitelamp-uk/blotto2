@@ -52,6 +52,6 @@ if ($count=count($bads)) {
     foreach ($bads as $b) {
         $msg .= "$b\n";
     }
-    notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates",$message);
+    notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates",$msg);
 }
 
