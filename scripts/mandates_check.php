@@ -50,7 +50,7 @@ if ($count=count($bads)) {
     fwrite (STDERR,"Bad mandates identified: ".implode(',',$bads));
     $msg = "The following mandates are bad and require cancellation asap.\nThey are still live but the supporters are mandate_blocked.\n\n";
     foreach ($bads as $b) {
-        $msg .= "$b\n";
+        $msg .= "{$b['ClientRef']}\t{$b['Name']}\n";
     }
     notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates",$msg);
 }
