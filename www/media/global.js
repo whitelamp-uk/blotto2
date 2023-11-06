@@ -350,7 +350,6 @@ function supporterSearch (elementId) {
     xhttp.onreadystatechange = function ( ) {
         if (this.readyState==4) {
             if (this.status==200) {
-console.log(xhttp);
                 supporterSearchResults (xhttp.responseText);
             } else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
