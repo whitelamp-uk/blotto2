@@ -2806,6 +2806,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     }
 
     // TODO (perhaps) use count() rather than num_rows
+    // Note BCR needs to be before other results
     $qc = "
       SELECT
         IFNULL(`s`.`current_client_ref`,`m`.`ClientRef`) AS `ClientRef`
@@ -2813,7 +2814,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     $qs = "
       SELECT
         IFNULL(`s`.`current_client_ref`,`m`.`ClientRef`) AS `ClientRef`
-       ,CONCAT_WS(
+        , MAX(`bacs`.`requested_at`) as `BCR`
+        ,CONCAT_WS(
           ' '
          ,`s`.`signed`
          ,CONCAT_WS(' ',`s`.`title`,`s`.`name_first`,`s`.`name_last`)
@@ -2826,8 +2828,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
          ,`s`.`postcode`
          ,`s`.`dob`
        ) AS `Supporter`
-       ,`m`.`Freq`
-       ,CONCAT_WS(
+        ,`m`.`Freq`
+        ,CONCAT_WS(
           ' '
          ,`m`.`Status`
          ,`m`.`ClientRef`
@@ -2846,7 +2848,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
                  ON `p`.`supporter_id`=`s`.`supporter_id`
           LEFT JOIN `blotto_build_mandate` AS `m`
                  ON `m`.`ClientRef`=`p`.`client_ref`
-        ";
+          LEFT JOIN `blotto_config`.`blotto_bacs` AS `bacs`
+                 ON `bacs`.`ClientRef`=`m`.`ClientRef`        ";
     }
     else {
         $qt = "
@@ -2855,34 +2858,36 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
                  ON `p`.`client_ref`=`m`.`ClientRef`
           LEFT JOIN `Supporters` AS `s`
                  ON `s`.`supporter_id`=`p`.`supporter_id`
+          LEFT JOIN `blotto_config`.`blotto_bacs` AS `bacs`
+                 ON `bacs`.`ClientRef`=`m`.`ClientRef`
         ";
     }
     $qw = "
       WHERE (
             `s`.`supporter_id` IS NOT NULL
         AND MATCH(
-              `name_first`
-             ,`name_last`
-             ,`email`
-             ,`mobile`
-             ,`telephone`
-             ,`address_1`
-             ,`address_2`
-             ,`address_3`
-             ,`town`
-             ,`postcode`
-             ,`dob`
+              `s`.`name_first`
+             ,`s`.`name_last`
+             ,`s`.`email`
+             ,`s`.`mobile`
+             ,`s`.`telephone`
+             ,`s`.`address_1`
+             ,`s`.`address_2`
+             ,`s`.`address_3`
+             ,`s`.`town`
+             ,`s`.`postcode`
+             ,`s`.`dob`
             ) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
       )
          OR (
             `m`.`RefNo` IS NOT NULL
         AND MATCH(
-              `Name`
-             ,`Sortcode`
-             ,`Account`
-             ,`StartDate`
-             ,`LastStartDate`
-             ,`Freq`
+              `m`.`Name`
+             ,`m`.`Sortcode`
+             ,`m`.`Account`
+             ,`m`.`StartDate`
+             ,`m`.`LastStartDate`
+             ,`m`.`Freq`
             ) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
       )
     ";

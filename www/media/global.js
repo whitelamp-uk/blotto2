@@ -419,25 +419,33 @@ function supporterSearchResults (responseText) {
         cells = 0;
         row = document.createElement ('tr');
         for (key in results[i]) {
-            cells++;
-            cell = document.createElement ('td');
-            if (key=='ClientRef') {
-                link = document.createElement ('a');
-                link.textContent = results[i][key];
-                link.setAttribute ('href','#');
-                link.setAttribute ('data-clientref',results[i][key]);
-                if (fn==window.mandateSelect && results[i].Freq=='Single') {
-                    link.addEventListener ('click',function(evt){message('This mandate was for a single payment','err')});
+            console.log ("Key "+key);
+            console.log ("val " +results[i][key]);
+            if (key=='BCR') {
+                if (results[i]['BCR'] != null) {
+                    results[i]['Supporter'] += ' Last BCR: ' + results[i]['BCR'];
+                }
+            } else {
+                cells++;
+                cell = document.createElement ('td');
+                if (key=='ClientRef') {
+                    link = document.createElement ('a');
+                    link.textContent = results[i][key];
+                    link.setAttribute ('href','#');
+                    link.setAttribute ('data-clientref',results[i][key]);
+                    if (fn==window.mandateSelect && results[i].Freq=='Single') {
+                        link.addEventListener ('click',function(evt){message('This mandate was for a single payment','err')});
+                    }
+                    else {
+                        link.addEventListener ('click',fn);
+                    }
+                    cell.appendChild (link);
                 }
                 else {
-                    link.addEventListener ('click',fn);
+                    cell.textContent = results[i][key];
                 }
-                cell.appendChild (link);
+                row.appendChild (cell);
             }
-            else {
-                cell.textContent = results[i][key];
-            }
-            row.appendChild (cell);
         }
         body.appendChild (row);
     }
