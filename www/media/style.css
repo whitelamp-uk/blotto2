@@ -408,6 +408,18 @@ form#change-supporter.active {
     display:            block;
 }
 
+form#change-mandate.active.blocked td,
+form#change-supporter.active.blocked td {
+    color:              grey;
+}
+
+form#change-mandate > label:first-of-type,
+form#change-supporter > label:first-of-type {
+    display: inline-block;
+    margin-top: 0.35em;
+    margin-left: 11.8em;
+}
+
 form#change-mandate button,
 form#change-supporter button {
     border-color:       var(--blotto-color-bdr-popup);
@@ -422,11 +434,18 @@ form#change-supporter button.form-close {
 }
 
 form#change-mandate button#post-mandate,
+form#change-supporter button#post-supporter-mandate-block,
 form#change-supporter button#post-supporter {
     position:           fixed;
     left:               calc(20vw + 5em);
     top:                1em;
     font-size:          0.8em;
+}
+form#change-supporter button#post-supporter-mandate-block {
+    position:           static;
+    float:              right;
+    margin-top:         0.3em;
+    margin-right:       0.3em;
 }
 
 form#change-mandate thead,
@@ -434,10 +453,17 @@ form#change-supporter thead {
     height:             1.8em;
 }
 
-form#change-mandate tr td:first-child,
-form#change-supporter tr td:first-child {
+form#change-mandate tr td:nth-child(1),
+form#change-supporter tr td:nth-child(1) {
     width:              10em;
     text-align:         right;
+}
+
+form#change-mandate input[type="checkbox"],
+form#change-mandate input[type="radio"],
+form#change-supporter input[type="checkbox"],
+form#change-supporter input[type="radio"] {
+    width:               initial;
 }
 
 form#change-mandate input,

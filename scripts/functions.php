@@ -2980,6 +2980,7 @@ function select ($type) {
       $q = "
         SELECT
           `s`.`client_ref` AS `ClientRef`
+         ,`s`.`mandate_blocked`
          ,`c`.*
         FROM `blotto_supporter` AS `s`
         JOIN (
@@ -3818,15 +3819,11 @@ function tickets ($provider_code,$refno,$cref,$qty) {
 }
 
 function update ( ) {
-    if (!array_key_exists('t',$_GET) || !in_array($_GET['t'],['m','s'])) {
-        return "{ \"error\" : 104, \"errorMessage\" : \"Update called with incorrect parameters\" }";
-    }
     $oid                = BLOTTO_ORG_ID;
-    $type               = $_GET['t'];
     $usr                = $_SESSION['blotto'];
     $fields             = $_POST;
     $dbc                = BLOTTO_CONFIG_DB;
-    unset ($fields['update']);
+    $headers            = null;
     $zoc                = connect ($dbc);
     $zom                = connect (BLOTTO_MAKE_DB);
     $zo                 = connect ();
@@ -3834,6 +3831,50 @@ function update ( ) {
         error_log ($e->getMessage());
         return "{ \"error\" : 105, \"errorMessage\" : \"Could not connect to database\" }";
     }
+    // BLOCK
+    if (array_key_exists('b',$_GET)) {
+        $r = intval ($_GET['r']);
+        $b = intval ($_GET['b']);
+        $c = $_GET['c'];
+        $qs = "UPDATE `blotto_supporter` SET `mandate_blocked`=$b WHERE `id`=$r";
+        try {
+            $zom->query ($qs);
+            $zo->query ($qs);
+        }
+        catch (\mysqli_sql_exception $e) {
+            error_log ($e->getMessage());
+            return "{ \"error\" : 112, \"errorMessage\" : \"Could not update supporter mandate block = $b\" }";
+        }
+        if ($zom->affected_rows) {
+            if (defined('BLOTTO_EMAIL_FROM')) {
+                $headers = "From: ".BLOTTO_EMAIL_FROM."\n";
+            }
+            if ($b) {
+                $sbj = BLOTTO_BRAND." Supporter blocked for ".BLOTTO_ORG_NAME;
+                $msg = BLOTTO_ORG_NAME." supporter # $r $c was blocked";
+                $rtn = "{ \"ok\" : true, \"blocked\" : 1 }";
+            }
+            else {
+                $sbj = BLOTTO_BRAND." Supporter unblocked for ".BLOTTO_ORG_NAME;
+                $msg = BLOTTO_ORG_NAME." supporter # $r $c was unblocked";
+                $rtn = "{ \"ok\" : true, \"blocked\" : 0 }";
+            }
+            mail (
+                BLOTTO_EMAIL_BACS_TO,
+                $sbj,
+                $msg,
+                $headers
+            );
+        }
+        return $rtn;
+        // Supporter block/unblock ends
+    }
+    // UPDATE
+    if (!array_key_exists('t',$_GET) || !in_array($_GET['t'],['m','s'])) {
+        return "{ \"error\" : 104, \"errorMessage\" : \"Update called with incorrect parameters\" }";
+    }
+    $type               = $_GET['t'];
+    unset ($fields['update']);
     // SUPPORTER UPDATE
     if ($type=='s') {
         $qs = "SELECT id FROM `blotto_contact` WHERE `supporter_id` = ".escm($fields['supporter_id'])." AND DATE(`created`) = CURDATE()";
@@ -4175,7 +4216,6 @@ function update ( ) {
                 }
             }
 
-            $headers = null;
             if (defined('BLOTTO_EMAIL_FROM')) {
                 $headers = "From: ".BLOTTO_EMAIL_FROM."\n";
             }

@@ -23,8 +23,10 @@
         <form id="change-supporter">
           <section class="update-message"></section>
           <input type="hidden" name="supporter_id" />
-          <button id="post-supporter" name="update">Update</button>
           <button class="form-close">Close</button>
+          <button id="post-supporter-mandate-block" name="block_mandate">Block mandate</button>
+          <button id="post-supporter" name="update">Update</button>
+          <label></label>
           <table>
             <thead>
               <tr>

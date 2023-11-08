@@ -43,6 +43,10 @@ function clickHandler (evt) {
         evt.preventDefault ();
         supporterUpdate (evt.target.form);
     }
+    if (evt.target.id=='post-supporter-mandate-block') {
+        evt.preventDefault ();
+        supporterUpdateBlock (evt.target.form);
+    }
 }
 
 function findInQueryString (k) {
@@ -143,6 +147,9 @@ function mandateSelectResult (responseText) {
         field.disabled = false;
     }
     form.classList.remove ('changed');
+    if ('mandate_blocked' in form) {
+        form.block_mandate.disabled = false;
+    }
     form.ClientRef.value = response.data[0].ClientRef;
     form.Provider.value = response.data[0].Provider;
     heading = form.querySelector ('thead th:nth-of-type(2)');
@@ -263,7 +270,6 @@ function mandateUpdateResult (responseText) {
         }
         console.log ('Error: '+responseText);
         updateView ('m',{ error : null, errorMessage : "Update request failed (unspecified error)" });
-                console.log ('safdad ');
         return;
     }
     updateView ('m',results);
@@ -471,7 +477,7 @@ function supporterSelect (evt) {
 }
 
 function supporterSelectResult (responseText) {
-    var body,cancel,cell,field,fields,fname,form,heading,i,input,msg,response,row,tips;
+    var body,cancel,cell,field,fields,fname,form,heading,i,input,label,msg,response,row,tips;
     msg = document.querySelector ('.update-message');
     msg.classList.remove ('active');
     msg.innerHTML = '';
@@ -493,12 +499,10 @@ function supporterSelectResult (responseText) {
         return;
     }
     form = document.getElementById ('change-supporter');
-    fields = form.querySelectorAll ('button,input,select');
-    for (field of fields) {
-        field.disabled = false;
-    }
     form.classList.remove ('changed');
+    form.block_mandate.dataset.state = response.data[0].mandate_blocked;
     form.supporter_id.value = response.data[0].supporter_id;
+    form.dataset.clientref = response.data[0].ClientRef;
     heading = form.querySelector ('thead th:nth-of-type(2)');
     heading.textContent = response.data[0].client_ref;
     fields = {
@@ -544,6 +548,34 @@ function supporterSelectResult (responseText) {
         row.appendChild (cell);
         body.appendChild (row);
     }
+    fields = form.querySelectorAll ('button,input,select');
+    label = form.querySelector ('label:first-of-type');
+    if ('mandate_blocked' in response.data[0] && 1*response.data[0].mandate_blocked) {
+        for (field of fields) {
+            field.disabled = true;
+        }
+        form.classList.add ('blocked');
+        form.update.disabled = true;
+        if ('block_mandate' in form) {
+            form.block_mandate.disabled = false;
+            form.block_mandate.dataset.state = '1';
+            form.block_mandate.textContent = 'Unblock mandate';
+            label.textContent = 'Blocked';
+        }
+    }
+    else {
+        for (field of fields) {
+            field.disabled = false;
+        }
+        form.classList.remove ('blocked');
+        form.update.disabled = false;
+        if ('block_mandate' in form) {
+            form.block_mandate.disabled = false;
+            form.block_mandate.dataset.state = '0';
+            form.block_mandate.textContent = 'Block mandate';
+            label.textContent = '';
+        }
+    }
     form.classList.add ('active');
 }
 
@@ -573,7 +605,55 @@ function supporterUpdate (form) {
     }
 }
 
+function supporterUpdateBlock (form) {
+    var query,xhttp;
+    if (!confirm('Are you sure?')) {
+        return;
+    }
+    query  = './?update&t=s&r=' + form.supporter_id.value;
+    query += '&b=' + (1 - 1*form.block_mandate.dataset.state);
+    query += '&c=' + form.dataset.clientref;
+    xhttp = new XMLHttpRequest ();
+    xhttp.onreadystatechange = function ( ) {
+        if (this.readyState==4) {
+            if (this.status==200) {
+                supporterUpdateBlockResult (xhttp.responseText);
+            }
+            else {
+                updateView ('m',{ error : null, errorMessage : "Supporter block request failed: server status " + this.status });
+            }
+        }
+    };
+    try {
+        xhttp.open ('GET',query,true);
+        xhttp.send ();
+    }
+    catch (e) {
+        console.log (e.message);
+    }
+}
+
+function supporterUpdateBlockResult (responseText) {
+    var blocked;
+    try {
+        blocked = JSON.parse (responseText);
+        blocked = blocked.blocked;
+    }
+    catch (e) {
+        if (responseText.indexOf('<!doctype html>')!==false) {
+            // Looks like we have logged out or session has expired
+            window.top.location.href = './';
+            return;
+        }
+        console.error ('Error: '+responseText);
+        updateView ('s',{ error : null, errorMessage : "Supporter block request failed (unspecified error)" });
+        return;
+    }
+    updateViewBlock ('s',blocked);
+}
+
 function supporterUpdateResult (responseText) {
+    var results;
     try {
         results = JSON.parse (responseText);
     }
@@ -606,7 +686,11 @@ function unloading ( ) {
 }
 
 function updateChange (evt) {
-    evt.currentTarget.classList.add ('changed');
+    var form = evt.currentTarget;
+    form.classList.add ('changed');
+    if ('block_mandate' in form) {
+        form.block_mandate.disabled = true;
+    }
 }
 
 function updateHandle (formId) {
@@ -614,7 +698,6 @@ function updateHandle (formId) {
 }
 
 function updateView (type,results) {
-    console.log("a");
     var err,field,fields,form,however,img,p,section,txt;
     section = document.querySelector ('section.update-message');
     if (type=='s') {
@@ -629,8 +712,11 @@ function updateView (type,results) {
         for (field of fields) {
             field.disabled = true;
         }
-        fields = form.querySelectorAll ('.form-close');
-        for (field of fields) {
+        if ('block_mandate' in form) {
+            form.block_mandate.disabled = false;
+        }
+        field = form.querySelector ('.form-close');
+        if (field) {
             field.disabled = false;
         }
     }
@@ -671,8 +757,6 @@ function updateView (type,results) {
             txt.push ('Please copy this full message into an email to your administrator');
         }
     }
-    console.log("b");
-
     section.innerHTML = "";
     img = document.createElement ('img');
     img.classList.add ('close');
@@ -683,7 +767,56 @@ function updateView (type,results) {
         p.innerText = txt[i];
         section.appendChild (p);
     }
-    console.log("c");
+    section.classList.add ('active');
+}
+
+function updateViewBlock (type,blocked) {
+    var err,field,fields,form,however,img,label,p,section,txt;
+    txt = [];
+    section = document.querySelector ('section.update-message');
+    if (type=='s') {
+        form = document.getElementById ('change-supporter');
+    }
+    if (type=='m') {
+        form = document.getElementById ('change-mandate');
+    }
+    label = form.querySelector ('label:first-of-type');
+    for (i=0;form.elements[i];i++) {
+        if (form.elements[i].tagName.toLowerCase()=='input') {
+            if (blocked) {
+                form.elements[i].disabled = true;
+            }
+            else {
+                form.elements[i].disabled = false;
+            }
+        }
+    }
+    if (blocked) {
+        form.classList.add ('blocked');
+        form.update.disabled = true;
+        form.block_mandate.dataset.state = '1';
+        form.block_mandate.textContent = 'Unblock mandate';
+        label.textContent = 'Blocked';
+        txt.push ('Supporter is now blocked');
+    }
+    else {
+        form.classList.remove ('blocked');
+        form.update.disabled = false;
+        form.block_mandate.dataset.state = '0';
+        form.block_mandate.textContent = 'Block mandate';
+        label.textContent = '';
+        txt.push ('Supporter is now unblocked');
+    }
+    section.innerHTML = "";
+    img = document.createElement ('img');
+    img.classList.add ('close');
+    img.addEventListener ('click',function(evt){evt.currentTarget.parentElement.classList.remove('active')});
+    section.appendChild (img);
+    for (i=0;txt[i];i++) {
+        p = document.createElement ('p');
+        p.innerText = txt[i];
+        section.appendChild (p);
+    }
     section.classList.add ('active');
 }
 
