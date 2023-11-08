@@ -3860,8 +3860,7 @@ function update ( ) {
                 $rtn = "{ \"ok\" : true, \"blocked\" : 0 }";
             }
             mail (
-'mark.page@thefundraisingfoundry.com',
-//                BLOTTO_EMAIL_BACS_TO,
+                BLOTTO_EMAIL_BACS_TO,
                 $sbj,
                 $msg,
                 $headers
