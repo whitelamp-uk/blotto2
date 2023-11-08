@@ -4029,6 +4029,7 @@ function update ( ) {
                 break;
             }
         }
+        $message .= "Using ".$api_code."\n";
 
         if ($cancellation) {
             if (method_exists($api, 'cancel_mandate')) {
