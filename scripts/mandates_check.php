@@ -48,9 +48,26 @@ catch (\Exception $e) {
 
 if ($count=count($bads)) {
     fwrite (STDERR,"Bad mandates identified: ".implode(',',$bads));
-    $msg = "The following mandates are bad and require cancellation asap.\nThey are still live but the supporters are mandate_blocked.\n\n";
+    if (method_exists($api,'cancel_mandate')) {
+        $msg = "The following mandates were active but the supporters are mandate_blocked. API cancellation was attempted. Results below.\n\n";
+        $auto = true;
+    } else {
+        $msg = "The following mandates are bad and require cancellation asap.\nThey are still live but the supporters are mandate_blocked.\n\n";
+        $auto = false;
+    }
+
     foreach ($bads as $b) {
-        $msg .= "{$b['ClientRef']}\t{$b['Name']}\n";
+        $msg .= "{$b['ClientRef']}\t{$b['Name']}";
+        if ($auto) {
+            $response = $api->cancel_mandate($b['ClientRef']);
+            if (isset($response->Message)) {
+                $msg .= "\t".$response->Message."\n";
+            } else {
+                $msg .= "\t".print_r($response, true)."\n";
+            }
+        } else {
+            $msg .= "\n";
+        }
     }
     notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates",$msg);
 }
