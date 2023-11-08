@@ -4029,13 +4029,21 @@ function update ( ) {
                 break;
             }
         }
-        $message .= "Using ".$api_code."\n";
+
+        if ($api) {
+            $message .= "Using ".$api_code."\n";
+        }
 
         if ($cancellation) {
             if (method_exists($api, 'cancel_mandate')) {
                 $response = $api->cancel_mandate($crf); //TODO error handling
-                $message .= "API cancel_mandate() called, response was ".print_r($response, true)."\n";
-                error_log(print_r($response, true));
+                $message .= "API cancel_mandate() called, response was\n";
+                if (isset($response->Message)) {
+                    $message .= $response->Message."\n";
+                } else {
+                    $message .= print_r($response, true)."\n";
+                }
+                //error_log(print_r($response, true));
             } else {
                 $message .= "Cancellation requested, must be done manually\n";
             }
