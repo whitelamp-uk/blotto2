@@ -51,21 +51,33 @@ if ($count=count($bads)) {
     if (method_exists($api,'cancel_mandate')) {
         $msg = "The following mandates were active but the supporters are mandate_blocked. API cancellation was attempted. Results below.\n\n";
         $auto = true;
-    } else {
+    }
+    else {
         $msg = "The following mandates are bad and require cancellation asap.\nThey are still live but the supporters are mandate_blocked.\n\n";
         $auto = false;
     }
-
     foreach ($bads as $b) {
         $msg .= "{$b['ClientRef']}\t{$b['Name']}";
         if ($auto) {
-            $response = $api->cancel_mandate($b['ClientRef']);
+            try {
+                $response = $api->cancel_mandate ($b['ClientRef']);
+            }
+            catch (\Exception $e) {
+                fwrite (STDERR,$e->getMessage()."\n");
+                if (!$api->errorCode) {
+                    // Unexpected error
+                    exit (105);
+                }
+                exit ($api->errorCode);
+            }
             if (isset($response->Message)) {
                 $msg .= "\t".$response->Message."\n";
-            } else {
+            }
+            else {
                 $msg .= "\t".print_r($response, true)."\n";
             }
-        } else {
+        }
+        else {
             $msg .= "\n";
         }
     }
