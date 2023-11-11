@@ -84,4 +84,7 @@ if ($count=count($bads)) {
     }
     notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates",$msg);
 }
+else {
+    fwrite (STDERR,"No bad mandates found");
+}
 
