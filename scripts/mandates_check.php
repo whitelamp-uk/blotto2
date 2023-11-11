@@ -38,6 +38,7 @@ try {
     }
 }
 catch (\Exception $e) {
+    fwrite (STDERR,"Could not get bad mandates:\n");
     fwrite (STDERR,$e->getMessage()."\n");
     if (!$api || !$api->errorCode) {
         // Unexpected error
