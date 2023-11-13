@@ -252,6 +252,7 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `created` date NULL,
   `signed` date DEFAULT NULL,
   `approved` date DEFAULT NULL,
+  `mandate_blocked` tinyint(1) unsigned DEFAULT 0,
   `projected_first_draw_close` date DEFAULT NULL,
   `projected_chances` tinyint(3) unsigned DEFAULT NULL,
   `canvas_code` char(16) CHARACTER SET ascii DEFAULT NULL,
