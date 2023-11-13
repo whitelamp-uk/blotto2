@@ -311,7 +311,7 @@ function negatise (selector) {
     var e, elements;
     elements = document.querySelectorAll (selector);
     for (e of elements) {
-        if (e.textContent.indexOf('-')===0) {
+        if (e.textContent.indexOf('-')===0 || e.textContent.indexOf('−')===0) {
             e.classList.add ('negative');
         }
     }
