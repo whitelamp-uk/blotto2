@@ -350,11 +350,11 @@ BEGIN
     ( 'play_value',         'GBP',  dp(0-@played,2),                 '− played this period'                   ),
     ( 'balances_closing',   'GBP',  dp(0-@balClose,2),               '− player closing balances'              ),
     ( 'reconciliation',     'GBP',  dp(@reconcile,2),                '≡ to be reconciled'                     ),
-    ( 'head_return',        '',     '',                              'Return'                                 ),
+    ( 'head_return',        '',     '',                              'Revenue'                                ),
     ( 'revenue',            'GBP',  dp(@played,2),                   '+ revenue from plays'                   ),
     ( 'winnings',           'GBP',  dp(0-@payout,2),                 '− paid out (except superdraws)'         ),
     ( 'fees',               'GBP',  dp(0-@fees,2),                   '− superdraw fees'                       ),
-    ( 'nett',               'GBP',  dp(@nett,2),                     '≡ return generated (before charges)'    )
+    ( 'nett',               'GBP',  dp(@nett,2),                     '≡ return generated (before fees)'       )
   ;
   SELECT
     *
