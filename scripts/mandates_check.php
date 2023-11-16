@@ -38,6 +38,7 @@ try {
     }
 }
 catch (\Exception $e) {
+    fwrite (STDERR,"Could not get bad mandates:\n");
     fwrite (STDERR,$e->getMessage()."\n");
     if (!$api || !$api->errorCode) {
         // Unexpected error
@@ -60,7 +61,17 @@ if ($count=count($bads)) {
     foreach ($bads as $b) {
         $msg .= "{$b['ClientRef']}\t{$b['Name']}";
         if ($auto) {
-            $response = $api->cancel_mandate($b['ClientRef']);
+            try {
+                $response = $api->cancel_mandate ($b['ClientRef']);
+            }
+            catch (\Exception $e) {
+                fwrite (STDERR,$e->getMessage()."\n");
+                if (!$api->errorCode) {
+                    // Unexpected error
+                    exit (105);
+                }
+                exit ($api->errorCode);
+            }
             if ($response == 'OK') {
                 $msg .= "\tCancelled\n";
                 $success++;
@@ -69,7 +80,8 @@ if ($count=count($bads)) {
             } else {
                 $msg .= "\t".print_r($response, true)."\n";
             }
-        } else {
+        }
+        else {
             $msg .= "\n";
         }
     }
@@ -78,5 +90,8 @@ if ($count=count($bads)) {
     } else {
         notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates need cancelling",$msg);
     }
+}
+else {
+    fwrite (STDERR,"No bad mandates found\n");
 }
 

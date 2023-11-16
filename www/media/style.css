@@ -803,10 +803,6 @@ img.close {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
 }
 
-#reconcile > h2:first-of-type {
-    position: absolute;
-}
-
 #reconcile > form {
     position: fixed;
 }
@@ -829,7 +825,8 @@ img.close {
 }
 
 #reconcile-table-reconcile tbody tr:nth-of-type(1),
-#reconcile-table-reconcile tbody tr:nth-of-type(12) {
+#reconcile-table-reconcile tbody tr:nth-of-type(12),
+#reconcile-table-reconcile tbody tr:nth-of-type(17) {
     font-weight:        bold;
 }
 

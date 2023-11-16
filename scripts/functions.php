@@ -94,6 +94,60 @@ function calculate ($start=null,$end=null) {
         ];
         $results[$r['item']] = $item;
     }
+    $fees = fees ($start,$end);
+    $results[]          = [
+        'units' => '',
+        'amount' => '',
+        'notes' => 'Fees'
+    ];
+    $expend             = 0;
+    $expend_loading     = $fees['loaded'] * loading_fee($fees['loaded']);
+    $expend_anls        = BLOTTO_FEE_ANL/100 * $fees['anls_post'];
+    $expend_anls       += BLOTTO_FEE_ANL_SMS/100 * $fees['anls_sms'];
+    $expend_anls       += BLOTTO_FEE_ANL_EMAIL/100 * $fees['anls_email'];
+    $expend_winlets     = BLOTTO_FEE_WL/100 * $fees['winners_post'];
+    $expend_email       = BLOTTO_FEE_CM/100 * $fees['draws'];
+    $expend_admin       = BLOTTO_FEE_ADMIN/100 * $fees['draws'];
+    $expend_tickets     = BLOTTO_FEE_MANAGE/100 * $fees['plays_during'];
+    $expend_insure      = 0;
+    if (defined('BLOTTO_INSURE') && BLOTTO_INSURE) {
+        $expend_insure  = BLOTTO_FEE_INSURE/100 * $fees['plays_during'];
+    }
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($expend_loading,2,'.',''),
+        'notes' => '− loading fees'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($expend_anls,2,'.',''),
+        'notes' => '− advanced notification letters'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($expend_winlets,2,'.',''),
+        'notes' => '− winner letters'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($expend_email,2,'.',''),
+        'notes' => '− email services'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($expend_admin,2,'.',''),
+        'notes' => '− administration charges'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($expend_tickets,2,'.',''),
+        'notes' => '− ticket management fees'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($expend_insure,2,'.',''),
+        'notes' => '− draw insurance costs'
+    ];
     return $results;
 }
 
@@ -1299,33 +1353,6 @@ function escm ($str) {
     return esc ($str,BLOTTO_MAKE_DB);
 }
 
-function fields ( ) {
-    $dbc = BLOTTO_CONFIG_DB;
-    $oid = BLOTTO_ORG_ID;
-    $fields = [];
-    $zo = connect ();
-    if (!$zo) {
-        return $fields;
-    }
-    $q = "
-      SELECT
-        *
-      FROM `$dbc`.`blotto_field`
-      WHERE `org_id`=$oid
-      ORDER BY `p_number`
-    ";
-    try {
-        $fs = $zo->query ($q);
-        while ($f=$fs->fetch_assoc()) {
-            $fields[] = (object) $f;
-        }
-    }
-    catch (\mysqli_sql_exception $e) {
-        error_log ($e->getMessage());
-    }
-    return $fields;
-}
-
 // pinched from 
 // https://stackoverflow.com/questions/933367/php-how-to-best-determine-if-the-current-invocation-is-from-cli-or-web-server
 function env_is_cli() {
@@ -1337,6 +1364,104 @@ function env_is_cli() {
         return true;
     }
     return false;
+}
+
+function fees ($day_first,$day_last) {
+    // This needs "ephemeralising"
+    $qs = "
+      SELECT
+        `game_was`.`plays` AS `plays_before`
+       ,`game_is`.`plays` AS `plays_during`
+       ,`game_is`.`draw_closed_first`
+       ,`game_is`.`draw_closed_last`
+       ,`game_is`.`draws`
+       ,`game_is`.`paid_out`
+       ,`game_is`.`winners`
+       ,SUM(IFNULL(`game_is`.`winners_post`,0)) AS `winners_post`
+       ,`supporter`.`starting_balances`
+       ,IFNULL(`pre`.`collected`,0) AS `collections_before`
+       ,IFNULL(`post`.`collected`,0) AS `collections_during`
+       ,`anl`.`quantity` AS `loaded`
+       ,SUM(IFNULL(`anl`.`email`,0)) AS `anls_email`
+       ,SUM(IFNULL(`anl`.`sms`,0)) AS `anls_sms`
+       ,SUM(IFNULL(`anl`.`post`,0)) AS `anls_post`
+      FROM (
+        SELECT
+          COUNT(`id`) AS `plays`
+        FROM `blotto_entry`
+        WHERE `draw_closed`<'$day_first'
+      ) AS `game_was`
+      JOIN (
+        SELECT
+          MIN(`e`.`draw_closed`) AS `draw_closed_first`
+         ,MAX(`e`.`draw_closed`) AS `draw_closed_last`
+         ,COUNT(DISTINCT `e`.`draw_closed`) AS `draws`
+         ,COUNT(`e`.`id`) AS `plays`
+         ,SUM(`w`.`winnings`) AS `paid_out`
+         ,SUM(`w`.`winners`) AS `winners`
+         ,SUM(`w`.`posted`) AS `winners_post`
+        FROM `blotto_entry` AS `e`
+        LEFT JOIN (
+          SELECT
+            `entry_id`
+           ,SUM(`amount`) AS `winnings`
+           ,COUNT(`id`) AS `winners`
+           ,SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0) AS `posted`
+          FROM `blotto_winner`
+          GROUP BY `entry_id`
+        ) AS `w`
+          ON `w`.`entry_id`=`e`.`id`
+        WHERE `e`.`draw_closed`>='$day_first'
+          AND `e`.`draw_closed`<='$day_last'
+      ) AS `game_is`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          SUM(`p`.`opening_balance`) AS `starting_balances`
+        FROM `blotto_player` AS `p`
+        JOIN `blotto_supporter` AS `s`
+          ON `s`.`id`=`p`.`supporter_id`
+         AND `s`.`client_ref`=`p`.`client_ref`
+        WHERE `p`.`created`<='$day_last'
+      ) AS `supporter`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          SUM(`PaidAmount`) AS `collected`
+        FROM `blotto_build_collection`
+        WHERE `DateDue`<'$day_first'
+      ) AS `pre`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          SUM(`PaidAmount`) AS `collected`
+        FROM `blotto_build_collection`
+        WHERE `DateDue`>='$day_first'
+          AND `DateDue`<='$day_last'
+      ) AS `post`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          COUNT(`ClientRef`) AS `quantity`
+         ,IFNULL(SUM(`letter_status`='email_received'),0) AS `email`
+         ,IFNULL(SUM(`letter_status`='sms_received'),0) AS `sms`
+         ,IFNULL(SUM(`letter_status` NOT  LIKE 'email%' AND `letter_status` NOT LIKE 'sms%'),0) AS `post`
+        FROM `ANLs`
+        WHERE `tickets_issued`>='$day_first'
+          AND `tickets_issued`<='$day_last'
+      ) AS `anl`
+        ON 1
+      ;
+    ";
+    try {
+        $zo             = connect (BLOTTO_MAKE_DB);
+        $stats          = $zo->query ($qs);
+        return $stats->fetch_assoc ();
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
 }
 
 function fee_periods ($fee,$from,$to) {
@@ -1382,6 +1507,33 @@ function fee_periods ($fee,$from,$to) {
         $periods[count($periods)-1]['to'] = $to;
     }
     return $periods;
+}
+
+function fields ( ) {
+    $dbc = BLOTTO_CONFIG_DB;
+    $oid = BLOTTO_ORG_ID;
+    $fields = [];
+    $zo = connect ();
+    if (!$zo) {
+        return $fields;
+    }
+    $q = "
+      SELECT
+        *
+      FROM `$dbc`.`blotto_field`
+      WHERE `org_id`=$oid
+      ORDER BY `p_number`
+    ";
+    try {
+        $fs = $zo->query ($q);
+        while ($f=$fs->fetch_assoc()) {
+            $fields[] = (object) $f;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+    }
+    return $fields;
 }
 
 function file_write ($file,$contents) {
@@ -3517,100 +3669,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $pennies            = BLOTTO_TICKET_PRICE;
     $code               = strtoupper (BLOTTO_ORG_USER);
     $org                = org ();
-    $qs = "
-      SELECT
-        `game_was`.`plays` AS `plays_before`
-       ,`game_is`.`plays` AS `plays_during`
-       ,`game_is`.`draw_closed_first`
-       ,`game_is`.`draw_closed_last`
-       ,`game_is`.`draws`
-       ,`game_is`.`paid_out`
-       ,`game_is`.`winners`
-       ,SUM(IFNULL(`game_is`.`winners_post`,0)) AS `winners_post`
-       ,`supporter`.`starting_balances`
-       ,IFNULL(`pre`.`collected`,0) AS `collections_before`
-       ,IFNULL(`post`.`collected`,0) AS `collections_during`
-       ,`anl`.`quantity` AS `loaded`
-       ,SUM(IFNULL(`anl`.`email`,0)) AS `anls_email`
-       ,SUM(IFNULL(`anl`.`sms`,0)) AS `anls_sms`
-       ,SUM(IFNULL(`anl`.`post`,0)) AS `anls_post`
-      FROM (
-        SELECT
-          COUNT(`id`) AS `plays`
-        FROM `blotto_entry`
-        WHERE `draw_closed`<'$day_first'
-      ) AS `game_was`
-      JOIN (
-        SELECT
-          MIN(`e`.`draw_closed`) AS `draw_closed_first`
-         ,MAX(`e`.`draw_closed`) AS `draw_closed_last`
-         ,COUNT(DISTINCT `e`.`draw_closed`) AS `draws`
-         ,COUNT(`e`.`id`) AS `plays`
-         ,SUM(`w`.`winnings`) AS `paid_out`
-         ,SUM(`w`.`winners`) AS `winners`
-         ,SUM(`w`.`posted`) AS `winners_post`
-        FROM `blotto_entry` AS `e`
-        LEFT JOIN (
-          SELECT
-            `entry_id`
-           ,SUM(`amount`) AS `winnings`
-           ,COUNT(`id`) AS `winners`
-           ,SUM(LENGTH(IFNULL(`letter_batch_ref`,''))>0) AS `posted`
-          FROM `blotto_winner`
-          GROUP BY `entry_id`
-        ) AS `w`
-          ON `w`.`entry_id`=`e`.`id`
-        WHERE `e`.`draw_closed`>='$day_first'
-          AND `e`.`draw_closed`<='$day_last'
-      ) AS `game_is`
-        ON 1
-      LEFT JOIN (
-        SELECT
-          SUM(`p`.`opening_balance`) AS `starting_balances`
-        FROM `blotto_player` AS `p`
-        JOIN `blotto_supporter` AS `s`
-          ON `s`.`id`=`p`.`supporter_id`
-         AND `s`.`client_ref`=`p`.`client_ref`
-        WHERE `p`.`created`<='$day_last'
-      ) AS `supporter`
-        ON 1
-      LEFT JOIN (
-        SELECT
-          SUM(`PaidAmount`) AS `collected`
-        FROM `blotto_build_collection`
-        WHERE `DateDue`<'$day_first'
-      ) AS `pre`
-        ON 1
-      LEFT JOIN (
-        SELECT
-          SUM(`PaidAmount`) AS `collected`
-        FROM `blotto_build_collection`
-        WHERE `DateDue`>='$day_first'
-          AND `DateDue`<='$day_last'
-      ) AS `post`
-        ON 1
-      LEFT JOIN (
-        SELECT
-          COUNT(`ClientRef`) AS `quantity`
-         ,IFNULL(SUM(`letter_status`='email_received'),0) AS `email`
-         ,IFNULL(SUM(`letter_status`='sms_received'),0) AS `sms`
-         ,IFNULL(SUM(`letter_status` NOT  LIKE 'email%' AND `letter_status` NOT LIKE 'sms%'),0) AS `post`
-        FROM `ANLs`
-        WHERE `tickets_issued`>='$day_first'
-          AND `tickets_issued`<='$day_last'
-      ) AS `anl`
-        ON 1
-      ;
-    ";
-    try {
-        $zo             = connect (BLOTTO_MAKE_DB);
-        $stats          = $zo->query ($qs);
-        $stats          = $stats->fetch_assoc ();
-    }
-    catch (\mysqli_sql_exception $e) {
-        throw new \Exception ($qs."\n".$e->getMessage());
-        return false;
-    }
+    $stats              = fees ($day_first,$day_last);
     $reconcile          = 0;
     $return             = 0;
     $played             = $stats['plays_during'] * $pennies/100;
@@ -3663,20 +3722,20 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $stmt->rows[]       = [ "", "", "", "Reconciliation" ];
     $stmt->rows[]       = [ $c, number_format($opening,2,'.',''), "", "+ player opening balances" ];
     $stmt->rows[]       = [ $c, number_format($stats['collections_during'],2,'.',''), "", "+ collected this period" ];
-    $stmt->rows[]       = [ $c, number_format(0-$played,2,'.',''), "", "- played this period" ];
-    $stmt->rows[]       = [ $c, number_format(0-$closing,2,'.',''), "", "- player closing balances" ];
+    $stmt->rows[]       = [ $c, number_format(0-$played,2,'.',''), "", "− played this period" ];
+    $stmt->rows[]       = [ $c, number_format(0-$closing,2,'.',''), "", "− player closing balances" ];
     $stmt->rows[]       = [ $c, number_format($reconcile,2,'.',''), "", "≡ to be reconciled" ];
     $stmt->rows[]       = [ "", "", "", "Revenue & expenditure" ];
     $stmt->rows[]       = [ $c, number_format($played,2,'.',''), "", "+ revenue from plays" ];
-    $stmt->rows[]       = [ $c, number_format(0-$stats['paid_out'],2,'.',''), "", "- winnings paid out" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend_loading,2,'.',''), "", "- loading fees" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend_anls,2,'.',''), "", "- advanced notification letters" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend_winlets,2,'.',''), "", "- winner letters" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend_email,2,'.',''), "", "- email services" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend_admin,2,'.',''), "", "- administration charges" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend_tickets,2,'.',''), "", "- ticket management fees" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend_insure,2,'.',''), "", "- draw insurance costs" ];
-    $stmt->rows[]       = [ $c, number_format(0-$expend,2,'.',''), "", "- total expenditure" ];
+    $stmt->rows[]       = [ $c, number_format(0-$stats['paid_out'],2,'.',''), "", "− winnings paid out" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_loading,2,'.',''), "", "− loading fees" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_anls,2,'.',''), "", "− advanced notification letters" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_winlets,2,'.',''), "", "− winner letters" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_email,2,'.',''), "", "− email services" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_admin,2,'.',''), "", "− administration charges" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_tickets,2,'.',''), "", "− ticket management fees" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend_insure,2,'.',''), "", "− draw insurance costs" ];
+    $stmt->rows[]       = [ $c, number_format(0-$expend,2,'.',''), "", "− total expenditure" ];
     $stmt->rows[]       = [ $c, number_format($return,2,'.',''), "", "≡ return generated" ];
     $snippet            = statement ($stmt,false);
     return html ($snippet,$stmt->html_title,$output);
