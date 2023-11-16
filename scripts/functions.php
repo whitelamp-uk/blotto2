@@ -4078,9 +4078,11 @@ function update ( ) {
         if ($cancellation) {
             if (method_exists($api, 'cancel_mandate')) {
                 $response = $api->cancel_mandate($crf); //TODO error handling
-                $message .= "API cancel_mandate() called, response was\n";
-                if (isset($response->Message)) {
-                    $message .= $response->Message."\n";
+                $message .= "API cancel_mandate() called, response was: ";
+                if ($response == 'OK') {
+                    $message .= "Cancelled\n";
+                } elseif (is_string($response)) {
+                    $message .= $response."\n";
                 } else {
                     $message .= print_r($response, true)."\n";
                 }
@@ -4192,7 +4194,14 @@ function update ( ) {
                         }
                         if (method_exists($api, 'cancel_mandate')) {
                             $response = $api->cancel_mandate($crf); //TODO error handling
-                            $message .= "API cancel_mandate() called, response was ".print_r($response, true)."\n";
+                            $message .= "API cancel_mandate() called, response was: ";
+                            if ($response == 'OK') {
+                                $message .= "Cancelled\n";
+                            } elseif (is_string($response)) {
+                                $message .= $response."\n";
+                            } else {
+                                $message .= print_r($response, true)."\n";
+                            }
                             error_log(print_r($response, true));
                         } else {
                             $message .= "Old mandate must be cancelled manually\n";
@@ -4211,8 +4220,11 @@ function update ( ) {
                     $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
                     $message .= "Old name: {$m['Name']}, new name: {$fields['Name']}\n";
                 }
-                if ($fields['Sortcode']!=$m['Sortcode'] || $fields['Account']!=$m['Account']) {
-                    $message .= "The mandate sort code and/or account name has changed.\n";
+                if ($fields['Sortcode'] && $fields['Sortcode']!=$m['Sortcode']) {
+                    $message .= "The mandate sort code has changed.\n";
+                }
+                if ($fields['Account'] && $fields['Account']!=$m['Account']) { 
+                    $message .= "The mandate account number has changed.\n";
                 }
             }
 
