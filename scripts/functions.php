@@ -4122,6 +4122,7 @@ function update ( ) {
                         if (class_exists($a->class) && (method_exists($a->class,'player_new') || method_exists($a->class,'cancel_mandate'))) {
                             $api = new $a->class ($zom); // use the make database
                             $api_code = $a->code;
+                            $api_name = $a->name;
                             break;
                         }
                     }
@@ -4131,15 +4132,17 @@ function update ( ) {
         }
 
         if ($api) {
-            $message .= "Using ".$api_code."\n";
+            $message .= "Found API for ".$api_name."\n";
         }
-
+        $cancel_mandate_success = false;
+        $player_new_success = false;
         if ($cancellation) {
             if (method_exists($api, 'cancel_mandate')) {
                 $response = $api->cancel_mandate($crf); //TODO error handling
                 $message .= "API cancel_mandate() called, response was: ";
                 if ($response == 'OK') {
                     $message .= "Cancelled\n";
+                    $cancel_mandate_success = true;
                 } elseif (is_string($response)) {
                     $message .= $response."\n";
                 } else {
@@ -4256,6 +4259,7 @@ function update ( ) {
                             $message .= "API cancel_mandate() called, response was: ";
                             if ($response == 'OK') {
                                 $message .= "Cancelled\n";
+                                $player_new_success = true;
                             } elseif (is_string($response)) {
                                 $message .= $response."\n";
                             } else {
@@ -4290,9 +4294,16 @@ function update ( ) {
             if (defined('BLOTTO_EMAIL_FROM')) {
                 $headers = "From: ".BLOTTO_EMAIL_FROM."\n";
             }
+            if ($cancel_mandate_success) {
+                $subj = " mandate cancelled for ";
+            } else if ($player_new_success) {
+                $subj = " new mandate for ";
+            } else {
+                $subj = " BACS change request for ";
+            }
             mail (
                 BLOTTO_EMAIL_BACS_TO,
-                BLOTTO_BRAND." BACS change request for ".BLOTTO_ORG_NAME,
+                BLOTTO_BRAND.$subj.BLOTTO_ORG_NAME,
                 $message,
                 $headers
             );
@@ -4302,7 +4313,6 @@ function update ( ) {
         }
         return "{ \"ok\" : true, \"created\" : $created }";
     }
-    //return "{ \"error\" : 117, \"errorMessage\" : \"Update type '$t' not recognised\", \"created\" : $created }"; confirm as obsolete please?
 }
 
 function valid_date ($date,$format='Y-m-d') {
