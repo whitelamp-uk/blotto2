@@ -28,16 +28,16 @@ get_args () {
 echo "----------------"
 date '+%Y-%m-%d %H:%M:%S'
 
-# -c for count; -f for search full path so it finds script name; $@ for other parameters, i.e. config
+# -c for count; -f for search full path so it finds script name; add "$@"" for other parameters, i.e. config
 # cronjobs match twice as there is the calling process
-numprocs=`pgrep -c -f "$0 $@"`
+numprocs=`pgrep -c -f "$0"`
 if [ $CRONJOB ]; then
     limit=2
 else
     limit=1
 fi
 if [ ${numprocs} -gt ${limit} ]; then
-    echo "The script is already running!"
+    echo "A build is already running!"
     exit 0
 fi
 
