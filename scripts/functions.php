@@ -4134,10 +4134,11 @@ function update ( ) {
         if ($api) {
             $message .= "Found API for ".$api_name."\n";
         }
-        $cancel_mandate_success = false;
-        $player_new_success = false;
+        $cancel_mandate_success = $cancel_mandate_api_call= false;
+        $player_new_success = $player_new_api_call = false;
         if ($cancellation) {
             if (method_exists($api, 'cancel_mandate')) {
+                $cancel_mandate_api_call = true;
                 $response = $api->cancel_mandate($crf); //TODO error handling
                 $message .= "API cancel_mandate() called, response was: ";
                 if ($response == 'OK') {
@@ -4157,6 +4158,7 @@ function update ( ) {
         elseif ($fields['Freq']!=$m['Freq'] || $fields['Amount']!=$m['Amount']) {
             // call player_new
             if (method_exists($api,'player_new')) {
+                $player_new_api_call = true;
                 $qs = "
                   SELECT
                        `c`.`title`
@@ -4307,6 +4309,15 @@ function update ( ) {
                 $message,
                 $headers
             );
+            if (($cancel_mandate_api_call && !$cancel_mandate_success)
+                || ($player_new_api_call && !$player_new_success)) {
+                mail (
+                    BLOTTO_EMAIL_WARN_TO,
+                    BLOTTO_BRAND." BACS API fail for ".BLOTTO_ORG_NAME,
+                    $message,
+                    $headers
+                );
+            }
         }
         if ($error) {
             return "{ \"error\" : $errno, \"errorMessage\" : \"$error\", \"created\" : $created }";
