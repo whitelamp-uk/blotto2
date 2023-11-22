@@ -111,7 +111,7 @@ form.signup fieldset h3:first-of-type {
 }
 
 form.signup fieldset.finished {
-    position: relative;
+    /*position: relative;*/
     bottom: 13.6em;
 }
 
