@@ -4133,6 +4133,7 @@ function update ( ) {
                         if (class_exists($a->class) && (method_exists($a->class,'player_new') || method_exists($a->class,'cancel_mandate'))) {
                             $api = new $a->class ($zom); // use the make database
                             $api_code = $a->code;
+                            $api_name = $a->name;
                             break;
                         }
                     }
@@ -4142,15 +4143,20 @@ function update ( ) {
         }
 
         if ($api) {
-            $message .= "Using ".$api_code."\n";
+            $message .= "Found API for ".$api_name."\n";
         }
-
+        $cancel_mandate_success = $cancel_mandate_api_call= false;
+        $player_new_success = $player_new_api_call = false;
         if ($cancellation) {
             if (method_exists($api, 'cancel_mandate')) {
+                $cancel_mandate_api_call = true;
                 $response = $api->cancel_mandate($crf); //TODO error handling
-                $message .= "API cancel_mandate() called, response was\n";
-                if (isset($response->Message)) {
-                    $message .= $response->Message."\n";
+                $message .= "API cancel_mandate() called, response was: ";
+                if ($response == 'OK') {
+                    $message .= "Cancelled\n";
+                    $cancel_mandate_success = true;
+                } elseif (is_string($response)) {
+                    $message .= $response."\n";
                 } else {
                     $message .= print_r($response, true)."\n";
                 }
@@ -4163,6 +4169,7 @@ function update ( ) {
         elseif ($fields['Freq']!=$m['Freq'] || $fields['Amount']!=$m['Amount']) {
             // call player_new
             if (method_exists($api,'player_new')) {
+                $player_new_api_call = true;
                 $qs = "
                   SELECT
                        `c`.`title`
@@ -4262,7 +4269,15 @@ function update ( ) {
                         }
                         if (method_exists($api, 'cancel_mandate')) {
                             $response = $api->cancel_mandate($crf); //TODO error handling
-                            $message .= "API cancel_mandate() called, response was ".print_r($response, true)."\n";
+                            $message .= "API cancel_mandate() called, response was: ";
+                            if ($response == 'OK') {
+                                $message .= "Cancelled\n";
+                                $player_new_success = true;
+                            } elseif (is_string($response)) {
+                                $message .= $response."\n";
+                            } else {
+                                $message .= print_r($response, true)."\n";
+                            }
                             error_log(print_r($response, true));
                         } else {
                             $message .= "Old mandate must be cancelled manually\n";
@@ -4281,27 +4296,45 @@ function update ( ) {
                     $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
                     $message .= "Old name: {$m['Name']}, new name: {$fields['Name']}\n";
                 }
-                if ($fields['Sortcode']!=$m['Sortcode'] || $fields['Account']!=$m['Account']) {
-                    $message .= "The mandate sort code and/or account name has changed.\n";
+                if ($fields['Sortcode'] && $fields['Sortcode']!=$m['Sortcode']) {
+                    $message .= "The mandate sort code has changed.\n";
+                }
+                if ($fields['Account'] && $fields['Account']!=$m['Account']) { 
+                    $message .= "The mandate account number has changed.\n";
                 }
             }
 
             if (defined('BLOTTO_EMAIL_FROM')) {
                 $headers = "From: ".BLOTTO_EMAIL_FROM."\n";
             }
+            if ($cancel_mandate_success) {
+                $subj = " mandate cancelled for ";
+            } else if ($player_new_success) {
+                $subj = " new mandate for ";
+            } else {
+                $subj = " BACS change request for ";
+            }
             mail (
                 BLOTTO_EMAIL_BACS_TO,
-                BLOTTO_BRAND." BACS change request for ".BLOTTO_ORG_NAME,
+                BLOTTO_BRAND.$subj.BLOTTO_ORG_NAME,
                 $message,
                 $headers
             );
+            if (($cancel_mandate_api_call && !$cancel_mandate_success)
+                || ($player_new_api_call && !$player_new_success)) {
+                mail (
+                    BLOTTO_EMAIL_WARN_TO,
+                    BLOTTO_BRAND." BACS API fail for ".BLOTTO_ORG_NAME,
+                    $message,
+                    $headers
+                );
+            }
         }
         if ($error) {
             return "{ \"error\" : $errno, \"errorMessage\" : \"$error\", \"created\" : $created }";
         }
         return "{ \"ok\" : true, \"created\" : $created }";
     }
-    //return "{ \"error\" : 117, \"errorMessage\" : \"Update type '$t' not recognised\", \"created\" : $created }"; confirm as obsolete please?
 }
 
 function valid_date ($date,$format='Y-m-d') {

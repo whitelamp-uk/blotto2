@@ -52,11 +52,12 @@ if ($count=count($bads)) {
     if (method_exists($api,'cancel_mandate')) {
         $msg = "The following mandates were active but the supporters are mandate_blocked. API cancellation was attempted. Results below.\n\n";
         $auto = true;
-    }
-    else {
+        $success = 0;
+    } else {
         $msg = "The following mandates are bad and require cancellation asap.\nThey are still live but the supporters are mandate_blocked.\n\n";
         $auto = false;
     }
+
     foreach ($bads as $b) {
         $msg .= "{$b['ClientRef']}\t{$b['Name']}";
         if ($auto) {
@@ -71,10 +72,12 @@ if ($count=count($bads)) {
                 }
                 exit ($api->errorCode);
             }
-            if (isset($response->Message)) {
-                $msg .= "\t".$response->Message."\n";
-            }
-            else {
+            if ($response == 'OK') {
+                $msg .= "\tCancelled\n";
+                $success++;
+            } elseif (is_string($response)) {
+                $msg .= "\t".$response."\n";
+            } else {
                 $msg .= "\t".print_r($response, true)."\n";
             }
         }
@@ -82,7 +85,11 @@ if ($count=count($bads)) {
             $msg .= "\n";
         }
     }
-    notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates",$msg);
+    if ($auto) {
+        notify (BLOTTO_EMAIL_WARN_TO,"$success out of $count bad mandates cancelled",$msg);
+    } else {
+        notify (BLOTTO_EMAIL_WARN_TO,"$count bad mandates need cancelling",$msg);
+    }
 }
 else {
     fwrite (STDERR,"No bad mandates found\n");
