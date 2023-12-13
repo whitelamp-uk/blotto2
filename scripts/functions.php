@@ -1811,19 +1811,6 @@ function invoice_payout ($draw_closed_date,$output=true) {
     return invoice_render ($invoice,$output);
 }
 
-function invoice_rate ($item) {
-    // Not as insane as it might first seem, if a rate has changed midway through
-    // an invoice, what rate should be displayed?
-    // Answer: replace the latest rate with the *effective* rate
-    if ($item['amount']==0) {
-        return number_format ($item['amount']/$item['quantity'],2,'.','');
-    }
-    else {
-        // No units so use the latest rate
-        return number_format ($item['rate'],2,'.','');
-    }
-}
-
 function invoice_render ($invoice,$output=true) {
 /*
     // Test object
