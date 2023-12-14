@@ -1732,12 +1732,12 @@ function invoice_game ($draw_closed_date,$output=true) {
     $invoice->terms             = $org['invoice_terms_game'];
     foreach ($fees as $f=>$label) {
         $periods                 = fee_periods ($f,$start_date,$draw_closed_date);
-fwrite (STDERR,"$f: \$periods = ");
-fwrite (STDERR,var_export($periods,true));
-fwrite (STDERR,"           \$units = ");
-fwrite (STDERR,var_export(fee_units($f,$p['from'],$p['to']),true));
-fwrite (STDERR,"\n");
+//fwrite (STDERR,"$f: \$periods = ");
+//fwrite (STDERR,var_export($periods,true));
         foreach ($periods as $p) {
+//fwrite (STDERR,"           \$units = ");
+//fwrite (STDERR,var_export(fee_units($f,$p['from'],$p['to']),true));
+//fwrite (STDERR,"\n");
             if ($f=='insure') {
                 $invoice->items[] = [ $label, fee_units($f,$p['from'],$p['to']), $p['rate']/100, '', 0 ];
             }
@@ -1746,7 +1746,7 @@ fwrite (STDERR,"\n");
             }
         }
     }
-fwrite (STDERR,var_export($invoice->items,true));
+//fwrite (STDERR,var_export($invoice->items,true));
     return invoice_render ($invoice,$output);
 }
 
