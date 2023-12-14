@@ -44,7 +44,7 @@ foreach ($required as $field) {
             $errors .= "`$field` is compulsory\n";
             while ($c=$check->fetch_assoc()) {
                 if (str_replace(' ','',$c[$field])=='') {
-                    $errors .= "    {$c['ClientRef']} {$c['NamesFamily']}";
+                    $errors .= "    {$c['ClientRef']} {$c['NamesFamily']}\n";
                 }
             }
         }
