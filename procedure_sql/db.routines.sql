@@ -241,76 +241,75 @@ BEGIN
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8
   ;
-  SET @first = (
-    SELECT
-      MIN(`draw_closed`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-  )
+  SELECT
+    MIN(`draw_closed`)
+  INTO @first
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @last = (
-    SELECT
-      MAX(`draw_closed`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-  )
+  SELECT
+    MAX(`draw_closed`)
+  INTO @last
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @weeks = (
-    SELECT
-      COUNT(DISTINCT `draw_closed`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-  )
+  SELECT
+    COUNT(DISTINCT `draw_closed`)
+  INTO @weeks
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @collections = (
-    SELECT
-      SUM(`PaidAmount`)
-    FROM `blotto_build_collection`
-    WHERE `DateDue`>=starts
-      AND `DateDue`<=ends
-  )
+  SELECT
+    SUM(`PaidAmount`)
+  INTO @collections
+  FROM `blotto_build_collection`
+  WHERE `DateDue`>=starts
+    AND `DateDue`<=ends
   ;
-  SET @starting = (
-    SELECT
-      SUM(`p`.`opening_balance`)
-    FROM `blotto_player` AS `p`
-    WHERE DATE(`p`.`created`)<=ends
-  )
+  SELECT
+    SUM(`p`.`opening_balance`)
+  INTO @starting
+  FROM `blotto_player` AS `p`
+  WHERE DATE(`p`.`created`)<=ends
   ;
-  SET @allCollected = (
-    SELECT
-      SUM(`PaidAmount`)
-    FROM `blotto_build_collection`
-    WHERE `DateDue`<=ends
-  )
+  SELECT
+    SUM(`PaidAmount`)
+  INTO @allCollected
+  FROM `blotto_build_collection`
+  WHERE `DateDue`<=ends
   ;
-  SET @fees = (
-    SELECT
-      ROUND(SUM(`amount`)/100,2)
-    FROM `blotto_super_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-                      )
+  SELECT
+    ROUND(SUM(`amount`)/100,2)
+  INTO @fees
+  FROM `blotto_super_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
   SET @fees = IFNULL(@fees,0)
   ;
-  SET @plays = (
-    SELECT
-      COUNT(`id`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-                      )
+  SELECT
+    COUNT(*)
+  INTO @plays
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @allPlays = (
-    SELECT
-      COUNT(`id`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`<=ends
-                      )
+  -- as 'ends' is usually recent it is quite a bit faster to subtract 'new' from all
+  SELECT
+    COUNT(*)
+  INTO @allPlaysAllTime
+  FROM `blotto_entry`
+  ;
+  SELECT
+    COUNT(*)
+  INTO @newPlays
+  FROM `blotto_entry`
+  WHERE `draw_closed`>ends
+  ;
+  SET @allPlays = @allPlaysAllTime - @newPlays
   ;
   SET @perplay      = {{BLOTTO_TICKET_PRICE}}
   ;
