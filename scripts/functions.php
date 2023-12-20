@@ -1354,13 +1354,17 @@ function env_is_cli() {
 }
 
 function fee_periods ($fee,$from=null,$to=null) {
-    $rdb = BLOTTO_RESULTS_DB;
+    $dbc = BLOTTO_CONFIG_DB;
     $qs = "
       SELECT
-        *
-      FROM `blotto_fee`
-      WHERE `fee`='$fee'
-      ORDER BY `starts`
+        `f`.*
+       ,`r`.`metric`
+       ,`r`.`notes`
+      FROM `blotto_fee` AS `f`
+      LEFT JOIN `$dbc`.`blotto_rate` AS `r`
+             ON `r`.`fee`=`f`.`fee`
+      WHERE `f`.`fee`='$fee'
+      ORDER BY `f`.`starts`
       ;
     ";
     try {
@@ -1379,7 +1383,13 @@ function fee_periods ($fee,$from=null,$to=null) {
             $date->sub (new \DateInterval ('P1D'));
             $periods[count($periods)-1]['to'] = $date->format ('Y-m-d');
         }
-        $periods[] = [ 'starts'=>$f['starts'],'from'=>$f['starts'],'rate'=>intval($f['rate']) ];
+        $periods[] = [
+            'starts' => $f['starts'],
+            'from' => $f['starts'],
+            'rate' => intval ($f['rate']),
+            'metric' => $f['metric'],
+            'notes' => $f['notes']
+        ];
     }
     if (count($periods)) {
         // The last period ends in the future
@@ -1522,6 +1532,9 @@ function fees ($day_first=null,$day_last=null) {
             $fees[$f]['rate']    = $p['rate']; // the most recent in the date range wins
             $fees[$f]['units']  += $units;
             $fees[$f]['amount'] += $units * $p['rate'];
+            // "grouped" values:
+            $fees[$f]['metric']  = $p['metric'];
+            $fees[$f]['notes']   = $p['notes'];
 //echo " {$p['rate']} x $units = {$fees[$f]}\n";
         }
     }

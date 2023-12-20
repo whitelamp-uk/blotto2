@@ -220,16 +220,6 @@ define ( 'BLOTTO_SNAILMAIL_API_STANNP',         '/opt/stannp-api/Stannp.php'    
 define ( 'BLOTTO_SNAILMAIL_API_STANNP_CLASS',   '\Whitelamp\Stannp'        );
 define ( 'STANNP_ERROR_LOG',            true            );
 
-
 // Fees
 define ( 'BLOTTO_FEE_EMAIL',      'ylh-invoicing@thefundraisingfoundry.com' );
-define ( 'BLOTTO_FEE_LOADING',    '50:500,100:450,150:400,200:300,250' );
-define ( 'BLOTTO_FEE_ANL',        80                );
-define ( 'BLOTTO_FEE_ANL_EMAIL',  0                 );
-define ( 'BLOTTO_FEE_ANL_SMS',    10                );
-define ( 'BLOTTO_FEE_WL',         80                );
-define ( 'BLOTTO_FEE_CM',         1131              );
-define ( 'BLOTTO_FEE_ADMIN',      4500              );
-define ( 'BLOTTO_FEE_MANAGE',     7                 );
-define ( 'BLOTTO_FEE_INSURE',     7                 );
 

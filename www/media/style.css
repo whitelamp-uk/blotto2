@@ -78,6 +78,16 @@ table caption {
     white-space:        nowrap;
 }
 
+table.report code {
+    display:            inline-block;
+    width:              10em;
+    font-size:          90%;
+}
+table.report td:nth-of-type(2) code {
+    width:              4em;
+    text-align:         right;
+}
+
 th, td {
     padding:            0.3em 0.5em 0.3em 0.5em;
     font-size:          var(--blotto-font-size-table);
