@@ -94,6 +94,9 @@ function calculate ($start=null,$end=null) {
         ];
         $results[$r['item']] = $item;
     }
+echo "<!--\n";
+print_r ($results);
+echo "-->\n";
     $fees = fees ($start,$end);
     $results[]          = [
         'units' => '',
@@ -3639,6 +3642,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $played             = $stats['plays_during'] * $pennies/100;
     $return            += $played;
     $return            -= $stats['paid_out'];
+    $return            += $stats['amount_claimed'];
     $return            -= $fees['total']['amount'];
     $opening            = $stats['starting_balances'] + $stats['collections_before'];
     $opening           -= $stats['plays_before'] * $pennies/100;
@@ -3672,6 +3676,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $stmt->rows[]       = [ "", "", "", "Revenue & expenditure" ];
     $stmt->rows[]       = [ $c, number_format($played,2,'.',''), "", "+ revenue from plays" ];
     $stmt->rows[]       = [ $c, number_format(0-$stats['paid_out'],2,'.',''), "", "− winnings paid out" ];
+    $stmt->rows[]       = [ $c, number_format($stats['collections_during'],2,'.',''), "", "+ insurance payouts" ];
     $stmt->rows[]       = [ $c, number_format(0-$fees['loading']['amount'],2,'.',''), "", "− loading fees" ];
     $stmt->rows[]       = [ $c, number_format(0-$anls,2,'.',''), "", "− advanced notification letters" ];
     $stmt->rows[]       = [ $c, number_format(0-$wins,2,'.',''), "", "− winner letters" ];
@@ -3705,6 +3710,8 @@ function stderr_or_log($msg) {
 }
 
 function stats ($day_first,$day_last) {
+    $org = BLOTTO_ORG_USER;
+    $cdb = BLOTTO_CONFIG_DB;
     $qs = "
       SELECT
         `game_was`.`plays` AS `plays_before`
@@ -3717,6 +3724,7 @@ function stats ($day_first,$day_last) {
        ,`supporter`.`starting_balances`
        ,IFNULL(`pre`.`collected`,0) AS `collections_before`
        ,IFNULL(`post`.`collected`,0) AS `collections_during`
+       ,IFNULL(`claim`.`claimed`,0) AS `claimed_amount`
       FROM (
         SELECT
           COUNT(`id`) AS `plays`
@@ -3769,6 +3777,15 @@ function stats ($day_first,$day_last) {
         WHERE `DateDue`>='$day_first'
           AND `DateDue`<='$day_last'
       ) AS `post`
+        ON 1
+      LEFT JOIN (
+        SELECT
+          SUM(`amount`) AS `claimed`
+        FROM `$cdb`.`blotto_claim`
+        WHERE `org_code`='$org'
+          AND `payment_received`>='$day_first'
+          AND `payment_received`<='$day_last'
+      ) AS `claim`
         ON 1
       ;
     ";

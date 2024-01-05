@@ -287,6 +287,15 @@ BEGIN
     WHERE `DateDue`<=ends
   )
   ;
+  SET @claims = (
+    SELECT
+      SUM(`amount`)
+    FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
+    WHERE `org_code`='{{BLOTTO_ORG_USER}}'
+      AND `payment_received`>=starts
+      AND `payment_received`<=ends
+  )
+  ;
   SET @fees = (
     SELECT
       ROUND(SUM(`amount`)/100,2)
@@ -334,7 +343,7 @@ BEGIN
   ;
   SET @payout       = IFNULL(@payout,0)
   ;
-  SET @nett         = @played - ( @payout + @fees )
+  SET @nett         = (@played - @payout) + (@claims - @fees)
   ;
   SET @reconcile    = ( @balOpen + @collections ) - ( @played + @balClose )
   ;
@@ -353,6 +362,7 @@ BEGIN
     ( 'head_return',        '',     '',                              'Revenue'                                ),
     ( 'revenue',            'GBP',  dp(@played,2),                   '+ revenue from plays'                   ),
     ( 'winnings',           'GBP',  dp(0-@payout,2),                 '− paid out (except superdraws)'         ),
+    ( 'claims',             'GBP',  dp(@claims,2),                   '+ insurance payouts'                    ),
     ( 'fees',               'GBP',  dp(0-@fees,2),                   '− superdraw fees'                       ),
     ( 'nett',               'GBP',  dp(@nett,2),                     '≡ return generated (before fees)'       )
   ;
