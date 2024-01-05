@@ -241,85 +241,81 @@ BEGIN
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8
   ;
-  SET @first = (
-    SELECT
-      MIN(`draw_closed`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-  )
+  SELECT
+    IFNULL(MIN(`draw_closed`),'')
+  INTO @first
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @last = (
-    SELECT
-      MAX(`draw_closed`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-  )
+  SELECT
+    IFNULL(MAX(`draw_closed`),'')
+  INTO @last
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @weeks = (
-    SELECT
-      COUNT(DISTINCT `draw_closed`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-  )
+  SELECT
+    IFNULL(COUNT(DISTINCT `draw_closed`),0)
+  INTO @weeks
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @collections = (
-    SELECT
-      SUM(`PaidAmount`)
-    FROM `blotto_build_collection`
-    WHERE `DateDue`>=starts
-      AND `DateDue`<=ends
-  )
+  SELECT
+    IFNULL(SUM(`PaidAmount`),0)
+  INTO @collections
+  FROM `blotto_build_collection`
+  WHERE `DateDue`>=starts
+    AND `DateDue`<=ends
   ;
-  SET @starting = (
-    SELECT
-      SUM(`p`.`opening_balance`)
-    FROM `blotto_player` AS `p`
-    WHERE DATE(`p`.`created`)<=ends
-  )
+  SELECT
+    IFNULL(SUM(`p`.`opening_balance`),0)
+  INTO @starting
+  FROM `blotto_player` AS `p`
+  WHERE DATE(`p`.`created`)<=ends
   ;
-  SET @allCollected = (
-    SELECT
-      SUM(`PaidAmount`)
-    FROM `blotto_build_collection`
-    WHERE `DateDue`<=ends
-  )
+  SELECT
+    IFNULL(SUM(`PaidAmount`),0)
+  INTO @allCollected
+  FROM `blotto_build_collection`
+  WHERE `DateDue`<=ends
   ;
-  SET @claims = (
-    SELECT
-      SUM(`amount`)
-    FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
-    WHERE `org_code`='{{BLOTTO_ORG_USER}}'
-      AND `payment_received`>=starts
-      AND `payment_received`<=ends
-  )
+  SELECT
+    IFNULL(SUM(`amount`),0)
+    INTO @claims
+  FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
+  WHERE `org_code`='{{BLOTTO_ORG_USER}}'
+    AND `payment_received`>=starts
+    AND `payment_received`<=ends
   ;
-  SET @fees = (
-    SELECT
-      ROUND(SUM(`amount`)/100,2)
-    FROM `blotto_super_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-                      )
+  SELECT
+    IFNULL(SUM(`amount`),0)
+  INTO @fees
+  FROM `blotto_super_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @fees = IFNULL(@fees,0)
+  SELECT
+    IFNULL(COUNT(*),0)
+  INTO @plays
+  FROM `blotto_entry`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @plays = (
-    SELECT
-      COUNT(`id`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`>=starts
-      AND `draw_closed`<=ends
-                      )
+  -- as 'ends' is usually recent it is quite a bit faster to subtract 'new' from all
+  SELECT
+    IFNULL(COUNT(*),0)
+  INTO @allPlaysAllTime
+  FROM `blotto_entry`
   ;
-  SET @allPlays = (
-    SELECT
-      COUNT(`id`)
-    FROM `blotto_entry`
-    WHERE `draw_closed`<=ends
-                      )
+  SELECT
+    IFNULL(COUNT(*),0)
+  INTO @newPlays
+  FROM `blotto_entry`
+  WHERE `draw_closed`>ends
+  ;
+  SET @allPlays     = @allPlaysAllTime - @newPlays
   ;
   SET @perplay      = {{BLOTTO_TICKET_PRICE}}
   ;
@@ -331,17 +327,14 @@ BEGIN
   ;
   SET @balClose     = @starting + @allCollected - @AllPlayed
   ;
-  SET @payout       = (
-    SELECT
-      SUM(`w`.`amount`)
-    FROM `blotto_winner` AS `w`
-    JOIN `blotto_entry` AS `e`
-      ON `e`.`id`=`w`.`entry_id`
-    WHERE `e`.`draw_closed`>=starts
-      AND `e`.`draw_closed`<=ends
-                      )
-  ;
-  SET @payout       = IFNULL(@payout,0)
+  SELECT
+    IFNULL(SUM(`w`.`amount`),0)
+    INTO @payout
+  FROM `blotto_winner` AS `w`
+  JOIN `blotto_entry` AS `e`
+    ON `e`.`id`=`w`.`entry_id`
+  WHERE `e`.`draw_closed`>=starts
+    AND `e`.`draw_closed`<=ends
   ;
   SET @nett         = (@played - @payout) + (@claims - @fees)
   ;
