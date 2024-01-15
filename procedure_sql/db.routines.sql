@@ -1592,7 +1592,7 @@ BEGIN
     JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
       ON `t`.`org_id`={{BLOTTO_ORG_ID}}
      AND `t`.`client_ref`=`p`.`client_ref`
-    GROUP BY `t`.`client_ref`
+    GROUP BY `u`.`id`
     ORDER BY `updated`,`client_ref_orig`,`client_ref`
   ;
   ALTER TABLE `Updates`
