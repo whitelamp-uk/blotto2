@@ -317,6 +317,27 @@ function negatise (selector) {
     }
 }
 
+function passwordSuggestion ( ) {
+    var chars,i,nr,nrs,str='';
+    var arr=[],sug;
+    // List of unambiguous characters for the hard of seeing
+    chars = '34679ACEFGHJKLMNPQRTWXYabcdefghjkmnpqrstwxy,./|<>?;#:@~[]{}-=!$%^&()_+';
+    nrs = crypto.getRandomValues (new Uint8Array (30));
+    for (i in nrs) {
+        if (arr.length>=15) {
+            break;
+        }
+        nr = Math.round (chars.length*nrs[i]/255);
+        if (!arr.includes(nr)) {
+            arr.push (nr);
+        }
+    }
+    for (i in arr) {
+        str += chars.charAt (arr[i]);
+    }
+    return str;
+}
+
 function setFrame (path) {
     var p;
     p = findInQueryString ('P');
