@@ -94,9 +94,6 @@ function calculate ($start=null,$end=null) {
         ];
         $results[$r['item']] = $item;
     }
-echo "<!--\n";
-print_r ($results);
-echo "-->\n";
     $fees = fees ($start,$end);
     $results[]          = [
         'units' => '',
