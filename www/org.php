@@ -6,6 +6,11 @@ require BLOTTO_WWW_CONFIG;
 if (defined('BLOTTO_SNAILMAIL') && BLOTTO_SNAILMAIL) {
     require BLOTTO_SNAILMAIL_API_STANNP;
 }
+if (defined('VOODOOSMS') && VOODOOSMS) {
+    // Make class \SMS available for www_auth_reset_prep() and www_auth()
+    require_once VOODOOSMS;
+}
+
 
 // Maintenance per software instance
 $maintenance   = file_exists (dirname(BLOTTO_WWW_FUNCTIONS).'/../blotto.maintenance');
