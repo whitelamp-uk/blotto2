@@ -141,8 +141,8 @@ window.document.addEventListener (
         the aim is to offer better protection of organisation data (especially mods to
         BACS data).
         */
-        var pw = document.querySelector ('input[name="pw"]');
-        pw.value = passwordSuggestion ();
+        document.querySelector ('input[name="pw"]').value = passwordSuggestion ();
+        document.querySelector ('input[name="auth"]').focus ();
     }
 );
 <?php endif; ?>
