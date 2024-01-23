@@ -5046,10 +5046,13 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
         $errMsg = 'Sorry the SMS code was not recognised';
         return false;
     }
+
+// TODO this is never called I think
     if ($mode==5) {
         // Nothing to save
         return true;
     }
+
 }
 
 function www_auth_reset_prep ($mode,&$errMsg=null) {
@@ -5127,6 +5130,8 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
         $errMsg = "Sorry SMS service was unavailable - please try again";
         return false;
     }
+
+// This is never called I think
     elseif ($mode==5) {
         // The user will post a new password - no prep required
         /*
@@ -5135,6 +5140,7 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
         */
         return true;
     }
+
     return false;
 }
 
