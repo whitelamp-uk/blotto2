@@ -26,7 +26,7 @@ define ( 'BLOTTO_EMAIL_REPORT_DAY', 'Mon'               );
 define ( 'BLOTTO_EMAIL_WINS_ON',    true                );
 define ( 'BLOTTO_EMAIL_BOUNCE_DELAY', 180               ); // Seconds to sleep before checking ANL email bounces, mostly OK in 3 minutes
 define ( 'BLOTTO_POSTCODE_PREG',    '^[A-Z][A-Z]?[0-9][A-Z0-9]?[0-9][A-Z][A-Z]$' );
-define ( 'BLOTTO_LOG_DAYS',         30                                          );
+define ( 'BLOTTO_LOG_DAYS',         30                  );
 define ( 'BLOTTO_TMP_DIR',          '/tmp'              );
 
 // Postcodes are processed on the assumption they are UK - so territory options
@@ -72,6 +72,8 @@ define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
 
 
 // Campaign Monitor
+// This key is for the internal Campaign Monitor account
+define ( 'BLOTTO_CM_KEY', '******************************************************************************************************************************************************==' );
 define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR',        '/opt/createsend-php/csrest_transactional_smartemail.php'   );
 define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CLASS',  '\Blotto\CampaignMonitor'                                   );
 
