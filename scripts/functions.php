@@ -1200,7 +1200,7 @@ function draws_super ($from,$to) {
 }
 
 function email_api ($code=null) {
-    // If no code, return the first found with a class
+    // If no code, return an instance of the first class found
     foreach (email_apis() as $a) {
         if (!$code || $a->code==$code) {
             require_once $a->file;
@@ -4771,33 +4771,118 @@ function winnings_super ($wins,$type) {
 }
 
 function www_auth ($db,&$time,&$err,&$msg) {
-    $time               = time ();
     if (!isset($_SESSION)) {
         www_session_start ();
     }
     $zo = connect (BLOTTO_DB);
     if (!$zo) {
-        $err            = 'Database down - please contact technical support';
+        $err = 'Database down - please contact technical support';
         return false;
+    }
+    if (array_key_exists('reset',$_SESSION)) {
+        $now = new \DateTime ();
+        if ($now->format('Y-m-d H:i:s')<=$_SESSION['reset']['expires']) {
+            if ($_SESSION['reset']['em_code_try']==$_SESSION['reset']['em_code']) {
+                if ($_SESSION['reset']['sms_code_try']==$_SESSION['reset']['sms_code']) {
+                    // So two-factor verification has been applied plus user knew username
+                    $zo = connect (BLOTTO_CONFIG_DB);
+                    $org_code = BLOTTO_ORG_USER;
+                    $qs = "
+                      SELECT
+                        `username`
+                       ,`mobile`
+                      FROM `blotto_user`
+                      WHERE `org_code`='$org_code'
+                        AND `username`='{$_SESSION['reset']['un']}'
+                        AND `email`='{$_SESSION['reset']['em']}'
+                      LIMIT 0,1
+                    ";
+                    try {
+                        $us = $zo->query ($qs);
+                        if ($us=$us->fetch_assoc()) {
+                            $u = esc ($us['username']);
+                            $p = esc ($_POST['pw']);
+                            // mysqli is hopeless with stored procedures - never use a recycled connection
+                            $qu = "CALL `blottoBrandPasswordReset`('$org_code','$u','$p');";
+                            $zo = connect (BLOTTO_CONFIG_DB,BLOTTO_UN,BLOTTO_PW,true);
+                            $zo->query ($qu);
+                            // User should be notified of password change
+                            if ($api=email_api()) {
+                                // By email
+                                $api->keySet (BLOTTO_CM_KEY);
+                                $ref = $api->send (
+                                    BLOTTO_WWW_PWDRST_NTY_CM_ID,
+                                    $_SESSION['reset']['em'],
+                                    []
+                                );
+                                if (!$ref) {
+                                    error_log ($_SESSION['reset']['em'].' email service failed');
+                                }
+                            }
+                            if (class_exists('\SMS')) {
+                                // By SMS
+                                try {
+                                    $response = '[no response]';
+                                    $sms = new \SMS ();
+                                    $ok = $sms->send (
+                                        $us['mobile'],
+                                        BLOTTO_WWW_PWDRST_NTY_SMS,
+                                        BLOTTO_WWW_PWDRST_SMS_NAME,
+                                        $response
+                                    );
+                                    if (!$ok) {
+                                        error_log ($u['mobile'].' SMS service failed');
+                                    }
+                                }
+                                catch (\Exception $e) {
+                                    error_log ($response);
+                                    error_log ($diagnostic);
+                                }
+                            }
+                        }
+                        else {
+                            $err = 'Failed to identify user - either the username or the email address was not matched';
+                            www_auth_log (false);
+                            return false;
+                        }
+                    }
+                    catch (\Exception $e) {
+                        error_log ($e->getMessage());
+                        $err = 'Sorry, the password reset process failed - please try again';
+                        return false;
+                    }
+                }
+            }
+        }
+        else {
+            $err = 'Sorry, your password reset session has expired - please try again';
+            return false;
+        }
     }
     $zo = connect (BLOTTO_DB,$_POST['un'],$_POST['pw'],true,true);
     if (!$zo) {
         www_auth_log (false);
-        $err            = 'Authentication failed - please try again';
+        $err = 'Authentication failed - please try again';
         return false;
     }
     $_SESSION['blotto'] = $_POST['un'];
-    $_SESSION['ends']   = $time;
+    $_SESSION['ends'] = time() + 60*BLOTTO_WWW_SESSION_MINUTES;
     www_auth_log (true);
     setcookie ('blotto_end',$_SESSION['ends'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_dbn',BLOTTO_DB,0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_key',pwd2cookie($_POST['pw']),0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     setcookie ('blotto_usr',$_POST['un'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
-    $msg[] = 'Welcome, '.$_POST['un'].', to '.BLOTTO_ORG_NAME.' lottery system';
+    if (array_key_exists('reset',$_SESSION)) {
+        unset ($_SESSION['reset']);
+        $msg[] = 'Welcome, '.$_POST['un'].' - your password has been updated';
+    }
+    else {
+        $msg[] = 'Welcome, '.$_POST['un'].', to '.BLOTTO_ORG_NAME.' lottery system';
+    }
     return true;
 }
 
-function www_auth_log ($ok) {
+function www_auth_log ($ok,$type='AUTH') {
     try {
         $zo = connect (BLOTTO_CONFIG_DB);
         $r = $zo->escape_string($_SERVER['REMOTE_ADDR']);
@@ -4817,7 +4902,7 @@ function www_auth_log ($ok) {
            ,`hostname`='$h'
            ,`http_host`='$hh'
            ,`user`='$u'
-           ,`type`='AUTH'
+           ,`type`='$type'
            ,`status`='$s'
         ";
         $zo->query ($qi);
@@ -4826,6 +4911,231 @@ function www_auth_log ($ok) {
         error_log ($e->getMessage());
         return;
     }
+}
+
+function www_auth_reset (&$err=null) {
+    // See $modes in www/view/login.php
+    $mode = 0; // normal login
+    $errs = [
+        0 => null,
+        1 => 'Sorry your session has expired, please try again',
+        2 => 'Sorry something went wrong, please try again',
+        3 => 'Sorry no data was found in your request'
+    ];
+    $posts = [
+        0 => null,
+        1 => 'un',
+        2 => 'em',
+        3 => 'em_code_try',
+        4 => 'sms_code_try',
+        5 => null
+    ];
+    if (array_key_exists('reset',$_POST)) {
+        // The user has requested a reset by $_POST
+        if (array_key_exists('reset',$_SESSION)) {
+            // Make sure the session is not expired
+            $now = new \DateTime ();
+            if ($now->format('Y-m-d H:i:s')>$_SESSION['reset']['expires']) {
+                unset($_SESSION['reset']); $err=$errs[1];
+                return 0;
+            }
+            // Make sure everything posted to the session is from the same IP
+            if ($_SERVER['REMOTE_ADDR']!=$_SESSION['reset']['remote_addr']) {
+                // Only one remote address allowed per reset session
+                unset($_SESSION['reset']); $err=$errs[2];
+                return 0;
+            }
+            // Make sure the session is populated one parameter at a time -
+            // thus multi *stage* verification
+            foreach ($posts as $i=>$p) {
+                if ($p && array_key_exists($p,$_POST)) {
+                    if ($mode>0) {
+                        // More than one parameter is not allowed
+                        unset($_SESSION['reset']); $err=$errs[2];
+                        return 0;
+                    }
+                    $mode = $i;
+                }
+            }
+            // Provide multi *factor* verification where appropriate to the mode
+            // (maybe other stuff later) and return the chosen mode to the view
+            if ($posts[$mode] && array_key_exists($posts[$mode],$_POST)) {
+                if (www_auth_reset_save($mode,$err)) {
+                    if (www_auth_reset_prep($mode+1,$err)) {
+                        return $mode+1;
+                    }
+                }
+                return $mode;
+            }
+            unset($_SESSION['reset']); $err = $errs[3];
+            return 0;
+        }
+        else {
+            // The session does not have a reset session so start one
+            $expires = new \DateTime ();
+            $expires->add (new \DateInterval('PT'.BLOTTO_WWW_PWDRST_MINS.'M'));
+            $_SESSION['reset'] = [
+                  'remote_addr' => $_SERVER['REMOTE_ADDR'],
+                  'expires' => $expires->format ('Y-m-d H:i:s'),
+                  'un' => '',
+                  'em' => '',
+                  'em_code' => '',
+                  'em_code_try' => '',
+                  'sms_code' => '',
+                  'sms_code_try' => ''
+            ];
+            if (array_key_exists('un',$_POST) && $_POST['un']) {
+                // The user has already entered a username so let's have it right
+                // now and skip a mode
+                $_SESSION['reset']['un'] = $_POST['un'];
+                if (www_auth_reset_prep (2,$err)) {
+                    return 2;
+                }
+            }
+            // Otherwise collect the username
+            if (www_auth_reset_prep (1,$err)) {
+                return 1;
+            }
+        }
+    }
+    else {
+        unset ($_SESSION['reset']);
+    }
+    // Normal login
+    return 0;
+}
+
+function www_auth_reset_save ($mode,&$errMsg=null) {
+    if ($mode==1) {
+        // User has offered username
+        if ($_POST['un']) {
+            // Save email
+            $_SESSION['reset']['un'] = $_POST['un'];
+            return true;
+        }
+        $errMsg = 'Username must be provided';
+        return false;
+    }
+    if ($mode==2) {
+        // User has offered email
+        if ($_POST['em']) {
+            // Save email
+            $_SESSION['reset']['em'] = $_POST['em'];
+            return true;
+        }
+        $errMsg = 'Email address must be provided';
+        return false;
+    }
+    if ($mode==3) {
+        // User has offered email code
+        if ($_POST['em_code_try']==$_SESSION['reset']['em_code']) {
+            // Record the verification
+            $_SESSION['reset']['em_code_try'] = $_SESSION['reset']['em_code'];
+            return true;
+        }
+        $errMsg = 'Sorry the email code was not recognised';
+        return false;
+    }
+    if ($mode==4) {
+        // User has offered SMS code
+        if ($_POST['sms_code_try']==$_SESSION['reset']['sms_code']) {
+            // Record the verification
+            $_SESSION['reset']['sms_code_try'] = $_SESSION['reset']['sms_code'];
+            return true;
+        }
+        $errMsg = 'Sorry the SMS code was not recognised';
+        return false;
+    }
+    if ($mode==5) {
+        // Nothing to save
+        return true;
+    }
+}
+
+function www_auth_reset_prep ($mode,&$errMsg=null) {
+    if ($mode==1) {
+        // User will enter username - no prep required
+        return true;
+    }
+    elseif ($mode==2) {
+        // User will enter email - no prep required
+        return true;
+    }
+    elseif ($mode==3) {
+        // User will enter enter an email code - we must email it
+        if ($api=email_api()) {
+            $code = rand (1000,9999);
+            $api->keySet (BLOTTO_CM_KEY);
+            $ref = $api->send (
+                BLOTTO_WWW_PWDRST_VFY_CM_ID,
+                $_SESSION['reset']['em'],
+                ['code'=>$code]
+            );
+            if ($ref) {
+                $_SESSION['reset']['em_code'] = $code;
+                return true;
+            }
+            $errMsg = "Sorry email service failed - please try again";
+            error_log ($_SESSION['reset']['em'].' '.$code);
+            return false;
+        }
+        else {
+            $errMsg = "Sorry email service was unavailable - please try again";
+            error_log ($to.' '.$code.' '.$diagnostic);
+            return false;
+        }
+    }
+    elseif ($mode==4) {
+        // User will enter an SMS code - we must text it
+        if (class_exists('\SMS')) {
+            $org_code = BLOTTO_ORG_USER;
+            $qs = "
+                SELECT
+                  `mobile`
+                FROM `blotto_user`
+                WHERE `org_code`='$org_code'
+                  AND `username`='{$_SESSION['reset']['un']}'
+                  AND `email`='{$_SESSION['reset']['em']}'
+            ";
+            $zo = connect (BLOTTO_CONFIG_DB);
+            $u = $zo->query ($qs);
+            if ($u=$u->fetch_assoc()) {
+                $code = rand (1000,9999);
+                try {
+                    $response = '[no response]';
+                    $sms = new \SMS ();
+                    $ok = $sms->send (
+                        $u['mobile'],
+                        $code.' '.BLOTTO_WWW_PWDRST_VFY_SMS,
+                        BLOTTO_WWW_PWDRST_SMS_NAME,
+                        $response
+                    );
+                    if ($ok) {
+                        $_SESSION['reset']['sms_code'] = $code;
+                        return true;
+                    }
+                }
+                catch (\Exception $e) {
+                    error_log ($response);
+                    error_log ($diagnostic);
+                }
+            }
+            $errMsg = "Sorry failed to send SMS - please try again";
+            error_log ($to.' '.$code.' '.$diagnostic);
+            return false;
+        }
+        $errMsg = "Sorry SMS service was unavailable - please try again";
+        return false;
+    }
+    elseif ($mode==5) {
+        // The user will post a new password - no prep required
+        /*
+        On the next request the new password will get offered to www_auth()
+        which in turn calls blottoPasswordChange() - when appropriate
+        */
+        return true;
+    }
+    return false;
 }
 
 function www_get_address ( ) {
@@ -4915,16 +5225,16 @@ function www_session (&$time) {
     if (!array_key_exists('ends',$_SESSION)) {
         return false;
     }
-    $time                = time ();
+    $time = time ();
     if ($_SESSION['ends']<$time) {
         return false;
     }
-    $_SESSION['ends']    = $time + 60*BLOTTO_WWW_SESSION_MINUTES;
+    $_SESSION['ends'] = $time + 60*BLOTTO_WWW_SESSION_MINUTES;
     setcookie ('blotto_end',$_SESSION['ends'],0,BLOTTO_WWW_COOKIE_PATH,'',is_https()*1);
     return true;
 }
 
-function www_session_start () {
+function www_session_start ( ) {
     // This application is HTTPS only
     if (!$_SERVER['HTTPS']) {
         return false;
@@ -4933,7 +5243,7 @@ function www_session_start () {
         return false;
     }
     session_set_cookie_params (0,BLOTTO_WWW_COOKIE_PATH,$_SERVER['HTTP_HOST'],true);
-    session_start();
+    session_start ();
 }
 
 function www_signup_dates ($org,&$e) {
