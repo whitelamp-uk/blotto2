@@ -416,7 +416,10 @@ form.login input.image {
 }
 form.login .blank {
     display:            inline-block;
-    width:              4.5em;
+    width:              20em;
+    height:             2em;
+    border-color:       transparent;
+    background-color:   transparent;
 }
 form.login input.link {
     /* A submit button that want to look like a text link */
