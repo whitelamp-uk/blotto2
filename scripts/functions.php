@@ -4843,6 +4843,11 @@ function www_auth ($db,&$time,&$err,&$msg) {
                         else {
                             $err = 'Failed to identify user - either the username or the email address was not matched';
                             www_auth_log (false);
+                            // TODO if the reset process is being adhered to this should not occur; perhaps sleep and die
+// TOD Perhaps be even more annoying
+//sleep (10);
+//die ();
+                            sleep (5);
                             return false;
                         }
                     }
@@ -4863,6 +4868,10 @@ function www_auth ($db,&$time,&$err,&$msg) {
     if (!$zo) {
         www_auth_log (false);
         $err = 'Authentication failed - please try again';
+// TODO be more clever
+        // Clever stuff with ever-increased sluggishness means writing more code.
+        // A simple make-do-and-mend for now
+        sleep (5);
         return false;
     }
     $_SESSION['blotto'] = $_POST['un'];
@@ -4936,13 +4945,15 @@ function www_auth_reset (&$err=null) {
             // Make sure the session is not expired
             $now = new \DateTime ();
             if ($now->format('Y-m-d H:i:s')>$_SESSION['reset']['expires']) {
+                // Reset session expired
                 unset($_SESSION['reset']); $err=$errs[1];
                 return 0;
             }
             // Make sure everything posted to the session is from the same IP
             if ($_SERVER['REMOTE_ADDR']!=$_SESSION['reset']['remote_addr']) {
-                // Only one remote address allowed per reset session
+                // This should not happen
                 unset($_SESSION['reset']); $err=$errs[2];
+                sleep (5);
                 return 0;
             }
             // Make sure the session is populated one parameter at a time -
@@ -4950,10 +4961,11 @@ function www_auth_reset (&$err=null) {
             foreach ($posts as $i=>$p) {
                 if ($p && array_key_exists($p,$_POST)) {
                     if ($mode>0) {
-                        // More than one parameter is not allowed
                         unset($_SESSION['reset']); $err=$errs[2];
+                        sleep (5);
                         return 0;
                     }
+                    // This bit of code should only run once per data submission
                     $mode = $i;
                 }
             }
@@ -4967,7 +4979,9 @@ function www_auth_reset (&$err=null) {
                 }
                 return $mode;
             }
+            // This should not happen
             unset($_SESSION['reset']); $err = $errs[3];
+            sleep (5);
             return 0;
         }
         else {
@@ -4985,8 +4999,8 @@ function www_auth_reset (&$err=null) {
                   'sms_code_try' => ''
             ];
             if (array_key_exists('un',$_POST) && $_POST['un']) {
-                // The user has already entered a username so let's have it right
-                // now and skip a mode
+                // The user has already entered a username so let's have it
+                // right now and skip mode 1
                 $_SESSION['reset']['un'] = $_POST['un'];
                 if (www_auth_reset_prep (2,$err)) {
                     return 2;
