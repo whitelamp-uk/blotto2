@@ -317,6 +317,20 @@ function negatise (selector) {
     }
 }
 
+function passwordResetAutoCancel ( ) {
+    var p;
+    p = document.querySelector ('form.login p:nth-of-type(1)');
+    p.classList.add ('error');
+    p.innerText = 'You have run out of time - please try again';
+    clearInterval (interval);
+    setTimeout (
+        function ( ) {
+            window.top.location.href = './';
+        },
+        10000
+    );
+}
+
 function passwordResetTimerDecrement (box,bar,start=false) {
     var s,t,tm,ts,w;
     w = parseFloat (window.getComputedStyle(box).getPropertyValue('width'));
@@ -328,13 +342,14 @@ function passwordResetTimerDecrement (box,bar,start=false) {
         }
         bar.style.width = Math.round(w*s/t).toFixed(1) + 'px';
         bar.dataset.seconds = String (s);
+        tm = String (Math.floor(s/60));
+        ts = String (s%60);
+        if (ts.length<2) {
+            ts = '0' + ts;
+        }
+        bar.firstChild.innerText = tm + ':' + ts;
     }
-    tm = String (Math.floor(s/60));
-    ts = String (s%60);
-    if (ts.length<2) {
-        ts = '0' + ts;
-    }
-    bar.firstChild.innerText = tm + ':' + ts;
+    return s;
 }
 
 function passwordSuggestion (noRepeats=false) {
