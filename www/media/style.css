@@ -376,10 +376,19 @@ form.login .component {
 form.login .component {
     position:           relative;
 }
+form.login .error {
+    color:              var(--blotto-color-fgd-login-error);
+}
 form.login input {
     margin:             0;
-    height:             2em;
+    height:             2.4em;
+    box-sizing:         border-box;
     text-align:         center;
+}
+form.login input.squeezed {
+    /* Input fields having overlaid elements and the ends */
+    padding-left:       2.4em;
+    padding-right:      2.4em;
 }
 form.login input.hidden {
     position:           absolute;
@@ -400,8 +409,8 @@ form.login input.image {
     position:           absolute;
     right:              0;
     margin:             1px 1px 0 0;
-    width:              calc(1.75em - 2px);
-    height:             calc(1.75em - 2px);
+    width:              1.6em;
+    height:             1.6em;
     border-style:       solid;
     border-radius:      0;
     border-width:       1px;
@@ -456,8 +465,8 @@ form.login .timer {
     margin:             1px 0 0 1px;
     box-sizing:         border-box;
     border-style:       none;
-    width:              calc(2.2em - 2px);
-    height:             calc(2.2em - 2px);
+    width:              2em;
+    height:             2em;
     background-color:   var(--blotto-dfn-clr-gold-lo);
     padding:            0;
     text-align:         left;
