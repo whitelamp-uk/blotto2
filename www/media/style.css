@@ -399,6 +399,7 @@ form.login input.hidden {
     padding:            0;
     overflow-x:         hidden;
     overflow-y:         hidden;
+    visibility:         none;
 }
 form.login input.text {
     /* Input fields that are GUI text boxes - text, email, password, etc */

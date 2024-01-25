@@ -6,10 +6,11 @@ $modes = [
     2 => 'Please enter your email address',
     3 => 'Please enter the code we just sent to your email address',
     4 => 'Please enter the code we just sent to your phone',
-    5 => 'Set your new password now'
+    5 => 'Set your new password now',
+    6 => 'Your password has been reset'
 ];
 
-$mode = www_auth_reset ($error_report);
+$mode = www_auth_reset ($run,$err);
 
 // Figure out seconds remaining
 if ($mode>0) {
@@ -29,49 +30,32 @@ if ($mode>0) {
         <section class="form-content">
 
 <?php if($mode==0): ?>
-<?php     if($error_report): ?>
-            <p class="error"><?php echo htmlspecialchars ($error_report); ?></p>
+<?php     if($err): ?>
+          <p class="error"><?php echo htmlspecialchars ($err); ?></p>
 
 <?php     else: ?>
           <p>&nbsp;</p>
 
 <?php     endif; ?>
           <div class="usr">
-            <input type="text" class="text" name="un" placeholder="Username" />
+            <input type="text" class="text" name="un" value="<?php echo htmlspecialchars ($run); ?>" placeholder="Username" />
           </div>
           <div class="pwd">
-            <span class="component"><input type="password" class="text squeezed" name="pw" placeholder="Password" /><input type="submit" class="image" name="auth" title="Login now" value="Login now" /></span>
+            <span class="component"><input <?php if($run): ?> type="text" <?php else: ?> type="password" <?php endif; ?> class="text squeezed" name="pw" placeholder="Password" /><input type="submit" class="image" name="auth" title="Login now" value="Login now" /></span>
           </div>
           <div id="reset-option">
             <input id="reset-start" type="submit" class="link" name="reset" title="Reset password" value="Reset password" />
           </div>
 
-<?php elseif($mode==5): ?>
-<?php     if($error_report): ?>
-          <p class="error"><?php echo htmlspecialchars ($error_report); ?></p>
-<?php     else: ?>
-          <p><?php echo htmlspecialchars ($modes[$mode]); ?></p>
-<?php     endif; ?>
-          <input type="text" class="hidden" name="un" placeholder="Username" value="<?php echo htmlspecialchars ($_SESSION['reset']['un']); ?>" />
-          <input type="hidden" name="reset" value="1" />
-          <p>We recommend our password suggestion but you may change it [or <span class="copy">copy it</span>]</p>
-          <div class="pwd">
-            <span class="component"><span class="timer" data-seconds="<?php echo $t; ?>"><span class="timeremaining" data-seconds="<?php echo intval ($s); ?>"><span></span></span></span><input type="password" class="text squeezed" name="pw" placeholder="Password" /><input type="submit" class="image" name="auth" title="Reset password and login" value="Reset password and login" /></span>
-          </div>
-          <div id="reset-option">
-            <a id="reset-cancel" class="link" href="./" title="Cancel reset process">Cancel reset process</a>
-          </div>
-
 <?php else: ?>
           <div class="reset">
 
-<?php     if($error_report): ?>
-            <p class="error"><?php echo htmlspecialchars ($error_report); ?></p>
-
-<?php     else: ?>
-            <p><?php echo htmlspecialchars ($modes[$mode]); ?></p>
+<?php     if($err): ?>
+            <p class="error"><?php echo htmlspecialchars ($err); ?></p>
 
 <?php     endif; ?>
+            <p><?php echo htmlspecialchars ($modes[$mode]); ?></p>
+
 <?php     if($mode==1): ?>
             <span class="component"><span class="timer" data-seconds="<?php echo $t; ?>"><span class="timeremaining" data-seconds="<?php echo $s; ?>"><span></span></span></span><input type="text" class="text squeezed" name="un" placeholder="Username" /><input type="submit" class="image" name="reset" title="Post username and get email" value="Post username and get email" /></span>
 
@@ -84,15 +68,19 @@ if ($mode>0) {
 <?php     elseif($mode==4): ?>
             <span class="component"><span class="timer" data-seconds="<?php echo $t; ?>"><span class="timeremaining" data-seconds="<?php echo $s; ?>"><span></span></span></span><input type="text" class="text squeezed" name="sms_code_try" placeholder="SMS PIN" /><input type="submit" class="image" name="reset" value="Submit" /></span>
 
+<?php     elseif($mode==5): ?>
+            <input type="text" class="hidden" name="un" placeholder="Username" value="<?php echo htmlspecialchars ($run); ?>" />
+            <p>We recommend our preloaded password suggestion but you may change it</p>
+            <span class="component"><span class="timer" data-seconds="<?php echo $t; ?>"><span class="timeremaining" data-seconds="<?php echo $s; ?>"><span></span></span></span><input type="password" class="text squeezed" name="pw" placeholder="Password" /><input type="submit" class="image" name="reset" value="Submit" /></span>
+
 <?php     endif; ?>
           </div>
+
           <div id="reset-option">
-            <a id="reset-cancel" class="link" href="./" title="Cancel reset process">Cancel reset process</a>
+            <a id="reset-cancel" class="link" href="./" title="End reset process"><?php if($mode==6): ?>Login now<?php else: ?>Cancel reset process<?php endif; ?></a>
           </div>
 
 <?php endif; ?>
-
-          </div>
 
         </section>
 
@@ -123,11 +111,39 @@ window.document.addEventListener (
     }
 );
 
-<?php if($mode>0): ?>
+<?php if($mode==0): ?>
+window.document.addEventListener (
+    'DOMContentLoaded',
+    function ( ) {
+        document.querySelector('#reset-start').addEventListener (
+            'click',
+            function (evt) {
+                var pw;
+                if (pw=evt.currentTarget.form.pw) {
+                    pw.value = '';
+                    pw.setAttribute ('type','text');
+                }
+            }
+        );
+        document.querySelector('[name="pw"]').setAttribute ('type','password');
+    }
+);
+
+<?php else: ?>
 window.document.addEventListener (
     'DOMContentLoaded',
     function ( ) {
         var box,bar;
+        document.querySelector('#reset-cancel').addEventListener (
+            'click',
+            function (evt) {
+                var pw;
+                if (pw=evt.currentTarget.closest('form').pw) {
+                    pw.value = '';
+                    pw.setAttribute ('type','text');
+                }
+            }
+        );
         box = document.querySelector ('form.login .timer');
         bar = document.querySelector ('form.login .timeremaining');
         interval = setInterval (
@@ -142,6 +158,7 @@ window.document.addEventListener (
         passwordResetTimerDecrement (box,bar,'start');
     }
 );
+
 <?php endif; ?>
 
 <?php if($mode==5): ?>
@@ -151,7 +168,6 @@ window.document.addEventListener (
     function ( ) {
         var cp = document.querySelector ('form.login span.copy');
         var pw = document.querySelector ('input[name="pw"]');
-        pw.form.auth.focus ();
         /*
         We are not trying to protect ourselves directly here; by enforcing our own
         password generator [ TODO implement browser password suggestions when possible ]

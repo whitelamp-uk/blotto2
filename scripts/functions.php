@@ -4779,91 +4779,6 @@ function www_auth ($db,&$time,&$err,&$msg) {
         $err = 'Database down - please contact technical support';
         return false;
     }
-    if (array_key_exists('reset',$_SESSION)) {
-        $now = new \DateTime ();
-        if ($now->format('Y-m-d H:i:s')<=$_SESSION['reset']['expires']) {
-            if ($_SESSION['reset']['em_code_try']==$_SESSION['reset']['em_code']) {
-                if ($_SESSION['reset']['sms_code_try']==$_SESSION['reset']['sms_code']) {
-                    // So two-factor verification has been applied plus user knew username
-                    $zo = connect (BLOTTO_CONFIG_DB);
-                    $org_code = BLOTTO_ORG_USER;
-                    $qs = "
-                      SELECT
-                        `username`
-                       ,`mobile`
-                      FROM `blotto_user`
-                      WHERE `org_code`='$org_code'
-                        AND `username`='{$_SESSION['reset']['un']}'
-                        AND `email`='{$_SESSION['reset']['em']}'
-                      LIMIT 0,1
-                    ";
-                    try {
-                        $us = $zo->query ($qs);
-                        if ($us=$us->fetch_assoc()) {
-                            $u = esc ($us['username']);
-                            $p = esc ($_POST['pw']);
-                            // mysqli is hopeless with stored procedures - never use a recycled connection
-                            $qu = "CALL `blottoBrandPasswordReset`('$org_code','$u','$p');";
-                            $zo = connect (BLOTTO_CONFIG_DB,BLOTTO_UN,BLOTTO_PW,true);
-                            $zo->query ($qu);
-                            // User should be notified of password change
-                            if ($api=email_api()) {
-                                // By email
-                                $api->keySet (BLOTTO_CM_KEY);
-                                $ref = $api->send (
-                                    BLOTTO_WWW_PWDRST_NTY_CM_ID,
-                                    $_SESSION['reset']['em'],
-                                    []
-                                );
-                                if (!$ref) {
-                                    error_log ($_SESSION['reset']['em'].' email service failed');
-                                }
-                            }
-                            if (class_exists('\SMS')) {
-                                // By SMS
-                                try {
-                                    $response = '[no response]';
-                                    $sms = new \SMS ();
-                                    $ok = $sms->send (
-                                        $us['mobile'],
-                                        BLOTTO_WWW_PWDRST_NTY_SMS,
-                                        BLOTTO_WWW_PWDRST_SMS_NAME,
-                                        $response
-                                    );
-                                    if (!$ok) {
-                                        error_log ($u['mobile'].' SMS service failed');
-                                    }
-                                }
-                                catch (\Exception $e) {
-                                    error_log ($response);
-                                    error_log ($diagnostic);
-                                }
-                            }
-                        }
-                        else {
-                            $err = 'Failed to identify user - either the username or the email address was not matched';
-                            www_auth_log (false);
-                            // TODO if the reset process is being adhered to this should not occur; perhaps sleep and die
-// TOD Perhaps be even more annoying
-//sleep (10);
-//die ();
-                            sleep (5);
-                            return false;
-                        }
-                    }
-                    catch (\Exception $e) {
-                        error_log ($e->getMessage());
-                        $err = 'Sorry, the password reset process failed - please try again';
-                        return false;
-                    }
-                }
-            }
-        }
-        else {
-            $err = 'Sorry, your password reset session has expired - please try again';
-            return false;
-        }
-    }
     $zo = connect (BLOTTO_DB,$_POST['un'],$_POST['pw'],true,true);
     if (!$zo) {
         www_auth_log (false);
@@ -4922,9 +4837,8 @@ function www_auth_log ($ok,$type='AUTH') {
     }
 }
 
-function www_auth_reset (&$err=null) {
+function www_auth_reset (&$currentUser,&$err=null) {
     // See $modes in www/view/login.php
-    $mode = 0; // normal login
     $errs = [
         0 => null,
         1 => 'Sorry your session has expired, please try again',
@@ -4939,9 +4853,14 @@ function www_auth_reset (&$err=null) {
         4 => 'sms_code_try',
         5 => null
     ];
+    $currentUser = '';
+    $mode = 0; // normal login
     if (array_key_exists('reset',$_POST)) {
         // The user has requested a reset by $_POST
         if (array_key_exists('reset',$_SESSION)) {
+            if (array_key_exists('un',$_SESSION['reset'])) {
+                $currentUser = $_SESSION['reset']['un'];
+            }
             // Make sure the session is not expired
             $now = new \DateTime ();
             if ($now->format('Y-m-d H:i:s')>$_SESSION['reset']['expires']) {
@@ -4969,23 +4888,23 @@ function www_auth_reset (&$err=null) {
                     $mode = $i;
                 }
             }
+            if ($mode==1 && array_key_exists('pw',$_POST)) {
+                // If there is a password posted as well this must be mode 5
+                $mode = 5;
+            }
             // Provide multi *factor* verification where appropriate to the mode
             // (maybe other stuff later) and return the chosen mode to the view
-            if ($posts[$mode] && array_key_exists($posts[$mode],$_POST)) {
-                if (www_auth_reset_save($mode,$err)) {
-                    if (www_auth_reset_prep($mode+1,$err)) {
-                        return $mode+1;
-                    }
+            if (www_auth_reset_save($mode,$currentUser,$err)) {
+                $mode++;
+                if (www_auth_reset_prep($mode,$err)) {
+                    return $mode;
                 }
-                return $mode;
             }
-            // This should not happen
-            unset($_SESSION['reset']); $err = $errs[3];
-            sleep (5);
-            return 0;
+            return $mode;
         }
         else {
             // The session does not have a reset session so start one
+            $currentUser = $_POST['un'];
             $expires = new \DateTime ();
             $expires->add (new \DateInterval('PT'.BLOTTO_WWW_PWDRST_MINS.'M'));
             $_SESSION['reset'] = [
@@ -4999,9 +4918,8 @@ function www_auth_reset (&$err=null) {
                   'sms_code_try' => ''
             ];
             if (array_key_exists('un',$_POST) && $_POST['un']) {
-                // The user has already entered a username so let's have it
-                // right now and skip mode 1
-                $_SESSION['reset']['un'] = $_POST['un'];
+                // The user has already entered a username so skip mode 1
+                www_auth_reset_save (1,$err);
                 if (www_auth_reset_prep (2,$err)) {
                     return 2;
                 }
@@ -5023,7 +4941,7 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
     if ($mode==1) {
         // User has offered username
         if ($_POST['un']) {
-            // Save email
+            // Save username
             $_SESSION['reset']['un'] = $_POST['un'];
             return true;
         }
@@ -5041,7 +4959,7 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
         return false;
     }
     if ($mode==3) {
-        // User has offered email code
+        // User has offered email PIN
         if ($_POST['em_code_try']==$_SESSION['reset']['em_code']) {
             // Record the verification
             $_SESSION['reset']['em_code_try'] = $_SESSION['reset']['em_code'];
@@ -5051,7 +4969,7 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
         return false;
     }
     if ($mode==4) {
-        // User has offered SMS code
+        // User has offered SMS PIN
         if ($_POST['sms_code_try']==$_SESSION['reset']['sms_code']) {
             // Record the verification
             $_SESSION['reset']['sms_code_try'] = $_SESSION['reset']['sms_code'];
@@ -5060,17 +4978,101 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
         $errMsg = 'Sorry the SMS code was not recognised';
         return false;
     }
-
-// TODO this is never called I think
     if ($mode==5) {
-        // Nothing to save
-        return true;
+        // No password tester yet
+        if ($_POST['pw']=='') {
+            $errMsg = 'Sorry your password needs to be stronger';
+            return false;
+        }
+        // Set the new password subject to session verification
+        if ($_SESSION['reset']['em_code_try']==$_SESSION['reset']['em_code']) {
+            if ($_SESSION['reset']['sms_code_try']==$_SESSION['reset']['sms_code']) {
+                // So two-factor verification has been applied plus user knew username
+                $zo = connect (BLOTTO_CONFIG_DB);
+                $org_code = BLOTTO_ORG_USER;
+                $qs = "
+                  SELECT
+                    `username`
+                   ,`mobile`
+                  FROM `blotto_user`
+                  WHERE `org_code`='$org_code'
+                    AND `username`='{$_SESSION['reset']['un']}'
+                    AND `email`='{$_SESSION['reset']['em']}'
+                  LIMIT 0,1
+                ";
+                try {
+                    $us = $zo->query ($qs);
+                    if ($us=$us->fetch_assoc()) {
+                        $u = esc ($us['username']);
+                        $p = esc ($_POST['pw']);
+                        // mysqli is hopeless with stored procedures - never use a recycled connection
+                        $qu = "CALL `blottoBrandPasswordReset`('$org_code','$u','$p');";
+                        $zo = connect (BLOTTO_CONFIG_DB,BLOTTO_UN,BLOTTO_PW,true);
+                        $zo->query ($qu);
+                        // PASSWORD NOW CHANGED
+                        if ($api=email_api()) {
+                            $api->keySet (BLOTTO_CM_KEY);
+                            $ref = $api->send (
+                                BLOTTO_WWW_PWDRST_NTY_CM_ID,
+                                $_SESSION['reset']['em'],
+                                []
+                            );
+                            if (!$ref) {
+                                error_log ($_SESSION['reset']['em'].' email service failed');
+                            }
+                        }
+                        if (class_exists('\SMS')) {
+                            try {
+                                $response = '[no response]';
+                                $sms = new \SMS ();
+                                $ok = $sms->send (
+                                    $us['mobile'],
+                                    BLOTTO_WWW_PWDRST_NTY_SMS,
+                                    BLOTTO_WWW_PWDRST_SMS_NAME,
+                                    $response
+                                );
+                                if (!$ok) {
+                                    error_log ($u['mobile'].' SMS service failed');
+                                }
+                            }
+                            catch (\Exception $e) {
+                                error_log ($response);
+                                error_log ($diagnostic);
+                            }
+                        }
+                        return true;
+                    }
+                    else {
+                        www_auth_log (false);
+                        // TODO if the reset process is being adhered to this should not occur; perhaps sleep and die
+// TODO Perhaps be even more annoying
+//sleep (10);
+//die ();
+                        sleep (5);
+                        $errMsg = "Failed to identify user - either the username or the email address was not matched";
+                        return false;
+                    }
+                }
+                catch (\Exception $e) {
+                    error_log ($e->getMessage());
+                    $errMsg = "Sorry, the password reset process failed - please try again";
+                    return false;
+                }
+            }
+        }
+        $errMsg = "Sorry, your session could not be verified - please try again";
+        return false;
     }
 
 }
 
 function www_auth_reset_prep ($mode,&$errMsg=null) {
-    if ($mode==1) {
+    if ($mode==0) {
+        // User is going back to login
+        unset ($_SESSION['reset']);
+        return true;
+    }
+    elseif ($mode==1) {
         // User will enter username - no prep required
         return true;
     }
@@ -5134,27 +5136,24 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
                 }
                 catch (\Exception $e) {
                     error_log ($response);
-                    error_log ($diagnostic);
                 }
             }
             $errMsg = "Sorry failed to send SMS - please try again";
-            error_log ($to.' '.$code.' '.$diagnostic);
+            error_log ($u['mobile'].' '.$code.' '.$response);
             return false;
         }
         $errMsg = "Sorry SMS service was unavailable - please try again";
         return false;
     }
-
-// This is never called I think
     elseif ($mode==5) {
-        // The user will post a new password - no prep required
-        /*
-        On the next request the new password will get offered to www_auth()
-        which in turn calls blottoPasswordChange() - when appropriate
-        */
+        // User will choose password so nothing to be done
         return true;
     }
-
+    elseif ($mode==6) {
+        // User gets success message so nothing to be done
+        return true;
+    }
+    $errMsg = "Reset mode '$mode' not recognised";
     return false;
 }
 
