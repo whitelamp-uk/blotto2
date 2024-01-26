@@ -5015,7 +5015,7 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
                             $ref = $api->send (
                                 BLOTTO_WWW_PWDRST_NTY_CM_ID,
                                 $_SESSION['reset']['em'],
-                                []
+                                ['request_time'=>date('H:i:s')]
                             );
                             if (!$ref) {
                                 error_log ($_SESSION['reset']['em'].' email service failed');
@@ -5088,7 +5088,7 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
             $ref = $api->send (
                 BLOTTO_WWW_PWDRST_VFY_CM_ID,
                 $_SESSION['reset']['em'],
-                ['code'=>$code]
+                ['code'=>$code,'request_time'=>date('H:i:s')]
             );
             if ($ref) {
                 $_SESSION['reset']['em_code'] = $code;
