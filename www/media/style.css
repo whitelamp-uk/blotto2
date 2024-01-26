@@ -403,7 +403,7 @@ form.login input.hidden {
 }
 form.login input.text {
     /* Input fields that are GUI text boxes - text, email, password, etc */
-    width:              20em;
+    width:              28em;
 }
 form.login input.image {
     /* A submit button that wants to look like an image link */
