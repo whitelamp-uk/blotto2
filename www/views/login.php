@@ -129,6 +129,23 @@ window.document.addEventListener (
     }
 );
 
+<?php elseif($mode==6): ?>
+window.document.addEventListener (
+    'DOMContentLoaded',
+    function ( ) {
+        document.querySelector('#reset-cancel').addEventListener (
+            'click',
+            function (evt) {
+                var pw;
+                if (pw=evt.currentTarget.closest('form').pw) {
+                    pw.value = '';
+                    pw.setAttribute ('type','text');
+                }
+            }
+        );
+    }
+);
+
 <?php else: ?>
 window.document.addEventListener (
     'DOMContentLoaded',
