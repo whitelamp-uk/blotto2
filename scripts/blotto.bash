@@ -650,11 +650,16 @@ then
     mariadb                                             < $tmp
     abort_on_error 34d $?
 fi
-echo mysqldump --defaults-extra-file=$mda --routines $dbm '>' $dfl
-mysqldump --defaults-extra-file=$mda --routines $dbm    > $dfl
-abort_on_error 34e $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
 
+if [ "$rehearse" ]
+then
+    echo "    Rehearsal only - skipping"
+else
+    echo mysqldump --defaults-extra-file=$mda --routines $dbm '>' $dfl
+    mysqldump --defaults-extra-file=$mda --routines $dbm    > $dfl
+    abort_on_error 34e $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+fi
 
 echo "35. Recreate organisation database"
 if [ "$rehearse" ]
