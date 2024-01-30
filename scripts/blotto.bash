@@ -88,11 +88,11 @@ get_args () {
                 no_tidy="1"
                 sw="$sw -n"
             fi
-            if [[ "$sws" == *"r"* ]]
+            if [[ "$sws" == *"R"* ]]
             then
                 echo  "Option: rehearse only"
                 rehearse="1"
-                sw="$sw -r"
+                sw="$sw -R"
             fi
         fi
     done
@@ -107,7 +107,7 @@ then
     echo "    -c orig_db             clone static tables"
     echo "    -m draw_closed grp nr  manual insert @draw_closed for grp this nr"
     echo "    -n                     no tidying (leave behind temp files/DB tables)"
-    echo "    -r                     rehearsal only (do not recreate front-end BLOTTO_DB)"
+    echo "    -R                     rehearsal only (do not recreate front-end BLOTTO_DB)"
     echo "    -s                     single draw only (do next required draw and exit)"
     echo "    -v                     verbose (echo full log to STDOUT)"
     exit 102
