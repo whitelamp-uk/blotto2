@@ -102,6 +102,207 @@ function inputHandler (evt) {
     window.inputHandlerTO[evt.target.id] = setTimeout ('inputActor("'+evt.target.id+'")',750);
 }
 
+function inputProfitParameter (evt) {
+    var elm;
+    if (evt.currentTarget.name=='supporters') {
+        elm = evt.currentTarget.form.supporters_pw;
+        elm.value = (12*evt.currentTarget.value*7/365.25).toFixed (elm.dataset.dp);
+    }
+    else if (evt.currentTarget.name=='supporters_pw') {
+        elm = evt.currentTarget.form.supporters;
+        elm.value = ((evt.currentTarget.value/7)*365.25/12).toFixed (elm.dataset.dp);
+    }
+    evt.currentTarget.value = (1*evt.currentTarget.value).toFixed (evt.currentTarget.dataset.dp);
+}
+
+function inputProfitSet (evt) {
+    var form;
+    form = document.querySelector ('form#profit');
+    form.days_signup_import.value   = (1*profits.projection.m12.days_signup_import).toFixed (form.days_signup_import.dataset.dp);
+    form.days_import_entry.value    = (1*profits.projection.m12.days_import_entry).toFixed (form.days_import_entry.dataset.dp);
+    form.abortive_pct.value         = (1*profits.projection.m12.chances_abortive_pct).toFixed (form.abortive_pct.dataset.dp);
+    form.attritional_pct.value      = (1*profits.projection.m12.chances_attritional_pct).toFixed (form.attritional_pct.dataset.dp);
+    form.cps.value                  = (1*profits.projection.m12.chances_per_supporter).toFixed (form.cps.dataset.dp);
+    if (profits.history.length>0) {
+        form.tickets.value          = (1*profits.history[profits.history.length-1].tickets).toFixed (form.tickets.dataset.dp);
+        form.supporters.value       = (1*profits.projection.m12.supporters).toFixed (form.supporters.dataset.dp);
+        form.supporters.dispatchEvent (new Event("input"));
+    }
+    form.days_signup_import.dataset.reset   = form.days_signup_import.value;
+    form.days_import_entry.dataset.reset    = form.days_import_entry.value;
+    form.abortive_pct.dataset.reset         = form.abortive_pct.value;
+    form.attritional_pct.dataset.reset      = form.attritional_pct.value;
+    form.cps.dataset.reset                  = form.cps.value;
+    form.tickets.dataset.reset              = form.tickets.value;
+    form.supporters.dataset.reset           = form.supporters.value;
+}
+
+function linkProfitBlob (data,contentType='text/json') {
+    var ct,d='',i,h,hs;
+    hs = document.querySelectorAll ('#profit ol[data-profit-headings] li');
+    if (contentType=='text/csv') {
+        for (h of hs) {
+            if ('negatize' in h.dataset) {
+                d += "− " + h.innerText + ",";
+            }
+            else if ('positize' in h.dataset) {
+                d += "+ " + h.innerText + ",";
+            }
+            else {
+                d += h.innerText + ",";
+            }
+        }
+        d = d.substring(0,d.length-1) + "\n";
+        for (i in data) {
+            for (h of hs) {
+                d += data[i][h.innerText] + ",";
+            }
+            d = d.substring(0,d.length-1) + "\n";
+        }
+        d = d.trim ();
+    }
+    else if (contentType=='text/html') {
+        d += "<html>\n";
+        d += "  <body>\n";
+        d += "    <table style=\"border-style:none\">\n";
+        d += "      <thead>\n";
+        for (h of hs) {
+            if ('negatize' in h.dataset) {
+                d += "          <th style=\"text-align:left;white-space:nowrap\">− " + h.innerText + "</th>\n";
+            }
+            else if ('positize' in h.dataset) {
+                d += "          <th style=\"text-align:left;white-space:nowrap\">+ " + h.innerText + "</th>\n";
+            }
+            else {
+                d += "          <th style=\"text-align:left\">" + h.innerText + "</th>\n";
+            }
+        }
+        d += "      </thead>\n";
+        d += "      <tbody>\n";
+        for (i in data) {
+            d += "        <tr>\n";
+            for (h of hs) {
+                d += "          <td style=\"text-align:right\">" + data[i][h.innerText] + "</td>\n";
+            }
+            d = d.substring(0,d.length-1) + "\n";
+            d += "        </tr>\n";
+        }
+        d += "      </tbody>\n";
+        d += "    </table>\n";
+        d += "  </body>\n";
+        d += "</html>\n";
+    }
+    else {
+        contentType = "text/json";
+        d = JSON.stringify (data);
+    }
+    return new Blob ([d],{type:contentType});
+}
+
+function linkProfitHistory (evt) {
+    var ct='text/json';
+    // Link a blob of the right content type
+    if (profits.history.length>0) {
+        if (evt.currentTarget.classList.contains('csv')) {
+            ct = 'text/csv';
+        }
+        else if (evt.currentTarget.classList.contains('html')) {
+            ct = 'text/html';
+        }
+        evt.currentTarget.href = window.URL.createObjectURL (linkProfitBlob(profits.history,ct));
+    }
+    else {
+        evt.preventDefault ();
+    }
+}
+
+function linkProfitProjection (evt) {
+    var abtv,anle,anlp,anls,attr,bal,chs,ct='text/json',data=[],entries;
+    var form,i,ms,nxt,nxt1,nxt2,p,pr,ps,rev,row,tks;
+    // Use profits.projection to derive projection data
+    form = evt.currentTarget.closest ('form');
+    anlp = profits.projection.m12.anl_post_pct / 100;
+    anls = profits.projection.m12.anl_sms_pct / 100
+    anle = 1 - (anlp + anls);
+    // Starting conditions
+    tks = 1 * form.tickets.value; // cumulative
+    bal = 1 * profits.history[profits.history.length-1].balance; // cumulative
+    chs = 1 * profits.history[profits.history.length-1].chances; // chances loaded previous loop
+    for (i in profits.projection.months) {
+        attr = tks * form.attritional_pct.value / 100;
+        tks -= attr;
+        tks += profits.projection.months[i].new_tickets;
+        entries = profits.projection.months[i].draws * (tks + profits.projection.months[i].first_entries);
+        abtv = chs * form.abortive_pct.value / 100;
+        row = {
+            month: profits.projection.months[i].month,
+            supporters: 1 * form.supporters.value,
+            days_signup_import: 1 * form.days_signup_import.value,
+            chances: form.supporters.value * form.cps.value,
+            abortive: abtv,
+            attritional: attr,
+            days_import_entry: 1 * form.days_import_entry.value,
+            draws: 1 * profits.projection.months[i].draws,
+            entries: entries,
+            revenue: entries * form.dataset.price/100,
+            payout: 1*profits.projection.months[i].payout + entries*profits.projection.months[i].payout_per_entry,
+            loading: form.supporters.value * profits.projection.months[i].rates.loading / 100,
+            anl_post: anlp * form.supporters.value * profits.projection.months[i].rates.anl_post / 100,
+            anl_sms: anls * form.supporters.value * profits.projection.months[i].rates.anl_sms / 100,
+            anl_email: anle * form.supporters.value * profits.projection.months[i].rates.anl_email / 100,
+            winner_post: (1*profits.projection.months[i].winners + entries*profits.projection.months[i].winners_per_entry) * profits.projection.months[i].rates.winner_post/100,
+            insure: form.supporters.value * form.cps.value * profits.projection.months[i].rates.insure / 100,
+            ticket: form.supporters.value * form.cps.value * profits.projection.months[i].rates.ticket / 100,
+            email: profits.projection.months[i].draws * profits.projection.months[i].rates.email / 100,
+            admin: profits.projection.months[i].draws * profits.projection.months[i].rates.admin / 100,
+            profit: 0,
+            balance: 0,
+            tickets: tks
+        }
+        // Profit
+        row.profit = row.revenue;
+        row.profit -= row.loading + row.anl_post + row.anl_sms + row.anl_email;
+//console.error (row);
+        row.profit -= row.winner_post + row.insure + row.ticket + row.email + row.admin;
+        row.profit -= row.payout;
+        // For the next loop
+        chs = row.chances; // always after the zeroth loop
+        bal += row.profit;
+        // Complete this row
+        row.balance = bal;
+        // Add fractional entries/new tickets for non-abortive chances
+        ms = form.days_import_entry.value * 12 / 365.25;
+        nxt = i + ms;
+        nxt1 = parseInt (Math.floor(nxt));
+        nxt2 = parseInt(Math.ceil(nxt));
+        if (profits.projection.months[nxt1]) {
+            profits.projection.months[nxt1].first_entries += (nxt2-nxt) * row.chances * (1-form.abortive_pct.value/100);
+        }
+        if (profits.projection.months[nxt2]) {
+            profits.projection.months[nxt2].new_tickets += row.chances * (1-form.abortive_pct.value/100);
+        }
+
+        for (p of ['revenue','payout','loading','anl_post','anl_sms','anl_email','winner_post','insure','ticket','email','admin','profit','balance']) {
+            row[p] = row[p].toFixed (2);
+        }
+        for (p of ['days_import_entry','days_signup_import','abortive','attritional']) {
+            row[p] = row[p].toFixed (1);
+        }
+        for (p of ['draws','entries','supporters','chances','tickets']) {
+            row[p] = row[p].toFixed (0);
+        }
+        data.push (row);
+    }
+    // Link a blob of the right content type
+    if (evt.currentTarget.classList.contains('csv')) {
+        ct = 'text/csv';
+    }
+    else if (evt.currentTarget.classList.contains('html')) {
+        ct = 'text/html';
+    }
+    evt.currentTarget.href = window.URL.createObjectURL (linkProfitBlob(data,ct));
+}
+
 function mandateSelect (evt) {
     evt.preventDefault ();
     var form,query,xhttp;
