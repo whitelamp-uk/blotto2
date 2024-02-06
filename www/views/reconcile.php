@@ -36,7 +36,7 @@ var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
 
     </script>
     <script>
-var profits = <?php echo profits(); ?>
+var profits = {}<?php //echo profits(); ?>
 
     </script>
 
@@ -48,7 +48,7 @@ var profits = <?php echo profits(); ?>
     <form id="profit" data-price="<?php echo intval (BLOTTO_TICKET_PRICE) ?>">
 
       <table>
-        <caption><strong>Profit analysis</strong></caption>
+        <caption><strong>Profit analysis</strong> &nbsp; &nbsp;<small class="wrn">&nbsp; Caution! This tool is experimental... &nbsp;</small></caption>
         <tbody>
           <tr>
             <td><strong>Profit history</strong></td>
