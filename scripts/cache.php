@@ -26,3 +26,6 @@ foreach ($lines as $line) {
     eval ($code);
 }
 
+echo "    Caching slow profit queries for front-end analysis tool\n";
+profit ();
+
