@@ -179,12 +179,6 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
-INSERT IGNORE INTO `blotto_org`
-SET
-  `org_code`=UPPER('{{BLOTTO_ORG_USER}}')
-;
-
-
 CREATE TABLE IF NOT EXISTS `blotto_retention` (
   `org` char(16) CHARACTER SET ascii NOT NULL,
   `growth` int(10) DEFAULT 0,

@@ -123,6 +123,32 @@ BEGIN
 END$$
 
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `blottoBrandPasswordReset`$$
+CREATE PROCEDURE `blottoBrandPasswordReset` (
+  IN    `org` char(16) character set ascii
+ ,IN    `un` varchar(64) character set ascii
+ ,IN    `pw` varchar(255) character set utf8
+)
+BEGIN
+  DECLARE CUSTOM_EXCEPTION CONDITION FOR SQLSTATE '45000'
+  ;
+  SELECT COUNT(*) INTO @found
+  FROM `blotto_user`
+  WHERE `org_code`=org
+    AND `username`=un
+  ;
+  IF !@found THEN
+    SET @msg = CONCAT('org_code=',org,', username=',un,' not recognised')
+    ;
+    SIGNAL CUSTOM_EXCEPTION SET MESSAGE_TEXT = @msg
+    ;
+  END IF
+  ;
+  CALL `crxPasswordReset`(un,pw)
+  ;
+END$$
+
 
 DELIMITER ;
 

@@ -317,25 +317,71 @@ function negatise (selector) {
     }
 }
 
-function passwordSuggestion ( ) {
-    var chars,i,nr,nrs,str='';
-    var arr=[],sug;
-    // List of unambiguous characters for the hard of seeing
+function passwordResetAutoCancel ( ) {
+    var p;
+    p = document.querySelector ('form.login p:nth-of-type(1)');
+    p.classList.add ('error');
+    p.innerText = 'You have run out of time - please try again';
+    clearInterval (interval);
+    setTimeout (
+        function ( ) {
+            window.top.location.href = './';
+        },
+        10000
+    );
+}
+
+function passwordResetTimerDecrement (box,bar,start=false) {
+    var s,t,tm,ts,w;
+    w = parseFloat (window.getComputedStyle(box).getPropertyValue('width'));
+    t = parseFloat (box.dataset.seconds);
+    s = parseFloat (bar.dataset.seconds);
+    if (s>0) {
+        if (!start) {
+            s--;
+        }
+        bar.style.width = Math.round(w*s/t).toFixed(1) + 'px';
+        bar.dataset.seconds = String (s);
+        tm = String (Math.floor(s/60));
+        ts = String (s%60);
+        if (ts.length<2) {
+            ts = '0' + ts;
+        }
+        bar.firstChild.innerText = tm + ':' + ts;
+    }
+    return s;
+}
+
+function passwordSuggestion (noRepeats=false) {
+    var arr=[],chars,i,nr,nrs,pwd='';
+    /*
+    At the time of writing there seems no stable method for JS to lay hands
+    on browser password suggestions from JS.
+    Until that glorious day - TODO - here is a fairly strong pseudo-random
+    password suggester.
+    TODO is this random function nice/strong enough? Currently deployed with
+    noRepeats = false
+    */
+    // A list of 70 unambiguous characters for the hard of seeing and/or thinking
     chars = '34679ACEFGHJKLMNPQRTWXYabcdefghjkmnpqrstwxy,./|<>?;#:@~[]{}-=!$%^&()_+';
-    nrs = crypto.getRandomValues (new Uint8Array (30));
+    // Get more random numbers than we need (for noRepears = true)
+    nrs = crypto.getRandomValues (new Uint8Array(30));
     for (i in nrs) {
         if (arr.length>=15) {
+            // We have enough char index numbers
             break;
         }
+        // Normalise and round the random number to make a char index number
         nr = Math.round (chars.length*nrs[i]/255);
-        if (!arr.includes(nr)) {
+        if (!noRepeats || !arr.includes(nr)) {
+            // Add the chars index number
             arr.push (nr);
         }
     }
     for (i in arr) {
-        str += chars.charAt (arr[i]);
+        pwd += chars.charAt (arr[i]);
     }
-    return str;
+    return pwd;
 }
 
 function setFrame (path) {
