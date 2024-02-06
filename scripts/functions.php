@@ -1543,7 +1543,7 @@ function fees ($day_first=null,$day_last=null) {
         $total                  += $a['amount'];
         $fees[$f]['amount']      = number_format ($a['amount']/100,2,'.','');
     }
-    $fees['total']               = [ 'quantity' => null, 'amount' => number_format ($total/100,2,'.','') ];
+    $fees['total']               = [ 'units' => null, 'amount' => number_format ($total/100,2,'.','') ];
     return $fees;
 }
 
@@ -2581,6 +2581,595 @@ function prizes ($draw_closed) {
     }
     ksort ($prizes);
     return $prizes;
+}
+
+function profits ( ) {
+    $org = BLOTTO_ORG_USER;
+    $db = BLOTTO_DB; // TODO - live DB
+    $cdb = BLOTTO_CONFIG_DB;
+    $data = [];
+    $qs = "
+      SELECT
+        DATE_ADD(CONCAT(SUBSTR(MIN(`signed`),1,7),'-01'),INTERVAL 1 MONTH) AS `start`
+      FROM `Supporters`
+      ;
+    ";
+    try {
+        $zo             = connect (BLOTTO_DB);
+        $start          = $zo->query ($qs);
+        $start          = $start->fetch_assoc ();
+        $start          = $start['start'];
+        if (!$start) {
+            return $data;
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $dt                 = new \DateTime ($start); // first month with a sign-up
+    $dt                 = new \DateTime ($dt->format('Y-m-01')); // beginning of that month
+    $end                = new \DateTime ();
+    $end                = $end->format ('Y-m-01'); // beginning of this month
+    $future             = new \DateTime ($end);
+    $future             = $future->add (new \DateInterval('P2Y'));
+    $future             = $future->format ('Y-m-d'); // day after the end of the projection
+    // Add data about lottery expenses and payouts
+    while ($dt->format('Y-m-d')<$future) {
+        /*
+        Every month from the first sign-up right through to the end of the projection needs a data
+        array of stats even if there is no activity
+        */
+        $month = $dt->format ('Y-m');
+        $new = [
+            'supporters_loaded' => 0,
+            'chances_abortive' => 0,
+            'chances_attritional' => 0,
+            'chances_loaded' => 0,
+            'entries' => 0,
+            'payout' => 0.00,
+            'days_signup_import' => 0,
+            'days_import_entry' => 0,
+            'draws' => 0,
+            'prizes' => [],
+            'rates' => []
+        ];
+        $from = $dt->format ('Y-m-d');
+        $dt->add (new \DateInterval('P1M'));
+        $to = clone $dt;
+        $to->sub (new \DateInterval('P1D'));
+        $to = $to->format ('Y-m-d');
+        // Add prize data to projections
+        if ($from>=$end) {
+            $popn = 1 + BLOTTO_TICKET_MAX - BLOTTO_TICKET_MIN;
+            $popn_length = 1 * number_format (log10($popn),1,'.','');
+            $dc = draw_upcoming ($from);
+            while (substr($dc,0,7)==$month) {
+                $ps = prizes ($dc);
+                foreach ($ps as $l=>$p) {
+                    $ps[$l]['ppd'] = 0; // Payout per draw
+                    $ps[$l]['ppe'] = 0; // Mean payout per entry
+                    if (!$p['insure']) {
+                        if ($p['level_method']=='RAFF') {
+                            // Payout per draw for this prize
+                            $ps[$l]['ppd'] = $p['quantity'] * $p['amount'];
+                        }
+                        else {
+                            // The amount can be won an unknown number of times; use a statistical mean
+                            $popn = 1 + BLOTTO_TICKET_MAX - BLOTTO_TICKET_MIN;
+                            $combos = 0;
+                            if ($p['left']) {
+                                $combos += $popn / pow (10,$p['length']);
+                                if ($p['length']<$popn_length) {
+                                    // One combination can win the next bigger prize (ie not this one)
+                                    $combos--;
+                                }
+                            }
+                            if ($p['right']) {
+                                $combos += $popn / pow (10,$p['length']);
+                                if ($combos<$popn_length) {
+                                    // One combination can win a bigger prize (ie not this one)
+                                    $combos--;
+                                }
+                            }
+                            // Mean payout per entry for this prize
+                            $ps[$l]['ppe'] = $p['amount'] * $combos / $popn; 
+                            // Mean wins per entry for this prize - aka odds
+                            $ps[$l]['wpe'] = $combos / $popn; 
+                        }
+                    }
+                }
+                $new['prizes'][$dc] = $ps;
+                $dc = draw_upcoming (day_tomorrow($dc)->format('Y-m-d'));
+            }
+        }
+        if ($from<$end) {
+            // fees() already exists for historical reconciliations and statements and it does the hard work here
+            $fees = fees ($from,$to);
+            $new['tickets_increment'] = 0;
+            $new['tickets_decrement'] = 0;
+            $new['loading'] = $fees['loading']['amount'];
+            $new['anl_post'] = $fees['anl_post']['amount'];
+            $new['anl_sms'] = $fees['anl_sms']['amount'];
+            $new['anl_email'] = $fees['anl_email']['amount'];
+            $new['winner_post'] = $fees['winner_post']['amount'];
+            $new['insure'] = $fees['insure']['amount'];
+            $new['ticket'] = $fees['ticket']['amount'];
+            $new['email'] = $fees['email']['amount'];
+            $new['admin'] = $fees['admin']['amount'];
+            $new['anl_fraction_post'] = 0;
+            $new['anl_fraction_sms'] = 0;
+            $anls = $fees['anl_post']['units'] + $fees['anl_sms']['units'] + $fees['anl_email']['units'];
+            if ($anls>0) {
+                $new['anl_fraction_post'] = $fees['anl_post']['units'] / $anls;
+                $new['anl_fraction_sms'] = 1*$fees['anl_sms']['units'] / $anls;
+            }
+        }
+        // Fee rates at month start for use in projections
+        $qs = "
+          SELECT
+            `f`.`fee`
+           ,`f`.`rate`
+          FROM `blotto_fee` AS `f`
+          JOIN (
+            SELECT
+              `fee`
+             ,MAX(`starts`) AS `starts`
+            FROM `blotto_fee`
+            WHERE `starts`<='$from'
+            GROUP BY `fee`
+          ) AS `fday`
+            ON `fday`.`fee`=`f`.`fee`
+           AND `fday`.`starts`=`f`.`starts`
+          ;
+        ";
+        try {
+            $fs = $zo->query ($qs);
+            while ($f=$fs->fetch_assoc()) {
+                $new['rates'][$f['fee']] = $f['rate'];
+            }
+        }
+        catch (\mysqli_sql_exception $e) {
+            throw new \Exception ($e->getMessage());
+            return false;
+        }
+        $data[$month] = $new;
+    }
+    // Add data about ANLs issued (effectively chances loaded) grouped by month
+    $qs = "
+      SELECT
+        SUBSTR(`a`.`tickets_issued`,1,4) AS `year`
+       ,SUBSTR(`a`.`tickets_issued`,6,2) AS `month`
+       ,AVG(1*DATEDIFF(`a`.`tickets_issued`,`s`.`signed`)) AS `days_signup_import`
+       ,COUNT(`s`.`supporter_id`) AS `supporters_loaded`
+       ,SUM(`s`.`tickets`) AS `chances_loaded`
+      FROM `ANLs` AS `a`
+      JOIN (
+        SELECT
+          *
+         ,COUNT(`current_ticket_number`) AS `tickets`
+          FROM `Supporters`
+          GROUP BY `supporter_id`
+      ) AS `s`
+        ON `s`.`original_client_ref`=`a`.`ClientRef`
+      WHERE `a`.`tickets_issued`>='$start'
+        AND `a`.`tickets_issued`<'$end'
+      GROUP BY `year`,`month`
+      ORDER BY `year`,`month`
+      ;
+    ";
+    // Splice the results into the data array
+    try {
+        $results        = $zo->query ($qs);
+        while ($row=$results->fetch_assoc()) {
+            $data[$row['year'].'-'.$row['month']]['supporters_loaded'] = $row['supporters_loaded'];
+            $data[$row['year'].'-'.$row['month']]['chances_loaded'] = $row['chances_loaded'];
+            $data[$row['year'].'-'.$row['month']]['days_signup_import'] = $row['days_signup_import'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    // Add mean turnaround from import to first draw
+    $qs = "
+      SELECT
+        SUBSTR(`first_entered`,1,4) AS `year`
+       ,SUBSTR(`first_entered`,6,2) AS `month`
+       ,AVG(1*DATEDIFF(`e`.`first_entered`,`a`.`tickets_issued`)) AS `days_import_entry`
+      FROM (
+        SELECT
+          `ticket_number`
+         ,MIN(`draw_closed`) AS `first_entered`
+        FROM `blotto_entry`
+        WHERE `draw_closed`>='$start'
+          AND `draw_closed`<'$end'  
+        GROUP BY `client_ref`
+      ) AS `e`
+      JOIN `Supporters` AS `s`
+        ON `s`.`current_ticket_number`=`e`.`ticket_number`
+      JOIN `ANLs` AS `a`
+        ON `a`.`ClientRef`=`s`.`original_client_ref`
+       AND `a`.`tickets_issued`>'$start'
+      GROUP BY `year`,`month`
+      ORDER BY `year`,`month`
+      ;
+    ";
+    // Splice the results into the data array
+    try {
+        $results        = $zo->query ($qs);
+        while ($row=$results->fetch_assoc()) {
+            $data[$row['year'].'-'.$row['month']]['days_import_entry'] = $row['days_import_entry'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    // Add data about draw entries (effectively revenue generated @ BLOTTO_TICKET_PRICE) and payout
+    $qs = "
+      SELECT
+        `ds`.*
+       ,IFNULL(`w`.`payout`,0)-IFNULL(`i`.`insured`,0) AS `payout`
+      FROM (
+        SELECT
+          SUBSTR(`e`.`draw_closed`,1,4) AS `year`
+         ,SUBSTR(`e`.`draw_closed`,6,2) AS `month`
+         ,COUNT(DISTINCT `e`.`draw_closed`) AS `draws`
+         ,COUNT(`e`.`id`) AS `entries`
+        FROM `blotto_entry` AS `e`
+        JOIN (
+          SELECT
+            `ClientRef`
+           ,`tickets_issued`
+          FROM `ANLs`
+          GROUP BY `ClientRef`
+        ) AS `a`
+          ON `a`.`ClientRef`=`e`.`client_ref`
+        WHERE `e`.`draw_closed`>='$start'
+          AND `e`.`draw_closed`<'$end'  
+        GROUP BY `year`,`month`
+        ORDER BY `year`,`month`
+      ) AS `ds`
+      JOIN (
+        SELECT
+          SUBSTR(`draw_closed`,1,4) AS `year`
+         ,SUBSTR(`draw_closed`,6,2) AS `month`
+         ,SUM(`winnings`) AS `payout`
+        FROM `Wins`
+        GROUP BY `year`,`month`
+      ) AS `w`
+        ON `w`.`year`=`ds`.`year`
+       AND `w`.`month`=`ds`.`month`
+      LEFT JOIN (
+        SELECT
+          SUBSTR(`draw_closed`,1,4) AS `year`
+         ,SUBSTR(`draw_closed`,6,2) AS `month`
+         ,SUM(`amount`) AS `insured`
+        FROM `$cdb`.`blotto_claim`
+        GROUP BY `year`,`month`
+      ) AS `i`
+        ON `i`.`year`=`ds`.`year`
+       AND `i`.`month`=`ds`.`month`
+      GROUP BY `year`,`month`
+      ORDER BY `year`,`month`
+      ;
+    ";
+    // Splice the results into the data array
+    try {
+        $results        = $zo->query ($qs);
+        while ($row=$results->fetch_assoc()) {
+            $data[$row['year'].'-'.$row['month']]['draws'] = $row['draws'];
+            $data[$row['year'].'-'.$row['month']]['entries'] = $row['entries'];
+            $data[$row['year'].'-'.$row['month']]['payout'] = $row['payout'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    // Add data about new tickets
+    $qs = "
+      SELECT
+        `e`.`year`
+       ,`e`.`month`
+       ,SUM(`e`.`tickets`) AS `tickets_increment`
+      FROM (
+        SELECT
+          `client_ref`
+         ,SUBSTR(MIN(`draw_closed`),1,4) AS `year`
+         ,SUBSTR(MIN(`draw_closed`),6,2) AS `month`
+         ,COUNT(DISTINCT `ticket_number`) AS `tickets`
+        FROM `blotto_entry`
+        WHERE `draw_closed`>='$start'
+          AND `draw_closed`<'$end'
+        GROUP BY `client_ref`
+      ) AS `e`
+      GROUP BY `year`,`month`
+      ;
+    ";
+    // Splice the results into the data array
+    try {
+        $results        = $zo->query ($qs);
+        while ($row=$results->fetch_assoc()) {
+            $data[$row['year'].'-'.$row['month']]['tickets_increment'] = $row['tickets_increment'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    // Add data about old tickets
+    $qs = "
+      SELECT
+        `eg`.`year`
+       ,`eg`.`month`
+       ,SUM(`eg`.`tickets`) AS `tickets_decrement`
+      FROM (
+        SELECT
+          `e`.`client_ref`
+         ,SUBSTR(MAX(`e`.`draw_closed`),1,4) AS `year`
+         ,SUBSTR(MAX(`e`.`draw_closed`),6,2) AS `month`
+         ,COUNT(DISTINCT `e`.`ticket_number`) AS `tickets`
+        FROM `blotto_entry` AS `e`
+        JOIN (
+          SELECT
+            `client_ref`
+          FROM `Cancellations`
+          GROUP BY `client_ref`
+        ) AS `c`
+          ON `c`.`client_ref`=`e`.`client_ref`
+        WHERE `e`.`draw_closed`>='$start'
+          AND `e`.`draw_closed`<'$end'
+        GROUP BY `client_ref`
+      ) AS `eg`
+      GROUP BY `year`,`month`
+      ;
+    ";
+    // Splice the results into the data array
+    try {
+        $results        = $zo->query ($qs);
+        while ($row=$results->fetch_assoc()) {
+            $data[$row['year'].'-'.$row['month']]['tickets_decrement'] = $row['tickets_decrement'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    // Add data about cancellations (abortive => 0 payments, attritional => 1 or more payments)
+    $qs = "
+      SELECT
+        SUBSTR(`cancelled_date`,1,4) AS `year`
+       ,SUBSTR(`cancelled_date`,6,2) AS `month`
+       ,SUM(`payments_collected`=0) AS `chances_abortive`
+       ,SUM(`payments_collected`>0) AS `chances_attritional`
+      FROM `Cancellations`
+      WHERE `cancelled_date`>='$start'
+        AND `cancelled_date`<'$end'
+      GROUP BY `year`,`month`
+      ORDER BY `year`,`month`
+      ;
+    ";
+    // Splice the results into the data array
+    try {
+        $results        = $zo->query ($qs);
+        while ($row=$results->fetch_assoc()) {
+            $data[$row['year'].'-'.$row['month']]['chances_abortive'] = $row['chances_abortive'];
+            $data[$row['year'].'-'.$row['month']]['chances_attritional'] = $row['chances_attritional'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    // Create profit report from raw data
+    $history = [];
+    $projection = [ 'months'=>[], 'g'=>[], 'm12'=>[], 'ml'=>[] ];
+    $balance = 0;
+    $tickets = 0;
+    foreach ($data as $m=>$d) {
+        if ($m.'-01'<$end) {
+            // Historical
+            $tickets += $d['tickets_increment'];
+            $tickets -= $d['tickets_decrement'];
+            $revenue = $d['entries'] * BLOTTO_TICKET_PRICE/100;
+            $profit = $revenue;
+            $profit -= $d['payout'];
+            $profit -= $d['loading'];
+            $profit -= $d['anl_post'];
+            $profit -= $d['anl_sms'];
+            $profit -= $d['anl_email'];
+            $profit -= $d['winner_post'];
+            $profit -= $d['insure'];
+            $profit -= $d['ticket'];
+            $profit -= $d['email'];
+            $profit -= $d['admin'];
+            $balance += $profit;
+            $history[] = [
+                'month' => $m,
+                'supporters' => $d['supporters_loaded'],
+                'days_signup_import' => $d['days_signup_import'],
+                'chances' => $d['chances_loaded'],
+                'abortive' => $d['chances_abortive'],
+                'attritional' => $d['chances_attritional'],
+                'days_import_entry' => $d['days_import_entry'],
+                'draws' => $d['draws'],
+                'entries' => $d['entries'],
+                'revenue' => number_format ($revenue,2,'.',''),
+                'payout' => $d['payout'],
+                'loading' => $d['loading'],
+                'anl_fraction_post' => $d['anl_fraction_post'],
+                'anl_fraction_sms' => $d['anl_fraction_sms'],
+                'anl_post' => $d['anl_post'],
+                'anl_sms' => $d['anl_sms'],
+                'anl_email' => $d['anl_email'],
+                'winner_post' => $d['winner_post'],
+                'insure' => $d['insure'],
+                'ticket' => $d['ticket'],
+                'email' => $d['email'],
+                'admin' => $d['admin'],
+                'profit' => number_format ($profit,2,'.',''),
+                'balance' => number_format ($balance,2,'.',''),
+                'tickets' => $tickets
+            ];
+        }
+        else {
+            // Projection
+            $month = [
+                'month' => $m,
+                'draws' => 0,
+                'prizes' => $d['prizes'],
+                'rates' => $d['rates'],
+                'new_tickets' => 0,
+                'first_entries' => 0,
+                'winners' => 0,
+                'winners_per_entry' => 0,
+                'payout' => 0,
+                'payout_per_entry' => 0
+            ];
+            foreach ($month['prizes'] as $i=>$ps) {
+                foreach ($ps as $l=>$p) {
+                    if ($p['ppd']) {
+                        $month['payout'] += $p['ppd'];
+                    }
+                    if ($p['ppe']) {
+                        $month['payout_per_entry'] += $p['ppe'];
+                    }
+                    if ($p['quantity']) {
+                        $month['winners'] += $p['quantity'];
+                    }
+                    elseif ($p['wpe']) {
+                        $month['winners_per_entry'] += $p['wpe'];
+                    }
+                }
+            }
+            $days = new \DateTime ($m.'-01');
+            $days = 1 * $days->format ('t');
+            $day = 1 * substr (draw_upcoming($m.'-01'),-2);
+            while (true) {
+                $month['draws']++;
+                $day++;
+                if ($day>$days) {
+                    break;
+                }
+                $next = draw_upcoming ($m.'-'.str_pad($day,2,'0',STR_PAD_LEFT));
+                if (substr($next,0,7)>$m) {
+                    break;
+                }
+                $day = 1 * substr ($next,-2);
+            }
+            $projection['months'][] = $month;
+        }
+    }
+    // Projection averages
+    $projection['g'] = profits_averages ($history);
+    $projection['m12'] = profits_averages (array_slice($history,-13));
+    $projection['ml'] = profits_averages (array_slice($history,-2));
+    // Prime the model with entry and ticket increments
+    // For now we will use the 12-month average
+    $ms = $projection['m12']['days_import_entry'] * 12 / 365.25;
+    // Start plenty without bothering to reverse calculate first month
+    $j = count ($history);
+    for ($i=$j-3;$i<$j;$i++) {
+        $next = $i + $ms;
+        $next1 = intval (floor($next));
+        $next2 = intval (ceil($next));
+        // Approximate entries per draw arising from a fractional month
+        $entries = ($next2-$next) * $history[$i]['chances'];
+        if (!array_key_exists($next1,$history)) {
+            $projection['months'][$next1-$j]['first_entries'] += number_format ($entries,0,'.','');
+        }
+        if (!array_key_exists($next2,$history)) {
+           $ab = $projection['m12']['chances_abortive_pct'] / 100;
+            $projection['months'][$next2-$j]['new_tickets'] += number_format ((1-$ab)*$history[$i]['chances'],0,'.','');
+        }
+    }
+    return json_encode ([ 'history'=>$history, "projection"=>$projection ],JSON_PRETTY_PRINT);
+}
+
+function profits_averages ($months) {
+    // NB zeroth element is just for the back-story
+    $dsi = 0;
+    $dsi_count = 0;
+    $die = 0;
+    $die_count = 0;
+    $s = 0;
+    $s_count = 0;
+    $cps = 0;
+    $cps_count = 0;
+    $cab = 0;
+    $cab_count = 0;
+    $cat = 0;
+    $cat_count = 0;
+    $pst = 0;
+    $pst_count = 0;
+    $sms = 0;
+    $sms_count = 0;
+    for ($i=1;array_key_exists($i,$months);$i++) {
+        if ($months[$i]['days_signup_import']) {
+            $dsi_count++;
+            $dsi += $months[$i]['days_signup_import'];
+        }
+        if ($months[$i]['days_import_entry']) {
+            $die_count++;
+            $die += $months[$i]['days_import_entry'];
+        }
+        if ($months[$i]['supporters']) {
+            $s_count++;
+            $s += $months[$i]['supporters'];
+        }
+        if ($months[$i]['chances']) {
+            $cps_count++;
+            $cps += $months[$i]['chances'] / $months[$i]['supporters'];
+        }
+        if ($months[$i]['abortive']) {
+            $cab_count++;
+            $cab += $months[$i]['abortive'] / $months[$i-1]['chances'];
+        }
+        if ($months[$i]['attritional']) {
+            $cat_count++;
+            $cat += $months[$i]['attritional'] / $months[$i-1]['tickets'];
+        }
+        if ($months[$i]['anl_fraction_post']) {
+            $pst_count++;
+            $pst += $months[$i]['anl_fraction_post'];
+        }
+    }
+    if ($dsi_count) {
+        $dsi /= $dsi_count;
+    }
+    if ($die_count) {
+        $die /= $die_count;
+    }
+    if ($s_count) {
+        $s /= $s_count;
+    }
+    if ($cps_count) {
+        $cps /= $cps_count;
+    }
+    if ($cab_count) {
+        $cab /= $cab_count;
+    }
+    if ($cat_count) {
+        $cat /= $cat_count;
+    }
+    if ($pst_count) {
+        $pst /= $pst_count;
+    }
+    if ($sms_count) {
+        $sms /= $sms_count;
+    }
+    return [
+        'days_signup_import' => number_format ($dsi,3,'.',''),
+        'days_import_entry' => number_format ($die,3,'.',''),
+        'supporters' => number_format ($s,3),
+        'chances_per_supporter' => number_format ($cps,3,'.',''),
+        'chances_abortive_pct' => number_format (100*$cab,3,'.',''),
+        'chances_attritional_pct' => number_format (100*$cat,3,'.',''),
+        'anl_post_pct' => number_format (100*$pst,3,'.',''),
+        'anl_sms_pct' => number_format (100*$sms,3,'.',''),
+    ];
 }
 
 function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
@@ -3698,14 +4287,6 @@ function statement_serve ($file) {
     echo file_get_contents (BLOTTO_DIR_STATEMENT.'/'.$file);
 }
 
-function stderr_or_log($msg) {
-    if (env_is_cli() && defined('STDERR')) {
-        fwrite (STDERR,"$msg\n");
-    } else {
-        error_log($msg);
-    }
-}
-
 function stats ($day_first,$day_last) {
     $org = BLOTTO_ORG_USER;
     $cdb = BLOTTO_CONFIG_DB;
@@ -3796,6 +4377,15 @@ function stats ($day_first,$day_last) {
         return false;
     }
     return $stats;
+}
+
+function stderr_or_log ($msg) {
+    if (env_is_cli() && defined('STDERR')) {
+        fwrite (STDERR,"$msg\n");
+    }
+    else {
+        error_log ($msg);
+    }
 }
 
 function table ($id,$class,$caption,$headings,$data,$output=true,$footings=false,$classes=false) {

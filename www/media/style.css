@@ -122,11 +122,15 @@ nav.links {
     text-align:         center;
 }
 
-a.link-resource {
-    margin:             0.5em 0.2em 0 0;
+a.link-resource,
+a.link-profit {
+    margin:             0 0 0 0.2em;
     display:            inline-block;
     width:              1.5em;
     height:             2em;
+}
+a.link-resource {
+    margin:             0.5em 0.2em 0 0;
 }
 
 a.link-image > img {
@@ -135,13 +139,15 @@ a.link-image > img {
     content:            var(--blotto-url-link-image);
 }
 
-a.link-table > img {
+a.link-table > img,
+a.link-profit.html > img {
     width:              100%;
     height:             100%;
     content:            var(--blotto-url-link-table);
 }
 
-a.link-csv > img {
+a.link-csv > img,
+a.link-profit.csv > img {
     width:              100%;
     height:             100%;
     content:            var(--blotto-url-link-csv);
@@ -697,7 +703,8 @@ img.close {
       to { opacity:     0.0; }
 }
 
-.negative {
+.negative,
+[data-negatize] {
     color:              var(--blotto-color-fgd-negative-nr);
 }
 
@@ -813,23 +820,35 @@ img.close {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
 }
 
-#reconcile > form {
-    position: fixed;
+#reconciliation {
+    margin-left:        12em;
+    margin-top:         -3em;
+    width:              calc(100vw - 32em);
+    text-align:         left;
 }
 
-#reconcile .reconcile {
+#reconciliation > form.dates {
+    position:           fixed;
+    left:               15em;
+    top:                2.1em;
+    background-color:   white;
+}
+
+#reconciliation .reconcile {
     margin:             1em 0 3em 0;
-    text-align:         center;
 }
 
-#reconcile .reconcile table {
-    margin:             0 auto 0 auto;
+#reconciliation .reconcile > a:first-of-type {
+    margin-left:        12em;
+}
+
+#reconciliation .reconcile table {
     text-align:         left;
     width:              26em;
     white-space:        nowrap;
 }
 
-#reconcile .reconcile caption {
+#reconciliation .reconcile caption {
     text-align:         center;
     overflow:           visible;
 }
@@ -869,6 +888,38 @@ img.close {
 #reconcile-table-draw-summary-super tbody td:nth-of-type(2),
 #reconcile-table-draw-summary-super tbody td:nth-of-type(3) {
     text-align:         right;
+}
+
+#profit {
+    position: fixed;
+    left: 44em;
+    top: 3.7em;
+    width: max-content;
+    text-align: left;
+}
+#profit label {
+    display: inline-block;
+    width: 16em;
+    text-align: left;
+}
+#profit input {
+    box-sizing: border-box;
+    width: 8em;
+    text-align: right;
+}
+#profit input[type="button"] {
+    text-align: center;
+}
+#profit a {
+    font-size: 0.85em;
+}
+#profit a:hover {
+    cursor: pointer;
+    color: var(--blotto-color-fgd-button-opt-hvr);
+}
+
+#profit [data-profit-headings] {
+    display:none;
 }
 
 #system-info {

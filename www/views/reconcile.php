@@ -33,13 +33,135 @@ else {
     <script src="./media/reconcile.js"></script>
     <script>
 var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
+
+    </script>
+    <script>
+var profits = <?php echo profits(); ?>
+
     </script>
 
-    <section id="reconcile" class="content">
 
+    <section class="content">
       <h2>Summary data</h2>
+    </section>
 
-      <form method="get" action="./">
+    <form id="profit" data-price="<?php echo intval (BLOTTO_TICKET_PRICE) ?>">
+
+      <table>
+        <caption><strong>Profit analysis</strong></caption>
+        <tbody>
+          <tr>
+            <td><strong>Profit history</strong></td>
+            <td>&nbsp;</td>
+            <td><a title="Download historical profit data as HTML" class="link-profit html history" download="profit_history_<?php echo date('Y-m-d'); ?>.html" href="#"><img /></a><a title="Download historical profit data as CSV" class="link-profit csv history" download="profit_history_<?php echo date('Y-m-d'); ?>.csv" href="#"><img /></a></td>
+          </tr>
+          <tr>
+            <td>Mean avg days sign-up to import</td>
+            <td><input name="days_signup_import" type="number" min="5" max="10" step="0.1" data-reset="8" value="8" data-dp="1" /></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+          </tr>
+          <tr>
+            <td>Mean avg days import to first play</td>
+            <td><input name="days_import_entry" type="number" min="20" max="100" step="0.1" data-reset="30" value="30" data-dp="1" /></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+          </tr>
+          <tr>
+            <td>Abortive cancellation <strong>%</strong> (of previous import)</td>
+            <td><input name="abortive_pct" type="number" min="5.0" max="10.0" step="1" data-reset="8.00" value="8.00" data-dp="2" /></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+          </tr>
+          <tr>
+            <td>Attritional cancellation <strong>%</strong> (of previous ticket count)</td>
+            <td><input name="attritional_pct" type="number" min="2.00" max="4.00" step="0.01" data-reset="3.20" value="3.20" data-dp="2" /></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+          </tr>
+          <tr>
+            <td>Tickets in play at projection start</td>
+            <td><input name="tickets" type="number" min="0" max="1000000" step="1" value="0" data-reset="0" data-dp="0" /></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+          </tr>
+          <tr>
+            <td>Mean avg chances per sign-up</td>
+            <td><input name="cps" type="number" min="1.00" max="2.00" step="0.01" data-reset="1.30" value="1.30" data-dp="2" /></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+          </tr>
+          <tr>
+            <td>Sign-ups <strong>pcm</strong></td>
+            <td><input name="supporters" type="number" min="100" max="1000" step="1" data-reset="217" value="217" data-dp="0" /></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;i.dispatchEvent(new Event('input'));return false">Reset</a></td>
+          </tr>
+          <tr>
+            <td>[per week]</td>
+            <td><input name="supporters_pw" type="number" min="20" max="200" step="1" data-reset="50" value="50" data-dp="0" /></td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td><strong>Profit projection</strong></td>
+            <td>&nbsp;</td>
+            <td><a title="Download projected profit data as HTML" class="link-profit html projection" download="profit_projection_<?php echo date('Y-m-d'); ?>.html" href="#"><img /></a><a title="Download projected profit data as CSV" class="link-profit csv projection" download="profit_projection_<?php echo date('Y-m-d'); ?>.csv" href="#"><img /></a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ol data-profit-headings>
+        <li title="month">month</li>
+        <li title="Average days from signup to import (ANL creation)">days_signup_import</li>
+        <li data-positize title="Supporters loaded">supporters</li>
+        <li data-positize title="Chances loaded">chances</li>
+        <li data-negatize title="Cancellations with no money collected">abortive</li>
+        <li data-negatize title="Cancellations after money collected">attritional</li>
+        <li title="Average days from import to first play (draw entry)">days_import_entry</li>
+        <li title="Number of draws">draws</li>
+        <li title="Number of plays (draw entries)">entries</li>
+        <li data-positize title="Revenue generated from plays">revenue</li>
+        <li data-negatize title="Fee ticket">ticket</li>
+        <li data-negatize title="Fee winners">winner_post</li>
+        <li data-negatize title="Fee insurance">insure</li>
+        <li data-negatize title="Fee loading">loading</li>
+        <li data-negatize title="Fee ANL emails">anl_email</li>
+        <li data-negatize title="Fee ANL postage">anl_post</li>
+        <li data-negatize title="Fee ANL texts">anl_sms</li>
+        <li data-negatize title="Fee admin">admin</li>
+        <li data-negatize title="Fee email general">email</li>
+        <li data-negatize title="Uninsured payout">payout</li>
+        <li data-positize title="Lottery profit">profit</li>
+        <li title="Lottery balance at month end">balance</li>
+        <li title="Tickets playing at month end">tickets</li>
+      </ol>
+
+    </form>
+
+    <script>
+window.document.addEventListener (
+    'DOMContentLoaded',
+    function (evt) {
+        var elm;
+        for (elm of document.querySelectorAll('#profit a.history')) {
+            elm.addEventListener (
+                'click',
+                linkProfitHistory
+            );
+        }
+        for (elm of document.querySelectorAll('#profit a.projection')) {
+            elm.addEventListener (
+                'click',
+                linkProfitProjection
+            );
+        }
+        for (elm of document.querySelectorAll('#profit input[type="number"]')) {
+            elm.addEventListener (
+                'input',
+                inputProfitParameter
+            );
+        }
+        inputProfitSet (evt);
+    }
+);
+    </script>
+
+    <section id="reconciliation">
+
+      <form class="dates" method="get" action="./">
         <input type="hidden" name="reconcile" />
         <input type="hidden" name="reconcile" />
         <input type="date" pattern="\d{4}-\d{2}-\d{2}" name="from" min="<?php echo htmlspecialchars($day1); ?>" max="<?php echo htmlspecialchars($daye); ?>" value="<?php echo htmlspecialchars($from); ?>" />
@@ -62,7 +184,7 @@ var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
           href="#"><img /></a>
 <?php
 table (
-    'reconciliation',
+    'reconciliation-table',
     'summary',
     'Reconciliation '.date_reformat($from,'Y M d').' to '.date_reformat($to,'Y M d'),
     null,
