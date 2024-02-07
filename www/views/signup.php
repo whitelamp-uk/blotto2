@@ -131,18 +131,6 @@ catch (\Exception $e) {
 
         <legend>Ticket requirements</legend>
 
-<?php   if ($org['signup_dd_text']): ?>
-
-        <p><?php echo str_replace ("\n",'<br/>',htmlspecialchars($org['signup_dd_text'])); ?></p>
-
-<?php   endif; ?>
-
-<?php   if ($org['signup_dd_link']): ?>
-
-        <a class="dd" target="_top" href="<?php echo htmlspecialchars ($org['signup_dd_link']); ?>">Sign up by direct debit</a>
-
-<?php   endif; ?>
-
 <?php   if($count=count($first_draw_dates)): ?>
 
         <div class="field radioset">
@@ -308,6 +296,18 @@ form.signup input[name="<?php echo $code; ?>"] {
         <input type="submit" name="<?php echo $code; ?>" value="&nbsp;" title="Pay with <?php echo htmlspecialchars ($api->name); ?>" alt="<?php echo htmlspecialchars ($api->name); ?> logo" />
 
 <?php   endforeach; ?>
+
+<?php   if ($org['signup_dd_text']): ?>
+
+        <p><?php echo str_replace ("\n",'<br/>',htmlspecialchars($org['signup_dd_text'])); ?></p>
+
+<?php   endif; ?>
+
+<?php   if ($org['signup_dd_link']): ?>
+
+        <a class="dd" target="_top" href="<?php echo htmlspecialchars ($org['signup_dd_link']); ?>">Sign up by direct debit</a>
+
+<?php   endif; ?>
 
       </fieldset>
 
