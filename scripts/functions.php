@@ -2622,17 +2622,18 @@ function profits ( ) {
         */
         $month = $dt->format ('Y-m');
         $new = [
-            'supporters_loaded' => 0,
             'chances_abortive' => 0,
             'chances_attritional' => 0,
             'chances_loaded' => 0,
+            'ccr' => [],
+            'days_import_entry' => 0,
+            'days_signup_import' => 0,
+            'draws' => 0,
             'entries' => 0,
             'payout' => 0.00,
-            'days_signup_import' => 0,
-            'days_import_entry' => 0,
-            'draws' => 0,
             'prizes' => [],
-            'rates' => []
+            'rates' => [],
+            'supporters_loaded' => 0
         ];
         $from = $dt->format ('Y-m-d');
         $dt->add (new \DateInterval('P1M'));
@@ -2963,6 +2964,50 @@ function profits ( ) {
         throw new \Exception ($qs."\n".$e->getMessage());
         return false;
     }
+    // Add data about CCR cancellation milestones
+    $qs = "
+      SELECT
+        SUBSTR(`c`.`last_cancelled`,1,4) AS `year`
+       ,SUBSTR(`c`.`last_cancelled`,6,2) AS `month`
+       ,`c`.`collected_times`
+       ,COUNT(`c`.`chance_ref`) AS `quantity`
+      FROM (
+        SELECT
+          `chance_ref`
+         ,MAX(`milestone_date`) AS `last_cancelled`
+         ,`collected_times`
+        FROM `Changes`
+        WHERE `milestone`='cancellation'
+        GROUP BY `chance_ref`
+      ) AS `c`
+      LEFT JOIN (
+        SELECT
+          `chance_ref`
+         ,MAX(`milestone_date`) AS `last_reinstated`
+        FROM `Changes`
+        WHERE `milestone`='reinstatement'
+        GROUP BY `chance_ref`
+      ) AS `r`
+        ON `r`.`chance_ref`=`c`.`chance_ref`
+       AND `r`.`last_reinstated`>=`c`.`last_cancelled`
+      WHERE `c`.`last_cancelled`>='$start'
+        AND `c`.`last_cancelled`<'$end'
+        AND `r`.`last_reinstated` IS NULL
+        GROUP BY `year`,`month`,`collected_times`
+        ORDER BY `year`,`month`,`collected_times`
+      ;
+    ";
+    // Splice the results into the data array
+    try {
+        $results        = $zo->query ($qs);
+        while ($row=$results->fetch_assoc()) {
+            $data[$row['year'].'-'.$row['month']]['ccr'][$row['collected_times']] = $row['quantity'];
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
     // Create profit report from raw data
     $history = [];
     $projection = [ 'months'=>[], 'g'=>[], 'm12'=>[], 'ml'=>[] ];
@@ -2986,7 +3031,7 @@ function profits ( ) {
             $profit -= $d['email'];
             $profit -= $d['admin'];
             $balance += $profit;
-            $history[] = [
+            $h = [
                 'month' => $m,
                 'supporters' => $d['supporters_loaded'],
                 'days_signup_import' => $d['days_signup_import'],
@@ -3011,8 +3056,13 @@ function profits ( ) {
                 'admin' => $d['admin'],
                 'profit' => number_format ($profit,2,'.',''),
                 'balance' => number_format ($balance,2,'.',''),
-                'tickets' => $tickets
+                'tickets' => $tickets,
+                'ccr_cancels' => ''
             ];
+            foreach ($d['ccr'] as $retention=>$quantity) {
+                $h['ccr'.$retention] = $quantity;
+            }
+            $history[] = $h;
         }
         else {
             // Projection
