@@ -3084,10 +3084,13 @@ function profits ( ) {
                 calculations. This would be for a rather second order improvement in accuracy.
                 The figures calculated more simply should be reasonable provided (a) you do not make
                 wild step changes to the number of sign-ups and (b) the lottery has been running long
-                enough to have at least one data point for maximum collections covered by CCR data.
+                enough with chances being loaded to have at least one data point for maximum
+                collections covered by CCR data.
                 */
-                $ccr[$retention]['fraction'] += $h['ccr'.$retention] / $h['chances']; // using chances *this month* keeps it simple
-                $ccr[$retention]['mean_avg'] = $ccr[$retention]['fraction'] / $ccr[$retention]['count'];
+                if ($h['chances']>0) {
+                    $ccr[$retention]['fraction'] += $h['ccr'.$retention] / $h['chances']; // using chances *this month* keeps it simple
+                    $ccr[$retention]['mean_avg'] = $ccr[$retention]['fraction'] / $ccr[$retention]['count'];
+                }
             }
             $history[] = $h;
         }
@@ -3205,11 +3208,11 @@ function profits_averages ($months) {
             $cps_count++;
             $cps += $months[$i]['chances'] / $months[$i]['supporters'];
         }
-        if ($months[$i]['abortive']) {
+        if ($months[$i]['abortive'] && $months[$i-1]['chances']>0) {
             $cab_count++;
             $cab += $months[$i]['abortive'] / $months[$i-1]['chances'];
         }
-        if ($months[$i]['attritional']) {
+        if ($months[$i]['attritional'] && $months[$i-1]['tickets']>0) {
             $cat_count++;
             $cat += $months[$i]['attritional'] / $months[$i-1]['tickets'];
         }
