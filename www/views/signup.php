@@ -297,13 +297,13 @@ form.signup input[name="<?php echo $code; ?>"] {
 
 <?php   endforeach; ?>
 
-<?php   if ($org['signup_dd_text']): ?>
+<?php   if (false && $org['signup_dd_text']): ?>
 
         <p><?php echo str_replace ("\n",'<br/>',htmlspecialchars($org['signup_dd_text'])); ?></p>
 
 <?php   endif; ?>
 
-<?php   if ($org['signup_dd_link']): ?>
+<?php   if (false && $org['signup_dd_link']): ?>
 
         <a class="dd" target="_top" href="<?php echo htmlspecialchars ($org['signup_dd_link']); ?>">Sign up by direct debit</a>
 
