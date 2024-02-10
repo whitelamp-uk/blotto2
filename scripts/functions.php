@@ -2590,7 +2590,7 @@ function profits ( ) {
     $data = [];
     $qs = "
       SELECT
-        DATE_ADD(DATE_FORMAT(MIN(`signed`),'%Y-%m-01'),INTERVAL 1 MONTH) AS `start`
+        DATE_ADD(CONCAT(SUBSTR(MIN(`signed`),1,7),'-01'),INTERVAL 1 MONTH) AS `start`
       FROM `Supporters`
       ;
     ";
@@ -2746,8 +2746,8 @@ function profits ( ) {
     // Add data about ANLs issued (effectively chances loaded) grouped by month
     $qs = "
       SELECT
-        DATE_FORMAT(`a`.`tickets_issued`,'%Y') AS `year`
-       ,DATE_FORMAT(`a`.`tickets_issued`,'%m') AS `month`
+        SUBSTR(`a`.`tickets_issued`,1,4) AS `year`
+       ,SUBSTR(`a`.`tickets_issued`,6,2) AS `month`
        ,AVG(1*DATEDIFF(`a`.`tickets_issued`,`s`.`signed`)) AS `days_signup_import`
        ,COUNT(`s`.`supporter_id`) AS `supporters_loaded`
        ,SUM(`s`.`tickets`) AS `chances_loaded`
@@ -2782,8 +2782,8 @@ function profits ( ) {
     // Add mean turnaround from import to first draw
     $qs = "
       SELECT
-        DATE_FORMAT(`first_entered`,'%Y') AS `year`
-       ,DATE_FORMAT(`first_entered`,'%m') AS `month`
+        SUBSTR(`first_entered`,1,4) AS `year`
+       ,SUBSTR(`first_entered`,6,2) AS `month`
        ,AVG(1*DATEDIFF(`e`.`first_entered`,`a`.`tickets_issued`)) AS `days_import_entry`
       FROM (
         SELECT
@@ -2821,8 +2821,8 @@ function profits ( ) {
        ,IFNULL(`w`.`payout`,0)-IFNULL(`i`.`insured`,0) AS `payout`
       FROM (
         SELECT
-          DATE_FORMAT(`e`.`draw_closed`,'%Y') AS `year`
-         ,DATE_FORMAT(`e`.`draw_closed`,'%m') AS `month`
+          SUBSTR(`e`.`draw_closed`,1,4) AS `year`
+         ,SUBSTR(`e`.`draw_closed`,6,2) AS `month`
          ,COUNT(DISTINCT `e`.`draw_closed`) AS `draws`
          ,COUNT(`e`.`id`) AS `entries`
         FROM `blotto_entry` AS `e`
@@ -2841,8 +2841,8 @@ function profits ( ) {
       ) AS `ds`
       JOIN (
         SELECT
-          DATE_FORMAT(`draw_closed`,'%Y') AS `year`
-         ,DATE_FORMAT(`draw_closed`,'%m') AS `month`
+          SUBSTR(`draw_closed`,1,4) AS `year`
+         ,SUBSTR(`draw_closed`,6,2) AS `month`
          ,SUM(`winnings`) AS `payout`
         FROM `Wins`
         GROUP BY `year`,`month`
@@ -2851,8 +2851,8 @@ function profits ( ) {
        AND `w`.`month`=`ds`.`month`
       LEFT JOIN (
         SELECT
-          DATE_FORMAT(`draw_closed`,'%Y') AS `year`
-         ,DATE_FORMAT(`draw_closed`,'%m') AS `month`
+          SUBSTR(`draw_closed`,1,4) AS `year`
+         ,SUBSTR(`draw_closed`,6,2) AS `month`
          ,SUM(`amount`) AS `insured`
         FROM `$cdb`.`blotto_claim`
         GROUP BY `year`,`month`
@@ -2885,8 +2885,8 @@ function profits ( ) {
       FROM (
         SELECT
           `client_ref`
-         ,DATE_FORMAT(MIN(`draw_closed`),'%Y') AS `year`
-         ,DATE_FORMAT(MIN(`draw_closed`),'%m') AS `month`
+         ,SUBSTR(MIN(`draw_closed`),1,4) AS `year`
+         ,SUBSTR(MIN(`draw_closed`),6,2) AS `month`
          ,COUNT(DISTINCT `ticket_number`) AS `tickets`
         FROM `blotto_entry`
         WHERE `draw_closed`>='$start'
@@ -2916,8 +2916,8 @@ function profits ( ) {
       FROM (
         SELECT
           `e`.`client_ref`
-         ,DATE_FORMAT(MAX(`e`.`draw_closed`),'%Y') AS `year`
-         ,DATE_FORMAT(MAX(`e`.`draw_closed`),'%m') AS `month`
+         ,SUBSTR(MAX(`e`.`draw_closed`),1,4) AS `year`
+         ,SUBSTR(MAX(`e`.`draw_closed`),6,2) AS `month`
          ,COUNT(DISTINCT `e`.`ticket_number`) AS `tickets`
         FROM `blotto_entry` AS `e`
         JOIN (
@@ -2948,8 +2948,8 @@ function profits ( ) {
     // Add data about cancellations (abortive => 0 payments, attritional => 1 or more payments)
     $qs = "
       SELECT
-        DATE_FORMAT(`cancelled_date`,'%Y') AS `year`
-       ,DATE_FORMAT(`cancelled_date`,'%m') AS `month`
+        SUBSTR(`cancelled_date`,1,4) AS `year`
+       ,SUBSTR(`cancelled_date`,6,2) AS `month`
        ,SUM(`payments_collected`=0) AS `chances_abortive`
        ,SUM(`payments_collected`>0) AS `chances_attritional`
       FROM `Cancellations`
@@ -2974,8 +2974,8 @@ function profits ( ) {
     // Add data about CCR cancellation milestones
     $qs = "
       SELECT
-        DATE_FORMAT(`c`.`last_cancelled`,'%Y') AS `year`
-       ,DATE_FORMAT(`c`.`last_cancelled`,'%m') AS `month`
+        SUBSTR(`c`.`last_cancelled`,1,4) AS `year`
+       ,SUBSTR(`c`.`last_cancelled`,6,2) AS `month`
        ,`c`.`collected_times`
        ,COUNT(`c`.`chance_ref`) AS `quantity`
       FROM (
