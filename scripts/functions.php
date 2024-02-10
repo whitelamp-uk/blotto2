@@ -2679,6 +2679,7 @@ function profits ( ) {
                 foreach ($ps as $l=>$p) {
                     $ps[$l]['ppd'] = 0; // Payout per draw
                     $ps[$l]['ppe'] = 0; // Mean payout per entry
+                    $ps[$l]['wpe'] = 0; // Mean winners per entry
                     if (!$p['insure']) {
                         if ($p['level_method']=='RAFF') {
                             // Payout per draw for this prize
