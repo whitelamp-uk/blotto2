@@ -51,7 +51,7 @@ var profits = <?php echo profits(); ?>;
           <tr>
             <td><strong>Profit history</strong></td>
             <td>&nbsp;</td>
-            <td><a title="Download historical profit data as HTML" class="link-profit html history" download="profit_history_<?php echo date('Y-m-d'); ?>.html" href="#"><img /></a><a title="Download historical profit data as CSV" class="link-profit csv history" download="profit_history_<?php echo date('Y-m-d'); ?>.csv" href="#"><img /></a></td>
+            <td><a title="Download historical profit data as HTML" class="link-profit html history" download="<?php echo BLOTTO_ORG_USER; ?>_profit_history_<?php echo date('Y-m-d'); ?>.html" href="#"><img /></a><a title="Download historical profit data as CSV" class="link-profit csv history" download="profit_history_<?php echo date('Y-m-d'); ?>.csv" href="#"><img /></a></td>
           </tr>
           <tr>
             <td>Mean avg days sign-up to import</td>
@@ -96,7 +96,7 @@ var profits = <?php echo profits(); ?>;
           <tr>
             <td><strong>Profit projection</strong></td>
             <td>&nbsp;</td>
-            <td><a title="Download projected profit data as HTML" class="link-profit html projection" download="profit_projection_<?php echo date('Y-m-d'); ?>.html" href="#"><img /></a><a title="Download projected profit data as CSV" class="link-profit csv projection" download="profit_projection_<?php echo date('Y-m-d'); ?>.csv" href="#"><img /></a></td>
+            <td><a title="Download projected profit data as HTML" class="link-profit html projection" download="<?php echo BLOTTO_ORG_USER; ?>_profit_projection_<?php echo date('Y-m-d'); ?>.html" href="#"><img /></a><a title="Download projected profit data as CSV" class="link-profit csv projection" download="profit_projection_<?php echo date('Y-m-d'); ?>.csv" href="#"><img /></a></td>
           </tr>
         </tbody>
       </table>
