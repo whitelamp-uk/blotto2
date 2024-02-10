@@ -58,37 +58,37 @@ var profits = <?php echo profits(); ?>
           <tr>
             <td>Mean avg days sign-up to import</td>
             <td><input name="days_signup_import" type="number" min="5" max="10" step="0.1" data-reset="8" value="8" data-dp="1" /></td>
-            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>Mean avg days import to first play</td>
             <td><input name="days_import_entry" type="number" min="20" max="100" step="0.1" data-reset="30" value="30" data-dp="1" /></td>
-            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>Abortive cancellation <strong>%</strong> (of previous import)</td>
             <td><input name="abortive_pct" type="number" min="5.0" max="10.0" step="1" data-reset="8.00" value="8.00" data-dp="2" /></td>
-            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>Attritional cancellation <strong>%</strong> (of previous ticket count)</td>
             <td><input name="attritional_pct" type="number" min="2.00" max="4.00" step="0.01" data-reset="3.20" value="3.20" data-dp="2" /></td>
-            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>Tickets in play at projection start</td>
             <td><input name="tickets" type="number" min="0" max="1000000" step="1" value="0" data-reset="0" data-dp="0" /></td>
-            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>Mean avg chances per sign-up</td>
             <td><input name="cps" type="number" min="1.00" max="2.00" step="0.01" data-reset="1.30" value="1.30" data-dp="2" /></td>
-            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false">Reset</a></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>Sign-ups <strong>pcm</strong></td>
             <td><input name="supporters" type="number" min="100" max="1000" step="1" data-reset="217" value="217" data-dp="0" /></td>
-            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;i.dispatchEvent(new Event('input'));return false">Reset</a></td>
+            <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;i.dispatchEvent(new Event('input'));return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>[per week]</td>
@@ -104,7 +104,9 @@ var profits = <?php echo profits(); ?>
       </table>
 
       <ol data-profit-headings>
-        <li title="month">month</li>
+        <li title="History or projection">type</li>
+        <li title="Month number">month_nr</li>
+        <li title="Month">month</li>
         <li title="Average days from signup to import (ANL creation)">days_signup_import</li>
         <li data-positize title="Supporters loaded">supporters</li>
         <li data-positize title="Chances loaded">chances</li>
@@ -127,6 +129,7 @@ var profits = <?php echo profits(); ?>
         <li data-positize title="Lottery profit">profit</li>
         <li title="Lottery balance at month end">balance</li>
         <li title="Tickets playing at month end">tickets</li>
+        <li title="CCR cancellation figures">ccr_cancels</li>
       </ol>
 
     </form>
@@ -155,6 +158,7 @@ window.document.addEventListener (
             );
         }
         inputProfitSet (evt);
+        linkProfitHeadingsCcrCancellations (evt);
     }
 );
     </script>

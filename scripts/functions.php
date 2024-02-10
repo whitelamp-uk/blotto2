@@ -2614,14 +2614,18 @@ function profits ( ) {
     $future             = new \DateTime ($end);
     $future             = $future->add (new \DateInterval('P2Y'));
     $future             = $future->format ('Y-m-d'); // day after the end of the projection
+    $month_nr           = 0;
     // Add data about lottery expenses and payouts
     while ($dt->format('Y-m-d')<$future) {
         /*
         Every month from the first sign-up right through to the end of the projection needs a data
         array of stats even if there is no activity
         */
+        $month_nr++;
         $month = $dt->format ('Y-m');
         $new = [
+            'type' => '',
+            'month_nr' => $month_nr,
             'chances_abortive' => 0,
             'chances_attritional' => 0,
             'chances_loaded' => 0,
@@ -2641,7 +2645,32 @@ function profits ( ) {
         $to->sub (new \DateInterval('P1D'));
         $to = $to->format ('Y-m-d');
         // Add prize data to projections
-        if ($from>=$end) {
+        if ($from<$end) {
+            $new['type'] = 'history';
+            // fees() already exists for historical reconciliations and statements and it does the hard work here
+            $fees = fees ($from,$to);
+            $new['tickets_increment'] = 0;
+            $new['tickets_decrement'] = 0;
+            $new['loading'] = $fees['loading']['amount'];
+            $new['anl_post'] = $fees['anl_post']['amount'];
+            $new['anl_sms'] = $fees['anl_sms']['amount'];
+            $new['anl_email'] = $fees['anl_email']['amount'];
+            $new['winner_post'] = $fees['winner_post']['amount'];
+            $new['insure'] = $fees['insure']['amount'];
+            $new['ticket'] = $fees['ticket']['amount'];
+            $new['email'] = $fees['email']['amount'];
+            $new['admin'] = $fees['admin']['amount'];
+            $new['anl_fraction_post'] = 0;
+            $new['anl_fraction_sms'] = 0;
+            $anls = $fees['anl_post']['units'] + $fees['anl_sms']['units'] + $fees['anl_email']['units'];
+            if ($anls>0) {
+                $new['anl_fraction_post'] = $fees['anl_post']['units'] / $anls;
+                $new['anl_fraction_sms'] = 1*$fees['anl_sms']['units'] / $anls;
+            }
+
+        }
+        else {
+            $new['type'] = 'projection';
             $popn = 1 + BLOTTO_TICKET_MAX - BLOTTO_TICKET_MIN;
             $popn_length = 1 * number_format (log10($popn),1,'.','');
             $dc = draw_upcoming ($from);
@@ -2682,28 +2711,6 @@ function profits ( ) {
                 }
                 $new['prizes'][$dc] = $ps;
                 $dc = draw_upcoming (day_tomorrow($dc)->format('Y-m-d'));
-            }
-        }
-        if ($from<$end) {
-            // fees() already exists for historical reconciliations and statements and it does the hard work here
-            $fees = fees ($from,$to);
-            $new['tickets_increment'] = 0;
-            $new['tickets_decrement'] = 0;
-            $new['loading'] = $fees['loading']['amount'];
-            $new['anl_post'] = $fees['anl_post']['amount'];
-            $new['anl_sms'] = $fees['anl_sms']['amount'];
-            $new['anl_email'] = $fees['anl_email']['amount'];
-            $new['winner_post'] = $fees['winner_post']['amount'];
-            $new['insure'] = $fees['insure']['amount'];
-            $new['ticket'] = $fees['ticket']['amount'];
-            $new['email'] = $fees['email']['amount'];
-            $new['admin'] = $fees['admin']['amount'];
-            $new['anl_fraction_post'] = 0;
-            $new['anl_fraction_sms'] = 0;
-            $anls = $fees['anl_post']['units'] + $fees['anl_sms']['units'] + $fees['anl_email']['units'];
-            if ($anls>0) {
-                $new['anl_fraction_post'] = $fees['anl_post']['units'] / $anls;
-                $new['anl_fraction_sms'] = 1*$fees['anl_sms']['units'] / $anls;
             }
         }
         // Fee rates at month start for use in projections
@@ -3013,9 +3020,13 @@ function profits ( ) {
     $projection = [ 'months'=>[], 'g'=>[], 'm12'=>[], 'ml'=>[] ];
     $balance = 0;
     $tickets = 0;
+    $ccr_count = 1 * explode(' ',BLOTTO_CC_NOTIFY)[0];
+    $ccr = [];
+    for ($i=0;$i<$ccr_count;$i++) {
+          $ccr[$i] = ['count'=>0,'fraction'=>0,'mean_avg'=>0];
+    }
     foreach ($data as $m=>$d) {
-        if ($m.'-01'<$end) {
-            // Historical
+        if ($d['type']=='history') {
             $tickets += $d['tickets_increment'];
             $tickets -= $d['tickets_decrement'];
             $revenue = $d['entries'] * BLOTTO_TICKET_PRICE/100;
@@ -3032,6 +3043,8 @@ function profits ( ) {
             $profit -= $d['admin'];
             $balance += $profit;
             $h = [
+                'type' => 'history',
+                'month_nr' => $d['month_nr'],
                 'month' => $m,
                 'supporters' => $d['supporters_loaded'],
                 'days_signup_import' => $d['days_signup_import'],
@@ -3059,14 +3072,29 @@ function profits ( ) {
                 'tickets' => $tickets,
                 'ccr_cancels' => ''
             ];
+            for ($i=0;$i<$ccr_count;$i++) {
+                  $h['ccr'.$i] = 0;
+            }
             foreach ($d['ccr'] as $retention=>$quantity) {
-                $h['ccr'.$retention] = $quantity;
+                $h['ccr'.$retention] = 1 * $quantity;
+                $ccr[$retention]['count']++;
+                /*
+                In reality the fraction for n collections should be calculated using chances loaded
+                n months ago which moderately tedious here and more tedious still in projections
+                calculations. This would be for a rather second order improvement in accuracy.
+                The figures calculated more simply should be reasonable provided (a) you do not make
+                wild step changes to the number of sign-ups and (b) the lottery has been running long
+                enough to have at least one data point for maximum collections covered by CCR data.
+                */
+                $ccr[$retention]['fraction'] += $h['ccr'.$retention] / $h['chances']; // using chances *this month* keeps it simple
+                $ccr[$retention]['mean_avg'] = $ccr[$retention]['fraction'] / $ccr[$retention]['count'];
             }
             $history[] = $h;
         }
         else {
-            // Projection
             $month = [
+                'type' => 'projection',
+                'month_nr' => $d['month_nr'],
                 'month' => $m,
                 'draws' => 0,
                 'prizes' => $d['prizes'],
@@ -3113,6 +3141,10 @@ function profits ( ) {
         }
     }
     // Projection averages
+    $projection['ccr_cancels_per_signup'] = [];
+    foreach ($ccr as $i=>$c) {
+        $projection['ccr_cancels_per_signup'][$i] = $c['mean_avg'];
+    }
     $projection['g'] = profits_averages ($history);
     $projection['m12'] = profits_averages (array_slice($history,-13));
     $projection['ml'] = profits_averages (array_slice($history,-2));
