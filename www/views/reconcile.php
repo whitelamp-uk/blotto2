@@ -33,11 +33,9 @@ else {
     <script src="./media/reconcile.js"></script>
     <script>
 var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
-
     </script>
     <script>
-var profits = <?php echo profits(); ?>
-
+var profits = <?php echo profits(); ?>;
     </script>
 
 

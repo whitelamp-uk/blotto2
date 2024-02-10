@@ -238,7 +238,7 @@ function linkProfitHistory (evt) {
 
 function linkProfitProjection (evt) {
     var abtv,anle,anlp,anls,attr,bal,chs,ct='text/json',data=[],entries;
-    var form,i,j,ms,nxt,nxt1,nxt2,p,pr,ps,rev,row,tks;
+    var form,i,j,ms,nxt,nxt1,nxt2,p,pr,ps,rev,row,tks,tmp;
     // Use profits.projection to derive projection data
     form = evt.currentTarget.closest ('form');
     anlp = profits.projection.m12.anl_post_pct / 100;
@@ -249,11 +249,29 @@ function linkProfitProjection (evt) {
     bal = 1 * profits.history[profits.history.length-1].balance; // cumulative
     chs = 1 * profits.history[profits.history.length-1].chances; // chances loaded previous loop
     data.push (...profits.history);
+    /*
+    var test=[],test2=[];
+    */
     for (i in profits.projection.months) {
+        /*
+        var current = tks;
+        */
         attr = tks * form.attritional_pct.value / 100;
         tks -= attr;
         tks += profits.projection.months[i].new_tickets;
         entries = profits.projection.months[i].draws * (tks + profits.projection.months[i].first_entries);
+        /*
+        test.push (
+            {
+                month_nr : profits.projection.months[i].month_nr,
+                current_tickets : current,
+                attrition : attr,
+                new : profits.projection.months[i].new_tickets,
+                draws : profits.projection.months[i].draws,
+                entries : entries
+            }
+        );
+        */
         abtv = chs * form.abortive_pct.value / 100;
         row = {
             type: profits.projection.months[i].type,
@@ -290,7 +308,6 @@ function linkProfitProjection (evt) {
         // Profit
         row.profit = row.revenue;
         row.profit -= row.loading + row.anl_post + row.anl_sms + row.anl_email;
-//console.error (row);
         row.profit -= row.winner_post + row.insure + row.ticket + row.email + row.admin;
         row.profit -= row.payout;
         // For the next loop
@@ -300,15 +317,29 @@ function linkProfitProjection (evt) {
         row.balance = bal;
         // Add fractional entries/new tickets for non-abortive chances
         ms = form.days_import_entry.value * 12 / 365.25;
-        nxt = i + ms;
+        nxt = 1*i + ms;
         nxt1 = parseInt (Math.floor(nxt));
         nxt2 = parseInt(Math.ceil(nxt));
         if (profits.projection.months[nxt1]) {
-            profits.projection.months[nxt1].first_entries += (nxt2-nxt) * row.chances * (1-form.abortive_pct.value/100);
+            tmp = parseFloat (profits.projection.months[nxt1].first_entries);
+            profits.projection.months[nxt1].first_entries = tmp + (nxt2-nxt)*row.chances*(1-form.abortive_pct.value/100);
         }
         if (profits.projection.months[nxt2]) {
-            profits.projection.months[nxt2].new_tickets += row.chances * (1-form.abortive_pct.value/100);
+            tmp = parseFloat (profits.projection.months[nxt2].new_tickets);
+            profits.projection.months[nxt2].new_tickets = tmp + row.chances*(1-form.abortive_pct.value/100);
         }
+        /*
+        test2.push (
+            {
+                month_nr : row.month_nr,
+                m_now : i,
+                m_nxt1 : nxt1,
+                m_nxt2 : nxt2,
+                e_first : (nxt2-nxt) * row.chances * (1-form.abortive_pct.value/100),
+                e_ongoing : row.chances * (1-form.abortive_pct.value/100)
+            }
+        );
+        */
         for (p in row) {
             if (['revenue','payout','loading','anl_post','anl_sms','anl_email','winner_post','insure','ticket','email','admin','profit','balance'].includes(p)) {
                 row[p] = (1*row[p]).toFixed (2);
@@ -325,6 +356,10 @@ function linkProfitProjection (evt) {
         }
         data.push (row);
     }
+    /*
+    console.error (test);
+    console.error (test2);
+    */
     // Link a blob of the right content type
     if (evt.currentTarget.classList.contains('csv')) {
         ct = 'text/csv';
