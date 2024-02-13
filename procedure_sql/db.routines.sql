@@ -375,8 +375,9 @@ BEGIN
   SELECT YEAR(`s`.`signed`) - YEAR(`s`.`dob`) - (DATE_FORMAT(`s`.`signed`, '%m%d') < DATE_FORMAT(`s`.`dob`, '%m%d')) AS `age`
   ,SUM(`s`.`tickets`) AS `tickets`
   ,SUM(IF(`s`.`cancelled`!='',`tickets`,0)) AS `tickets_cancelled`
-  ,count(`s`.`current_client_ref`) AS `supporters`
-  ,count(`c`.`client_ref`) AS `supporters_cancelled`
+  ,COUNT(`s`.`current_client_ref`) AS `supporters`
+  ,COUNT(`c`.`client_ref`) AS `supporters_cancelled`
+  ,ROUND((COUNT(`c`.`client_ref`)/COUNT(`s`.`current_client_ref`)) * 100,0) AS `percent`
   ,SUM(IF(`c`.`payments_collected`<10,1,0)) AS `ccr`
   ,SUM(IF(`c`.`payments_collected`=0,1,0)) AS `ccr0`
   ,SUM(IF(`c`.`payments_collected`=1,1,0)) AS `ccr1`
