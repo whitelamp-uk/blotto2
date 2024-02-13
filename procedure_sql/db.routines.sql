@@ -367,6 +367,43 @@ BEGIN
   ;
 END $$
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `cancellationsByAge`$$
+CREATE PROCEDURE `cancellationsByAge` (
+)
+BEGIN
+  SELECT YEAR(`s`.`signed`) - YEAR(`s`.`dob`) - (DATE_FORMAT(`s`.`signed`, '%m%d') < DATE_FORMAT(`s`.`dob`, '%m%d')) AS `age`
+  ,SUM(`s`.`tickets`) AS `tickets`
+  ,SUM(IF(`s`.`cancelled`!='',`tickets`,0)) AS `tickets_cancelled`
+  ,count(`s`.`current_client_ref`) AS `supporters`
+  ,count(`c`.`client_ref`) AS `supporters_cancelled`
+  ,SUM(IF(`c`.`payments_collected`<10,1,0)) AS `ccr`
+  ,SUM(IF(`c`.`payments_collected`=0,1,0)) AS `ccr0`
+  ,SUM(IF(`c`.`payments_collected`=1,1,0)) AS `ccr1`
+  ,SUM(IF(`c`.`payments_collected`=2,1,0)) AS `ccr2`
+  ,SUM(IF(`c`.`payments_collected`=3,1,0)) AS `ccr3`
+  ,SUM(IF(`c`.`payments_collected`=4,1,0)) AS `ccr4`
+  ,SUM(IF(`c`.`payments_collected`=5,1,0)) AS `ccr5`
+  ,SUM(IF(`c`.`payments_collected`=6,1,0)) AS `ccr6`
+  ,SUM(IF(`c`.`payments_collected`=7,1,0)) AS `ccr7`
+  ,SUM(IF(`c`.`payments_collected`=8,1,0)) AS `ccr8`
+  ,SUM(IF(`c`.`payments_collected`=9,1,0)) AS `ccr9`
+  FROM (
+    SELECT `current_client_ref`, count(`current_client_ref`) AS `tickets`, `dob`, `signed`, `cancelled`
+      FROM `Supporters`
+    GROUP BY `current_client_ref`
+  )  AS `s`
+  LEFT JOIN  (
+    SELECT `client_ref`, MAX(`payments_collected`) AS `payments_collected`
+      FROM `Cancellations`
+    GROUP BY `client_ref`
+  ) AS `c`
+  ON c.client_ref = `s`.`current_client_ref`
+  GROUP BY `age`
+  ORDER BY `age`
+  ;
+END$$
+
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `cancellationsByRule`$$
