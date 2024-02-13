@@ -27,5 +27,5 @@ foreach ($lines as $line) {
 }
 
 echo "    Caching slow profit queries for front-end analysis tool\n";
-profit ();
+profits ();
 
