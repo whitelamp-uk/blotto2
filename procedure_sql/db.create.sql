@@ -179,6 +179,46 @@ CREATE TABLE IF NOT EXISTS `blotto_org` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
+CREATE TABLE IF NOT EXISTS `blotto_profit` (
+  `org_code` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `type` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `month_nr` int(11) unsigned NOT NULL DEFAULT 0,
+  `month` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `days_signup_import` decimal(6,4) NOT NULL DEFAULT 0.0000,
+  `supporters` int(10) NOT NULL DEFAULT 0,
+  `chances` int(10) NOT NULL DEFAULT 0,
+  `abortive` int(10) NOT NULL DEFAULT 0,
+  `attritional` int(10) NOT NULL DEFAULT 0,
+  `days_import_entry` int(11) unsigned NOT NULL DEFAULT 0,
+  `draws` int(11) NOT NULL DEFAULT 0,
+  `entries` int(11) NOT NULL DEFAULT 0,
+  `revenue` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `ticket` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `winner_post` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `insure` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `loading` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `anl_email` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `anl_post` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `anl_sms` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `admin` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `email` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `payout` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `profit` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `balance` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `tickets` int(10) NOT NULL DEFAULT 0,
+  `ccr0` int(11) NOT NULL DEFAULT 0,
+  `ccr1` int(11) NOT NULL DEFAULT 0,
+  `ccr2` int(11) NOT NULL DEFAULT 0,
+  `ccr3` int(11) NOT NULL DEFAULT 0,
+  `ccr4` int(11) NOT NULL DEFAULT 0,
+  `ccr5` int(11) NOT NULL DEFAULT 0,
+  `ccr6` int(11) NOT NULL DEFAULT 0,
+  `ccr7` int(11) NOT NULL DEFAULT 0,
+  `ccr8` int(11) NOT NULL DEFAULT 0,
+  `ccr9` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`month_nr`,`org_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `blotto_retention` (
   `org` char(16) CHARACTER SET ascii NOT NULL,
   `growth` int(10) DEFAULT 0,
