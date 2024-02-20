@@ -82,10 +82,12 @@ if (1) {
             $response->nonce            = $nonce;
             if (www_signup_verify_store('mobile',$request->mobile,$code)) {
                 try {
+                    $msg = str_replace ('{{Code}}',$code,$org['signup_verify_sms_message']);
+                    $msg = str_replace ('{{Phone}}',$org['admin_phone'],$msg);
                     $response->result = sms (
                         $org,
                         $request->mobile,
-                        str_replace ('{{Code}}',$code,$org['signup_verify_sms_message']),
+                        $msg,
                         $sms_response
                     );
                     if (!$response->result) {
