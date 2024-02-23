@@ -77,6 +77,7 @@ define ( 'BLOTTO_CREF_MATCH',       '^[A-z0-9_]+$'      );  // Original supporte
 define ( 'BLOTTO_CREF_SPLITTER',    '-'                 );  // Split mandate detection character sequence
 define ( 'BLOTTO_CANCEL_RULE',      '2 MONTH'           );  // Used to define when a supporter has "cancelled"
 define ( 'BLOTTO_CANCEL_LEGACY',    0                   );  // 1 = use BLOTTO_CANCEL_RULE even if DD cancelled
+define ( 'BLOTTO_SUN',              123456              );  // DD SUN
 
 
 
