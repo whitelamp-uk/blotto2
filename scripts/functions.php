@@ -3162,10 +3162,22 @@ function profits ( ) {
         // Approximate entries per draw arising from a fractional month
         $entries = ($next2-$next) * $history[$i]['chances'];
         if (!array_key_exists($next1,$history)) {
+            if (!array_key_exists($next1-$j,$projection['months'])) {
+                $projection['months'][$next1-$j] = [];
+            }
+            if (!array_key_exists('first_entries',$projection['months'][$next1-$j])) {
+                $projection['months'][$next1-$j]['first_entries'] = 0;
+            }
             $projection['months'][$next1-$j]['first_entries'] += number_format ($entries,0,'.','');
         }
         if (!array_key_exists($next2,$history)) {
-           $ab = $projection['m12']['chances_abortive_pct'] / 100;
+            $ab = $projection['m12']['chances_abortive_pct'] / 100;
+            if (!array_key_exists($next1-$j,$projection['months'])) {
+                $projection['months'][$next1-$j] = [];
+            }
+            if (!array_key_exists('new_tickets',$projection['months'][$next2-$j])) {
+                $projection['months'][$next2-$j]['new_tickets'] = 0;
+            }
             $projection['months'][$next2-$j]['new_tickets'] += number_format ((1-$ab)*$history[$i]['chances'],0,'.','');
         }
     }
