@@ -487,6 +487,7 @@ function day_one ($for_wins=false) {
     if (!$zo) {
         return false;
     }
+    // If nothing to figure it from below, assume day one is today
     $s = null;
     try {
         if (defined('BLOTTO_RBE_ORGS')) {
@@ -529,10 +530,7 @@ function day_one ($for_wins=false) {
     catch (\mysqli_sql_exception $e) {
         $s = null;
     }
-    if ($s) {
-        return new DateTime ($s);
-    }
-    return null;
+    return new \DateTime ($s);
 }
 
 function day_tomorrow ($date=null) {
