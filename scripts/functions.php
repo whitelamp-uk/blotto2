@@ -3155,30 +3155,32 @@ function profits ( ) {
     $ms = $projection['m12']['days_import_entry'] * 12 / 365.25;
     // Start plenty without bothering to reverse calculate first month
     $j = count ($history);
-    for ($i=$j-3;$i<$j;$i++) {
-        $next = $i + $ms;
-        $next1 = intval (floor($next));
-        $next2 = intval (ceil($next));
-        // Approximate entries per draw arising from a fractional month
-        $entries = ($next2-$next) * $history[$i]['chances'];
-        if (!array_key_exists($next1,$history)) {
-            if (!array_key_exists($next1-$j,$projection['months'])) {
-                $projection['months'][$next1-$j] = [];
+    if (($i=$j-3)>0) {
+        for (;$i<$j;$i++) {
+            $next = $i + $ms;
+            $next1 = intval (floor($next));
+            $next2 = intval (ceil($next));
+            // Approximate entries per draw arising from a fractional month
+            $entries = ($next2-$next) * $history[$i]['chances'];
+            if (!array_key_exists($next1,$history)) {
+                if (!array_key_exists($next1-$j,$projection['months'])) {
+                    $projection['months'][$next1-$j] = [];
+                }
+                if (!array_key_exists('first_entries',$projection['months'][$next1-$j])) {
+                    $projection['months'][$next1-$j]['first_entries'] = 0;
+                }
+                $projection['months'][$next1-$j]['first_entries'] += number_format ($entries,0,'.','');
             }
-            if (!array_key_exists('first_entries',$projection['months'][$next1-$j])) {
-                $projection['months'][$next1-$j]['first_entries'] = 0;
+            if (!array_key_exists($next2,$history)) {
+                $ab = $projection['m12']['chances_abortive_pct'] / 100;
+                if (!array_key_exists($next1-$j,$projection['months'])) {
+                    $projection['months'][$next1-$j] = [];
+                }
+                if (!array_key_exists('new_tickets',$projection['months'][$next2-$j])) {
+                    $projection['months'][$next2-$j]['new_tickets'] = 0;
+                }
+                $projection['months'][$next2-$j]['new_tickets'] += number_format ((1-$ab)*$history[$i]['chances'],0,'.','');
             }
-            $projection['months'][$next1-$j]['first_entries'] += number_format ($entries,0,'.','');
-        }
-        if (!array_key_exists($next2,$history)) {
-            $ab = $projection['m12']['chances_abortive_pct'] / 100;
-            if (!array_key_exists($next1-$j,$projection['months'])) {
-                $projection['months'][$next1-$j] = [];
-            }
-            if (!array_key_exists('new_tickets',$projection['months'][$next2-$j])) {
-                $projection['months'][$next2-$j]['new_tickets'] = 0;
-            }
-            $projection['months'][$next2-$j]['new_tickets'] += number_format ((1-$ab)*$history[$i]['chances'],0,'.','');
         }
     }
     return json_encode ([ 'history'=>$history, "projection"=>$projection ],JSON_PRETTY_PRINT);
