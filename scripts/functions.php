@@ -4400,7 +4400,7 @@ function stats ($day_first,$day_last) {
        ,`supporter`.`starting_balances`
        ,IFNULL(`pre`.`collected`,0) AS `collections_before`
        ,IFNULL(`post`.`collected`,0) AS `collections_during`
-       ,IFNULL(`claim`.`claimed`,0) AS `claimed_amount`
+       ,IFNULL(`claim`.`claimed`,0) AS `amount_claimed`
       FROM (
         SELECT
           COUNT(`id`) AS `plays`
