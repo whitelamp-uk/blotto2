@@ -1835,6 +1835,28 @@ BEGIN
     `Sortcode`=CONCAT('***',SUBSTR(`Sortcode`,-3))
    ,`Account`=CONCAT('***',SUBSTR(`Account`,-3))
   ;
+  DROP VIEW IF EXISTS `WinsForWise`
+  ;
+  CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `WinsForWise` AS 
+  SELECT
+    `m`.`Name` AS `name`
+   ,`w`.`email` AS `recipientEmail`
+   ,'PERSON' AS `receiverType`
+   ,'target' AS `amountCurrency`
+   ,`w`.`winnings` AS `amount`
+   ,'GBP' AS `sourceCurrency`
+   ,'GBP' AS `targetCurrency`
+   ,`w`.`Sortcode` AS `sortCode`
+   ,`w`.`Account` AS `accountNumber`
+   ,`w`.`draw_closed` AS `draw_closed` 
+  FROM `WinsAdmin` AS `w` 
+  LEFT JOIN `blotto_build_mandate` AS `m` 
+  ON `m`.`ClientRef`=`w`.`client_ref`
+  ORDER BY 
+  `w`.`draw_closed` DESC,
+  `w`.`name_last`
+  ;
+
 END$$
 
 
