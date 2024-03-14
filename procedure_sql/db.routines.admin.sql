@@ -4,6 +4,77 @@ USE `{{BLOTTO_CONFIG_DB}}`
 ;
 
 
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `allWinsForWise`$$
+CREATE PROCEDURE `allWinsForWise`(IN `draw_closed` date)
+BEGIN
+  DROP TABLE IF EXISTS `tmpWinsForWise`;
+  CREATE TABLE `tmpWinsForWise` (
+    `name` varchar(255)
+   ,`recipientEmail` varchar(255)
+   ,`paymentReference` varchar(64)
+   ,`receiverType` varchar(6)
+   ,`amountCurrency` varchar(6)
+   ,`amount` int(11) unsigned
+   ,`sourceCurrency` varchar(3)
+   ,`targetCurrency` varchar(3)
+   ,`sortCode` char(16)
+   ,`accountNumber` char(16)
+  );
+  INSERT INTO `tmpWinsForWise`
+    SELECT 
+      `w`.`name`
+     ,`w`.`recipientEmail`
+     ,CONCAT(`o`.`winnings_payment_ref`,SUBSTR(draw_closed,9,2),'/',SUBSTR(draw_closed,6,2))
+     ,`w`.`receiverType`
+     ,`w`.`amountCurrency`
+     ,`w`.`amount`
+     ,`w`.`sourceCurrency`
+     ,`w`.`targetCurrency`
+     ,`w`.`sortCode`
+     ,`w`.`accountNumber`
+    FROM `crucible2_bwh`.`WinsForWise` AS `w`
+      JOIN `blotto_config`.`blotto_org` as `o`
+        ON `o`.`org_code` = 'BWH'
+    WHERE `w`.`draw_closed` = draw_closed
+  UNION ALL
+    SELECT 
+      `w`.`name`
+     ,`w`.`recipientEmail`
+     ,CONCAT(`o`.`winnings_payment_ref`,SUBSTR(draw_closed,9,2),'/',SUBSTR(draw_closed,6,2))
+     ,`w`.`receiverType`
+     ,`w`.`amountCurrency`
+     ,`w`.`amount`
+     ,`w`.`sourceCurrency`
+     ,`w`.`targetCurrency`
+     ,`w`.`sortCode`
+     ,`w`.`accountNumber`
+    FROM `crucible2_dbh`.`WinsForWise` AS `w`
+      JOIN `blotto_config`.`blotto_org` as `o`
+        ON `o`.`org_code` = 'DBH'
+    WHERE `w`.`draw_closed` = draw_closed
+  UNION ALL
+    SELECT 
+      `w`.`name`
+     ,`w`.`recipientEmail`
+     ,CONCAT(`o`.`winnings_payment_ref`,SUBSTR(draw_closed,9,2),'/',SUBSTR(draw_closed,6,2))
+     ,`w`.`receiverType`
+     ,`w`.`amountCurrency`
+     ,`w`.`amount`
+     ,`w`.`sourceCurrency`
+     ,`w`.`targetCurrency`
+     ,`w`.`sortCode`
+     ,`w`.`accountNumber`
+    FROM `crucible2_whh`.`WinsForWise` AS `w`
+      JOIN `blotto_config`.`blotto_org` as `o`
+        ON `o`.`org_code` = 'WHH'
+    WHERE `w`.`draw_closed` = draw_closed
+    ;
+  SELECT * FROM `tmpWinsForWise`
+  ;
+END$$
+
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `blottoRetention`$$
 CREATE PROCEDURE `blottoRetention` (

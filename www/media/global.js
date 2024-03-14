@@ -373,6 +373,7 @@ function linkProfitProjection (evt) {
 function mandateSelect (evt) {
     evt.preventDefault ();
     var form,query,xhttp;
+    document.getElementById ('change-supporter').classList.remove ('active');
     query = './?search&t=m&r=' + evt.target.dataset.clientref;
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
@@ -540,6 +541,7 @@ function mandateUpdateResult (responseText) {
         updateView ('m',{ error : null, errorMessage : "Update request failed (unspecified error)" });
         return;
     }
+console.log (results);
     updateView ('m',results);
 }
 
@@ -707,17 +709,19 @@ function supporterSearchResults (responseText) {
     if (!body) {
         return;
     }
+    /* obsolete I reckon
     mandate = document.getElementById ('bacs');
     supporter = document.getElementById ('supporter');
     if (mandate && mandate.contains(body)) {
-        fn = window.mandateSelect;
+        //fn = window.mandateSelect; // todo sort out
     }
     else if (supporter && supporter.contains(body)) {
-        fn = window.supporterSelect;
+        //fn = window.supporterSelect;
     }
     else {
         return;
     }
+    */
     foot = document.getElementById ('search-notice');
     if (!foot) {
         return;
@@ -757,45 +761,76 @@ function supporterSearchResults (responseText) {
         return;
     }
     for (i=0;results[i];i++) {
+        // meh. Friday night mess 
+        status = 'active';
+        if (typeof results[i]['Status'] !== 'undefined') {
+            lcstatus = results[i]['Status'].toLowerCase(); 
+            if (lcstatus!='active' && lcstatus!='live') { // convert to paysuite style.
+                status = 'inactive';
+            }
+            delete results[i]['Status'];
+        }
+        if (results[i]['BCR'] != null) {
+            results[i]['Mandate'] += ' Last BCR: ' + results[i]['BCR'];
+        }
+        delete results[i]['BCR'];
+        mclientref = results[i]['MandateClientRef'];
+        cclientref = results[i]['CurrentClientRef'];
+        if (results[i]['MandateClientRef'] == results[i]['CurrentClientRef']) {
+            results[i]['MandateClientRef'] = '*';
+        } else {
+            results[i]['MandateClientRef'] = '';
+        }
+        delete results[i]['CurrentClientRef'];
+        mfreq = results[i]['Freq'];
+        delete results[i]['Freq'];
+
         cells = 0;
         row = document.createElement ('tr');
+        if (status == 'inactive') {
+            row.className = 'search-result-inactive';
+        }
         for (key in results[i]) {
-            console.log ("Key "+key);
-            console.log ("val " +results[i][key]);
-            if (key=='BCR') {
-                if (results[i]['BCR'] != null) {
-                    results[i]['Supporter'] += ' Last BCR: ' + results[i]['BCR'];
-                }
-            } else {
-                cells++;
-                cell = document.createElement ('td');
-                if (key=='ClientRef') {
-                    link = document.createElement ('a');
-                    link.textContent = results[i][key];
+            cells++;
+            cell = document.createElement ('td');
+            if (key=='Supporter') {
+                link = document.createElement ('a');
+                link.textContent = results[i][key];
+                link.setAttribute ('href','#');
+                link.setAttribute ('data-clientref',cclientref);
+                link.addEventListener ('click',window.supporterSelect );
+                cell.appendChild (link);
+            }
+            else if (key=='Mandate') {
+                link = document.createElement ('a');
+                link.textContent = results[i][key];
+                if (status == 'active') {
                     link.setAttribute ('href','#');
-                    link.setAttribute ('data-clientref',results[i][key]);
-                    if (fn==window.mandateSelect && results[i].Freq=='Single') {
+                    link.setAttribute ('data-clientref',mclientref);
+                    if (mfreq=='Single') {
                         link.addEventListener ('click',function(evt){message('This mandate was for a single payment','err')});
                     }
                     else {
-                        link.addEventListener ('click',fn);
+                        link.addEventListener ('click',window.mandateSelect);
                     }
-                    cell.appendChild (link);
                 }
-                else {
-                    cell.textContent = results[i][key];
-                }
-                row.appendChild (cell);
+                cell.appendChild (link);
             }
+            else {
+                cell.textContent = results[i][key];
+            }
+            row.appendChild (cell);
         }
         body.appendChild (row);
     }
-    foot.innerHTML = '<td colspan="'+cells+'">'+results.length+' results</td>';
+    plural = results.length==1 ? '' : 's';
+    foot.innerHTML = '<td colspan="'+cells+'">'+results.length+' result'+plural+'</td>';
 }
 
 function supporterSelect (evt) {
     evt.preventDefault ();
     var form,query,xhttp;
+    document.getElementById ('change-mandate').classList.remove ('active'); // or wait until http request finished?
     query = './?search&t=s&r=' + evt.target.dataset.clientref;
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
@@ -1034,12 +1069,14 @@ function updateHandle (formId) {
 
 function updateView (type,results) {
     var err,field,fields,form,however,img,p,section,txt;
-    section = document.querySelector ('section.update-message');
+    
     if (type=='s') {
         form = document.getElementById ('change-supporter');
+        section = document.getElementById ('supporter-message');
     }
     if (type=='m') {
         form = document.getElementById ('change-mandate');
+        section = document.getElementById ('mandate-message');
     }
     if (results.ok || results.created) {
         form.classList.remove ('changed');
@@ -1075,6 +1112,7 @@ function updateView (type,results) {
             txt.push ('A BACS request has been posted to the administrator');
         }
     }
+
     if (results.errorMessage) {
         section.classList.add ('error');
         err = '';

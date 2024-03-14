@@ -3511,7 +3511,7 @@ function revenue ($from,$to) {
 }
 
 function search ( ) {
-    $type               = 's'; // s for supporter or m for mandate
+    $type               = 's'; // s for supporter or m for mandate - obsolete, to be removed
     if (array_key_exists('t',$_GET)) {
         $type           = $_GET['t'];
     }
@@ -3593,7 +3593,7 @@ function search ( ) {
 }
 
 function search_result ($type,$crefterms,$fulltextsearch,$limit) {
-    if (!in_array($type,['m','s'])) {
+    if (!in_array($type,['m','s'])) {  // obsolete, to be removed
         throw new \Exception ('{ "error" : 121 }');
         return false;
     }
@@ -3604,15 +3604,14 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     }
 
     // TODO (perhaps) use count() rather than num_rows
-    // Note BCR needs to be before other results
+    // clientrefs in between supporter and mandate so javascript can insert summat.
     $qc = "
       SELECT
-        IFNULL(`s`.`current_client_ref`,`m`.`ClientRef`) AS `ClientRef`
+        `s`.`current_client_ref` AS `CurrentClientRef`
     ";
     $qs = "
       SELECT
-        IFNULL(`s`.`current_client_ref`,`m`.`ClientRef`) AS `ClientRef`
-        , MAX(`bacs`.`requested_at`) as `BCR`
+        `bacs`.`BCR` 
         ,CONCAT_WS(
           ' '
          ,`s`.`signed`
@@ -3626,6 +3625,9 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
          ,`s`.`postcode`
          ,`s`.`dob`
        ) AS `Supporter`
+        ,`s`.`current_client_ref` AS `CurrentClientRef`
+        ,`m`.`ClientRef` AS `MandateClientRef`
+        ,`m`.`Status`
         ,`m`.`Freq`
         ,CONCAT_WS(
           ' '
@@ -3634,36 +3636,34 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
          ,`m`.`Updated`
          ,`m`.`Name`
          ,`m`.`Amount`
-         ,`m`.`Freq`
+         ,CASE `m`.`Freq`
+            WHEN 1 THEN 'Monthly'
+            WHEN 3 THEN 'Quarterly'
+            WHEN 6 THEN 'Biannually'
+            WHEN 12 THEN 'Annually'
+            ELSE `m`.`Freq`
+            END 
          ,CONCAT('***',SUBSTR(`m`.`Sortcode`,-3),'/*****',SUBSTR(`m`.`Account`,-3))
          ,`m`.`Provider`
        ) AS `Mandate`
     ";
-    if ($type=='s') {
-        $qt = "
-          FROM `Supporters` AS `s`
-          LEFT JOIN `blotto_player` AS `p`
-                 ON `p`.`supporter_id`=`s`.`supporter_id`
-          LEFT JOIN `blotto_build_mandate` AS `m`
-                 ON `m`.`ClientRef`=`p`.`client_ref`
-          LEFT JOIN `blotto_config`.`blotto_bacs` AS `bacs`
-                 ON `bacs`.`ClientRef`=`m`.`ClientRef`        ";
-    }
-    else {
-        $qt = "
-          FROM `blotto_build_mandate` AS `m`
-          LEFT JOIN `blotto_player` AS `p`
-                 ON `p`.`client_ref`=`m`.`ClientRef`
-          LEFT JOIN `Supporters` AS `s`
-                 ON `s`.`supporter_id`=`p`.`supporter_id`
-          LEFT JOIN `blotto_config`.`blotto_bacs` AS `bacs`
-                 ON `bacs`.`ClientRef`=`m`.`ClientRef`
-        ";
-    }
+
+    $qt = "
+      FROM (SELECT * FROM `Supporters` GROUP BY supporter_id) AS `s`
+      LEFT JOIN `blotto_player` AS `p`
+             ON `p`.`supporter_id`=`s`.`supporter_id`
+      LEFT JOIN `blotto_build_mandate` AS `m`
+             ON `m`.`ClientRef`=`p`.`client_ref`
+      LEFT JOIN (
+       SELECT MAX(`requested_at`) AS `BCR`, `ClientRef`
+         FROM `blotto_config`.`blotto_bacs`
+         GROUP BY `ClientRef`
+      ) AS `bacs`
+            ON `bacs`.`ClientRef`=`m`.`ClientRef`
+    ";
     $qw = "
       WHERE (
-            `s`.`supporter_id` IS NOT NULL
-        AND MATCH(
+        MATCH(
               `s`.`name_first`
              ,`s`.`name_last`
              ,`s`.`email`
@@ -3675,10 +3675,10 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
              ,`s`.`town`
              ,`s`.`postcode`
              ,`s`.`dob`
-            ) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
+        ) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
       )
-         OR (
-            `m`.`RefNo` IS NOT NULL
+      OR (
+        `m`.`RefNo` IS NOT NULL
         AND MATCH(
               `m`.`Name`
              ,`m`.`Sortcode`
@@ -3690,26 +3690,12 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
       )
     ";
     $indexm = "";
-    if ($type=='s') {
         foreach ($crefterms as $term) {
           $qw .= "
             OR ( `p`.`supporter_id` IS NOT NULL AND `p`.`client_ref` LIKE '%$term%' )
           ";
         }
-        $qg = "
-          GROUP BY `s`.`supporter_id`
-        ";
-    }
-    else {
-        foreach ($crefterms as $term) {
-          $qw .= "
-            OR ( `m`.`RefNo` IS NOT NULL AND `m`.`ClientRef` LIKE '%$term%' )
-          ";
-        }
-        $qg = "
-          GROUP BY `m`.`ClientRef`
-        ";
-    }
+        $qg = ""; //GROUP BY `s`.`supporter_id` 
     $qo = "
       ORDER BY `s`.`name_last`
     ";
@@ -3738,7 +3724,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         return false;
     }
 
-    $qry = $qs.$qt.$qw.$qg.$qo.$ql;
+    $qry = $qs.$qt.$qw.$qg.$qo.$ql; error_log ('search_result(): '.$qry);
     try {
         $result = $zo->query ($qry);
         $rows = $result->fetch_all(MYSQLI_ASSOC);
@@ -3763,14 +3749,13 @@ function select ($type) {
     $response->fields = [];
     $zo = connect ();
     $cref = esc (explode(BLOTTO_CREF_SPLITTER,$cref)[0]);
-    $match = '^'.$cref.BLOTTO_CREF_SPLITTER.'[0-9]{4}$';
+    //$match = '^'.$cref.BLOTTO_CREF_SPLITTER.'[0-9]{4}$';
     if ($type=='m') {
       $q = "
         SELECT
           *
         FROM `blotto_build_mandate`
-        WHERE `ClientRef`='$cref'
-           OR `ClientRef` LIKE '$match'
+        WHERE `ClientRef` LIKE '%$cref%'
         ORDER BY `ClientRef` DESC
       ";
     }
@@ -3796,8 +3781,7 @@ function select ($type) {
           SELECT
             `supporter_id`
           FROM `blotto_player`
-          WHERE `client_ref`='$cref'
-             OR `client_ref` LIKE '$match'
+          WHERE `client_ref` LIKE '%$cref%'
           ORDER BY `client_ref` DESC
           LIMIT 0,1
         ) AS `player`
@@ -4726,7 +4710,7 @@ function update ( ) {
             $update = $zo->query ($q);
         }
         catch (\mysqli_sql_exception $e) {
-            error_log ($e->getMessage());
+            error_log ($e->getMessage().' : '.$q);
             return "{ \"error\" : 107, \"errorMessage\" : \"Could not update contact details\" }";
         }
         return "{ \"ok\" : true }";
