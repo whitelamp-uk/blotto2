@@ -765,7 +765,7 @@ function supporterSearchResults (responseText) {
         status = 'inactive';
         if (results[i]['Status'] !== null) {
             lcstatus = results[i]['Status'].toLowerCase(); 
-            if (lcstatus=='active' || lcstatus!='live') { // convert to paysuite style.
+            if (lcstatus=='active' || lcstatus=='live') { // convert to paysuite style.
                 status = 'active';
             }
         }
