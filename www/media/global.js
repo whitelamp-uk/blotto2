@@ -762,14 +762,14 @@ function supporterSearchResults (responseText) {
     }
     for (i=0;results[i];i++) {
         // meh. Friday night mess 
-        status = 'active';
-        if (typeof results[i]['Status'] !== 'undefined') {
+        status = 'inactive';
+        if (results[i]['Status'] !== null) {
             lcstatus = results[i]['Status'].toLowerCase(); 
-            if (lcstatus!='active' && lcstatus!='live') { // convert to paysuite style.
-                status = 'inactive';
+            if (lcstatus=='active' || lcstatus!='live') { // convert to paysuite style.
+                status = 'active';
             }
-            delete results[i]['Status'];
         }
+        delete results[i]['Status'];
         if (results[i]['BCR'] != null) {
             results[i]['Mandate'] += ' Last BCR: ' + results[i]['BCR'];
         }
