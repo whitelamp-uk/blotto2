@@ -253,6 +253,9 @@ function linkProfitProjection (evt) {
     var test=[],test2=[];
     */
     for (i in profits.projection.months) {
+        if (i < 0) {
+            continue;
+        }
         /*
         var current = tks;
         */
