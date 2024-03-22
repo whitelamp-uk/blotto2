@@ -79,6 +79,7 @@ END$$
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `blottoUser`$$
+/*
 CREATE PROCEDURE `blottoUser` (
   IN    `orgCode` varchar(64) character set ascii
  ,IN    `userName` varchar(64) character set ascii
@@ -121,6 +122,7 @@ BEGIN
   SELECT CONCAT('SET DEFAULT ROLE \'',@org,'\' FOR \'',@usr,'\'@\'localhost\';') AS `Statements`
   ;
 END$$
+*/
 
 
 DELIMITER $$
