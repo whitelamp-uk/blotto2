@@ -181,7 +181,7 @@ $org_code = array_shift ($org_code);
             top: 105vh;
             width: calc(100vw - 1em - var(--lottery-left));
             margin: 0;
-        }            
+        }
         #lottery-signup-dd {
             position: absolute;
             box-sizing: border-box;
@@ -196,14 +196,9 @@ $org_code = array_shift ($org_code);
             overflow-y: scroll;
         }
       </style>
-      <!
-       * Use css=[my stylesheet URL] to override form styling
-       * Replace ??? with your organisation code LOWER CASE
-      >
+      <! Use css=[my stylesheet URL] to override form styling>
       <iframe id="lottery-signup-dd" src="https://sss.burdenandburden.co.uk/?o=<?php echo $org_code; ?>&p=LT&amp;css=https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/demo.css'); ?>"></iframe>
       <!-- 3 ENDS -->
-
-
 
       </div>
     </body>
