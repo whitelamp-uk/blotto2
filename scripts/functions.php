@@ -5814,7 +5814,7 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
                 }
             }
             $errMsg = "Sorry failed to send SMS - please try again";
-            error_log ($u['mobile'].' '.$code.' '.$response);
+            error_log ($u['mobile'].' '.$code.' '.print_r($response,true));
             return false;
         }
         $errMsg = "Sorry SMS service was unavailable - please try again";
