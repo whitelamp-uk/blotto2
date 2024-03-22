@@ -5540,8 +5540,11 @@ function www_auth_reset (&$currentUser,&$err=null) {
                 unset($_SESSION['reset']); $err=$errs[1];
                 return 0;
             }
-            // Make sure everything posted to the session is from the same IP
-            if ($_SERVER['REMOTE_ADDR']!=$_SESSION['reset']['remote_addr']) {
+            // Make sure everything posted to the session is from the same network
+            // by making array of first two octets
+            $ra_stub = explode ('.', $_SERVER['REMOTE_ADDR'], -2);
+            $rs_stub = explode ('.', $_SESSION['reset']['remote_addr'], -2);
+            if ($ra_stub!==$rs_stub) {
                 // This should not happen
                 unset($_SESSION['reset']); $err=$errs[2];
                 sleep (5);
