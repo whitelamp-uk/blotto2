@@ -138,7 +138,7 @@ $org_code = array_shift ($org_code);
             top: 0em;
             width: calc(100vw - 1em - var(--lottery-left));
             margin: 0;
-        }            
+        }
         #lottery-signup {
             position: absolute;
             box-sizing: border-box;
@@ -164,7 +164,7 @@ $org_code = array_shift ($org_code);
 
 
 
-      <h4 id="lottery-signup-dd-heading">Get one-off-payment lottery tickets</h4>
+      <h4 id="lottery-signup-dd-heading">Self-service direct debit sign-up</h4>
 
 <!-- 3. TICKETS (DIRECT DEBIT MANDATE) -->
       <style>
