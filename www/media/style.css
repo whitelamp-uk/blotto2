@@ -1023,7 +1023,9 @@ img.close {
 #profit [data-profit-headings] {
     display:none;
 }
-
+.search-result-inactive {
+    color: var(--blotto-dfn-clr-grey-deep);
+}
 #system-info {
     float: right;
 }
