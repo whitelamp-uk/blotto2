@@ -71,6 +71,15 @@ ON `{{BLOTTO_TICKET_DB}}`.*
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
 
+GRANT UPDATE(
+  `self_excluded`
+ ,`death_reported`
+ ,`death_by_suicide`
+)
+ON `{{BLOTTO_MAKE_DB}}`.`blotto_supporter`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+
 GRANT SELECT
 ON `{{BLOTTO_DB}}`.*
 TO '{{BLOTTO_ADMIN_USER}}'
