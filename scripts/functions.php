@@ -545,6 +545,43 @@ function day_yesterday ($date=null) {
     return $dt;
 }
 
+function days_working_date ($start_date,$working_days,$reverse=false) {
+    $json = file_get_contents ('https://www.gov.uk/bank-holidays.json');
+    $json = json_decode ($json,JSON_PRETTY_PRINT);
+    $bhs = [];
+    foreach ($json as $division=>$events) {
+        if ($division!='northern-ireland' || territory_permitted('BT')) {
+            foreach ($events['events'] as $bh) {
+                $bhs[] = $bh['date'];
+            }
+        }
+    }
+    $dt = new \DateTime ($start_date);
+    $count = 0;
+    $days = 0;
+    while (true) {
+        $count++;
+        if ($count>1000) {
+            throw new \Exception ('Insane iteration');
+            return false;
+        }
+        if (($dow=$dt->format('N'))!=6 && $dow!=7) {
+            if (!in_array($dt->format('Y-m-d'),$bhs)) {
+                $days++;
+            }
+        }
+        if ($days>$working_days) {
+            return $dt->format ('Y-m-d');
+        }
+        if ($reverse) {
+            $dt->sub (new \DateInterval('P1D'));
+        }
+        else {
+            $dt->add (new \DateInterval('P1D'));
+        }
+    }
+}
+
 function dbs ( ) {
     if (!defined('BLOTTO_RBE_DBS')) {
         return [BLOTTO_ORG_ID=>['make'=>BLOTTO_MAKE_DB,'frontend'=>BLOTTO_DB]];
