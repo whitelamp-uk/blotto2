@@ -550,7 +550,7 @@ function days_working_date ($start_date,$working_days,$reverse=false) {
     $json = json_decode ($json,JSON_PRETTY_PRINT);
     $bhs = [];
     foreach ($json as $division=>$events) {
-        if ($division!='northern-ireland' || territory_permitted('BT')) {
+        if ($division!='northern-ireland' || territory_permitted('BT') {
             foreach ($events['events'] as $bh) {
                 $bhs[] = $bh['date'];
             }
@@ -3513,6 +3513,7 @@ function result_spiel66 ($prize,$draw_closed) {
     return false;
 }
 
+// NB use to straight_join to force query to use e->p->s; live db was using p->s->e and being very slow.
 function revenue ($from,$to) {
     $price = BLOTTO_TICKET_PRICE;
     $rows       = [];
@@ -3521,9 +3522,9 @@ function revenue ($from,$to) {
         `s`.`canvas_code`
        ,ROUND(($price/100)*COUNT(`e`.`id`),2)
       FROM `blotto_entry` AS `e`
-      JOIN `blotto_player` AS `p`
+      STRAIGHT_JOIN `blotto_player` AS `p`
         ON `p`.`client_ref`=`e`.`client_ref`
-      JOIN `blotto_supporter` AS `s`
+      STRAIGHT_JOIN `blotto_supporter` AS `s`
         ON `s`.`id`=`p`.`supporter_id`
       WHERE `e`.`draw_closed`>='$from'
         AND `e`.`draw_closed`<='$to'
