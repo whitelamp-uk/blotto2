@@ -487,44 +487,33 @@ function day_one ($for_wins=false) {
     if (!$zo) {
         return false;
     }
-    // If nothing to figure it from below, assume day one is today
-    $s = null;
     try {
         if (defined('BLOTTO_RBE_ORGS')) {
             // RBEs only have entries and winners
             $s = $zo->query ("SELECT MIN(`draw_closed`) AS `d1` FROM `blotto_entry`");
             $s = $s->fetch_assoc()['d1'];
         }
-        elseif ($for_wins) {
-            if (day_yesterday()->format('Y-m-d')>=BLOTTO_DRAW_CLOSE_1) {
-                $s = BLOTTO_DRAW_CLOSE_1;
-                if (defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
-                    // Handles legacy scenario (eg. SHC) where tickets got changed
-                    // Before the change date, winnings are no longer derivable by deterministic calculation
-                    // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
-                    $s = BLOTTO_WIN_FIRST;
-                }
-            }
-        }
         else {
             $s = $zo->query ("SELECT MIN(`created`) AS `d1` FROM `blotto_supporter`");
             $s = $s->fetch_assoc()['d1'];
             $c = $zo->query ("SELECT MIN(`DateDue`) AS `d1` FROM `blotto_build_collection`");
             $c = $c->fetch_assoc()['d1'];
-            if ($c && $c<$s) {
+            if (!$s) {
+                $s = $c;
+            }
+            if ($c<$s) {
                 $s = $c;
             }
         }
-        if ($for_wins) {
-            if ($s && BLOTTO_DRAW_CLOSE_1>$s) {
-                $s = BLOTTO_DRAW_CLOSE_1;
-            }
-            if ($s && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
-                // Handles legacy scenario (eg. SHC) where tickets got changed
-                // Before the change date, winnings are no longer derivable by deterministic calculation
-                // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
-                $s = BLOTTO_WIN_FIRST;
-            }
+        // If no results, use the beginning of this month
+        if (!$s) {
+            $s = gmdate ('Y-m-01');
+        }
+        if ($for_wins && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
+            // Handles legacy scenario (eg. SHC) where tickets got changed
+            // Before the change date, winnings are no longer derivable by deterministic calculation
+            // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
+            $s = BLOTTO_WIN_FIRST;
         }
     }
     catch (\mysqli_sql_exception $e) {
@@ -550,7 +539,7 @@ function days_working_date ($start_date,$working_days,$reverse=false) {
     $json = json_decode ($json,JSON_PRETTY_PRINT);
     $bhs = [];
     foreach ($json as $division=>$events) {
-        if ($division!='northern-ireland' || territory_permitted('BT') {
+        if ($division!='northern-ireland' || territory_permitted('BT')) {
             foreach ($events['events'] as $bh) {
                 $bhs[] = $bh['date'];
             }
