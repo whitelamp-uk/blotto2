@@ -517,7 +517,8 @@ function day_one ($for_wins=false) {
         }
     }
     catch (\mysqli_sql_exception $e) {
-        $s = null;
+        // If an error, use the beginning of this month
+        $s = gmdate ('Y-m-01');
     }
     return new \DateTime ($s);
 }
