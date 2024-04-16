@@ -536,40 +536,82 @@ function day_yesterday ($date=null) {
 }
 
 function days_working_date ($start_date,$working_days,$reverse=false) {
-    $json = file_get_contents ('https://www.gov.uk/bank-holidays.json');
-    $json = json_decode ($json,JSON_PRETTY_PRINT);
-    $bhs = [];
-    foreach ($json as $division=>$events) {
-        if ($division!='northern-ireland' || territory_permitted('BT')) {
-            foreach ($events['events'] as $bh) {
-                $bhs[] = $bh['date'];
-            }
-        }
+    global $BacsHolidays,$WorkingDate;
+    if ($reverse) {
+        $direction = 'f';
     }
-    $dt = new \DateTime ($start_date);
-    $count = 0;
-    $days = 0;
-    while (true) {
-        $count++;
-        if ($count>1000) {
-            throw new \Exception ('Insane iteration');
-            return false;
-        }
-        if (($dow=$dt->format('N'))!=6 && $dow!=7) {
-            if (!in_array($dt->format('Y-m-d'),$bhs)) {
-                $days++;
-            }
-        }
-        if ($days>$working_days) {
-            return $dt->format ('Y-m-d');
-        }
-        if ($reverse) {
-            $dt->sub (new \DateInterval('P1D'));
+    else {
+        $direction = 'r';
+    }
+    if (!$BacsHolidays) {
+        $file = '/tmp/bank-holidays.cfg.php';
+        if (is_readable($file) && gmdate("Y-m-d",filemtime($file))==gmdate('Y-m-d')) {
+            // Almost always just include the file
+            $BacsHolidays = include ($file);
         }
         else {
-            $dt->add (new \DateInterval('P1D'));
+            // Rewrite the include file
+            $json = file_get_contents ('https://www.gov.uk/bank-holidays.json');
+            $json = json_decode ($json,JSON_PRETTY_PRINT);
+            $BacsHolidays = [];
+            foreach ($json as $division=>$events) {
+                // TODO it has been proposed that it is better just to use banks holidays for England
+                if ($division!='northern-ireland' || territory_permitted('BT')) {
+                    foreach ($events['events'] as $bh) {
+                        if (!in_array($bh['date'],$BacsHolidays)) {
+                            $BacsHolidays[] = $bh['date'];
+                        }
+                    }
+                }
+            }
+            $fp = @fopen ($file,'w');
+            if ($fp) {
+                fwrite ($fp,'<?php return '.var_export($BacsHolidays,true).';');
+                fclose ($fp);
+            }
+            else {
+                error_log ('Unable to open file for writing: '.$file);
+            }
         }
     }
+    if (!$WorkingDate) {
+        $WorkingDate = [];
+    }
+    if (!array_key_exists($start_date,$WorkingDate)) {
+        $WorkingDate[$start_date] = [];
+    }
+    if (!array_key_exists($working_days,$WorkingDate[$start_date])) {
+        $WorkingDate[$start_date][$working_days] = [];
+    }
+    if (!array_key_exists($direction,$WorkingDate[$start_date][$working_days])) {
+        // The answer is not yet calculated in this PHP process
+        $dt = new \DateTime ($start_date);
+        $count = 0;
+        $days = 0;
+        while (true) {
+            $count++;
+            if ($count>1000) {
+                throw new \Exception ('Insane iteration');
+                return false;
+            }
+            if (($dow=$dt->format('N'))!=6 && $dow!=7) {
+                if (!in_array($dt->format('Y-m-d'),$BacsHolidays)) {
+                    $days++;
+                }
+            }
+            if ($days>$working_days) {
+                $WorkingDate[$start_date][$working_days][$direction] = $dt->format ('Y-m-d');
+                break;
+            }
+            if ($reverse) {
+                $dt->sub (new \DateInterval('P1D'));
+            }
+            else {
+                $dt->add (new \DateInterval('P1D'));
+            }
+        }
+    }
+    return $WorkingDate[$start_date][$working_days][$direction];
 }
 
 function dbs ( ) {
@@ -887,8 +929,11 @@ function draw_first_zaffo_model ($first_collection_date,$dow=5) {
             3. Move on to next $dow (even if first_collection_date is a $dow)
             4. Move on 21 more days
     */
+
     $fcd        = new DateTime ($first_collection_date);
     $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
+// $fcd = new DateTime (days_working_date ($first_collection_date,2));
+
     // Move on to next $dow
     $days       = ( ($dow+7) - $fcd->format('w') ) % 7;
     if ($days==0) {
