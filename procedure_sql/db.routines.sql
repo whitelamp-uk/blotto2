@@ -1449,6 +1449,7 @@ BEGIN
       ON `s`.`id`=`p`.`supporter_id`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
+    WHERE `cln`.`DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
     GROUP BY `s`.`id`
   ;
   -- `milestone`='bacs_change'
@@ -1515,6 +1516,7 @@ BEGIN
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
      AND DATE(`c`.`created`)<=`cnl`.`cancelled_date`
+    WHERE `cnl`.`cancelled_date`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
     GROUP BY `cnl`.`client_ref`
   ;
   -- `milestone`='reinstatement'
@@ -1537,6 +1539,7 @@ BEGIN
         `supporter_id`
        ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `cancelled`
       FROM `blotto_update`
+      -- the cancellation has been de-jittered; no need for a de-jittering WHERE clause here
       GROUP BY `supporter_id`
     ) AS `chk`
       ON `chk`.`supporter_id`=`u`.`supporter_id`

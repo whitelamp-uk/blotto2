@@ -58,6 +58,8 @@ foreach ($close_dates as $date) {
     $date_dd = new DateTime ($date);
     $date_dd->sub (new DateInterval(BLOTTO_PAY_DELAY));  
     $date_dd = $date_dd->format ('Y-m-d');
+// $date_dd = days_working_date ($date,2,true);
+
     // If we get to this point, the draw has already closed
     // No insurance means no entry.
     $q = "
