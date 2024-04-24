@@ -7,7 +7,7 @@
 /* Normalisation */
 /* Prevent Firefox autofill colour */
 input:autofill {
-  background: #ffffff;
+  background-color:     #ffffff;
 }
 
 
