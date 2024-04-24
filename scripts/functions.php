@@ -3722,7 +3722,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     ";
 
     $qt = "
-      FROM (SELECT * FROM `Supporters` GROUP BY supporter_id) AS `s`
+      FROM `Supporters` AS `s`
       LEFT JOIN `blotto_player` AS `p`
              ON `p`.`supporter_id`=`s`.`supporter_id`
       LEFT JOIN `blotto_build_mandate` AS `m`
@@ -3768,7 +3768,9 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
             OR ( `p`.`supporter_id` IS NOT NULL AND `p`.`client_ref` LIKE '%$term%' )
           ";
         }
-        $qg = ""; //GROUP BY `s`.`supporter_id` 
+    $qg = "
+      GROUP BY `s`.`supporter_id`
+    ";
     $qo = "
       ORDER BY `s`.`name_last`
     ";
