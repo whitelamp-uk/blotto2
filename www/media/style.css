@@ -3,6 +3,16 @@
 @import url('./guide.css');
 
 
+
+/* Normalisation */
+/* Prevent Firefox autofill colour */
+input:autofill {
+  background-color:     #ffffff;
+}
+
+
+
+
 body {
     margin:             0;
     background-color:   var(--blotto-color-bgd-body);
