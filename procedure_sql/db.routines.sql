@@ -506,7 +506,8 @@ BEGIN
     -- One-off payments are not applicable
     WHERE `m`.`Freq`!='Single' OR `m`.`Freq` IS NULL
     GROUP BY `client_ref`,`ticket_number`
-    HAVING `cancelled_date`<CURDATE()
+    -- 7-day debounce for BACS jitter
+    HAVING `cancelled_date`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
     ORDER BY `cancelled_date`,`ccc`,`client_ref`,`supporter_created`,`ticket_number`
   ;
   ALTER TABLE `Cancellations`
@@ -1449,6 +1450,7 @@ BEGIN
       ON `s`.`id`=`p`.`supporter_id`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
+    -- 7-day debounce for BACS jitter
     WHERE `cln`.`DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
     GROUP BY `s`.`id`
   ;
@@ -1516,7 +1518,7 @@ BEGIN
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
      AND DATE(`c`.`created`)<=`cnl`.`cancelled_date`
-    WHERE `cnl`.`cancelled_date`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+    -- data going into `Cancellations` has already been debounced so not needed here
     GROUP BY `cnl`.`client_ref`
   ;
   -- `milestone`='reinstatement'
@@ -1539,7 +1541,7 @@ BEGIN
         `supporter_id`
        ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `cancelled`
       FROM `blotto_update`
-      -- the cancellation has been de-jittered; no need for a de-jittering WHERE clause here
+      -- reinstatements are deduced and immediate - no de-jittering required
       GROUP BY `supporter_id`
     ) AS `chk`
       ON `chk`.`supporter_id`=`u`.`supporter_id`
