@@ -27,7 +27,7 @@ function anl_reset ( ) {
         return "{ \"error\" : 101, \"errorMessage\" : \"Could not connect to database\" }";
     }
     if (!array_key_exists('r',$_GET) || !preg_match('<^[0-9]+$>',$_GET['r']) || $_GET['r']<1) {
-        return "{ \"error\" : 102, \"errorMessage\" : \"GET[r]={$_GET['r']} is not a postive integer\" }";
+        return "{ \"error\" : 102, \"errorMessage\" : \"GET[r]={$_GET['r']} is not a positive integer\" }";
     }
     $supporter_id = intval ($_GET['r']);
 // TODO - find the latest player and update letter_batch_ref_prev=letter_batch_ref, letter_batch_ref=null, letter_status=null
