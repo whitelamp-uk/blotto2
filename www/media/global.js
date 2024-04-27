@@ -1,5 +1,45 @@
 
 
+function anlReset (form) {
+    var data,query,xhttp;
+    if (!confirm('Resend ANL for supporter #'+form.supporter_id.value+'?')) {
+        return;
+    }
+    data = new FormData (form);
+    query = './?anlreset&r=' + form.supporter_id.value;
+    xhttp = new XMLHttpRequest ();
+    xhttp.onreadystatechange = function ( ) {
+        if (this.readyState==4) {
+            if (this.status==200) {
+                try {
+                    results = JSON.parse (xhttp.responseText);
+                    updateView ('a',results);
+                }
+                catch (e) {
+                    if (responseText.indexOf('<!doctype html>')!==false) {
+                        // Looks like we have logged out or session has expired
+                        window.top.location.href = './';
+                        return;
+                    }
+                    console.log ('Error: '+xhttp.responseText);
+                    updateView ('a',{ error : null, errorMessage : "ANL reset request failed (unspecified error)" });
+                    return;
+                }
+            }
+            else {
+                updateView ('a',{ error : null, errorMessage : "ANL reset request failed: server status " + this.status });
+            }
+        }
+    };
+    try {
+        xhttp.open ('POST',query,true);
+        xhttp.send (data);
+    }
+    catch (e) {
+        console.log (e.message);
+    }
+}
+
 function clickHandler (evt) {
     var element;
     if (evt.target.id=='adminer') {
@@ -42,6 +82,10 @@ function clickHandler (evt) {
     if (evt.target.id=='post-supporter') {
         evt.preventDefault ();
         supporterUpdate (evt.target.form);
+    }
+    if (evt.target.id=='post-supporter-anl-resend') {
+        evt.preventDefault ();
+        anlReset (evt.target.form);
     }
     if (evt.target.id=='post-supporter-mandate-block') {
         evt.preventDefault ();
@@ -383,7 +427,8 @@ function mandateSelect (evt) {
         if (this.readyState==4) {
             if (this.status==200) {
                 mandateSelectResult (xhttp.responseText);
-            } else {
+            }
+            else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
             }
         }
@@ -516,7 +561,8 @@ function mandateUpdate (form) {
         if (this.readyState==4) {
             if (this.status==200) {
                 mandateUpdateResult (xhttp.responseText);
-            } else {
+            }
+            else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
             }
         }
@@ -697,7 +743,8 @@ function supporterSearch (elementId) {
         if (this.readyState==4) {
             if (this.status==200) {
                 supporterSearchResults (xhttp.responseText);
-            } else {
+            }
+            else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
             }
         }
@@ -742,7 +789,7 @@ function supporterSearchResults (responseText) {
             return;
         }
         console.log ('Error (s): '+responseText);
-        console.trace();
+        console.trace ();
         message ('Search request failed','err');
         return;
     }
@@ -781,7 +828,8 @@ function supporterSearchResults (responseText) {
         cclientref = results[i]['CurrentClientRef'];
         if (results[i]['MandateClientRef'] == results[i]['CurrentClientRef']) {
             results[i]['MandateClientRef'] = '*';
-        } else {
+        }
+        else {
             results[i]['MandateClientRef'] = '';
         }
         delete results[i]['CurrentClientRef'];
@@ -840,7 +888,8 @@ function supporterSelect (evt) {
         if (this.readyState==4) {
             if (this.status==200) {
                 supporterSelectResult (xhttp.responseText);
-            } else {
+            }
+            else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
             }
         }
@@ -964,7 +1013,8 @@ function supporterUpdate (form) {
         if (this.readyState==4) {
             if (this.status==200) {
                 supporterUpdateResult (xhttp.responseText);
-            } else {
+            }
+            else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
             }
         }
@@ -1073,35 +1123,48 @@ function updateHandle (formId) {
 function updateView (type,results) {
     var err,field,fields,form,however,img,p,section,txt;
     
-    if (type=='s') {
+    if (type=='s' || type=='a') {
         form = document.getElementById ('change-supporter');
         section = document.getElementById ('supporter-message');
     }
-    if (type=='m') {
+    else if (type=='m') {
         form = document.getElementById ('change-mandate');
         section = document.getElementById ('mandate-message');
     }
     if (results.ok || results.created) {
-        form.classList.remove ('changed');
-        fields = form.querySelectorAll ('button,input,select');
-        for (field of fields) {
-            field.disabled = true;
+        if (type='a') {
+            field = form.querySelector ('#post-supporter-anl-resend');
+            if (field) {
+                field.disabled = false;
+            }
         }
-        if ('block_mandate' in form) {
-            form.block_mandate.disabled = false;
-        }
-        field = form.querySelector ('.form-close');
-        if (field) {
-            field.disabled = false;
+        else {
+            form.classList.remove ('changed');
+            fields = form.querySelectorAll ('button,input,select');
+            for (field of fields) {
+                field.disabled = true;
+            }
+            if ('block_mandate' in form) {
+                form.block_mandate.disabled = false;
+            }
+            field = form.querySelector ('.form-close');
+            if (field) {
+                field.disabled = false;
+            }
         }
     }
     txt = [];
-    if (type=='s') {
+    if (type=='a') {
+        if (results.ok) {
+            txt.push ('An ANL has been rescheduled and will be processed within 24 hours');
+        }
+    }
+    else if (type=='s') {
         if (results.ok) {
             txt.push ('Supporter details have been updated successfully');
         }
     }
-    if (type=='m') {
+    else if (type=='m') {
         if (results.created) {
             however = true;
             txt.push ('A replacement mandate has been created - mandate will be available within 5 working days');

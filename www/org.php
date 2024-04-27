@@ -27,6 +27,7 @@ $options       = [
     'bacs',
     'search',
     'update',
+    'anlreset',
     'support',
     'guide',
     'privacy',
@@ -112,6 +113,12 @@ elseif ($session=www_session($timestamp)) {
     if ($opt=='update') {
         $str = update ();
         error_log (__FILE__.' '.__LINE__.' org.update '.print_r($str, true));
+        echo $str;
+        exit;
+    }
+    if ($opt=='anlreset') {
+        $str = anl_reset ();
+        error_log (__FILE__.' '.__LINE__.' org.anlreset '.print_r($str, true));
         echo $str;
         exit;
     }

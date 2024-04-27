@@ -568,11 +568,17 @@ form#change-supporter button#post-supporter {
     top:                1em;
     font-size:          0.8em;
 }
-form#change-supporter button#post-supporter-mandate-block {
+form#change-supporter button#post-supporter-mandate-block,
+form#change-supporter button#post-supporter-anl-resend {
     position:           static;
     float:              right;
     margin-top:         0.3em;
     margin-right:       0.3em;
+}
+form#change-supporter button#post-supporter-anl-resend {
+/* TODO - temporary */
+visibility: hidden;
+    font-size:          0.8em;
 }
 
 form#change-mandate thead,

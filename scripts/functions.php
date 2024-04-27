@@ -18,6 +18,23 @@ function adminer ( ) {
     return $url;
 }
 
+function anl_reset ( ) {
+    $headers            = null;
+    $zom                = connect (BLOTTO_MAKE_DB);
+    $zo                 = connect ();
+    if (!$zo || !$zom) {
+        error_log ($e->getMessage());
+        return "{ \"error\" : 101, \"errorMessage\" : \"Could not connect to database\" }";
+    }
+    if (!array_key_exists('r',$_GET) || !preg_match('<^[0-9]+$>',$_GET['r']) || $_GET['r']<1) {
+        return "{ \"error\" : 102, \"errorMessage\" : \"GET[r]={$_GET['r']} is not a postive integer\" }";
+    }
+    $supporter_id = intval ($_GET['r']);
+// TODO - find the latest player and update letter_batch_ref_prev=letter_batch_ref, letter_batch_ref=null, letter_status=null
+    // Caution when adding more logic here: error 110 must be reserved for bad user input - see update()
+    return "{ \"ok\" : true }";
+}
+
 function bank_decrypt ($key,$data,&$sortcode,&$accountnr) {
     $method = 'AES-256-CBC';
     $data = base64_decode($data);
