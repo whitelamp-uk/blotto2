@@ -160,16 +160,17 @@ catch (\mysqli_sql_exception $e) {
     exit (107);
 }
 
-// Phone validation (optional field)
+// Phone validation (optional field).  Might start with a "+" hence slashes.
 // MySQL regexp needs double escaping for reasons not yet fathomed...
 $phonere='^\\\\+?[0-9]+$';
 $qs = "
   SELECT
     `ClientRef`
    ,`Mobile`
+   ,`Telephone`
   FROM `tmp_supporter`
   WHERE (
-           REPLACE(`Mobile`,' ','')!=''
+       REPLACE(`Mobile`,' ','')!=''
        AND `Mobile` IS NOT NULL
        AND (
             REPLACE(`Mobile`,' ','') NOT REGEXP '$phonere'
@@ -178,7 +179,7 @@ $qs = "
        )
   )
      OR (
-           REPLACE(`Telephone`,' ','')!=''
+       REPLACE(`Telephone`,' ','')!=''
        AND `Telephone` IS NOT NULL
        AND (
             REPLACE(`Telephone`,' ','') NOT REGEXP '$phonere'
@@ -191,9 +192,10 @@ $qs = "
 try {
     $check = $zo->query ($qs);
     if ($check->num_rows) {
-        $errors .= "`Mobile` and/or `Telephone` invalid\n";
+        $errors .= "`Mobile` and/or `Telephone` invalid ".$check->num_rows." times\n";
+
         while ($c=$check->fetch_assoc()) {
-            $errors .= "    {$c['ClientRef']} {$c['Mobile']} {$c['Telephone']}\n";
+            $errors .= "    {$c['ClientRef']} m: {$c['Mobile']} t: {$c['Telephone']}\n";
         }
     }
 }
