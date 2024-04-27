@@ -160,10 +160,9 @@ catch (\mysqli_sql_exception $e) {
     exit (107);
 }
 
-// Phone validation (optional field)
+// Phone validation (optional field).  Might start with a "+" hence slashes.
 // MySQL regexp needs double escaping for reasons not yet fathomed...
 $phonere='^\\\\+?[0-9]+$';
-//$phonere='^[0-9]+$'; // DL - no idea how the above works for non-CGH builds
 $qs = "
   SELECT
     `ClientRef`
