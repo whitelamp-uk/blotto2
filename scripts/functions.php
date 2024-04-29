@@ -3740,10 +3740,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
 
     $qt = "
       FROM `Supporters` AS `s`
-      LEFT JOIN `blotto_player` AS `p`
-             ON `p`.`supporter_id`=`s`.`supporter_id`
       LEFT JOIN `blotto_build_mandate` AS `m`
-             ON `m`.`ClientRef`=`p`.`client_ref`
+             ON `m`.`ClientRef`=`s`.`current_client_ref`
       LEFT JOIN (
        SELECT MAX(`requested_at`) AS `BCR`, `ClientRef`
          FROM `blotto_config`.`blotto_bacs`
@@ -3782,7 +3780,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     $indexm = "";
         foreach ($crefterms as $term) {
           $qw .= "
-            OR ( `p`.`supporter_id` IS NOT NULL AND `p`.`client_ref` LIKE '%$term%' )
+            OR ( `s`.`current_client_ref` LIKE '%$term%' )
           ";
         }
     $qg = "
