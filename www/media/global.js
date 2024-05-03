@@ -1132,7 +1132,7 @@ function updateView (type,results) {
         section = document.getElementById ('mandate-message');
     }
     if (results.ok || results.created) {
-        if (type='a') {
+        if (type=='a') {
             field = form.querySelector ('#post-supporter-anl-resend');
             if (field) {
                 field.disabled = false;
