@@ -78,3 +78,40 @@ CREATE OR REPLACE VIEW `Hiatus` (
   ORDER BY `times` DESC,`ClientRef`
 ;
 
+CREATE OR REPLACE VIEW `HiatusOverLimit` (
+  `client_ref`
+ ,`paid_total`
+ ,`paid_last`
+ ,`missed_payments`
+ ,`over`
+) AS
+  SELECT
+    `c`.`ClientRef`
+   ,`csum`.`paid`
+   ,`csum`.`date_due_last`
+   ,3-COUNT(`c`.`DateDue`) AS `missed`
+   ,'3 MONTH'
+  FROM `blotto_build_collection` AS `c`
+  JOIN (
+    SELECT
+      `ClientRef`
+     ,SUM(`PaidAmount`) AS `paid`
+     ,MAX(`DateDue`) AS `date_due_last`
+    FROM `blotto_build_collection`
+    GROUP BY `ClientRef`
+  ) AS `csum`
+    ON `csum`.`ClientRef`=`c`.`ClientRef`
+  LEFT JOIN (
+    SELECT
+      `client_ref`
+    FROM `Cancellations`
+    GROUP BY `client_ref`
+  ) AS `cns`
+         ON `cns`.`client_ref`=`c`.`ClientRef`
+  WHERE `cns`.`client_ref` IS NULL
+    AND `c`.`DateDue`>DATE_SUB(`csum`.`date_due_last`,INTERVAL 3 MONTH)
+  GROUP BY `ClientRef`
+  HAVING `missed`>0
+  ORDER BY `missed` DESC,`paid` DESC,`ClientRef`
+;
+
