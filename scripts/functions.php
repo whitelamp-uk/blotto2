@@ -30,8 +30,30 @@ function anl_reset ( ) {
         return "{ \"error\" : 102, \"errorMessage\" : \"GET[r]={$_GET['r']} is not a positive integer\" }";
     }
     $supporter_id = intval ($_GET['r']);
-// TODO - find the latest player and update letter_batch_ref_prev=letter_batch_ref, letter_batch_ref=null, letter_status=null
+    $q = "
+        UPDATE `blotto_player` AS `p1`
+        LEFT JOIN `blotto_player` AS `p2`
+        ON `p1`.`supporter_id` = `p2`.`supporter_id`
+        AND `p1`.`created` < `p2`.`created`
+        SET 
+          `p1`.`letter_batch_ref_prev`=`p1`.`letter_batch_ref`
+         ,`p1`.`letter_batch_ref`=NULL
+         ,`p1`.`letter_status`=NULL
+        WHERE `p2`.`id` IS NULL
+        AND `p1`.`supporter_id` = '$supporter_id'
+        ;
+    ";
+    try {
+        $zo->query ($q);
+        $zom->query ($q);
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($e->getMessage()."\n");
+        return false;
+    }
+
     // Caution when adding more logic here: error 110 must be reserved for bad user input - see update()
+
     return "{ \"ok\" : true }";
 }
 
@@ -3721,7 +3743,11 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         ,`m`.`Freq`
         ,CONCAT_WS(
           ' '
-         ,`m`.`Status`
+         ,CASE
+             WHEN `bs`.`mandate_blocked`=1 AND `m`.`Status`='Active' THEN 'Blocked'
+             WHEN `bs`.`mandate_blocked`=1 AND (`m`.`Status`='LIVE' OR `m`.`Status`='NEW') THEN 'BLOCKED'
+             ELSE `m`.`Status`
+          END
          ,`m`.`ClientRef`
          ,`m`.`Updated`
          ,`m`.`Name`
@@ -3748,6 +3774,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
          GROUP BY `ClientRef`
       ) AS `bacs`
             ON `bacs`.`ClientRef`=`m`.`ClientRef`
+      LEFT JOIN `blotto_supporter` AS `bs`
+            ON `bs`.`client_ref` = `s`.`current_client_ref`
     ";
     $qw = "
       WHERE (

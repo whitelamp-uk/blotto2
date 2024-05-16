@@ -421,7 +421,7 @@ then
     abort_on_error 17 $?
     # This is a warning system - do not abort
     /usr/bin/php $prg $sw "$cfg" exec mandates_check.php -q
-    if [ "$?" != "0"]
+    if [ "$?" != "0" ]
     then
         echo "        Bad mandate(s) were found (or mandates_check.php failed)"
     fi
