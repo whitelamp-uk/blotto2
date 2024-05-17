@@ -96,9 +96,12 @@ CREATE OR REPLACE VIEW `HiatusOverLimit` (
     SELECT
       `ClientRef`
      ,SUM(`PaidAmount`) AS `paid`
+     ,MIN(`DateDue`) AS `date_due_first`
      ,MAX(`DateDue`) AS `date_due_last`
     FROM `blotto_build_collection`
     GROUP BY `ClientRef`
+    -- must be enough range to count
+    HAVING `date_due_last`>=DATE_ADD(`date_due_first`,INTERVAL 2 MONTH)
   ) AS `csum`
     ON `csum`.`ClientRef`=`c`.`ClientRef`
   LEFT JOIN (
@@ -109,6 +112,7 @@ CREATE OR REPLACE VIEW `HiatusOverLimit` (
   ) AS `cns`
          ON `cns`.`client_ref`=`c`.`ClientRef`
   WHERE `cns`.`client_ref` IS NULL
+    -- just the collections within the range
     AND `c`.`DateDue`>DATE_SUB(`csum`.`date_due_last`,INTERVAL 3 MONTH)
   GROUP BY `ClientRef`
   HAVING `missed`>0
