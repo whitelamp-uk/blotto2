@@ -3688,8 +3688,9 @@ function search ( ) {
         }
         // https://stackoverflow.com/questions/25088183/mysql-fulltext-search-with-symbol-produces-error-syntax-error-unexpected
         // but since then it was breaking it
-        //$term = str_replace ('@',' +',$term); // 
-        if (strlen($term)) {
+        //$term = str_replace ('@',' +',$term); 
+        // words less than 3 characters in length (in innodb) are not indexed.
+        if (strlen($term)>=BLOTTO_SEARCH_LEN_MIN) {
             $terms[] = esc ($term);
         }
     }
