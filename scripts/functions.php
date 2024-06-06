@@ -3690,7 +3690,8 @@ function search ( ) {
         // but since then it was breaking it
         //$term = str_replace ('@',' +',$term); 
         // words less than 3 characters in length (in innodb) are not indexed.
-        if (strlen($term)>=BLOTTO_SEARCH_LEN_MIN) {
+        $pad = ($expert ? 0 : 2); // if not expert we have + and * added
+        if (strlen($term)>=BLOTTO_SEARCH_LEN_MIN+$pad) {
             $terms[] = esc ($term);
         }
     }
