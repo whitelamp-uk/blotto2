@@ -561,7 +561,7 @@ form#change-supporter button.form-close {
 }
 
 form#change-mandate button#post-mandate,
-/*form#change-supporter button#post-supporter-mandate-block,*/
+form#change-supporter button#post-supporter-mandate-block,
 form#change-supporter button#post-supporter {
     position:           fixed;
     left:               calc(20vw + 5em);
