@@ -83,7 +83,7 @@ function clickHandler (evt) {
         evt.preventDefault ();
         supporterUpdate (evt.target.form);
     }
-    if (evt.target.id=='post-supporter-anl-resend') {
+    if (evt.target.id=='post-supporter-resend-anl') {
         evt.preventDefault ();
         anlResend (evt.target.form);
     }
@@ -1161,7 +1161,7 @@ function updateView (type,results) {
     }
     if (results.ok || results.created) {
         if (type=='a') {
-            field = form.querySelector ('#post-supporter-anl-resend');
+            field = form.querySelector ('#post-supporter-resend-anl');
             if (field) {
                 field.disabled = true;
             }

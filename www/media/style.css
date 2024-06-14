@@ -576,8 +576,8 @@ form#change-supporter button#post-supporter-resend-anl {
     margin-right:       0.3em;
 }
 form#change-supporter button#post-supporter-resend-anl {
-/* TODO - temporary */
-visibility: hidden; 
+/* TODO - temporary 
+visibility: hidden; */
     font-size:          0.8em;
 }
 
