@@ -561,7 +561,7 @@ form#change-supporter button.form-close {
 }
 
 form#change-mandate button#post-mandate,
-form#change-supporter button#post-supporter-mandate-block,
+/*form#change-supporter button#post-supporter-mandate-block,*/
 form#change-supporter button#post-supporter {
     position:           fixed;
     left:               calc(20vw + 5em);
@@ -570,13 +570,15 @@ form#change-supporter button#post-supporter {
 }
 /* Argh! have it both ways then */
 form#change-supporter button#post-supporter-mandate-block,
-form#change-supporter button#post-supporter-anl-resend button#post-supporter-resend-anl {
+form#change-supporter button#post-supporter-anl-resend,
+form#change-supporter button#post-supporter-resend-anl {
     position:           static;
     float:              right;
     margin-top:         0.3em;
     margin-right:       0.3em;
 }
-form#change-supporter button#post-supporter-anl-resend button#post-supporter-resend-anl {
+form#change-supporter button#post-supporter-anl-resend,
+form#change-supporter button#post-supporter-resend-anl {
 /* TODO - temporary 
 visibility: hidden; */
     font-size:          0.8em;
