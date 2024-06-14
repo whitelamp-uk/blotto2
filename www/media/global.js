@@ -1,12 +1,12 @@
 
 
-function anlReset (form) {
+function anlResend (form) {
     var data,query,xhttp;
     if (!confirm('Resend ANL for supporter #'+form.supporter_id.value+'?')) {
         return;
     }
     data = new FormData (form);
-    query = './?anlreset&r=' + form.supporter_id.value;
+    query = './?anlreset&r=' + form.supporter_id.value;  //backend refers to "reset" because that's what it is.
     xhttp = new XMLHttpRequest ();
     xhttp.onreadystatechange = function ( ) {
         if (this.readyState==4) {
@@ -22,12 +22,12 @@ function anlReset (form) {
                         return;
                     }
                     console.log ('Error: '+xhttp.responseText);
-                    updateView ('a',{ error : null, errorMessage : "ANL reset request failed (unspecified error)" });
+                    updateView ('a',{ error : null, errorMessage : "ANL resend request failed (unspecified error)" });
                     return;
                 }
             }
             else {
-                updateView ('a',{ error : null, errorMessage : "ANL reset request failed: server status " + this.status });
+                updateView ('a',{ error : null, errorMessage : "ANL resend request failed: server status " + this.status });
             }
         }
     };
@@ -85,7 +85,7 @@ function clickHandler (evt) {
     }
     if (evt.target.id=='post-supporter-anl-resend') {
         evt.preventDefault ();
-        anlReset (evt.target.form);
+        anlResend (evt.target.form);
     }
     if (evt.target.id=='post-supporter-mandate-block') {
         evt.preventDefault ();
@@ -849,6 +849,7 @@ function supporterSearchResults (responseText) {
                 link.textContent = results[i][key];
                 link.setAttribute ('href','#');
                 link.setAttribute ('data-clientref',cclientref);
+                link.setAttribute ('data-status',status);
                 link.addEventListener ('click',window.supporterSelect );
                 cell.appendChild (link);
             }
@@ -887,7 +888,7 @@ function supporterSelect (evt) {
     xhttp.onreadystatechange = function ( ) {
         if (this.readyState==4) {
             if (this.status==200) {
-                supporterSelectResult (xhttp.responseText);
+                supporterSelectResult (xhttp.responseText,evt.target.dataset.status);
             }
             else {
                 updateView ('m',{ error : null, errorMessage : "Update request failed: server status " + this.status });
@@ -898,7 +899,7 @@ function supporterSelect (evt) {
     xhttp.send ();
 }
 
-function supporterSelectResult (responseText) {
+function supporterSelectResult (responseText,status) {
     var body,cancel,cell,field,fields,fname,form,heading,i,input,label,msg,response,row,tips;
     msg = document.querySelector ('.update-message');
     msg.classList.remove ('active');
@@ -921,6 +922,27 @@ function supporterSelectResult (responseText) {
         return;
     }
     form = document.getElementById ('change-supporter');
+
+// TODO - re-enable / hide / in response to status and letter_batch_ref
+    form.resend_anl.disabled = false;
+    console.log("sSR");    console.log (response);    console.log (status);
+    if (status=='active' && response.data[0].letter_batch_ref != null) {
+console.log("show");
+        form.resend_anl.disabled = false;
+        form.resend_anl.hidden = false;
+    } else {
+console.log("hide");
+        form.resend_anl.disabled = true;
+        form.resend_anl.hidden = true;
+    }
+    if (status=='active') { 
+        form.block_mandate.disabled = false;
+        form.block_mandate.hidden = false;
+    } else {
+        form.block_mandate.disabled = true;
+        form.block_mandate.hidden = true;
+    }
+
     form.classList.remove ('changed');
     form.block_mandate.dataset.state = response.data[0].mandate_blocked;
     form.supporter_id.value = response.data[0].supporter_id;
@@ -973,8 +995,11 @@ function supporterSelectResult (responseText) {
     fields = form.querySelectorAll ('button,input,select');
     label = form.querySelector ('label:first-of-type');
     if ('mandate_blocked' in response.data[0] && 1*response.data[0].mandate_blocked) {
+        closebutton = form.querySelector ('.form-close');
         for (field of fields) {
-            field.disabled = true;
+            if (field != closebutton) {
+                field.disabled = true;
+            }
         }
         form.classList.add ('blocked');
         form.update.disabled = true;
@@ -1114,6 +1139,9 @@ function updateChange (evt) {
     if ('block_mandate' in form) {
         form.block_mandate.disabled = true;
     }
+    if ('resend_anl' in form) {
+        form.resend_anl.disabled = true;
+    }
 }
 
 function updateHandle (formId) {
@@ -1135,7 +1163,7 @@ function updateView (type,results) {
         if (type=='a') {
             field = form.querySelector ('#post-supporter-anl-resend');
             if (field) {
-                field.disabled = false;
+                field.disabled = true;
             }
         }
         else {

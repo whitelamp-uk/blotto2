@@ -7,7 +7,7 @@
         <form id="search-supporters" class="search" action="" method="get">
           <input type="hidden" name="l" value="20" />
           <input type="hidden" name="t" value="s" />
-          <input id="search" type="text" name="s" placeholder="Search for a supporter / mandate" />
+          <input id="search" type="text" name="s" placeholder="Search for a supporter / mandate" autofocus/>
           <input id="expert" type="checkbox" name="e" />Expert [ <a title="Open reference doc in new tab" target="_blank" class="help" href="https://mariadb.com/kb/en/full-text-index-overview/#in-boolean-mode">?</a> ]
         </form>
 
@@ -24,9 +24,9 @@
           <section id="supporter-message" class="update-message"></section>
           <input type="hidden" name="supporter_id" />
           <button class="form-close">Close</button>
-          <button id="post-supporter-mandate-block" name="block_mandate">Block mandate</button>
-          <button id="post-supporter-anl-resend" name="anl_resend">Resend ANL</button>
-          <button id="post-supporter" name="update">Update</button>
+          <button class="change-supporter" id="post-supporter-mandate-block" name="block_mandate">Block mandate</button>
+          <button class="change-supporter" id="post-supporter-resend-anl" name="resend_anl">Resend ANL</button>
+          <button class="change-supporter" id="post-supporter" name="update">Update</button>
           <label></label>
           <table>
             <thead>

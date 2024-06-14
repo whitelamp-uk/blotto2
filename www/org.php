@@ -252,6 +252,13 @@ elseif (array_key_exists('load',$_GET) || array_key_exists('login',$_GET)) {
 }
 elseif (count($_GET) && !array_key_exists('P',$_GET)) {
     require __DIR__.'/views/error.php';
+    if (strpos($_SERVER['HTTP_HOST'],"://dev.")) {
+        echo "<pre>";
+        echo "POST: "; print_r($_POST);
+        echo "GET: "; print_r($_GET);
+        print_r(get_defined_vars());
+        echo "</pre>";
+    }
 }
 else {
     require __DIR__.'/views/top.php';

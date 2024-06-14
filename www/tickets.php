@@ -211,12 +211,15 @@ if (!count($error) && $api_code) {
     <link rel="author" href="http://www.whitelamp.com/" />
     <title title="Buy lottery tickets now">Buy lottery tickets now</title>
 
+<?php if ($step!=2): ?>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script defer type="text/javascript" src="https://webservices.data-8.co.uk/javascript/address_min.js"></script>
     <script type="text/javascript" src="./media/js-config.js"></script>
     <!-- script defer type="text/javascript" src="./media/custom-postcode-lookup.js"></script -->
     <script defer type="text/javascript" src="./media/postcode-lookup.js"></script>
     <script defer type="text/javascript" src="./media/signup.js"></script>
+<?php endif; ?>
+
 <?php if ($go): ?>
     <script>
 window.location.href = '#<?php echo $go; ?>';

@@ -41,6 +41,7 @@ function anl_reset ( ) {
          ,`p1`.`letter_status`=NULL
         WHERE `p2`.`id` IS NULL
         AND `p1`.`supporter_id` = '$supporter_id'
+        AND `p1`.`letter_batch_ref` IS NOT NULL
         ;
     ";
     try {
@@ -3885,6 +3886,7 @@ function select ($type) {
           `s`.`client_ref` AS `ClientRef`
          ,`s`.`mandate_blocked`
          ,`c`.*
+         ,`player`.`letter_batch_ref`
         FROM `blotto_supporter` AS `s`
         JOIN (
           SELECT
@@ -3900,6 +3902,7 @@ function select ($type) {
         JOIN (
           SELECT
             `supporter_id`
+            ,`letter_batch_ref`
           FROM `blotto_player`
           WHERE `client_ref` LIKE '%$cref%'
           ORDER BY `client_ref` DESC
