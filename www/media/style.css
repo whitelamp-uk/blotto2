@@ -568,14 +568,15 @@ form#change-supporter button#post-supporter {
     top:                1em;
     font-size:          0.8em;
 }
+/* Argh! have it both ways then */
 form#change-supporter button#post-supporter-mandate-block,
-form#change-supporter button#post-supporter-anl-resend {
+form#change-supporter button#post-supporter-anl-resend button#post-supporter-resend-anl {
     position:           static;
     float:              right;
     margin-top:         0.3em;
     margin-right:       0.3em;
 }
-form#change-supporter button#post-supporter-anl-resend {
+form#change-supporter button#post-supporter-anl-resend button#post-supporter-resend-anl {
 /* TODO - temporary 
 visibility: hidden; */
     font-size:          0.8em;
