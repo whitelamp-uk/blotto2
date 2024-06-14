@@ -25,7 +25,7 @@
           <input type="hidden" name="supporter_id" />
           <button class="form-close">Close</button>
           <button class="change-supporter" id="post-supporter-mandate-block" name="block_mandate">Block mandate</button>
-          <button class="change-supporter" id="post-supporter-resend-anl" name="resend_anl">Resend ANL</button>
+          <button class="change-supporter" id="post-supporter-anl-resend" name="resend_anl">Resend ANL</button>
           <button class="change-supporter" id="post-supporter" name="update">Update</button>
           <label></label>
           <table>
