@@ -935,13 +935,13 @@ console.log("hide");
         form.resend_anl.disabled = true;
         form.resend_anl.hidden = true;
     }
-    if (status=='active') { 
+/*    if (status=='active') { 
         form.block_mandate.disabled = false;
         form.block_mandate.hidden = false;
     } else {
         form.block_mandate.disabled = true;
         form.block_mandate.hidden = true;
-    }
+    }*/
 
     form.classList.remove ('changed');
     form.block_mandate.dataset.state = response.data[0].mandate_blocked;
