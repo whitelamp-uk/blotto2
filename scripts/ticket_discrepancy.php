@@ -79,6 +79,7 @@ tee ("    Looking for ticket inconsistencies between `dd_ref_no` and `client_ref
 // this table is not fully normalised - typically justified by efficiency needs.
 // dd_ref_no:client_ref must be 1:1 but is not a unique key because
 // dd_ref_no:number is 1:N
+// UNION is fast; doing an "OR" on the two checks is very very slow.
 $qs = "
   SELECT
     `t1`.`dd_ref_no`
@@ -88,18 +89,25 @@ $qs = "
   FROM `$tdb`.`blotto_ticket` AS `t1`
   JOIN `$tdb`.`blotto_ticket` AS `t2`
     ON `t2`.`org_id`=`t1`.`org_id`
-   AND (
-         `t2`.`dd_ref_no`=`t1`.`dd_ref_no`
-     AND `t2`.`client_ref`!=`t1`.`client_ref`
-   )
-    OR (
-         `t2`.`client_ref`=`t1`.`client_ref`
-     AND `t2`.`dd_ref_no`!=`t1`.`dd_ref_no`
-    )
+   AND `t2`.`dd_ref_no`=`t1`.`dd_ref_no`
+   AND `t2`.`client_ref`!=`t1`.`client_ref`
+  WHERE `t1`.`org_id`=$org_id
+  UNION
+  SELECT
+    `t1`.`dd_ref_no`
+   ,`t1`.`client_ref`
+   ,`t2`.`dd_ref_no`
+   ,`t2`.`client_ref`
+  FROM `$tdb`.`blotto_ticket` AS `t1`
+  JOIN `$tdb`.`blotto_ticket` AS `t2`
+    ON `t2`.`org_id`=`t1`.`org_id`
+   AND `t2`.`client_ref`=`t1`.`client_ref`
+   AND `t2`.`dd_ref_no`!=`t1`.`dd_ref_no`
   WHERE `t1`.`org_id`=$org_id
   LIMIT 0,1
   ;
 ";
+
 try {
     $d = $zo->query ($qs);
     if ($d->num_rows) {
@@ -113,7 +121,6 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (107);
 }
-
 
 
 if ($rbe) {
