@@ -421,6 +421,7 @@ BEGIN
       -- (not all APIs support mandate status)
       IF(
         `m`.`Refno` IS NULL
+        -- NB cancelDate() allows for BACS jitter
        ,cancelDate(`s`.`created`,'')
        ,IF(
           `c`.`Payments_Collected` IS NULL
@@ -430,7 +431,7 @@ BEGIN
         )
       ) AS `cancelled_date`
 
--- This bit is soon to be sacked
+      -- TODO this bit is no longer needed but impact of its removal needs assessing
      ,IF(
         `m`.`Refno` IS NULL
        ,cancelDate(`s`.`created`,'')
@@ -495,6 +496,8 @@ BEGIN
        ,COUNT(`DateDue`) AS `Payments_Collected`
        ,SUM(`PaidAmount`) AS `Amount_Collected`
       FROM `blotto_build_collection`
+      -- Do not be too keen to report collections (BACS jitter)
+      WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
       GROUP BY `Provider`,`RefNo`
     )      AS `c`
            ON `c`.`Provider`=`m`.`Provider`
@@ -506,8 +509,8 @@ BEGIN
     -- One-off payments are not applicable
     WHERE `m`.`Freq`!='Single' OR `m`.`Freq` IS NULL
     GROUP BY `client_ref`,`ticket_number`
-    -- 7-day debounce for BACS jitter
-    HAVING `cancelled_date`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+    -- cancelled_date is in the past
+    HAVING `cancelled_date`<CURDATE()
     ORDER BY `cancelled_date`,`ccc`,`client_ref`,`supporter_created`,`ticket_number`
   ;
   ALTER TABLE `Cancellations`
@@ -1541,7 +1544,6 @@ BEGIN
         `supporter_id`
        ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `cancelled`
       FROM `blotto_update`
-      -- reinstatements are deduced and immediate - no de-jittering required
       GROUP BY `supporter_id`
     ) AS `chk`
       ON `chk`.`supporter_id`=`u`.`supporter_id`
@@ -1555,6 +1557,7 @@ BEGIN
            ON `cnl`.`client_ref`=`s`.`client_ref`
            OR `cnl`.`client_ref` LIKE CONCAT(`s`.`client_ref`,'{{BLOTTO_CREF_SPLITTER}}%')
     WHERE `cnl`.`cancelled_date` IS NULL
+    -- Cancellations are already 7-day sluggish (BACS jitter) so simply:
       AND `chk`.`cancelled`>0
     GROUP BY `s`.`id`
   ;
