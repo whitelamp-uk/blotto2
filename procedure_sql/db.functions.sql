@@ -24,8 +24,10 @@ BEGIN
     ;
   END IF
   ;
-  -- cd = late by BLOTTO_CANCEL_RULE plus processing
-  SET cd = DATE_ADD(DATE_ADD(d,INTERVAL 3 DAY),INTERVAL {{BLOTTO_CANCEL_RULE}});
+  -- Allow for BACS jitter
+  SET cd = DATE_ADD(d,INTERVAL 7 DAY);
+  -- Allow for the cancellation interval
+  SET cd = DATE_ADD(cd,INTERVAL {{BLOTTO_CANCEL_RULE}});
   IF Freq='Annually' THEN
     -- Add another year
     RETURN DATE_ADD(cd,INTERVAL 1 YEAR)
