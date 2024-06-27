@@ -159,6 +159,7 @@ $qs = "
   WHERE `p`.`first_draw_close` IS NOT NULL
   GROUP BY `p`.`client_ref`
   HAVING `tickets`!=`chances`
+-- TODO All this early-days stuff can probably go which is good because we do not want these sort of hard-wired values here
       OR (                             `chances`!=0  AND   `amount`=0       )
       OR ( `frequency`='Monthly'   AND `chances`=1   AND   `amount`!=ROUND($price*434/10000,2)   )
       OR ( `frequency`='Monthly'   AND `chances`=2   AND   `amount`!=ROUND($price*868/10000,2)   )
