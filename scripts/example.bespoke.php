@@ -51,17 +51,25 @@ function draw_upcoming ($today=null) {
     // Get next Friday (today is included)
     $day_next = draw_upcoming_weekly (5,$today); // our existing weekly draw function
     // but next draw close might be a Tuesday so:
-    $day_4 = strtotime ("$month-00 fourth friday");
-    $day_5 = strtotime ("$month-00 last friday");
-    if ($day_5==$day_4) {
-        // fourth Fri is the last Fri so when is the last Tuesday?
-        $day_next_alt = strtotime ("$month-00 last tuesday");
-        if ($day_next_alt<$day_next) {
-            // alternative draw close for today's month is earlier than the "normal" Fri
-            return $day_next_alt;
+    $day_4 = gmdate ('Y-m-d',strtotime("$month-00 fourth friday"));
+    $day_5 = gmdate ('Y-m-d',strtotime("$month-00 fifth friday"));
+    if (substr($day_5,0,7)>substr($day_4,0,7)) {
+        // fifth Fri is next month so when is the last Tuesday?
+        $day_4 = gmdate ('Y-m-d',strtotime("$month-00 fourth tuesday"));
+        $day_5 = gmdate ('Y-m-d',strtotime("$month-00 fifth tuesday"));
+        if (substr($day_5,0,7)==substr($day_4,0,7)) {
+            // fifth Tue is this month
+            $day_next_alt = $day_5;
+        }
+        else {
+            // fifth Tue is next month
+            $day_next_alt = $day_4;
+        }
+        if ($day_next_alt>=$today && $day_next_alt<$day_next) {
+            // alternative draw close is earlier than the next "normal" draw day
+            $day_next = $day_next_alt;
         }
     }
-    // in all other cases the "normal" Fri
     return $day_next;
 }
 
