@@ -24,6 +24,8 @@ $options       = [
     'list',
     'download',
     'supporter',
+    'gratis',
+    'gratiscollect',
     'bacs',
     'search',
     'update',
@@ -104,6 +106,11 @@ elseif ($session=www_session($timestamp)) {
         $err = download_csv ();
         $err = 'Sorry - download failed: '.$err;
     }
+    // Gratis tickets if that option
+    if ($opt=='gratiscollect') {
+        $err = gratis_collect ();
+        $err = 'Sorry - download failed: '.$err;
+    }
     // Search if that option
     if ($opt=='search') {
         echo search ();
@@ -139,7 +146,7 @@ elseif ($session=www_session($timestamp)) {
     }
 }
 else {
-    if ($opt && array_key_exists($opt,['download','report','invoice','statement','drawreport'])) {
+    if ($opt && array_key_exists($opt,['download','report','invoice','statement','drawreport','gratiscollect'])) {
         header ('Content-Type: text/plain');
         echo "Your login has expired\n";
         exit;
@@ -166,6 +173,7 @@ else {
     <title><?php echo strtoupper(BLOTTO_ORG_USER) ; ?> @ <?php echo htmlspecialchars (BLOTTO_BRAND); ?> <?php version(__DIR__); ?></title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
     <script src="./media/global.js"></script>
+    <script defer src="./media/draw_calendar.js"></script>
     <script>
 function init ( ) {
     if (!('setFrame' in window.self)) {
@@ -220,6 +228,10 @@ elseif ($opt=='reconcile') {
 elseif ($opt=='supporter') {
     require __DIR__.'/views/supporter.php';
 }
+elseif ($opt=='gratis') {
+    require __DIR__.'/views/gratis.php';
+    require __DIR__.'/views/draw_calendar.php';
+}
 elseif ($opt=='bacs') {
     require __DIR__.'/views/bacs.php';
 }
@@ -246,6 +258,7 @@ elseif ($opt=='drawreports') {
 }
 elseif ($opt=='about') {
     require __DIR__.'/views/about.php';
+    require __DIR__.'/views/draw_calendar.php';
 }
 elseif (array_key_exists('load',$_GET) || array_key_exists('login',$_GET)) {
     require __DIR__.'/views/load.php';
