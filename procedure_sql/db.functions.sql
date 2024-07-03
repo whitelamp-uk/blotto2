@@ -24,27 +24,30 @@ BEGIN
     ;
   END IF
   ;
-  -- Allow for BACS jitter
-  SET cd = DATE_ADD(d,INTERVAL 7 DAY);
-  -- Allow for the cancellation interval
-  SET cd = DATE_ADD(cd,INTERVAL {{BLOTTO_CANCEL_RULE}});
+  SET cd = d;
   IF Freq='Annually' THEN
     -- Add another year
-    RETURN DATE_ADD(cd,INTERVAL 1 YEAR)
+    SET cd = DATE_ADD(cd,INTERVAL 1 YEAR)
     ;
   END IF
   ;
   IF Freq='Six Monthly' THEN
     -- Add another six months
-    RETURN DATE_ADD(cd,INTERVAL 6 MONTH)
+    SET cd = DATE_ADD(cd,INTERVAL 6 MONTH)
     ;
   END IF
   ;
   IF Freq='Quarterly' THEN
     -- Add another 3 months
-    RETURN DATE_ADD(cd,INTERVAL 3 MONTH)
+    SET cd = DATE_ADD(cd,INTERVAL 3 MONTH)
     ;
   END IF
+  ;
+  -- Allow for the cancellation interval
+  SET cd = DATE_ADD(cd,INTERVAL {{BLOTTO_CANCEL_RULE}})
+  ;
+  -- Allow for BACS jitter
+  SET cd = DATE_ADD(cd,INTERVAL 7 DAY)
   ;
   RETURN cd
   ;
