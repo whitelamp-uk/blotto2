@@ -23,10 +23,12 @@ function adminer_object ( ) {
     include_once "/var/www/adminer/plugins/adminer-frames.php";
     include_once "/var/www/adminer/plugins/adminer-unloading.php";
     include_once "/var/www/adminer/plugins/blotto-maintenance.php";
+    include_once "/var/www/adminer/plugins/dump-qcsv.php";
     $plugins = [
         new AdminerFrames,
         new AdminerUnloading,
-        new BlottoMaintenance
+        new BlottoMaintenance,
+        new AdminerDumpQcsv,
     ];
     class AdminerCustomization extends AdminerPlugin {
         function loginForm() {
