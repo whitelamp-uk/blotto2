@@ -9,9 +9,12 @@ $types = [
     'Import'           => 'I need a batch of data to be imported',
     'GDPR risk'        => 'I need to report a data protection concern*',
     'GDPR breach'      => 'I need to report a known data breach*',
-    'Bug report'       => 'I need to report a bug',
-    'Other'            => 'Something else'
+    'Bug report'       => 'I need to report a bug'
 ];
+if (defined('BLOTTO_TICKETS_GRATIS') && BLOTTO_TICKETS_GRATIS) {
+    $types['Reserve tickets'] = 'I would like to reserve more tickets';
+}
+$types['Other']         = 'Something else';
 $type                   = '';
 if (array_key_exists('type',$_POST)) {
     $type               = $_POST['type'];
