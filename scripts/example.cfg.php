@@ -49,6 +49,7 @@ define ( 'BLOTTO_PROOF_DIR',        __DIR__.'/../export/ylh/proof'      );
 define ( 'BLOTTO_OUTFILE',          '/tmp/blotto.ylh.outfile.csv'       );
 define ( 'BLOTTO_TICKET_PRICE',     100                 );  // In pennies
 define ( 'BLOTTO_TICKETS_AUTO',     true                );
+define ( 'BLOTTO_TICKETS_GRATIS',   false               );  // Allow tickets to be sold outside the system
 define ( 'BLOTTO_WIN_FIRST',        '2016-01-01'        );  // Only report wins/reconciles on or after this date
 define ( 'BLOTTO_INVOICE_FIRST',    '2021-05-07'        );  // Only generate invoices on or after this date
 define ( 'BLOTTO_DAY_FIRST',        '2016-01-01'        );  // First date due day
