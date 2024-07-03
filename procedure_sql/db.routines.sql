@@ -1515,11 +1515,20 @@ BEGIN
     SELECT
       CURDATE()
      ,'cancellation'
-     ,`cnl`.`cancelled_date`
+      -- The notional milestone date should be independent of results from cancelDate()
+      -- in case the latter needs more tweaking.
+      -- This value must be immutable to preserve blotto_update primary key
+      -- and should also be logical.
+      -- I guess we have to use BLOTTO_CANCEL_RULE which means that you can no longer
+      -- change that mid-game.
+     ,DATE_ADD(
+        IFNULL(`cs`.`latest_collection`,IFNULL(`m`.`StartDate`,`s`.`created`))
+       ,INTERVAL {{BLOTTO_CANCEL_RULE}}
+      )
      ,`s`.`id`
      ,`p`.`id`
      ,MAX(`c`.`id`)
-    FROM `Cancellations` AS `cnl`
+    FROM `Cancellations` AS `cnl` -- which is BACS de-jittered
     JOIN `blotto_player` AS `p`
       ON `p`.`client_ref`=`cnl`.`client_ref`
     JOIN `blotto_supporter` AS `s`
@@ -1527,7 +1536,18 @@ BEGIN
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
      AND DATE(`c`.`created`)<=`cnl`.`cancelled_date`
-    -- data going into `Cancellations` has already been debounced so not needed here
+    JOIN `blotto_build_mandate` AS `m`
+      ON `m`.`ClientRef`=`p`.`client_ref`
+    LEFT JOIN (
+        SELECT
+          `ClientRef`
+         ,MAX(`DateDue`) AS `latest_collection`
+        FROM `blotto_build_collection`
+        -- BACS de-jitter
+        WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+        GROUP BY `ClientRef`
+    )      AS `cs`
+           ON `cs`.`ClientRef`=`m`.`ClientRef`
     GROUP BY `cnl`.`client_ref`
   ;
   -- `milestone`='reinstatement'
