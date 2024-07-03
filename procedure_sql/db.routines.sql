@@ -1515,16 +1515,7 @@ BEGIN
     SELECT
       CURDATE()
      ,'cancellation'
-      -- The notional milestone date should be independent of results from cancelDate()
-      -- in case the latter needs more tweaking.
-      -- This value must be immutable to preserve blotto_update primary key
-      -- and should also be logical.
-      -- I guess we have to use BLOTTO_CANCEL_RULE which means that you can no longer
-      -- change that mid-game.
-     ,DATE_ADD(
-        IFNULL(`cs`.`latest_collection`,IFNULL(`m`.`StartDate`,`s`.`created`))
-       ,INTERVAL {{BLOTTO_CANCEL_RULE}}
-      )
+     ,CONCAT(SUBSTR(`cnl`.`cancelled_date`,1,7),'-',SUBSTR(`m`.`StartDate`,9,2)) AS `milestone_date` -- the collection day just before cancellation
      ,`s`.`id`
      ,`p`.`id`
      ,MAX(`c`.`id`)
@@ -1538,16 +1529,6 @@ BEGIN
      AND DATE(`c`.`created`)<=`cnl`.`cancelled_date`
     JOIN `blotto_build_mandate` AS `m`
       ON `m`.`ClientRef`=`p`.`client_ref`
-    LEFT JOIN (
-        SELECT
-          `ClientRef`
-         ,MAX(`DateDue`) AS `latest_collection`
-        FROM `blotto_build_collection`
-        -- BACS de-jitter
-        WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
-        GROUP BY `ClientRef`
-    )      AS `cs`
-           ON `cs`.`ClientRef`=`m`.`ClientRef`
     GROUP BY `cnl`.`client_ref`
   ;
   -- `milestone`='reinstatement'
