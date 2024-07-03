@@ -496,8 +496,14 @@ BEGIN
        ,COUNT(`DateDue`) AS `Payments_Collected`
        ,SUM(`PaidAmount`) AS `Amount_Collected`
       FROM `blotto_build_collection`
-      -- Do not be too keen to report collections (BACS jitter)
+
+      -- TODO probably this restriction does nothing because
+      -- cancelDate() AS cancelled_date above now allows for BACS jitter
+      -- so MP thinks the (needed) HAVING clause below is all we need
+
+      -- do not be too keen to report collections (BACS jitter)
       WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+
       GROUP BY `Provider`,`RefNo`
     )      AS `c`
            ON `c`.`Provider`=`m`.`Provider`
