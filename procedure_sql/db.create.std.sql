@@ -253,6 +253,7 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `created` date NULL,
   `signed` date DEFAULT NULL,
   `approved` date DEFAULT NULL,
+  `redacted` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `mandate_blocked` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `self_excluded` date NULL,
   `death_reported` date NULL,
