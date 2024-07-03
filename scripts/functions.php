@@ -1738,6 +1738,38 @@ function get_argument ($element,&$array=false) {
     return false;
 }
 
+function gratis_collect ( ) {
+    $zo = connect ();
+    if (!$zo) {
+        return "connection failure";
+    }
+    $data = [['012345']];
+    array_unshift ($data,['Tickets']);
+    // file stream for read/write
+    $fs = fopen ('php://temp','r+');
+    foreach ($data as $i=>$row) {
+        foreach ($row as $j=>$val) {
+            if (preg_match('<^0[0-9]+$>',$val)) {
+                $row[$j] = "%{$row[$j]}%";
+            }
+        }
+        fputcsv ($fs,$row,',','"','\\');
+    }
+    rewind ($fs);
+    $data = stream_get_contents ($fs);
+    $data = preg_replace ('<%(0[0-9]+)%>','"$1"',$data);
+    fclose ($f);
+    header ('Content-Length: '.strlen($data));
+    header ('Content-Type: text/csv');
+    header ('Content-Disposition: attachment; filename="tickets_downloaded_'.gmdate('Y-m-d-H-i-s').'.csv"');
+    header ('Content-Description: File Transfer');
+    header ('Expires: 0');
+    header ('Cache-Control: must-revalidate');
+    header ('Pragma: public');
+    echo $data;
+    exit;
+}
+
 function html ($snippet,$title='Untitled',$output=true) {
     if ($output) {
         require __DIR__.'/html.php';
