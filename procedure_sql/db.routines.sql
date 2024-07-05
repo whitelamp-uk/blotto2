@@ -1418,6 +1418,45 @@ DROP PROCEDURE IF EXISTS `updates`$$
 CREATE PROCEDURE `updates` (
 )
 BEGIN
+  /*
+  First thing is to ensure cancellation milestone_date correctly reflects
+  the current configuration of cancelDate()
+
+  This is because milestone_date is a primary key component used to logically
+  identify the right cancellation (eg. cancel-reinstate-cancel scenario)
+
+  Without this data refresh, the cancellation INSERT IGNORE previously caused
+  ghost insert havoc when cancelDate() started returning different values
+
+  Older cancellation milestones ("earlier bread" for a "reinstatement sandwich")
+  are unaffected because the "later bread" always gets hit with the INSERT IGNORE
+  */
+  UPDATE `blotto_update` AS `u`
+  -- restrict to the latest cancellation row for each player
+  JOIN (
+    SELECT
+      `player_id`
+     ,MAX(`id`) AS `latest_id`
+    FROM `blotto_update`
+    WHERE `milestone`='cancellation'
+    GROUP BY `player_id`
+  ) AS `us`
+    ON `us`.`latest_id`=`u`.`id`
+  -- get contemporary values for player cancelled_date
+  JOIN `blotto_player` AS `p`
+    ON `p`.`id`=`u`.`player_id`
+  JOIN (
+    SELECT
+      `client_ref`
+     ,`cancelled_date`
+    FROM `Cancellations`
+    GROUP BY `client_ref`
+  ) AS `cs`
+    ON `cs`.`client_ref`=`p`.`client_ref`
+  -- set the milestone_date to the contemporary cancel date
+  SET `u`.`milestone_date`=`cs`.`cancelled_date`
+  WHERE `u`.`milestone`='cancellation'
+  ;
   -- `milestone`='created'
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
@@ -1510,12 +1549,15 @@ BEGIN
     GROUP BY `c`.`id`
   ;
   -- `milestone`='cancellation'
+  -- cancelled_date changes with BLOTTO_CANCEL_RULE but the primary partial key
+  -- milestone_date always gets repaired above so this insert-ignore does not
+  -- insert ghosts
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
       CURDATE()
      ,'cancellation'
-     ,CONCAT(SUBSTR(`cnl`.`cancelled_date`,1,7),'-',SUBSTR(`m`.`StartDate`,9,2)) AS `milestone_date` -- the collection day just before cancellation
+     ,`cnl`.`cancelled_date`
      ,`s`.`id`
      ,`p`.`id`
      ,MAX(`c`.`id`)
@@ -1527,8 +1569,6 @@ BEGIN
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
      AND DATE(`c`.`created`)<=`cnl`.`cancelled_date`
-    JOIN `blotto_build_mandate` AS `m`
-      ON `m`.`ClientRef`=`p`.`client_ref`
     GROUP BY `cnl`.`client_ref`
   ;
   -- `milestone`='reinstatement'
