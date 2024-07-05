@@ -18,26 +18,26 @@ CREATE FUNCTION `cancelDate` (
 ) RETURNS date DETERMINISTIC
 BEGIN
   DECLARE cd date;
-  IF Freq='Single' THEN
+  IF (freq='0' OR freq='Single') THEN
     -- Cancel date is always in the future (never treated as cancelled)
     RETURN DATE_ADD(CURDATE(),INTERVAL 1 YEAR)
     ;
   END IF
   ;
   SET cd = d;
-  IF Freq='Annually' THEN
+  IF (freq='12' OR freq='Annually') THEN
     -- Add another year
     SET cd = DATE_ADD(cd,INTERVAL 1 YEAR)
     ;
   END IF
   ;
-  IF Freq='Six Monthly' THEN
+  IF (freq='6' OR freq='Six Monthly') THEN
     -- Add another six months
     SET cd = DATE_ADD(cd,INTERVAL 6 MONTH)
     ;
   END IF
   ;
-  IF Freq='Quarterly' THEN
+  IF (freq='3' OR freq='Quarterly') THEN
     -- Add another 3 months
     SET cd = DATE_ADD(cd,INTERVAL 3 MONTH)
     ;
