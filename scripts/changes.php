@@ -17,6 +17,99 @@ if (!$zo) {
     exit (102);
 }
 
+/*
+Not all logical constraints for the primary key of blotto_update are met by its uniqueness
+These tests ensure additional logical constraints are guaranteed
+*/
+
+$errors = [];
+$subject = 'Updates data has problems';
+$qss = [];
+
+// cancellation/reinstatement, per supporter, 0 >= (cancellations - reinstatements) <= 1
+$qss[] = "
+  SELECT
+    'cancel-reinstate' AS `error_type`
+   ,CONCAT('supporter_id=',`supporter_id`) AS `details`
+   ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `diff`
+  FROM `blotto_update`
+  WHERE `milestone` IN ('cancellation','reinstatement')
+  GROUP BY `supporter_id`
+  HAVING `diff`<0 OR `diff`>1
+  ;
+";
+
+// cancellation, per supporter, if (cancellations - reinstatements) == 0, cancellation must not be last
+$qss[] = "
+  SELECT
+    'cancel-last' AS `error_type`
+   ,CONCAT('supporter_id=',`u`.`supporter_id`) AS `details`
+   ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
+   ,MAX(`id`)=`us`.`id_cancel_last` AS `last_is_cancel`
+  FROM `blotto_update` AS `u`
+  JOIN (
+    SELECT
+      `supporter_id`
+     ,MAX(`id`) AS `id_cancel_last`
+    FROM `blotto_update`
+    WHERE `milestone`='cancellation'
+    GROUP BY `supporter_id`
+  ) AS `us`
+    ON `us`.`supporter_id`=`u`.`supporter_id`
+  WHERE `milestone` IN ('cancellation','reinstatement')
+  GROUP BY `u`.`supporter_id`
+  HAVING `diff`=0 AND `last_is_cancel`>0
+  ;
+";
+
+
+// reinstatement, per supporter, if (cancellations - reinstatements) == 1, reinstatement must not be last
+$qss[] = "
+  SELECT
+    'reinstate-last' AS `error_type`
+   ,CONCAT('supporter_id=',`u`.`supporter_id`) AS `details`
+   ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
+   ,MAX(`id`)=`us`.`id_reinstate_last` AS `last_is_reinstate`
+  FROM `blotto_update` AS `u`
+  JOIN (
+    SELECT
+      `supporter_id`
+     ,MAX(`id`) AS `id_reinstate_last`
+    FROM `blotto_update`
+    WHERE `milestone`='reinstatement'
+    GROUP BY `supporter_id`
+  ) AS `us`
+    ON `us`.`supporter_id`=`u`.`supporter_id`
+  WHERE `milestone` IN ('cancellation','reinstatement')
+  GROUP BY `u`.`supporter_id`
+  HAVING `diff`=1 AND `last_is_reinstate`>0
+  ;
+";
+
+try {
+    foreach ($qss as $qs) {
+        $es = $zo->query ($qs);
+        $es = $es->fetch_all (MYSQLI_ASSOC);
+        array_push ($errors,...$es);
+    }
+}
+catch (\mysqli_sql_exception $e) {
+    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+    exit (103);
+}
+
+if (count($errors)) {
+    // send warning email
+    notify (BLOTTO_EMAIL_WARN_TO,$subject,"Logical errors in blotto_update: ".print_r($errors,true));
+    // write errors to log
+    fwrite (STDERR,"$subject: errors = ".print_r($errors,true));
+    // exit without error
+    fwrite (STDERR,"$subject: refusing to insert into blotto_change\n");
+    exit (0);
+}
+
+
+// Get a list of updates (CRM data) not yet recorded as changes (CCR data)
 $qs = "
   SELECT
     IFNULL(`cln1`.`updated`,`s`.`created`) AS `date_from`
@@ -89,7 +182,7 @@ try {
 }
 catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (103);
+    exit (104);
 }
 
 $changes = [];
