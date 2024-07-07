@@ -59,8 +59,15 @@ INSERT INTO blotto_update_repair
   WHERE updated<'2024-06-26'
 ;
 
+TRUNCATE blotto_update
+;
+INSERT INTO blotto_update
+  SELECT * FROM blotto_update_repair
+;
 
-  UPDATE `blotto_update_repair` AS `u`
+
+
+  UPDATE `blotto_update` AS `u`
   -- restrict to the latest cancellation row for each supporter
   JOIN (
     SELECT
@@ -81,7 +88,7 @@ INSERT INTO blotto_update_repair
      AND `r`.`latest_id`>`c`.`id`
     WHERE `milestone`='cancellation'
     GROUP BY `supporter_id`
-    -- except those that are reinstated
+    -- not reinstated after the latest cancellation
     HAVING `reinstate_latest_id` IS NULL
         OR `reinstate_latest_id`<`latest_id`
   ) AS `us`
@@ -90,7 +97,7 @@ INSERT INTO blotto_update_repair
   JOIN (
     SELECT
       `p`.`supporter_id`
-     ,`c`.`cancelled_date`
+     ,`cancelled`.`cancelled_date`
     FROM `blotto_player` AS `p`
     JOIN (
       SELECT
@@ -102,20 +109,13 @@ INSERT INTO blotto_update_repair
       ON `cancelled`.`client_ref`=`p`.`client_ref`
     GROUP BY `p`.`supporter_id`
   ) AS `currently`
-    ON `currently`.`supporter_id`=`c`.`client_ref`
+    ON `currently`.`supporter_id`=`u`.`supporter_id`
   -- set the milestone_date to the contemporary cancel date
   SET `u`.`milestone_date`=`currently`.`cancelled_date`
   WHERE `u`.`milestone`='cancellation'
   ;
 
 
-
-
-TRUNCATE blotto_update
-;
-INSERT INTO blotto_update
-  SELECT * FROM blotto_update_repair
-;
 
 
 
