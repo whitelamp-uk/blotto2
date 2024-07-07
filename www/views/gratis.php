@@ -10,14 +10,28 @@ if (array_key_exists('download',$_GET)) {
     $download = true;
 }
 
-$sold = 0;
-$reserved = 1000;
-$assigned = [];
+$tickets = [];
+if (array_key_exists('csv_file',$_FILES)) {
+    $errors = [];
+    $ignored = [];
+    $sold = [];
+    try {
+        $tickets = gratis_parse ($_FILES['csv_file']['tmp_name']);
+    }
+    catch (\Exception $e) {
+        $err = $e->getMessage ();
+    }
+}
+
 
 $earliest = '2024-07-12';
 $latest = '2024-10-18';
 
 ?>
+
+<?php if (count($tickets)): ?>
+<pre>$tickets = <?php var_export ($tickets); ?></pre>
+<?php endif; ?>
 
     <section id="gratis" class="content">
 
@@ -28,50 +42,41 @@ $latest = '2024-10-18';
         <table class="report">
           <tbody>
             <tr>
-              <td colspan="2"><h3>Reserve tickets</h3></td>
+              <td colspan="3"><h3>Ticket report</h3></td>
             </tr>
+<?php foreach (array_reverse(gratis_report()) as $row): ?>
             <tr>
-              <td>Sold</td>
-              <td><?php echo intval ($sold); ?></td>
+              <td><?php echo htmlspecialchars ($row['occurred_at']); ?></td>
+              <td><?php echo htmlspecialchars ($row['status']); ?></td>
+              <td><?php echo intval ($row['chances']); ?></td>
             </tr>
-            <tr>
-              <td>Reserved</td>
-              <td><?php echo intval ($reserved); ?></td>
-            </tr>
+<?php endforeach; ?>
             <tr>
               <td>Reserve more</td>
-              <td><a href="./?support">Contact support</a></td>
+              <td colspan="2"><a href="./?support">Contact support</a></td>
             </tr>
             <tr>
-              <td>Collect</td>
-              <td><a href="./?gratiscollect" onclick="window.removeEventListener('beforeunload',unloading);return true">Unused tickets</a></td>
-            </tr>
-          </tbody>
-          <tbody>
             <tr>
-              <td colspan="2"><h3>Assign more tickets</h3></td>
+              <td colspan="3"><h3>Download tickets</h3></td>
+            </tr>
+              <td>Collect all unsold tickets</td>
+              <td colspan="2"><a href="./?gratiscollect" onclick="window.removeEventListener('beforeunload',unloading);return true">Download</a></td>
+            </tr>
+            <tr>
+              <td colspan="3"><h3>Upload sales</h3></td>
             </tr>
             <tr>
               <td>Draw close date</td>
-              <td><input type="date" id="draw_closed" name="draw_closed" min="<?php echo htmlspecialchars ($earliest); ?>" max="<?php echo htmlspecialchars ($latest); ?>"/> <a href="#" class="calendar-open" data-selectandclose="draw_closed">Draw calendar</a></td>
+              <td colspan="2"><input type="date" id="draw_closed" name="draw_closed" min="<?php echo htmlspecialchars ($earliest); ?>" max="<?php echo htmlspecialchars ($latest); ?>"/> <a href="#" class="calendar-open" data-selectandclose="draw_closed">Draw calendar</a></td>
             </tr>
-          </tbody>
-          <tbody>
             <tr>
-              <td colspan="2"><h3>Assigned tickets</h3></td>
+              <td>CSV data</td>
+              <td colspan="2"><input type="file" id="csv_file" name="csv_file"/>
             </tr>
-<?php if (!count($assigned)): ?>
             <tr>
-              <td colspan="2">No assigned tickets were found</td>
-              <td><?php echo intval ($ts); ?></td>
+              <td>&nbsp;</td>
+              <td colspan="2"><a href="#" onclick="this.closest('form').submit();return false">Upload</a>
             </tr>
-<?php endif; ?>
-<?php foreach ($assigned as $dc=>$ts): ?>
-            <tr>
-              <td><?php echo htmlspecialchars ($dc); ?></td>
-              <td><?php echo intval ($ts); ?></td>
-            </tr>
-<?php endforeach; ?>
           </tbody>
         </table>
 
