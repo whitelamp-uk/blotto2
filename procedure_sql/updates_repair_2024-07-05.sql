@@ -49,6 +49,7 @@ DELIMITER ;
 CALL `cancellationsByRule`()
 ;
 
+
 drop table if exists blotto_update_repair
 ;
 CREATE TABLE blotto_update_repair LIKE blotto_update_2024070317
@@ -57,6 +58,59 @@ INSERT INTO blotto_update_repair
   SELECT * FROM blotto_update_2024070317
   WHERE updated<'2024-06-26'
 ;
+
+
+  UPDATE `blotto_update_repair` AS `u`
+  -- restrict to the latest cancellation row for each supporter
+  JOIN (
+    SELECT
+      `c`.`supporter_id`
+     ,MAX(`c`.`id`) AS `latest_id`
+     ,`r`.`latest_id` AS `reinstate_latest_id`
+    FROM `blotto_update` AS `c`
+    LEFT JOIN (
+      -- reinstatement of the latest cancellation
+      SELECT
+        `supporter_id`
+       ,MAX(`id`) AS `latest_id`
+      FROM `blotto_update`
+      WHERE `milestone`='reinstatement'
+      GROUP BY `supporter_id`
+    ) AS `r`
+      ON `r`.`supporter_id`=`c`.`supporter_id`
+     AND `r`.`latest_id`>`c`.`id`
+    WHERE `milestone`='cancellation'
+    GROUP BY `supporter_id`
+    -- except those that are reinstated
+    HAVING `reinstate_latest_id` IS NULL
+        OR `reinstate_latest_id`<`latest_id`
+  ) AS `us`
+    ON `us`.`latest_id`=`u`.`id`
+  -- get contemporary values for player cancelled_date
+  JOIN (
+    SELECT
+      `p`.`supporter_id`
+     ,`c`.`cancelled_date`
+    FROM `blotto_player` AS `p`
+    JOIN (
+      SELECT
+        `client_ref`
+       ,`cancelled_date`
+      FROM `Cancellations`
+      GROUP BY `client_ref`
+    ) AS `cancelled`
+      ON `cancelled`.`client_ref`=`p`.`client_ref`
+    GROUP BY `p`.`supporter_id`
+  ) AS `currently`
+    ON `currently`.`supporter_id`=`c`.`client_ref`
+  -- set the milestone_date to the contemporary cancel date
+  SET `u`.`milestone_date`=`currently`.`cancelled_date`
+  WHERE `u`.`milestone`='cancellation'
+  ;
+
+
+
+
 TRUNCATE blotto_update
 ;
 INSERT INTO blotto_update
@@ -80,37 +134,6 @@ TRUNCATE blotto_change
 INSERT INTO blotto_change
   SELECT * FROM blotto_change_repair
 ;
-
-
--- from db.routines.sql updates()
-  UPDATE `blotto_update` AS `u`
-  -- restrict to the latest cancellation row for each player
-  JOIN (
-    SELECT
-      `player_id`
-     ,MAX(`id`) AS `latest_id`
-    FROM `blotto_update`
-    WHERE `milestone`='cancellation'
-    GROUP BY `player_id`
-  ) AS `us`
-    ON `us`.`latest_id`=`u`.`id`
-  -- get contemporary values for player cancelled_date
-  JOIN `blotto_player` AS `p`
-    ON `p`.`id`=`u`.`player_id`
-  JOIN (
-    SELECT
-      `client_ref`
-     ,`cancelled_date`
-    FROM `Cancellations`
-    GROUP BY `client_ref`
-  ) AS `cs`
-    ON `cs`.`client_ref`=`p`.`client_ref`
-  -- set the milestone_date to the contemporary cancel date
-  SET `u`.`milestone_date`=`cs`.`cancelled_date`
-  WHERE `u`.`milestone`='cancellation'
-  ;
-
-
 
 
 -- check repair
