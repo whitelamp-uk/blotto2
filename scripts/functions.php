@@ -1739,35 +1739,210 @@ function get_argument ($element,&$array=false) {
 }
 
 function gratis_collect ( ) {
-    $zo = connect ();
+    $format = gratis_format ();
+    $zo = connect (BLOTTO_TICKET_DB);
     if (!$zo) {
         return "connection failure";
     }
-    $data = [['012345']];
-    array_unshift ($data,['Tickets']);
+    $oid = BLOTTO_ORG_ID;
+    $qu = "
+      UPDATE `blotto_ticket`
+      SET `issue_date`=CURDATE()
+      WHERE `mandate_provider`='GRTS'
+        AND `org_id`=$oid
+        AND `issue_date` IS NULL
+      ;
+    ";
+    $qs = "
+      SELECT
+        DATE(`created`) AS `{$format[0]}`
+       ,`issue_date` AS `{$format[1]}`
+       ,`number` AS `{$format[2]}`
+      FROM `blotto_ticket`
+      WHERE `mandate_provider`='GRTS'
+        AND `org_id`=$oid
+        AND `dd_ref_no` IS NULL
+    ";
+    try {
+        $update = $zo->query ($qu);
+        $chances = $zo->query ($qs);
+        $chances = $chances->fetch_all (MYSQLI_NUM);
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+        return "SQL failure";
+    }
+    $headings = [];
+    foreach ($format as $key) {
+        $headings[] = $key;
+    }
+    array_unshift ($chances,$headings);
+    array_unshift ($chances,['','','','','','','Do not edit ticket numbers!','Every ticket returned must have a valid mobile phone number']);
     // file stream for read/write
     $fs = fopen ('php://temp','r+');
-    foreach ($data as $i=>$row) {
-        foreach ($row as $j=>$val) {
+    foreach ($chances as $i=>$chance) {
+        foreach ($chance as $j=>$val) {
             if (preg_match('<^0[0-9]+$>',$val)) {
-                $row[$j] = "%{$row[$j]}%";
+                $chance[$j] = "%{$chance[$j]}%";
             }
         }
-        fputcsv ($fs,$row,',','"','\\');
+        fputcsv ($fs,$chance,',','"','\\');
     }
     rewind ($fs);
-    $data = stream_get_contents ($fs);
-    $data = preg_replace ('<%(0[0-9]+)%>','"$1"',$data);
-    fclose ($f);
-    header ('Content-Length: '.strlen($data));
+    $chances = stream_get_contents ($fs);
+    $chances = preg_replace ('<%(0[0-9]+)%>','"$1"',$chances);
+    fclose ($fs);
+    header ('Content-Length: '.strlen($chances));
     header ('Content-Type: text/csv');
     header ('Content-Disposition: attachment; filename="tickets_downloaded_'.gmdate('Y-m-d-H-i-s').'.csv"');
     header ('Content-Description: File Transfer');
     header ('Expires: 0');
     header ('Cache-Control: must-revalidate');
     header ('Pragma: public');
-    echo $data;
+    echo $chances;
     exit;
+}
+
+function gratis_format ($inverse=false) {
+    // Hopefully this can be one size fits all orgs
+    // semantic property --> column index
+    $format = [
+        'reserved'          => 0,
+        'first_downloaded'  => 1,
+        'ticket'            => 2,
+        'mobile_number'     => 3,
+        'name_given'        => 4,
+        'postcode'          => 5,
+        'address_1'         => 6,
+        'email'             => 7
+    ];
+    if ($inverse) {
+        $inverse = [];
+        $max = max ($format);
+        if ($max>=0) {
+            for ($i=0;$i<=$max;$i++) {
+                $inverse[] = null;
+            }
+            foreach ($format as $f=>$idx) {
+                $inverse[$idx] = $f;
+            }
+        }
+    }
+    return $format;
+}
+
+function gratis_parse ($file) {
+    if (!is_readable($file) || !($csv=file($file))) {
+        throw new \Exception ('Could not read "$file"');
+        return false;
+    }
+    $format = gratis_format (true);
+    $tickets = [];
+    $headers = [];
+    $chances = [];
+    foreach ($csv as $row) {
+        $row = str_getcsv ($row,',','"','\\');
+        $tickets = [];
+        foreach ($format as $i=>$f) {
+            $ticket[$format[$i]] = null;
+            if (array_key_exists($i,$row)) {
+                $ticket[$format[$i]] = trim ($row[$i]);
+            }
+        }
+        $tickets[] = $ticket;
+    }
+    $headers[] = array_shift ($tickets);
+    $headers[] = array_shift ($tickets);
+    foreach ($headers as $header) {
+        if (preg_match('<^[0-9]+$>',$header['ticket'])) {
+            throw new \Exception ('Two header rows should be preserved - ticket is not allowed here');
+            return false;
+        }
+    }
+    foreach ($tickets as $i=>$ticket) {
+        if (!$ticket['reserved'] && !$ticket['first_downloaded'] && !$ticket['ticket']) {
+            // fairly safe to assume this line is a load of commas but looks blank to the user
+            // NB Excel is good at dumping such stuff at the end of CSV files
+            continue;
+        }
+        $ticket['ticket'] = str_pad ($ticket['ticket'],6,'0',STR_PAD_LEFT);
+        // Format checks
+        if (preg_match('<[^0-9]>',$ticket['ticket'])) {
+            throw new \Exception ('Row '.($i+3).' ticket number '.$ticket['ticket'].' format is invalid');
+            return false;
+        }
+        $ticket['mobile_number'] = preg_replace ('<[^0-9]>','',$ticket['mobile_number']);
+        if (!preg_match('<^[0-9]{10,20}$>',$ticket['mobile_number'])) {
+            throw new \Exception ('Row '.($i+3).' mobile phone number '.$ticket['mobile_number'].' format is invalid');
+            return false;
+        }
+        if ($ticket['postcode'] && !preg_match('<'.BLOTTO_POSTCODE_PREG.'>',$ticket['postcode'])) {
+            throw new \Exception ('Row '.($i+3).' postcode '.$ticket['postcode'].' format is invalid');
+            return false;
+        }
+        // TODO validation
+    }
+    return $tickets;
+}
+
+function gratis_report ( ) {
+    $zo = connect (BLOTTO_TICKET_DB);
+    if (!$zo) {
+        return "connection failure";
+    }
+    $oid = BLOTTO_ORG_ID;
+    $qs = "
+      SELECT
+        `ts`.`status`
+       ,`ts`.`occurred_at`
+       ,COUNT(`ts`.`number`) AS `chances`
+      FROM (
+        SELECT
+          `number`
+         ,IF(
+            `issue_date` IS NULL
+           ,'{$format[0]}'
+           ,IF(
+              `dd_ref_no` IS NULL
+             ,'{$format[1]}'
+             ,'reported sold'
+            )
+          ) AS `status`
+         ,IF(
+            `issue_date` IS NULL
+           ,DATE(`created`)
+           ,IF(
+              `dd_ref_no` IS NULL
+             ,`issue_date`
+             ,DATE(`updated`)
+            )
+          ) AS `occurred_at`
+         ,IF(
+            `issue_date` IS NULL
+           ,1
+           ,IF(
+              `dd_ref_no` IS NULL
+             ,2
+             ,3
+            )
+          ) AS `ordinal`
+        FROM `blotto_ticket`
+        WHERE `mandate_provider`='GRTS'
+          AND `org_id`=$oid
+      ) AS `ts`
+      GROUP BY `occurred_at`
+      ORDER BY `occurred_at`,`ordinal`
+      ;
+    ";
+    try {
+        $chances = $zo->query ($qs);
+        $chances = $chances->fetch_all (MYSQLI_ASSOC);
+    }
+    catch (\mysqli_sql_exception $e) {
+        error_log ($e->getMessage());
+        $chances = [];
+    }
+    return $chances;
 }
 
 function html ($snippet,$title='Untitled',$output=true) {
