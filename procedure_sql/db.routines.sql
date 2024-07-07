@@ -794,8 +794,6 @@ BEGIN
      AND `p`.`first_draw_close`<=futureCloseDate
     JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` as `tk`
       ON `tk`.`client_ref`=`m`.`ClientRef`
-    JOIN `blotto_supporter` AS `s`
-      ON `s`.`id`=`p`.`supporter_id`
     LEFT JOIN (
       SELECT
         `client_ref`
@@ -805,7 +803,7 @@ BEGIN
     ) AS `e`
       ON `e`.`client_ref`=`p`.`client_ref`
     LEFT JOIN `Cancellations` AS `cancelled`
-           ON `cancelled`.`client_ref`=`s`.`client_ref`
+           ON `cancelled`.`client_ref`=`p`.`client_ref`
     WHERE (
           -- The player is deemed to be active
           `cancelled`.`client_ref` IS NULL
@@ -1428,18 +1426,33 @@ BEGIN
   Without this data refresh, the cancellation INSERT IGNORE previously caused
   ghost insert havoc when cancelDate() started returning different values
 
-  Older cancellation milestones ("earlier bread" for a "reinstatement sandwich")
-  are unaffected because the "later bread" always gets hit with the INSERT IGNORE
+  Older cancellation milestones (the "early bread" for a "reinstatement sandwich")
+  are unaffected because the "late bread" always gets hit with the INSERT IGNORE
   */
   UPDATE `blotto_update` AS `u`
   -- restrict to the latest cancellation row for each player
   JOIN (
     SELECT
-      `player_id`
-     ,MAX(`id`) AS `latest_id`
-    FROM `blotto_update`
+      `c`.`player_id`
+     ,MAX(`c`.`id`) AS `latest_id`
+     ,`r`.`latest_id` AS `reinstate_latest_id`
+    FROM `blotto_update` AS `c`
+    LEFT JOIN (
+      -- reinstatement of the latest cancellation
+      SELECT
+        `player_id`
+       ,MAX(`id`) AS `latest_id`
+      FROM `blotto_update`
+      WHERE `milestone`='reinstatement'
+      GROUP BY `player_id`
+    ) AS `r`
+      ON `r`.`player_id`=`c`.`player_id`
+     AND `r`.`latest_id`>`c`.`id`
     WHERE `milestone`='cancellation'
     GROUP BY `player_id`
+    -- except those that are reinstated
+    HAVING `reinstate_latest_id` IS NULL
+        OR `reinstate_latest_id`<`latest_id`
   ) AS `us`
     ON `us`.`latest_id`=`u`.`id`
   -- get contemporary values for player cancelled_date
@@ -1577,47 +1590,64 @@ BEGIN
   CREATE TABLE `blotto_update_tmp` LIKE `blotto_update`
   ;
   INSERT IGNORE INTO `blotto_update_tmp`
+    -- the potential pool that *might* need reinstating
     (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
-    SELECT
-      CURDATE()
-     ,'reinstatement'
-     ,CURDATE()
-     ,`s`.`id`
-     ,MAX(`p`.`id`)
-     ,MAX(`c`.`id`)
-    FROM `blotto_update` AS `u`
-    JOIN (
       SELECT
-        `supporter_id`
-       ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `cancelled`
-      FROM `blotto_update`
-      GROUP BY `supporter_id`
-    ) AS `chk`
-      ON `chk`.`supporter_id`=`u`.`supporter_id`
-    JOIN `blotto_player` AS `p`
-      ON `p`.`supporter_id`=`u`.`supporter_id`
-    JOIN `blotto_supporter` AS `s`
-      ON `s`.`id`=`p`.`supporter_id`
-    JOIN `blotto_contact` AS `c`
-      ON `c`.`supporter_id`=`s`.`id`
-    LEFT JOIN `Cancellations` AS `cnl`
-           ON `cnl`.`client_ref`=`s`.`client_ref`
-           OR `cnl`.`client_ref` LIKE CONCAT(`s`.`client_ref`,'{{BLOTTO_CREF_SPLITTER}}%')
-    WHERE `cnl`.`cancelled_date` IS NULL
-    -- Cancellations are already 7-day sluggish (BACS jitter) so simply:
-      AND `chk`.`cancelled`>0
-    GROUP BY `s`.`id`
+        CURDATE()
+       ,'reinstatement'
+       ,CURDATE()
+       ,`s`.`id` AS `supporter_id`
+       ,`ps`.`latest_id` AS `player_id`
+       ,`cs`.`latest_id` AS `contact_id`
+      FROM `blotto_supporter` AS `s`
+      JOIN (
+        SELECT
+          `supporter_id`
+         ,MAX(`id`) AS `latest_id`
+        FROM `blotto_player`
+        GROUP BY `supporter_id`
+      ) AS `ps`
+        ON `ps`.`supporter_id`=`s`.`id`
+      JOIN (
+        SELECT
+          `supporter_id`
+         ,MAX(`id`) AS `latest_id`
+        FROM `blotto_contact`
+        GROUP BY `supporter_id`
+      ) AS `cs`
+        ON `cs`.`supporter_id`=`s`.`id`
+      JOIN (
+        SELECT
+          `supporter_id`
+         ,SUM(`milestone`='cancellation')>SUM(`milestone`='reinstatement') AS `cancelled`
+        FROM `blotto_update`
+        GROUP BY `supporter_id`
+        HAVING `cancelled`>0
+      ) AS `chk`
+      -- CRM record says cancelled ...
+        ON `chk`.`supporter_id`=`s`.`id`
+      LEFT JOIN (
+        SELECT
+          `plyr`.`supporter_id`
+        FROM `blotto_player` AS `plyr`
+        JOIN `Cancellations` AS `cnl`
+          ON `cnl`.`client_ref`=`plyr`.`client_ref`
+        GROUP BY `plyr`.`supporter_id`
+      )      AS `cnls`
+             ON `cnls`.`supporter_id`=`ps`.`supporter_id`
+      -- ... but Cancellations table says no longer cancelled
+      WHERE `cnls`.`supporter_id` IS NULL
   ;
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
-      `updated`
-     ,`milestone`
-     ,`milestone_date`
-     ,`supporter_id`
-     ,`player_id`
-     ,`contact_id`
-    FROM `blotto_update_tmp`
+      `t`.`updated`
+     ,`t`.`milestone`
+     ,`t`.`milestone_date`
+     ,`t`.`supporter_id`
+     ,`t`.`player_id`
+     ,`t`.`contact_id`
+    FROM `blotto_update_tmp` as `t`
   ;
   DROP TABLE `blotto_update_tmp`
   ;
