@@ -1433,41 +1433,47 @@ BEGIN
   -- restrict to the latest cancellation row for each player
   JOIN (
     SELECT
-      `c`.`player_id`
+      `c`.`supporter_id`
      ,MAX(`c`.`id`) AS `latest_id`
      ,`r`.`latest_id` AS `reinstate_latest_id`
     FROM `blotto_update` AS `c`
     LEFT JOIN (
       -- reinstatement of the latest cancellation
       SELECT
-        `player_id`
+        `supporter_id`
        ,MAX(`id`) AS `latest_id`
       FROM `blotto_update`
       WHERE `milestone`='reinstatement'
-      GROUP BY `player_id`
+      GROUP BY `supporter_id`
     ) AS `r`
-      ON `r`.`player_id`=`c`.`player_id`
+      ON `r`.`supporter_id`=`c`.`supporter_id`
      AND `r`.`latest_id`>`c`.`id`
     WHERE `milestone`='cancellation'
-    GROUP BY `player_id`
-    -- except those that are reinstated
+    GROUP BY `supporter_id`
+    -- not reinstated after the latest cancellation
     HAVING `reinstate_latest_id` IS NULL
         OR `reinstate_latest_id`<`latest_id`
   ) AS `us`
     ON `us`.`latest_id`=`u`.`id`
   -- get contemporary values for player cancelled_date
-  JOIN `blotto_player` AS `p`
-    ON `p`.`id`=`u`.`player_id`
   JOIN (
     SELECT
-      `client_ref`
-     ,`cancelled_date`
-    FROM `Cancellations`
-    GROUP BY `client_ref`
-  ) AS `cs`
-    ON `cs`.`client_ref`=`p`.`client_ref`
+      `p`.`supporter_id`
+     ,`cancelled`.`cancelled_date`
+    FROM `blotto_player` AS `p`
+    JOIN (
+      SELECT
+        `client_ref`
+       ,`cancelled_date`
+      FROM `Cancellations`
+      GROUP BY `client_ref`
+    ) AS `cancelled`
+      ON `cancelled`.`client_ref`=`p`.`client_ref`
+    GROUP BY `p`.`supporter_id`
+  ) AS `currently`
+    ON `currently`.`supporter_id`=`u`.`supporter_id`
   -- set the milestone_date to the contemporary cancel date
-  SET `u`.`milestone_date`=`cs`.`cancelled_date`
+  SET `u`.`milestone_date`=`currently`.`cancelled_date`
   WHERE `u`.`milestone`='cancellation'
   ;
   -- `milestone`='created'
