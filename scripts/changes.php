@@ -30,9 +30,14 @@ $qss = [];
 $qss[] = "
   SELECT
     'cancel-reinstate' AS `error_type`
-   ,CONCAT('supporter_id=',`supporter_id`) AS `details`
    ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `diff`
-  FROM `blotto_update`
+   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+   ,`u`.`supporter_id`
+   ,`u`.`player_id`
+   ,`p`.`client_ref`
+  FROM `blotto_update` AS `u`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`id`=`u`.`player_id`
   WHERE `milestone` IN ('cancellation','reinstatement')
   GROUP BY `supporter_id`
   HAVING `diff`<0 OR `diff`>1
@@ -43,10 +48,15 @@ $qss[] = "
 $qss[] = "
   SELECT
     'cancel-last' AS `error_type`
-   ,CONCAT('supporter_id=',`u`.`supporter_id`) AS `details`
    ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
-   ,MAX(`id`)=`us`.`id_cancel_last` AS `last_is_cancel`
+   ,MAX(`u`.`id`)=`us`.`id_cancel_last` AS `is_latest_cancel`
+   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+   ,`u`.`supporter_id`
+   ,`u`.`player_id`
+   ,`p`.`client_ref`
   FROM `blotto_update` AS `u`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`id`=`u`.`player_id`
   JOIN (
     SELECT
       `supporter_id`
@@ -58,7 +68,7 @@ $qss[] = "
     ON `us`.`supporter_id`=`u`.`supporter_id`
   WHERE `milestone` IN ('cancellation','reinstatement')
   GROUP BY `u`.`supporter_id`
-  HAVING `diff`=0 AND `last_is_cancel`>0
+  HAVING `diff`=0 AND `is_latest_cancel`>0
   ;
 ";
 
@@ -67,10 +77,15 @@ $qss[] = "
 $qss[] = "
   SELECT
     'reinstate-last' AS `error_type`
-   ,CONCAT('supporter_id=',`u`.`supporter_id`) AS `details`
    ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
-   ,MAX(`id`)=`us`.`id_reinstate_last` AS `last_is_reinstate`
+   ,MAX(`u`.`id`)=`us`.`id_reinstate_last` AS `is_latest_reinstate`
+   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+   ,`u`.`supporter_id`
+   ,`u`.`player_id`
+   ,`p`.`client_ref`
   FROM `blotto_update` AS `u`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`id`=`u`.`player_id`
   JOIN (
     SELECT
       `supporter_id`
@@ -82,7 +97,62 @@ $qss[] = "
     ON `us`.`supporter_id`=`u`.`supporter_id`
   WHERE `milestone` IN ('cancellation','reinstatement')
   GROUP BY `u`.`supporter_id`
-  HAVING `diff`=1 AND `last_is_reinstate`>0
+  HAVING `diff`=1 AND `is_latest_reinstate`>0
+  ;
+";
+
+// created, per supporter no more than one
+$qss[] = "
+  SELECT
+    'created-multiple' AS `error_type`
+   ,COUNT(`u`.`milestone`) AS `quantity`
+   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+   ,`u`.`supporter_id`
+   ,`u`.`player_id`
+   ,`p`.`client_ref`
+  FROM `blotto_update` AS `u`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`id`=`u`.`player_id`
+  WHERE `u`.`milestone` IN ('created')
+  GROUP BY `u`.`supporter_id`
+  HAVING `quantity`>1
+  ;
+";
+
+// first_collected, per player no more than one
+$qss[] = "
+  SELECT
+    'first_collection-multiple' AS `error_type`
+   ,COUNT(`u`.`milestone`) AS `quantity`
+   ,GROUP_CONCAT(`u`.`milestone_date`ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+   ,`u`.`supporter_id`
+   ,`u`.`player_id`
+   ,`p`.`client_ref`
+   ,`ps`.`players`
+   ,`ps`.`collections`
+  FROM `blotto_update` AS `u`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`id`=`u`.`player_id`
+  JOIN (
+    SELECT
+      `plyr`.`supporter_id`
+     ,GROUP_CONCAT(`plyr`.`client_ref` SEPARATOR ' ') AS `players`
+     ,`cs`.`collections`
+    FROM `blotto_player` AS `plyr`
+    LEFT JOIN (
+      SELECT
+        `ClientRef`
+       ,GROUP_CONCAT(`DateDue` ORDER BY `DateDue` SEPARATOR ' ') AS `collections`
+      FROM `blotto_build_collection`
+      GROUP BY `ClientRef`
+    )      AS `cs`
+           ON `cs`.`ClientRef`=`plyr`.`client_ref`
+    GROUP BY `supporter_id`
+  ) AS `ps`
+    ON `ps`.`supporter_id`=`u`.`supporter_id`
+  WHERE `u`.`milestone` IN ('first_collection')
+  GROUP BY `u`.`player_id`
+  HAVING `quantity`>1
   ;
 ";
 
