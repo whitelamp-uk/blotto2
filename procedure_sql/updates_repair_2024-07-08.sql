@@ -430,3 +430,12 @@ DROP TABLE `blotto_change_repair`
 DROP TABLE `blotto_update_repair`
 ;
 
+
+
+-- roll back CCR data
+TRUNCATE blotto_change
+;
+INSERT INTO blotto_change
+  SELECT * FROM blotto_change_2024070901
+  WHERE changed_date<'2024-06-26'
+;
