@@ -24,137 +24,137 @@ These tests ensure additional logical constraints are guaranteed
 
 $errors = [];
 $subject = 'Updates data has problems';
-$qss = [];
 
-// cancellation/reinstatement, per supporter, 0 >= (cancellations - reinstatements) <= 1
-$qss[] = "
-  SELECT
-    'cancel-reinstate' AS `error_type`
-   ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `diff`
-   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
-   ,`u`.`supporter_id`
-   ,`u`.`player_id`
-   ,`p`.`client_ref`
-  FROM `blotto_update` AS `u`
-  JOIN `blotto_player` AS `p`
-    ON `p`.`id`=`u`.`player_id`
-  WHERE `milestone` IN ('cancellation','reinstatement')
-  GROUP BY `supporter_id`
-  HAVING `diff`<0 OR `diff`>1
-  ;
-";
-
-// cancellation, per supporter, if (cancellations - reinstatements) == 0, cancellation must not be last
-$qss[] = "
-  SELECT
-    'cancel-last' AS `error_type`
-   ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
-   ,MAX(`u`.`id`)=`us`.`id_cancel_last` AS `is_latest_cancel`
-   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
-   ,`u`.`supporter_id`
-   ,`u`.`player_id`
-   ,`p`.`client_ref`
-  FROM `blotto_update` AS `u`
-  JOIN `blotto_player` AS `p`
-    ON `p`.`id`=`u`.`player_id`
-  JOIN (
-    SELECT
-      `supporter_id`
-     ,MAX(`id`) AS `id_cancel_last`
-    FROM `blotto_update`
-    WHERE `milestone`='cancellation'
-    GROUP BY `supporter_id`
-  ) AS `us`
-    ON `us`.`supporter_id`=`u`.`supporter_id`
-  WHERE `milestone` IN ('cancellation','reinstatement')
-  GROUP BY `u`.`supporter_id`
-  HAVING `diff`=0 AND `is_latest_cancel`>0
-  ;
-";
-
-
-// reinstatement, per supporter, if (cancellations - reinstatements) == 1, reinstatement must not be last
-$qss[] = "
-  SELECT
-    'reinstate-last' AS `error_type`
-   ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
-   ,MAX(`u`.`id`)=`us`.`id_reinstate_last` AS `is_latest_reinstate`
-   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
-   ,`u`.`supporter_id`
-   ,`u`.`player_id`
-   ,`p`.`client_ref`
-  FROM `blotto_update` AS `u`
-  JOIN `blotto_player` AS `p`
-    ON `p`.`id`=`u`.`player_id`
-  JOIN (
-    SELECT
-      `supporter_id`
-     ,MAX(`id`) AS `id_reinstate_last`
-    FROM `blotto_update`
-    WHERE `milestone`='reinstatement'
-    GROUP BY `supporter_id`
-  ) AS `us`
-    ON `us`.`supporter_id`=`u`.`supporter_id`
-  WHERE `milestone` IN ('cancellation','reinstatement')
-  GROUP BY `u`.`supporter_id`
-  HAVING `diff`=1 AND `is_latest_reinstate`>0
-  ;
-";
-
-// created, per supporter no more than one
-$qss[] = "
-  SELECT
-    'created-multiple' AS `error_type`
-   ,COUNT(`u`.`milestone`) AS `quantity`
-   ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
-   ,`u`.`supporter_id`
-   ,`u`.`player_id`
-   ,`p`.`client_ref`
-  FROM `blotto_update` AS `u`
-  JOIN `blotto_player` AS `p`
-    ON `p`.`id`=`u`.`player_id`
-  WHERE `u`.`milestone` IN ('created')
-  GROUP BY `u`.`supporter_id`
-  HAVING `quantity`>1
-  ;
-";
-
-// first_collected, per player no more than one
-$qss[] = "
-  SELECT
-    'first_collection-multiple' AS `error_type`
-   ,COUNT(`u`.`milestone`) AS `quantity`
-   ,GROUP_CONCAT(`u`.`milestone_date`ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
-   ,`u`.`supporter_id`
-   ,`u`.`player_id`
-   ,`p`.`client_ref`
-   ,`ps`.`players`
-   ,`ps`.`collections`
-  FROM `blotto_update` AS `u`
-  JOIN `blotto_player` AS `p`
-    ON `p`.`id`=`u`.`player_id`
-  JOIN (
-    SELECT
-      `plyr`.`supporter_id`
-     ,GROUP_CONCAT(`plyr`.`client_ref` SEPARATOR ' ') AS `players`
-     ,`cs`.`collections`
-    FROM `blotto_player` AS `plyr`
-    LEFT JOIN (
+$qss = [
+    "
       SELECT
-        `ClientRef`
-       ,GROUP_CONCAT(`DateDue` ORDER BY `DateDue` SEPARATOR ' ') AS `collections`
-      FROM `blotto_build_collection`
-      GROUP BY `ClientRef`
-    )      AS `cs`
-           ON `cs`.`ClientRef`=`plyr`.`client_ref`
-    GROUP BY `supporter_id`
-  ) AS `ps`
-    ON `ps`.`supporter_id`=`u`.`supporter_id`
-  WHERE `u`.`milestone` IN ('first_collection')
-  GROUP BY `u`.`player_id`
-  HAVING `quantity`>1
-  ;
-";
+        -- cancellation/reinstatement, per supporter, 0 >= (cancellations - reinstatements) <= 1
+        'cancel-reinstate' AS `error_type`
+       ,SUM(`milestone`='cancellation')-SUM(`milestone`='reinstatement') AS `diff`
+       ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+       ,`u`.`supporter_id`
+       ,`u`.`player_id`
+       ,`p`.`client_ref`
+      FROM `blotto_update` AS `u`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`id`=`u`.`player_id`
+      WHERE `milestone` IN ('cancellation','reinstatement')
+      GROUP BY `supporter_id`
+      HAVING `diff`<0 OR `diff`>1
+      ;
+    ",
+    "
+      SELECT
+        -- cancellation, per supporter, if (cancellations - reinstatements) == 0, cancellation must not be last
+        'cancel-last' AS `error_type`
+       ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
+       ,MAX(`u`.`milestone_date`)=`us`.`last_cancelled` AS `is_latest_milestone`
+       ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+       ,`u`.`supporter_id`
+       ,`u`.`player_id`
+       ,`p`.`client_ref`
+      FROM `blotto_update` AS `u`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`id`=`u`.`player_id`
+      JOIN (
+        SELECT
+          `supporter_id`
+         ,MAX(`milestone_date`) AS `last_cancelled`
+        FROM `blotto_update`
+        WHERE `milestone`='cancellation'
+        GROUP BY `supporter_id`
+      ) AS `us`
+        ON `us`.`supporter_id`=`u`.`supporter_id`
+      WHERE `milestone` IN ('cancellation','reinstatement')
+      GROUP BY `u`.`supporter_id`
+      -- same cancellations as reinstatements but cancellation is last
+      HAVING `diff`=0 AND `is_latest_milestone`>0
+      ORDER BY `u`.`milestone_date`
+      ;
+    ",
+    "
+      SELECT
+        -- reinstatement, per supporter, if (cancellations - reinstatements) == 1, reinstatement must not be last
+        'reinstate-not-last' AS `error_type`
+       ,SUM(`u`.`milestone`='cancellation')-SUM(`u`.`milestone`='reinstatement') AS `diff`
+       ,MAX(`u`.`milestone_date`)=`us`.`last_reinstated` AS `is_latest_milestone`
+       ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+       ,`u`.`supporter_id`
+       ,`u`.`player_id`
+       ,`p`.`client_ref`
+      FROM `blotto_update` AS `u`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`id`=`u`.`player_id`
+      JOIN (
+        SELECT
+          `supporter_id`
+         ,MAX(`milestone_date`) AS `last_reinstated`
+        FROM `blotto_update`
+        WHERE `milestone`='reinstatement'
+        GROUP BY `supporter_id`
+      ) AS `us`
+        ON `us`.`supporter_id`=`u`.`supporter_id`
+      WHERE `milestone` IN ('cancellation','reinstatement')
+      GROUP BY `u`.`supporter_id`
+      -- more cancellations than reinstatements but reinstatement is last
+      HAVING `diff`=1 AND `is_latest_milestone`>0
+      ORDER BY `u`.`milestone_date`
+      ;
+    ",
+    "
+      SELECT
+        -- created, per supporter no more than one
+        'created-multiple' AS `error_type`
+       ,COUNT(`u`.`milestone`) AS `quantity`
+       ,GROUP_CONCAT(`u`.`milestone_date` ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+       ,`u`.`supporter_id`
+       ,`u`.`player_id`
+       ,`p`.`client_ref`
+      FROM `blotto_update` AS `u`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`id`=`u`.`player_id`
+      WHERE `u`.`milestone` IN ('created')
+      GROUP BY `u`.`supporter_id`
+      HAVING `quantity`>1
+      ;
+    ",
+    "
+      SELECT
+        -- first_collected, per player no more than one
+        'first_collection-multiple' AS `error_type`
+       ,COUNT(`u`.`milestone`) AS `quantity`
+       ,GROUP_CONCAT(`u`.`milestone_date`ORDER BY `milestone_date` SEPARATOR ' ') AS `milestone_dates`
+       ,`u`.`supporter_id`
+       ,`u`.`player_id`
+       ,`p`.`client_ref`
+       ,`ps`.`players`
+       ,`ps`.`collections`
+      FROM `blotto_update` AS `u`
+      JOIN `blotto_player` AS `p`
+        ON `p`.`id`=`u`.`player_id`
+      JOIN (
+        SELECT
+          `plyr`.`supporter_id`
+         ,GROUP_CONCAT(`plyr`.`client_ref` SEPARATOR ' ') AS `players`
+         ,`cs`.`collections`
+        FROM `blotto_player` AS `plyr`
+        LEFT JOIN (
+          SELECT
+            `ClientRef`
+           ,GROUP_CONCAT(`DateDue` ORDER BY `DateDue` SEPARATOR ' ') AS `collections`
+          FROM `blotto_build_collection`
+          GROUP BY `ClientRef`
+        )      AS `cs`
+               ON `cs`.`ClientRef`=`plyr`.`client_ref`
+        GROUP BY `supporter_id`
+      ) AS `ps`
+        ON `ps`.`supporter_id`=`u`.`supporter_id`
+      WHERE `u`.`milestone` IN ('first_collection')
+      GROUP BY `u`.`player_id`
+      HAVING `quantity`>1
+      ;
+    "
+];
 
 try {
     foreach ($qss as $qs) {
