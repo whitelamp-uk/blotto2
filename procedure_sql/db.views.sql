@@ -119,3 +119,55 @@ CREATE OR REPLACE VIEW `HiatusOverLimit` (
   ORDER BY `missed` DESC,`paid` DESC,`ClientRef`
 ;
 
+
+CREATE OR REPLACE VIEW `Summary_CCR` (
+  `recorded_on`
+ ,`milestone`
+ ,`ccc`
+ ,`supporters`
+) AS
+  SELECT
+    `changed_date`
+   ,`milestone`
+   ,`ccc`
+   ,COUNT(DISTINCT `supporter_id`)
+  FROM `Changes`
+  GROUP BY `changed_date`,`milestone`,`ccc`
+  ORDER BY `changed_date` DESC,`milestone`,`ccc`
+;
+
+
+CREATE OR REPLACE VIEW `Summary_CRM` (
+  `recorded_on`
+ ,`milestone`
+ ,`ccc`
+ ,`supporters`
+) AS
+  SELECT
+    `updated`
+   ,`milestone`
+   ,`ccc`
+   ,COUNT(DISTINCT `supporter_id`)
+  FROM `Updates`
+  GROUP BY `updated`,`milestone`,`ccc`
+  ORDER BY `updated` DESC,`milestone`,`ccc`
+;
+
+CREATE OR REPLACE VIEW `Summary_DD` (
+  `first_collected_on`
+ ,`milestone`
+ ,`ccc`
+ ,`supporters`
+) AS
+  SELECT
+    `supporter_first_payment`
+   ,'first_collection'
+   ,`ccc`
+   ,COUNT(DISTINCT `supporter_id`)
+  FROM `Supporters`
+  WHERE `supporter_first_payment`!='0000-00-00'
+  GROUP BY `supporter_first_payment`,`ccc`
+  ORDER BY `supporter_first_payment` DESC,`ccc`
+;
+
+
