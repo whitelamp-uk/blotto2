@@ -241,10 +241,10 @@ $qs = "
          ON `c`.`update_id`=`u`.`id`
   WHERE `c`.`update_id` IS NULL
   GROUP BY `u`.`id`
--- Used to be:
--- HAVING `u`.`updated`<=`last_interested`
--- TODO is this now right?
-  HAVING `u`.`milestone_date`<=`last_interested`
+-- Previously tried:
+--  HAVING `u`.`milestone_date`<=`last_interested`
+-- TODO but I think this original is actually correct
+ HAVING `u`.`updated`<=`last_interested`
   ;
 ";
 try {
