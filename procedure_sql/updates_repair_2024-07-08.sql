@@ -394,7 +394,28 @@ where u.milestone='reinstatement'
 
 
 
--- For those that were updated, re-index the table
+
+   
+
+-- So for now moving on we need "spread out" updated dates
+-- theoretically the system discovers a cancellation on Cancellations.cancelled_date + 1 day
+-- (remember Cancellations has BACS jitter built in)
+update blotto_update as u
+join blotto_update_recent as ur
+  on ur.id=u.id
+set u.updated=date_add(ur.milestone_date,interval 1 day)
+
+-- Tidy up a bit
+DROP TABLE `blotto_change_repair`
+;
+DROP TABLE `blotto_update_repair`
+;
+
+
+
+
+
+-- For any that were updated, re-index the table
 drop table if exists blotto_update_repair
 ;
 CREATE TABLE blotto_update_repair LIKE blotto_update
@@ -412,23 +433,6 @@ INSERT INTO blotto_update
 
 
 
-
-
-   
-
--- So for now moving on we need "spread out" updated dates
--- theoretically the system discovers a cancellation on Cancellations.cancelled_date + 1 day
--- (remember Cancellations has BACS jitter built in)
-update blotto_update as u
-join blotto_update_recent as ur
-  on ur.id=u.id
-set u.updated=date_add(ur.milestone_date,interval 1 day)
-
--- Tidy up a bit
-DROP TABLE `blotto_change_repair`
-;
-DROP TABLE `blotto_update_repair`
-;
 
 
 
