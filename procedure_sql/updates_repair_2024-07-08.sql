@@ -436,6 +436,33 @@ DROP TABLE `blotto_update_repair`
 TRUNCATE blotto_change
 ;
 INSERT INTO blotto_change
-  SELECT * FROM blotto_change_2024070901
+  SELECT * FROM blotto_change_2024070317
   WHERE changed_date<'2024-06-26'
 ;
+
+
+create or replace view blotto_update_reinstates_20240709 as
+  select
+    u.*
+   ,c.DateDue
+   ,c.DateDue is not null as ok
+  from blotto_update as u
+  join blotto_player as p
+    on p.supporter_id=u.supporter_id
+  left join blotto_build_collection as c
+         on c.ClientRef=p.client_ref
+        and c.DateDue='2024-07-01'
+  where u.updated='2024-07-09'
+    and u.milestone='reinstatement'
+  ;
+
+create or replace view blotto_update_manual_20240624 as
+  select
+    *
+  from blotto_update
+  where updated='2024-06-24'
+    and milestone_date<'2024-05-01'
+    and milestone in ('cancellation','reinstatement')
+    order by milestone_date
+  ;
+
