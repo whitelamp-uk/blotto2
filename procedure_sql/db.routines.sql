@@ -266,7 +266,9 @@ BEGIN
     IFNULL(SUM(`PaidAmount`),0)
   INTO @collections
   FROM `blotto_build_collection`
-  WHERE `DateDue`>=starts
+  -- await BACS jitter
+  WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+    AND `DateDue`>=starts
     AND `DateDue`<=ends
   ;
   SELECT
@@ -279,7 +281,9 @@ BEGIN
     IFNULL(SUM(`PaidAmount`),0)
   INTO @allCollected
   FROM `blotto_build_collection`
-  WHERE `DateDue`<=ends
+  -- await BACS jitter
+  WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+    AND `DateDue`<=ends
   ;
   SELECT
     IFNULL(SUM(`amount`),0)
@@ -968,6 +972,8 @@ BEGIN
        ,SUM(`PaidAmount`) AS `revenue`
        ,MIN(`DateDue`) AS `first_collected`
       FROM `blotto_build_collection`
+      -- await BACS jitter
+      WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
       GROUP BY `ClientRef`
          ) AS `c`
            ON `c`.`ClientRef`=`p`.`client_ref`
@@ -1148,7 +1154,8 @@ BEGIN
          ,COUNT(`DateDue`) AS `SuccessfulPayments`
          ,SUM(`PaidAmount`) AS `AmountCollected`
         FROM `blotto_build_collection`
-        WHERE 1
+        -- Await BACS jitter
+        WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
         GROUP BY `Provider`,`RefNo`
       ) AS `cl`
         ON `cl`.`Provider`=`m`.`Provider`
@@ -1231,7 +1238,8 @@ BEGIN
          ,COUNT(`DateDue`) AS `SuccessfulPayments`
          ,SUM(`PaidAmount`) AS `AmountCollected`
         FROM `blotto_build_collection`
-        WHERE 1
+        -- await BACS jitter
+        WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
         GROUP BY `Provider`,`RefNo`
       ) AS `cl`
         ON `cl`.`Provider`=`m`.`Provider`
@@ -1509,6 +1517,8 @@ BEGIN
         `ClientRef`
        ,MIN(`DateDue`) AS `DateDue`
       FROM `blotto_build_collection`
+      -- await BACS jitter
+      WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
       GROUP BY `RefNo`
     ) AS `cln`
     JOIN `blotto_player` AS `p`
@@ -1517,8 +1527,6 @@ BEGIN
       ON `s`.`id`=`p`.`supporter_id`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
-    -- 7-day debounce for BACS jitter
-    WHERE `cln`.`DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
     GROUP BY `s`.`id`
   ;
   -- `milestone`='bacs_change'
