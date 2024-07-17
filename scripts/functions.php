@@ -1755,9 +1755,9 @@ function gratis_collect ( ) {
     ";
     $qs = "
       SELECT
-        DATE(`created`) AS `{$format[0]}`
-       ,`issue_date` AS `{$format[1]}`
-       ,`number` AS `{$format[2]}`
+        DATE(`created`)
+       ,`issue_date`
+       ,`number`
       FROM `blotto_ticket`
       WHERE `mandate_provider`='GRTS'
         AND `org_id`=$oid
@@ -1773,8 +1773,8 @@ function gratis_collect ( ) {
         return "SQL failure";
     }
     $headings = [];
-    foreach ($format as $key) {
-        $headings[] = $key;
+    foreach ($format as $key=>$idx) {
+        $headings[$idx] = $key;
     }
     array_unshift ($chances,$headings);
     array_unshift ($chances,['','','','','','','Do not edit ticket numbers!','Every ticket returned must have a valid mobile phone number']);
@@ -1782,15 +1782,18 @@ function gratis_collect ( ) {
     $fs = fopen ('php://temp','r+');
     foreach ($chances as $i=>$chance) {
         foreach ($chance as $j=>$val) {
-            if (preg_match('<^0[0-9]+$>',$val)) {
-                $chance[$j] = "%{$chance[$j]}%";
+            // To preserve ticket number leading zeroes
+            if (preg_match('<^[0-9]+$>',$val)) {
+                // Placeholder %% signifies double-quote
+                $chance[$j] = "%%{$chance[$j]}%%";
             }
         }
         fputcsv ($fs,$chance,',','"','\\');
     }
     rewind ($fs);
     $chances = stream_get_contents ($fs);
-    $chances = preg_replace ('<%(0[0-9]+)%>','"$1"',$chances);
+    // Instantiate ticket double-quotes
+    $chances = preg_replace ('<%%([0-9]+)%%>','"$1"',$chances);
     fclose ($fs);
     header ('Content-Length: '.strlen($chances));
     header ('Content-Type: text/csv');
@@ -3395,6 +3398,9 @@ function profits ( ) {
             }
             foreach ($d['ccr'] as $retention=>$quantity) {
                 $h['ccr'.$retention] = 1 * $quantity;
+                if (!array_key_exists($retention,$ccr)) {
+                  $ccr[$retention] = ['count'=>0,'fraction'=>0,'mean_avg'=>0];
+                }
                 $ccr[$retention]['count']++;
                 /*
                 In reality the fraction for n collections should be calculated using chances loaded

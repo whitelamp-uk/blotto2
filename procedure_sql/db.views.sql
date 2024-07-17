@@ -119,55 +119,146 @@ CREATE OR REPLACE VIEW `HiatusOverLimit` (
   ORDER BY `missed` DESC,`paid` DESC,`ClientRef`
 ;
 
-
-CREATE OR REPLACE VIEW `Summary_CCR` (
-  `recorded_on`
+CREATE OR REPLACE VIEW `Workflow_1_Import` (
+  `week_ref`
  ,`milestone`
  ,`ccc`
  ,`supporters`
+ ,`tickets`
+ ,`first_one_created`
+ ,`last_one_created`
 ) AS
   SELECT
-    `changed_date`
-   ,`milestone`
+    CONCAT(YEAR(`created`),'-',LPAD(WEEK(`created`),2,'0')) AS `week`
+   ,'created'
    ,`ccc`
    ,COUNT(DISTINCT `supporter_id`)
-  FROM `Changes`
-  GROUP BY `changed_date`,`milestone`,`ccc`
-  ORDER BY `changed_date` DESC,`milestone`,`ccc`
+   ,COUNT(`current_ticket_number`)
+   ,MIN(`created`)
+   ,MAX(`created`)
+  FROM `Supporters`
+  GROUP BY `week`,`ccc`
+  ORDER BY `week` DESC,`ccc`
 ;
 
-
-CREATE OR REPLACE VIEW `Summary_CRM` (
-  `recorded_on`
+CREATE OR REPLACE VIEW `Workflow_2_DD` (
+  `week_ref`
+ ,`first_collected_on`
  ,`milestone`
  ,`ccc`
  ,`supporters`
+ ,`tickets`
+ ,`first_one_created`
+ ,`last_one_created`
 ) AS
   SELECT
-    `updated`
-   ,`milestone`
-   ,`ccc`
-   ,COUNT(DISTINCT `supporter_id`)
-  FROM `Updates`
-  GROUP BY `updated`,`milestone`,`ccc`
-  ORDER BY `updated` DESC,`milestone`,`ccc`
-;
-
-CREATE OR REPLACE VIEW `Summary_DD` (
-  `first_collected_on`
- ,`milestone`
- ,`ccc`
- ,`supporters`
-) AS
-  SELECT
-    `supporter_first_payment`
+    CONCAT(YEAR(`supporter_first_payment`),'-',LPAD(WEEK(`supporter_first_payment`),2,'0')) AS `week`
+   ,`supporter_first_payment`
    ,'first_collection'
    ,`ccc`
    ,COUNT(DISTINCT `supporter_id`)
+   ,COUNT(`current_ticket_number`)
+   ,MIN(`created`)
+   ,MAX(`created`)
   FROM `Supporters`
   WHERE `supporter_first_payment`!='0000-00-00'
   GROUP BY `supporter_first_payment`,`ccc`
   ORDER BY `supporter_first_payment` DESC,`ccc`
 ;
 
+CREATE OR REPLACE VIEW `Workflow_3_DD` (
+  `week_ref`
+ ,`first_entered_on`
+ ,`milestone`
+ ,`ccc`
+ ,`supporters`
+ ,`tickets`
+ ,`first_one_created`
+ ,`last_one_created`
+) AS
+  SELECT
+    CONCAT(YEAR(`es`.`first_draw_closed`),'-',LPAD(WEEK(`es`.`first_draw_closed`),2,'0')) AS `week`
+   ,`es`.`first_draw_closed`
+   ,'first_entered'
+   ,`s`.`canvas_code`
+   ,COUNT(`s`.`id`)
+   ,SUM(`es`.`tickets`)
+   ,MIN(`s`.`created`)
+   ,MAX(`s`.`created`)
+  FROM (
+    SELECT
+      `p`.`supporter_id`
+     ,MIN(`draw_closed`) AS `first_draw_closed`
+     ,COUNT(`e`.`id`) AS `tickets`
+    FROM `blotto_entry` AS `e`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`client_ref`=`e`.`client_ref`
+    GROUP BY `supporter_id`
+  ) AS `es`
+  JOIN `blotto_supporter` AS `s`
+    ON `s`.`id`=`es`.`supporter_id`
+  GROUP BY `first_draw_closed`,`canvas_code`
+  ORDER BY `first_draw_closed` DESC,`canvas_code`
+;
+
+CREATE OR REPLACE VIEW `Workflow_4_CRM` (
+  `week_ref`
+ ,`recorded_on`
+ ,`milestone`
+ ,`ccc`
+ ,`supporters`
+ ,`tickets`
+ ,`first_one_created`
+ ,`last_one_created`
+) AS
+  SELECT
+    CONCAT(YEAR(`updated`),'-',LPAD(WEEK(`updated`),2,'0')) AS `week`
+   ,`updated`
+   ,`milestone`
+   ,`ccc`
+   ,COUNT(DISTINCT `supporter_id`)
+   ,SUM(`tickets`)
+   ,MIN(`created`)
+   ,MAX(`created`)
+  FROM `Updates`
+  GROUP BY `updated`,`milestone`,`ccc`
+  ORDER BY `updated` DESC,`milestone`,`ccc`
+;
+
+CREATE OR REPLACE VIEW `Workflow_5_CCR` (
+  `week_ref`
+ ,`recorded_on`
+ ,`milestone`
+ ,`ccc`
+ ,`supporters`
+ ,`tickets`
+ ,`first_supporter_created`
+ ,`first_supporter_id`
+ ,`last_supporter_created`
+ ,`last_supporter_id`
+) AS
+  SELECT
+    CONCAT(YEAR(`c`.`changed_date`),'-',LPAD(WEEK(`c`.`changed_date`),2,'0')) AS `week`
+   ,`c`.`changed_date`
+   ,`c`.`milestone`
+   ,`c`.`ccc`
+   ,COUNT(DISTINCT `c`.`supporter_id`)
+   ,COUNT(`c`.`id`)
+   ,MIN(`c`.`created`)
+   ,`range`.`first_id`
+   ,MAX(`c`.`created`)
+   ,`range`.`last_id`
+  FROM `Changes` AS `c`
+  JOIN (
+    SELECT
+      `created`
+     ,MIN(`id`) AS `first_id`
+     ,MAX(`id`) AS `last_id`
+    FROM `blotto_supporter`
+    GROUP BY `created`
+  ) AS `range`
+    ON `range`.`created`=`c`.`created`
+  GROUP BY `changed_date`,`milestone`,`ccc`
+  ORDER BY `changed_date` DESC,`milestone`,`ccc`
+;
 
