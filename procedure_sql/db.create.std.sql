@@ -172,6 +172,19 @@ INSERT IGNORE INTO `blotto_crm_status` (`status`, `caution`, `description`, `all
 ('Running', 'The campaign will be made live.',  'The campaign is now running.', 'Revising\r\nComplete')
 ;
 
+
+CREATE TABLE `blotto_external` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `draw_closed` date DEFAULT NULL,
+  `ticket_number` char(6) not null,
+  `client_ref` varchar(255) not null,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ticket_number`),
+  KEY `draw_closed` (`draw_closed`)
+) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_general_ci;
+
+
 CREATE TABLE IF NOT EXISTS `blotto_player` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `started` date DEFAULT NULL,
