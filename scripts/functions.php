@@ -111,7 +111,7 @@ function calculate ($start=null,$end=null) {
         $end        = $month[1];
     }
     if (!$end) {
-        $dt         = new DateTime ();
+        $dt         = new \DateTime ();
         $end        = $dt->format ('Y-m-d');
     }
     $results        = [];
@@ -499,7 +499,7 @@ function csv_write ($file,$array2d,$headers=false) {
 }
 
 function date_reformat ($d,$f) {
-    $dt = new DateTime ($d);
+    $dt = new \DateTime ($d);
     return $dt->format ($f);
 }
 
@@ -518,7 +518,7 @@ function day_cancels_known ($format) {
         error_log ('day_cancels_known(): '.$e->getMessage());
         return '';
     }
-    $dt = new DateTime ($c);
+    $dt = new \DateTime ($c);
     return $dt->format ($format);
 }
 
@@ -564,14 +564,14 @@ function day_one ($for_wins=false) {
 }
 
 function day_tomorrow ($date=null) {
-    $dt = new DateTime ($date);
-    $dt->add (new DateInterval('P1D'));
+    $dt = new \DateTime ($date);
+    $dt->add (new \DateInterval('P1D'));
     return $dt;
 }
 
 function day_yesterday ($date=null) {
-    $dt = new DateTime ($date);
-    $dt->sub (new DateInterval('P1D'));
+    $dt = new \DateTime ($date);
+    $dt->sub (new \DateInterval('P1D'));
     return $dt;
 }
 
@@ -739,8 +739,8 @@ function download_csv ( ) {
     }
     $file      .= '.csv';
     if (in_array(strtolower($_GET['table']),['draws','insurance'])) {
-        $dt1    = new DateTime ($_GET['from']);
-        $dt2    = new DateTime ($_GET['to']);
+        $dt1    = new \DateTime ($_GET['from']);
+        $dt2    = new \DateTime ($_GET['to']);
         if ($dt1->diff($dt2)->format('%r%a')>6) {
             return "that is too much data via the web; request help from your account administrator";
         }
@@ -970,9 +970,9 @@ function draw_first_zaffo_model ($first_collection_date,$dow=5) {
             4. Move on 21 more days
     */
 
-    $fcd        = new DateTime ($first_collection_date);
-    $fcd->add (new DateInterval(BLOTTO_PAY_DELAY));
-// $fcd = new DateTime (days_working_date ($first_collection_date,2));
+    $fcd        = new \DateTime ($first_collection_date);
+    $fcd->add (new \DateInterval(BLOTTO_PAY_DELAY));
+// $fcd = new \DateTime (days_working_date ($first_collection_date,2));
 
     // Move on to next $dow
     $days       = ( ($dow+7) - $fcd->format('w') ) % 7;
@@ -982,7 +982,7 @@ function draw_first_zaffo_model ($first_collection_date,$dow=5) {
     }
     // Move on 21 more days
     $days      += 21;
-    $fcd->add (new DateInterval('P'.$days.'D'));
+    $fcd->add (new \DateInterval('P'.$days.'D'));
     $dc = $fcd->format ('Y-m-d');
     // Cannot be before the first draw for the game
     if ($dc<BLOTTO_DRAW_CLOSE_1) {
@@ -1133,20 +1133,20 @@ function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
         $months     = [1,2,3,4,5,6,7,8,9,10,11,12];
     }
     $days           = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat',];
-    $dt             = new DateTime ($today);
+    $dt             = new \DateTime ($today);
     $today          = $dt->format ('Y-m-d');
     $dt->modify ('first day of this month');
     $count          = 0;
     while ($count<=12) {
         if (in_array($dt->format('n'),$months)) {
-            $last = new DateTime ($dt->format ('Y-m-d'));
+            $last = new \DateTime ($dt->format ('Y-m-d'));
             $last->modify ('last '.$days[$dow].' of this month');
             $last = $last->format ('Y-m-d');
             if ($last>=$today) {
                 return $last;
             }
         }
-        $dt->add (new DateInterval('P1M'));
+        $dt->add (new \DateInterval('P1M'));
         $count++;
     }
     // Sanity
@@ -1155,7 +1155,7 @@ function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
 }
 
 function draw_upcoming_dow_nths_in_months ($dow,$nths,$months,$today=null) {
-    $dt             = new DateTime ($today);
+    $dt             = new \DateTime ($today);
     // Allow dow to be loose
     $dow            = intval($dow) %7;
     if (!is_array($nths) || !is_array($months)) {
@@ -1191,7 +1191,7 @@ function draw_upcoming_dow_nths_in_months ($dow,$nths,$months,$today=null) {
                 }
             }
         }
-        $dt->add (new DateInterval('P1D'));
+        $dt->add (new \DateInterval('P1D'));
     }
     // Sanity
     throw new \Exception ('No date found in a whole year');
@@ -1203,12 +1203,12 @@ function draw_upcoming_weekly ($dow,$today=null) {
     // in the future (today is in the future)
     // for a given day of week
     $dow = intval($dow) % 7;
-    $day = new DateTime ($today);
+    $day = new \DateTime ($today);
     for ($i=0;$i<7;$i++) {
         if ($day->format('w')==$dow) {
             return $day->format ('Y-m-d');
         }
-        $day->add (new DateInterval('P1D'));
+        $day->add (new \DateInterval('P1D'));
     }
 }
 
@@ -1814,10 +1814,18 @@ function gratis_format ($inverse=false) {
         'first_downloaded'  => 1,
         'ticket'            => 2,
         'mobile_number'     => 3,
-        'name_given'        => 4,
-        'postcode'          => 5,
-        'address_1'         => 6,
-        'email'             => 7
+        'title'             => 4,
+        'name_first'        => 5,
+        'name_last  '       => 6,
+        'email'             => 7,
+        'phone'             => 8,
+        'address_1'         => 9,
+        'address_2'         =>10,
+        'address_2'         =>11,
+        'town'              =>12,
+        'county'            =>13,
+        'postcode'          =>14,
+        'dob'               =>15,
     ];
     if ($inverse) {
         $inverse = [];
@@ -2258,9 +2266,9 @@ function link_query ($target,$table,$date,$interval=null) {
     }
     try {
         if ($interval) {
-            $from = new DateTime ($date);
-            $from->add (new DateInterval('P1D'));
-            $from->sub (new DateInterval($interval));
+            $from = new \DateTime ($date);
+            $from->add (new \DateInterval('P1D'));
+            $from->sub (new \DateInterval($interval));
         }
         else {
             $from = day_one ();
@@ -2272,16 +2280,16 @@ function link_query ($target,$table,$date,$interval=null) {
     }
     $from = $from->format('Y-m-d');
     if (strtolower($table)=='draws') {
-        $dt1    = new DateTime ($from);
-        $dt2    = new DateTime ($date);
+        $dt1    = new \DateTime ($from);
+        $dt2    = new \DateTime ($date);
         if ($dt1->diff($dt2)->format('%r%a')>6) {
             // Too huge so just give summary
             $table = 'Draws_Supersummary';
         }
     }
     elseif (strtolower($table)=='insurance') {
-        $dt1    = new DateTime ($from);
-        $dt2    = new DateTime ($date);
+        $dt1    = new \DateTime ($from);
+        $dt2    = new \DateTime ($date);
         if ($dt1->diff($dt2)->format('%r%a')>6) {
             // Too huge so just give summary
             $table = 'Insurance_Summary';
@@ -2354,7 +2362,7 @@ function mail_attachments ($to,$subject,$message,$files) {
 }
 
 function month_end_last ($format='Y-m-d',$date=null) {
-    $date = new DateTime ($date);
+    $date = new \DateTime ($date);
     $date->modify ('last day of previous month');
     return $date->format ($format);
 }
@@ -2383,8 +2391,8 @@ function month_last ( ) {
             break;
         }
     }
-    $dt             = new DateTime ($end1);
-    $dt->add (new DateInterval('P1D'));
+    $dt             = new \DateTime ($end1);
+    $dt->add (new \DateInterval('P1D'));
     return [$dt->format ('Y-m-d'),$end2,$dt->format('M Y')];
 }
 
@@ -2713,6 +2721,8 @@ function players_new (&$players,&$tickets,$oid=BLOTTO_ORG_ID,$db=null) {
         WHERE `org_id`=$oid
         GROUP BY `client_ref`
       )      AS `tk`
+             -- tickets joined to mandate ignores EXT tickets which is good
+             -- because EXT processes do not use this to insert players
              ON `tk`.`mandate_provider`=`m`.`Provider`
             AND `tk`.`client_ref`=`m`.`ClientRef`
       WHERE `p`.`chances` IS NOT NULL
@@ -3748,8 +3758,8 @@ function report ( ) {
 function result_spiel66 ($prize,$draw_closed) {
     // The result from this function is the same regardless of prize properties
     // That is, $prize is not used
-    $dt      = new DateTime ($draw_closed);
-    $dt->add (new DateInterval('P1D'));
+    $dt      = new \DateTime ($draw_closed);
+    $dt->add (new \DateInterval('P1D'));
     $date    = $dt->format ('Y/n/j');
     if (!defined('BLOTTO_SPIEL66_FILE')) {
         define ('BLOTTO_SPIEL66_FILE',BLOTTO_DIR_EXPORT.'/spiel66.html.log');
@@ -5374,7 +5384,7 @@ function update ( ) {
 
 function valid_date ($date,$format='Y-m-d') {
     try {
-        $d = new DateTime ($date);
+        $d = new \DateTime ($date);
         $d = $d->format ($format);
         return $d==$date;
     }
@@ -6649,7 +6659,7 @@ function www_winners ($format='') {
                 }
             }
 // TODO: $r['drawn'] could be replaced with $draw->date
-            $dt                 = new DateTime ($r['drawn']);
+            $dt                 = new \DateTime ($r['drawn']);
             $results->date      = $dt->format ($format);
             $q = "
               SELECT
