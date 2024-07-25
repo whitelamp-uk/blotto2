@@ -185,6 +185,7 @@ BEGIN
            ON `p`.`client_ref`=`m`.`ClientRef`
     JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `tk`
       ON `tk`.`client_ref`=`m`.`ClientRef`
+      -- this join does not use mandate table so m.Provider=EXT tickets will get included
      AND `tk`.`mandate_provider`=`m`.`Provider`
      AND `tk`.`org_id`={{BLOTTO_ORG_ID}}
     LEFT JOIN (
@@ -518,6 +519,7 @@ BEGIN
           AND `t`.`org_id`={{BLOTTO_ORG_ID}}
     -- One-off payments are not applicable
     WHERE `m`.`Freq`!='Single' OR `m`.`Freq` IS NULL
+      AND `t`.`mandate_provider`!='EXT' -- ignore external tickets (which are notionally single)
     GROUP BY `client_ref`,`ticket_number`
     -- cancelled_date is in the past
     HAVING `cancelled_date`<CURDATE()
@@ -835,6 +837,9 @@ BEGIN
 
     ORDER BY `tk`.`number`
   ;
+-- TODO add insurance support for external tickets - insert ignore from blotto_external
+-- current solution is you cannot have EXT tickets if you have any insured prizes
+  -- Generate `Insurance`
   CALL insureOutput()
   ;
 END$$
@@ -1180,6 +1185,8 @@ BEGIN
     GROUP BY `s`.`id`,`d`.`ticket_number`
     ORDER BY `s`.`id`,`d`.`ticket_number`
   ;
+-- TODO above query does not find supporters with EXT tickets because they have no mandate
+-- so add another query here to add those in to `tmp_supporterout` as well
   ALTER TABLE `tmp_supporterout`
   ADD PRIMARY KEY (`id`,`current_ticket_number`),
   CHANGE `FirstPayment` `FirstPayment` date NOT NULL AFTER `Name`,
@@ -1270,6 +1277,8 @@ BEGIN
     GROUP BY `p`.`id`
     ORDER BY `p`.`id`
   ;
+-- TODO above query does not find supporters with EXT tickets because they have no mandate
+-- so add another query here to add those in to `tmp_player` as well
   ALTER TABLE `tmp_player`
   ADD PRIMARY KEY (`id`),
   CHANGE `FirstPayment` `FirstPayment` date NOT NULL AFTER `tickets`,
@@ -1728,6 +1737,7 @@ BEGIN
       ON `c`.`id`=`u`.`contact_id`
     JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
       ON `t`.`org_id`={{BLOTTO_ORG_ID}}
+      -- EXT ticket supporters get milestones too because mandates are not joined
      AND `t`.`client_ref`=`p`.`client_ref`
     GROUP BY `u`.`id`
     ORDER BY `updated`,`client_ref_orig`,`client_ref`

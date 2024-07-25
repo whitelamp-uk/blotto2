@@ -242,6 +242,7 @@ BEGIN
    ,`p`.`chances`-COUNT(`tk`.`number`) AS `discrepancy`
   FROM `blotto_player` AS `p`
   LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `tk`
+         -- this query is good for EXT tickets too
          ON `tk`.`client_ref`=`p`.`client_ref`
         AND `tk`.`org_id`={{BLOTTO_ORG_ID}}
   GROUP BY `p`.`id`

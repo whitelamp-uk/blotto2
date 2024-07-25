@@ -151,6 +151,7 @@ $qs = "
   JOIN `$mdb`.`blotto_supporter` AS `s`
     ON `s`.`id`=`p`.`supporter_id`
    AND `s`.`mandate_blocked`=0
+  -- TODO this check does not consider external tickets (having no mandates) so they should not throw up results
   JOIN `$mdb`.`blotto_build_mandate` AS `m`
     ON `m`.`ClientRef`=`p`.`client_ref`
   LEFT JOIN `$tdb`.`blotto_ticket` AS `t`

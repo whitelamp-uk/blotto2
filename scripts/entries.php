@@ -108,6 +108,7 @@ foreach ($close_dates as $date) {
           AND `draw_closed`='$date'
         GROUP BY `client_ref`
            ) AS `i`
+             -- this join does not use dd ref so mandate_provider=EXT should not get filtered out
              ON `i`.`client_ref`=`tk`.`client_ref`
 
       WHERE `p`.`first_draw_close`<='$date'
