@@ -52,6 +52,7 @@ $qs = "
        ,MIN(`id`) AS `id_min`
        ,MAX(`id`) AS `id_max`
       FROM `blotto_entry`
+      WHERE `draw_closed` IS NOT NULL
       GROUP BY `draw_closed`
       ORDER BY `draw_closed`
     ) AS `e`

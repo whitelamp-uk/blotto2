@@ -37,6 +37,7 @@ BEGIN
      ,'' AS `mandate_created`
      ,'' AS `mandate_startdate`
     FROM `blotto_entry` AS `e`
+    WHERE `e`.`draw_closed` IS NOT NULL
     GROUP BY `e`.`draw_closed`,`e`.`ticket_number`
     ORDER BY `e`.`draw_closed`,`e`.`client_ref`,`e`.`ticket_number`
   ;
@@ -70,6 +71,7 @@ BEGIN
      ,COUNT(`e`.`id`) AS `tickets_entered`
     FROM `blotto_entry` AS `e`
     WHERE `e`.`draw_closed`<CURDATE()
+      AND `e`.`draw_closed` IS NOT NULL
     GROUP BY `draw_closed`,`ccc`
     ORDER BY `draw_closed`,`ccc`
   ;

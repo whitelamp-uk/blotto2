@@ -193,6 +193,7 @@ CREATE OR REPLACE VIEW `Workflow_3_DD` (
     FROM `blotto_entry` AS `e`
     JOIN `blotto_player` AS `p`
       ON `p`.`client_ref`=`e`.`client_ref`
+    WHERE `e`.`draw_closed` IS NOT NULL
     GROUP BY `supporter_id`
   ) AS `es`
   JOIN `blotto_supporter` AS `s`

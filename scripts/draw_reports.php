@@ -24,6 +24,7 @@ $qs = "
     SELECT
       DISTINCT `draw_closed`
     FROM `blotto_entry`
+    WHERE `draw_closed` IS NOT NULL
   ) AS `draws`
   JOIN `$rdb`.`blotto_result` AS `r`
     ON `r`.`draw_closed`=`draws`.`draw_closed`

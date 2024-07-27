@@ -1063,6 +1063,7 @@ function draw_report_render ($draw_closed,$output=true) {
            ,COUNT(DISTINCT `client_ref`) AS `players`
           FROM `blotto_entry`
           WHERE `draw_closed`<='$draw_closed'
+            AND `draw_closed` IS NOT NULL -- superfluous but for clarity
           GROUP BY `draw_closed`
           ORDER BY `draw_closed` DESC
           LIMIT 0,2
@@ -1598,9 +1599,9 @@ function fee_units ($name,$day_first,$day_last) {
         $qs = "
           SELECT
             COUNT(DISTINCT `draw_closed`) AS `units`
-          FROM `blotto_entry` AS `e`
-          WHERE `e`.`draw_closed`>='$day_first'
-            AND `e`.`draw_closed`<='$day_last'
+          FROM `blotto_entry`
+          WHERE `draw_closed`>='$day_first'
+            AND `draw_closed`<='$day_last'
         ";
     }
     try {
@@ -2044,6 +2045,7 @@ function invoice_game ($draw_closed_date,$output=true) {
             DISTINCT DATE_ADD(`draw_closed`,INTERVAL 1 DAY) AS `start_date`
           FROM `blotto_entry`
           WHERE `draw_closed`<'$draw_closed_date'
+            AND `draw_closed` IS NOT NULL -- superfluous but for clarity
           ORDER BY `draw_closed` DESC
           LIMIT 0,1
         ";
@@ -2813,9 +2815,9 @@ function prize_payout_max ($prizes) {
 function prize_pot ($draw_closed,$quids_per_thou,$verbose=false) {
     $q ="
       SELECT
-        COUNT(`e`.`id`) AS `tickets`
-      FROM `blotto_entry` AS `e`
-      WHERE `e`.`draw_closed`='$date'
+        COUNT(`id`) AS `tickets`
+      FROM `blotto_entry`
+      WHERE `draw_closed`='$draw_closed'
       ;
     ";
     try {
@@ -4736,6 +4738,7 @@ function stats ($day_first,$day_last) {
           COUNT(`id`) AS `plays`
         FROM `blotto_entry`
         WHERE `draw_closed`<'$day_first'
+          AND `draw_closed` IS NOT NULL -- superfluous but for clarity
       ) AS `game_was`
       JOIN (
         SELECT
