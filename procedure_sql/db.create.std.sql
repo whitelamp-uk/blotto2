@@ -173,7 +173,7 @@ INSERT IGNORE INTO `blotto_crm_status` (`status`, `caution`, `description`, `all
 ;
 
 
-CREATE TABLE `blotto_external` (
+CREATE TABLE IF NOT EXISTS `blotto_external` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `draw_closed` date DEFAULT NULL,
   `ticket_number` char(6) not null,
