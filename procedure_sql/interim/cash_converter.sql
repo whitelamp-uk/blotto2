@@ -277,7 +277,7 @@ INSERT IGNORE INTO `blotto_entry` ( -- draw_closed,ticket_number is unique
  ,`client_ref`
 )
 SELECT
-  `draw_closed`
+  null
  ,`ticket_number`
  ,`client_ref`
 FROM `blotto_external`

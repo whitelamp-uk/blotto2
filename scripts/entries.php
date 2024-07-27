@@ -155,22 +155,56 @@ foreach ($close_dates as $date) {
         fwrite (STDERR,$q."\n".$e->getMessage()."\n");
         exit (104);
     }
-    if ($n) {
-        $q              = substr ($q,0,-2);
-        try {
+
+
+// external tickets
+// update blotto_entry set `draw_closed`='$date' where draw_closed is null
+// add $ex = affected_rows to the count
+
+    $q              = substr ($q,0,-2);
+    try {
+        if ($n>0) {
             $result     = $zo->query ($q);
             if (!$quiet) {
                 echo "c";
             }
+            echo "$n tickets inserted into `blotto_entry` for `draw_closed`='$date'\n";
         }
-        catch (\mysqli_sql_exception $e) {
-            fwrite (STDERR,$q."\n".$e->getMessage()."\n");
-            exit (105);
+        else {
+            echo "no tickets for `draw_closed`='$date'\n";
         }
-        echo "$n tickets inserted into `blotto_entry` for `draw_closed`='$date'\n";
+        // Any tickets entered by other processes should be assigned to the next draw to be run (this one)
+        $insure = 0;
+        if (defined('BLOTTO_INSURE') && BLOTTO_INSURE && $date>=BLOTTO_INSURE_FROM) {
+            $insure = 1;
+        }
+        $q = "
+          UPDATE `blotto_entry` as `e`
+          LEFT JOIN (
+            SELECT
+              `ticket_number`
+            FROM `blotto_insurance`
+            WHERE `org_ref`='$org_ref'
+              AND `draw_closed`='$date'
+           ) AS `i`
+             ON `i`.`ticket_number`=`e`.`ticket_number`
+          SET `e`.`draw_closed`='$date'
+          WHERE `e`.`draw_closed` IS NULL
+            AND ( $insure=0 OR `i`.`ticket_number` IS NOT NULL )
+        ";
+        $result = $zo->query ($q);
+        $ex = $zo->affected_rows;
+        if ($ex>0) {
+            $result     = $zo->query ($q);
+            if (!$quiet) {
+                echo "x";
+            }
+            echo "$ex external tickets found and inserted into `blotto_entry` for `draw_closed`='$date'\n";
+        }
     }
-    else {
-        echo "no tickets for `draw_closed`='$date'\n";
+    catch (\mysqli_sql_exception $e) {
+        fwrite (STDERR,$q."\n".$e->getMessage()."\n");
+        exit (105);
     }
 }
 
