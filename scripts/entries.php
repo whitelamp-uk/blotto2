@@ -74,10 +74,11 @@ foreach ($close_dates as $date) {
       FROM `blotto_player` AS `p`
       LEFT JOIN (
         SELECT
-          ROUND($price*COUNT(`e`.`id`)/100,2) AS `paid_out`
-         ,`e`.`client_ref`
-        FROM `blotto_entry` AS `e`
-        GROUP BY `e`.`client_ref`
+          ROUND($price*COUNT(`id`)/100,2) AS `paid_out`
+         ,`client_ref`
+        FROM `blotto_entry`
+        WHERE `draw_closed` IS NOT NULL
+        GROUP BY `client_ref`
       ) AS `e_summary`
         ON `e_summary`.`client_ref`=`p`.`client_ref`
       LEFT JOIN (

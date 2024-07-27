@@ -254,6 +254,7 @@ BEGIN
      ,SUBSTR(`client_ref`,3,4) AS `badge`
      ,`client_ref`
       FROM `blotto_entry`
+      WHERE `draw_closed` IS NOT NULL
       GROUP BY `client_ref`
   ) AS `f`
   LEFT JOIN (
@@ -261,6 +262,7 @@ BEGIN
       `client_ref`
      ,COUNT(`id`) AS `ppt`
     FROM `blotto_entry`
+    WHERE `draw_closed` IS NOT NULL
     GROUP BY `client_ref`
   ) AS `p`
     ON `p`.`client_ref`=`f`.`client_ref`
@@ -270,6 +272,7 @@ BEGIN
      ,COUNT(`id`) AS `ppt`
      ,MIN(`draw_closed`) AS `first_play`
     FROM `blotto_entry` AS `e`
+    WHERE `e`.`draw_closed` IS NOT NULL
     JOIN `Cancellations` AS `cn`
       ON `cn`.`ClientRef`=`e`.`client_ref`
     GROUP BY `client_ref`
@@ -281,6 +284,7 @@ BEGIN
       `client_ref`
      ,COUNT(`id`) AS `ppt`
     FROM `blotto_entry`
+    WHERE `draw_closed` IS NOT NULL
     GROUP BY `client_ref`
     HAVING `ppt`>=3
   ) AS `pa`

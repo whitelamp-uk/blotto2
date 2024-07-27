@@ -11,6 +11,7 @@ $q = "
       MAX(`draw_closed`) AS `draw_closed`
     FROM `blotto_entry`
     WHERE `draw_closed`<CURDATE()
+      AND `draw_closed` IS NOT NULL
   ) AS `latest`
   JOIN (
     SELECT
@@ -33,6 +34,7 @@ $q = "
     MAX(`draw_closed`) AS `latest`
   FROM `blotto_entry`
   WHERE `draw_closed`<CURDATE()
+    AND `draw_closed` IS NOT NULL
   ;
 ";
 

@@ -313,6 +313,7 @@ BEGIN
     IFNULL(COUNT(*),0)
   INTO @allPlaysAllTime
   FROM `blotto_entry`
+  WHERE `draw_closed` IS NOT NULL
   ;
   SELECT
     IFNULL(COUNT(*),0)
@@ -750,6 +751,7 @@ BEGIN
     LEFT JOIN `blotto_supporter` AS `s`
       ON `s`.`id`=`p`.`supporter_id`
     WHERE `e`.`draw_closed`<CURDATE()
+      AND `e`.`draw_closed` IS NOT NULL -- superfluous but for clarity
     GROUP BY `draw_closed`,`ccc`
     ORDER BY `draw_closed`,`ccc`
   ;
@@ -805,7 +807,8 @@ BEGIN
         `client_ref`
        ,COUNT(DISTINCT `draw_closed`) AS `plays`
       FROM `blotto_entry`
-      GROUP BY `client_ref`
+      WHERE `draw_closed` IS NOT NULL -- external tickets will not be in the results anyway (m.ClientRef is null)
+       GROUP BY `client_ref`
     ) AS `e`
       ON `e`.`client_ref`=`p`.`client_ref`
     LEFT JOIN `Cancellations` AS `cancelled`
@@ -1171,6 +1174,7 @@ BEGIN
         -- Not DISTINCT because we want total entries in all draws
          ,COUNT(`ticket_number`) AS `draw_entries`
         FROM `blotto_entry`
+        WHERE `draw_closed` IS NOT NULL -- superfluous but for clarity
         GROUP BY `client_ref`
       )         AS `e`
                 ON `e`.`client_ref`=`m`.`ClientRef`
@@ -1257,6 +1261,7 @@ BEGIN
         -- Not DISTINCT because we want total entries in all draws
          ,COUNT(`ticket_number`) AS `draw_entries`
         FROM `blotto_entry`
+        WHERE `draw_closed` IS NOT NULL -- superfluous but for clarity
         GROUP BY `client_ref`
       )         AS `e`
                 ON `e`.`client_ref`=`m`.`ClientRef`
