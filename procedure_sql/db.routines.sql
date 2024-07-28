@@ -776,6 +776,96 @@ END$$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `externals`$$
+CREATE PROCEDURE `externals` (
+)
+BEGIN
+  -- Supporters arising from external tickets
+  SET @CostPerPlay = {{BLOTTO_TICKET_PRICE}};
+  INSERT INTO `tmp_supporterout`
+    SELECT
+      `s`.`id`
+     ,`s`.`created`
+     ,`s`.`canvas_code`
+     ,`ext`.`client_ref`
+     ,`ext`.`client_ref`
+     ,`ext`.`draw_closed`
+     ,`ext`.`ticket_number`
+     ,'' AS `signed`
+     ,`s`.`canvas_agent_ref`
+     ,`s`.`canvas_ref`
+     ,GROUP_CONCAT(`c`.`title` ORDER BY `c`.`id` DESC LIMIT 1) AS `title`
+     ,GROUP_CONCAT(`c`.`name_first` ORDER BY `c`.`id` DESC LIMIT 1) AS `name_first`
+     ,GROUP_CONCAT(`c`.`name_last` ORDER BY `c`.`id` DESC LIMIT 1) AS `name_last`
+     ,IFNULL(GROUP_CONCAT(`c`.`email` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `email`
+     ,IFNULL(GROUP_CONCAT(`c`.`mobile` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `mobile`
+     ,IFNULL(GROUP_CONCAT(`c`.`telephone` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `telephone`
+     ,IFNULL(GROUP_CONCAT(`c`.`address_1` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `address_1`
+     ,IFNULL(GROUP_CONCAT(`c`.`address_2` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `address_2`
+     ,IFNULL(GROUP_CONCAT(`c`.`address_3` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `address_3`
+     ,IFNULL(GROUP_CONCAT(`c`.`town` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `town`
+     ,IFNULL(GROUP_CONCAT(`c`.`county` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `county`
+     ,IFNULL(GROUP_CONCAT(`c`.`postcode` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `postcode`
+     ,IFNULL(GROUP_CONCAT(`c`.`dob` ORDER BY `c`.`id` DESC LIMIT 1),'') AS `dob`
+     ,GROUP_CONCAT(`c`.`p0` ORDER BY `c`.`id` DESC LIMIT 1) AS `p0`
+     ,GROUP_CONCAT(`c`.`p1` ORDER BY `c`.`id` DESC LIMIT 1) AS `p1`
+     ,GROUP_CONCAT(`c`.`p2` ORDER BY `c`.`id` DESC LIMIT 1) AS `p2`
+     ,GROUP_CONCAT(`c`.`p3` ORDER BY `c`.`id` DESC LIMIT 1) AS `p3`
+     ,GROUP_CONCAT(`c`.`p4` ORDER BY `c`.`id` DESC LIMIT 1) AS `p4`
+     ,GROUP_CONCAT(`c`.`p5` ORDER BY `c`.`id` DESC LIMIT 1) AS `p5`
+     ,GROUP_CONCAT(`c`.`p6` ORDER BY `c`.`id` DESC LIMIT 1) AS `p6`
+     ,GROUP_CONCAT(`c`.`p7` ORDER BY `c`.`id` DESC LIMIT 1) AS `p7`
+     ,GROUP_CONCAT(`c`.`p8` ORDER BY `c`.`id` DESC LIMIT 1) AS `p8`
+     ,GROUP_CONCAT(`c`.`p9` ORDER BY `c`.`id` DESC LIMIT 1) AS `p9`
+     ,'EXT' AS `Provider`
+     ,'' AS `RefNo`
+     ,'' AS `Name`
+     ,'' AS `FirstPayment`
+     ,'' AS `LastCreated`
+     ,'' AS `LastUpdated`
+     ,'' AS `LastPayment`
+     ,'Single' AS `Freq`
+     ,CAST(`s`.`projected_chances`*@CostPerPlay/100 AS decimal(8,2)) AS `Amount`
+     ,1 AS `PaymentsCollected`
+     ,CAST(`s`.`projected_chances`*@CostPerPlay/100 AS decimal(8,2)) AS `AmountCollected`
+     ,IF(`ext`.`draw_closed`<CURDATE(),1,0) AS `plays`
+     ,CAST(@CostPerPlay/100 AS decimal(8,2))
+     ,0.00 AS `balance`
+     ,'SINGLE' AS `active`
+     ,'EXTERNAL' AS `status`
+     ,'' AS `fail_reason`
+    FROM `blotto_external` AS `ext`
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`client_ref`=`ext`.`client_ref`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+    GROUP BY `s`.`id`
+  ;
+  -- Players arising from external tickets
+  INSERT INTO `tmp_player`
+    SELECT
+      `p`.`id`
+     ,`p`.`supporter_id`
+     ,`p`.`client_ref`
+     ,`p`.`chances`
+     ,'' AS `FirstPayment`
+     ,'' AS `FirstCreated`
+     ,1 AS `PaymentsCollected`
+     ,CAST(`p`.`chances`*@CostPerPlay/100 AS decimal(8,2)) AS `AmountCollected`
+     ,IF(`ext`.`draw_closed`<CURDATE(),1,0) AS `plays`
+     ,IF(
+        `ext`.`draw_closed`<CURDATE()
+       ,0.00
+       ,CAST(`p`.`chances`*@CostPerPlay/100 AS decimal(8,2))
+      ) AS `balance`
+    FROM `blotto_external` AS `ext`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`client_ref`=`ext`.`client_ref`
+  ;
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `insure`$$
 CREATE PROCEDURE `insure` (
   IN      futureCloseDate date
@@ -1145,10 +1235,19 @@ BEGIN
        ,IFNULL(`e`.`draw_entries`,0) AS `plays`
        ,dp(@CostPerPlay/100,2) AS `per_play`
        ,dp(IFNULL(`cl`.`AmountCollected`,0)-(@CostPerPlay/100*IFNULL(`e`.`draw_entries`,0)),2) AS `balance`
-
--- Weening us off mandate status
-       ,IF(`m`.`Status`='','',IF(`m`.`Status` IN ('DELETED','CANCELLED','FAILED'),'DEAD','ACTIVE')) AS `Active`
-
+       ,IF(
+          `m`.`Status`=''
+         ,''
+         ,IF(
+            `m`.`Status` IN ('DELETED','CANCELLED','FAILED')
+           ,'DEAD'
+           ,IF(
+              `m`.`Freq`='SINGLE'
+             ,'SINGLE'
+             ,'ACTIVE'
+            )
+          )
+        ) AS `Active`
        ,`m`.`Status`
        ,`m`.`FailReason`
       FROM `blotto_build_mandate` as `m`
@@ -1189,8 +1288,6 @@ BEGIN
     GROUP BY `s`.`id`,`d`.`ticket_number`
     ORDER BY `s`.`id`,`d`.`ticket_number`
   ;
--- TODO above query does not find supporters with EXT tickets because they have no mandate
--- so add another query here to add those in to `tmp_supporterout` as well
   ALTER TABLE `tmp_supporterout`
   ADD PRIMARY KEY (`id`,`current_ticket_number`),
   CHANGE `FirstPayment` `FirstPayment` date NOT NULL AFTER `Name`,
@@ -1232,10 +1329,19 @@ BEGIN
        ,IFNULL(`e`.`draw_entries`,0) AS `plays`
        ,dp(@CostPerPlay/100,2) AS `per_play`
        ,dp(IFNULL(`cl`.`AmountCollected`,0)-(@CostPerPlay/100*IFNULL(`e`.`draw_entries`,0)),2) AS `balance`
-
--- Weening us off mandate status
-       ,IF(`m`.`Status`='','',IF(`m`.`Status` IN ('DELETED','CANCELLED','FAILED'),'DEAD','ACTIVE')) AS `Active`
-
+       ,IF(
+          `m`.`Status`=''
+         ,''
+         ,IF(
+            `m`.`Status` IN ('DELETED','CANCELLED','FAILED')
+           ,'DEAD'
+           ,IF(
+              `m`.`Freq`='SINGLE'
+             ,'SINGLE'
+             ,'ACTIVE'
+            )
+          )
+        ) AS `Active`
        ,`m`.`Status`
        ,`m`.`FailReason`
       FROM `blotto_build_mandate` as `m`
@@ -1282,8 +1388,6 @@ BEGIN
     GROUP BY `p`.`id`
     ORDER BY `p`.`id`
   ;
--- TODO above query does not find supporters with EXT tickets because they have no mandate
--- so add another query here to add those in to `tmp_player` as well
   ALTER TABLE `tmp_player`
   ADD PRIMARY KEY (`id`),
   CHANGE `FirstPayment` `FirstPayment` date NOT NULL AFTER `tickets`,
@@ -1291,6 +1395,8 @@ BEGIN
   CHANGE `AmountCollected` `AmountCollected` decimal(10,2) NOT NULL AFTER `PaymentsCollected`,
   CHANGE `balance` `balance` decimal(6,2) NOT NULL AFTER `plays`
   ;
+-- Add supporters and players from external tickets
+--  CALL externals();
   -- Add player data to supporter data
   DROP TABLE IF EXISTS `Supporters`
   ;
