@@ -514,7 +514,7 @@ BEGIN
     )      AS `c`
            ON `c`.`Provider`=`m`.`Provider`
           AND `c`.`RefNo`=`m`.`RefNo`
-    LEFT JOIN `crucible_ticket_zaffo`.`blotto_ticket` AS `t`
+    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
            ON `t`.`mandate_provider`=`m`.`Provider`
           AND `t`.`client_ref`=`m`.`ClientRef`
           AND `t`.`org_id`={{BLOTTO_ORG_ID}}
