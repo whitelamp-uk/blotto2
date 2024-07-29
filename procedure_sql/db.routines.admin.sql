@@ -272,9 +272,9 @@ BEGIN
      ,COUNT(`id`) AS `ppt`
      ,MIN(`draw_closed`) AS `first_play`
     FROM `blotto_entry` AS `e`
-    WHERE `e`.`draw_closed` IS NOT NULL
     JOIN `Cancellations` AS `cn`
       ON `cn`.`ClientRef`=`e`.`client_ref`
+    WHERE `e`.`draw_closed` IS NOT NULL
     GROUP BY `client_ref`
     HAVING `ppt`<3
   ) AS `c`
