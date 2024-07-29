@@ -268,12 +268,12 @@ BEGIN
     ON `p`.`client_ref`=`f`.`client_ref`
   LEFT JOIN (
     SELECT
-      `client_ref`
-     ,COUNT(`id`) AS `ppt`
-     ,MIN(`draw_closed`) AS `first_play`
+      `e`.`client_ref`
+     ,COUNT(`e`.`id`) AS `ppt`
+     ,MIN(`e`.`draw_closed`) AS `first_play`
     FROM `blotto_entry` AS `e`
     JOIN `Cancellations` AS `cn`
-      ON `cn`.`ClientRef`=`e`.`client_ref`
+      ON `cn`.`client_ref`=`e`.`client_ref`
     WHERE `e`.`draw_closed` IS NOT NULL
     GROUP BY `client_ref`
     HAVING `ppt`<3
