@@ -174,24 +174,14 @@ foreach ($close_dates as $date) {
         else {
             echo "no tickets for `draw_closed`='$date'\n";
         }
-        // Any tickets entered by other processes should be assigned to the next draw to be run (this one)
-        $insure = 0;
-        if (defined('BLOTTO_INSURE') && BLOTTO_INSURE && $date>=BLOTTO_INSURE_FROM) {
-            $insure = 1;
-        }
+        // External tickets must now go in contiguously for this draw_closed
         $q = "
-          UPDATE `blotto_entry` as `e`
-          LEFT JOIN (
-            SELECT
-              `ticket_number`
-            FROM `blotto_insurance`
-            WHERE `org_ref`='$org_ref'
-              AND `draw_closed`='$date'
-           ) AS `i`
-             ON `i`.`ticket_number`=`e`.`ticket_number`
-          SET `e`.`draw_closed`='$date'
-          WHERE `e`.`draw_closed` IS NULL
-            AND ( $insure=0 OR `i`.`ticket_number` IS NOT NULL )
+          INSERT INTO `blotto_entry`
+          (`draw_closed`,`ticket_number`,`client_ref`)
+          SELECT
+          `draw_closed`,`ticket_number`,`client_ref`
+          FROM `blotto_external`
+          WHERE `draw_closed`='$date'
         ";
         $result = $zo->query ($q);
         $ex = $zo->affected_rows;
@@ -208,5 +198,4 @@ foreach ($close_dates as $date) {
         exit (105);
     }
 }
-
 
