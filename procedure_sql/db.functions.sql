@@ -124,6 +124,26 @@ END$$
 
 
 DELIMITER $$
+DROP FUNCTION IF EXISTS `feeRate`$$
+CREATE FUNCTION `feeRate`(
+   feeName varchar(64) character set ascii
+  ,feeDate date
+) RETURNS int(11) unsigned DETERMINISTIC
+BEGIN
+  SET @rate = 0
+  ;
+  SELECT
+    GROUP_CONCAT(`rate` ORDER BY `starts` DESC LIMIT 1) INTO @rate
+  FROM `blotto_fee`
+  WHERE `fee`=feeName
+    AND `starts`<=feeDate
+  ;
+  RETURN IFNULL(@rate,0)
+  ;
+END$$
+
+
+DELIMITER $$
 DROP FUNCTION IF EXISTS `dp`$$
 CREATE FUNCTION `dp`(
    floatValue float
