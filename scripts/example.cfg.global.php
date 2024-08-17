@@ -158,3 +158,7 @@ define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json' );
 define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CODE',   'CM'                                            );
 define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CLASS',  '\Whitelamp\CampaignMonitor'                    );
 
+
+// Other
+define ( 'BLOTTO_CURL_ATTEMPTS', 4              );
+
