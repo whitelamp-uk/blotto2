@@ -55,59 +55,59 @@ if (data2) {
 
 <?php if (!defined('BLOTTO_RBE_ORGS')): ?>
 
-      <section id="chart3" class="chart left">
+      <section id="chart3a" class="chart left">
         <?php echo links_report ('recent_recruitment_and_cancellation',3,'Month'); ?>
         <canvas id="recruitment"></canvas>
       </section>
       <script>
-var data3 = <?php echo chart (3,'graph'); ?>;
-if (data3) {
+var data3a = <?php echo chart (3,'graph'); ?>;
+if (data3a) {
     chartRender (
         'recruitment',
         'bar',
-        data3,
+        data3a,
         {
             title: 'Recent recruitment and cancellation (except one-off payments)',
             link: true,
             zero: true
         }
     );
-    console.log ('Rendered data3');
+    console.log ('Rendered data3a');
 }
       </script>
 
-      <section id="chart4" class="chart right">
+      <section id="chart3b" class="chart right">
         <?php echo links_report ('cumulative_recruitment_and_cancellation',3,'Month',true); ?>
         <canvas id="recruitment-cumulative"></canvas>
       </section>
       <script>
-var data4 = <?php echo chart (3,'graph',true); ?>;
-if (data4) {
+var data3b = <?php echo chart (3,'graph',true); ?>;
+if (data3b) {
     chartRender (
         'recruitment-cumulative',
         'bar',
-        data4,
+        data3b,
         {
             title: 'Cumulative recruitment and cancellation',
             link: true,
             zero: true
         }
     );
-    console.log ('Rendered data4');
+    console.log ('Rendered data3b');
 }
       </script>
 
-      <section id="chart5" class="chart left">
+      <section id="chart4a" class="chart left">
         <?php echo links_report ('retention_of_ongoing_direct_debits',4,'Duration (months)',1); ?>
         <canvas id="retention-playing"></canvas>
       </section>
       <script>
-var data5 = <?php echo chart (4,'graph',1); ?>;
-if (data5) {
+var data4a = <?php echo chart (4,'graph',1); ?>;
+if (data4a) {
     chartRender (
         'retention-playing',
         'bar',
-        data5,
+        data4a,
         {
             title: 'Ongoing direct debit retention to <?php echo htmlspecialchars(day_cancels_known('j M Y')); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
             link: true,
@@ -115,21 +115,21 @@ if (data5) {
             noLegend: true
         }
     );
-    console.log ('Rendered data5');
+    console.log ('Rendered data4a');
 }
       </script>
 
-      <section id="chart6" class="chart right">
+      <section id="chart4b" class="chart right">
         <?php echo links_report ('retention_of_cancelled_direct_debits',4,'Duration (months)',1,true); ?>
         <canvas id="retention-cancelled"></canvas>
       </section>
       <script>
-var data6 = <?php echo chart (4,'graph',1,true); ?>;
-if (data6) {
+var data4b = <?php echo chart (4,'graph',1,true); ?>;
+if (data4b) {
     chartRender (
         'retention-cancelled',
         'bar',
-        data6,
+        data4b,
         {
             title: 'Cancelled direct debit retention at <?php echo day_yesterday()->format ('j M Y'); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
             link: true,
@@ -141,59 +141,59 @@ if (data6) {
 }
       </script>
 
-      <section id="chart8" class="chart right doughnut">
+      <section id="chart6" class="chart right doughnut">
         <?php echo links_report ('ccc_performance_cumulative',6,'CCC'); ?>
         <canvas id="ccc-cumulative"></canvas>
       </section>
       <script>
-var data8 = <?php echo chart (6,'graph'); ?>;
-if (data8) {
+var data6 = <?php echo chart (6,'graph'); ?>;
+if (data6) {
     chartRender (
         'ccc-cumulative',
         'doughnut',
-        data8,
+        data6,
         {
             title: "Canvassing company performance (cumulative import/retention, ignoring single payments)",
             link: true
         }
     );
-    console.log ('Rendered data8');
+    console.log ('Rendered data6');
 }
       </script>
 
-      <section id="chart7" class="chart left doughnut">
+      <section id="chart5a" class="chart left doughnut">
         <?php echo links_report ('ccc_performance_recent',5,'CCC',3); ?>
         <canvas id="ccc-recent"></canvas>
       </section>
       <script>
-var data7 = <?php echo chart (5,'graph',$since); ?>;
-if (data7) {
+var data5a = <?php echo chart (5,'graph',$since); ?>;
+if (data5a) {
     chartRender (
         'ccc-recent',
         'doughnut',
-        data7,
+        data5a,
         {
             title: "Canvassing company performance (imports <?php echo $since_text; ?>)",
             link: true
         }
     );
-    console.log ('Rendered data7');
+    console.log ('Rendered data5a');
 }
       </script>
 
 <!--
-      <section id="chart9" class="chart left">
+      <section id="chart5b" class="chart left">
         <?php // echo links_report ('retention_by_postcode_area',5,'Postal area'); ?>
         <canvas id="retention-geographical"></canvas>
       </section>
       <script>
-var data9 = <?php // echo chart (5,'graph'); ?>;
+var data5b = <?php // echo chart (5b,'graph'); ?>;
 /*
-if (data9) {
+if (data5b) {
     chartRender (
         'retention-geographical',
         'bar',
-        data9,
+        data5b,
         {
             title: 'Retention (ppt) by postcode area',
             link: true

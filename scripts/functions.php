@@ -552,7 +552,7 @@ function day_one ($for_wins=false) {
         if ($for_wins && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST>$s) {
             // Handles legacy scenario (eg. SHC) where tickets got changed
             // Before the change date, winnings are no longer derivable by deterministic calculation
-            // So, in the case of winnings (or reconciliation), day one is BLOTTO_WIN_FIRST
+            // So, in the case of winnings or financial reporting, day one is BLOTTO_WIN_FIRST
             $s = BLOTTO_WIN_FIRST;
         }
     }

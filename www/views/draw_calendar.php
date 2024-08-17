@@ -4,7 +4,7 @@
 $dcs            = [];
 $dt             = new \DateTime (BLOTTO_DRAW_CLOSE_1);
 $end            = new \DateTime ();
-$end->add (new DateInterval('P12M'));
+$end->add (new \DateInterval('P12M'));
 $end            = $end->format ('Y-m-d');
 $count          = 0;
 while (($next=$dt->format('Y-m-d'))<=$end) {

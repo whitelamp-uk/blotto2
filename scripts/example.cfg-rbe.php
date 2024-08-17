@@ -32,7 +32,7 @@ define ( 'BLOTTO_PROOF_DIR',     __DIR__.'/../export/abc_def/proof'     );
 define ( 'BLOTTO_OUTFILE',       '/tmp/blotto.abc_def.outfile.csv'      );
 define ( 'BLOTTO_TICKET_PRICE',  4                   );  // In pennies
 define ( 'BLOTTO_TICKETS_AUTO',  false               );
-define ( 'BLOTTO_WIN_FIRST',     '2016-01-01'        );  // Only report wins/reconciles on or after this date
+define ( 'BLOTTO_WIN_FIRST',     '2016-01-01'        );  // compulsory constant, always 2001-01-01 except for DBH and SHC
 define ( 'BLOTTO_WEEK_ENDED',    5                   );  // Reports up to and including Friday
 define ( 'BLOTTO_DRAW_CLOSE_1',  '2020-09-11'        );  // First draw close for the game
 define ( 'BLOTTO_BELL',          ''                  );

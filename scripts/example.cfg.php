@@ -50,11 +50,10 @@ define ( 'BLOTTO_OUTFILE',          '/tmp/blotto.ylh.outfile.csv'       );
 define ( 'BLOTTO_TICKET_PRICE',     100                 );  // In pennies
 define ( 'BLOTTO_TICKETS_AUTO',     true                );
 define ( 'BLOTTO_TICKETS_GRATIS',   false               );  // Allow tickets to be sold outside the system
-define ( 'BLOTTO_WIN_FIRST',        '2016-01-01'        );  // Only report wins/reconciles on or after this date
+define ( 'BLOTTO_WIN_FIRST',        '2016-01-01'        );  // compulsory constant, always 2001-01-01 except for DBH and SHC
 define ( 'BLOTTO_INVOICE_FIRST',    '2021-05-07'        );  // Only generate invoices on or after this date
 define ( 'BLOTTO_DAY_FIRST',        '2016-01-01'        );  // First date due day
 define ( 'BLOTTO_DAY_LAST',         null                );  // Last date due day
-//define ( 'BLOTTO_WIN_FIRST',        '2016-01-01'        );  // Only report wins/reconciliations on or after this date
 define ( 'BLOTTO_WEEK_ENDED',       5                   );  // Reports up to and including Friday
 define ( 'BLOTTO_DRAW_CLOSE_1',     '2016-07-08'        );  // First draw close for the game
 define ( 'BLOTTO_DRAW_EMAIL',       'ylh-invoicing@thefundraisingfoundry.com' );

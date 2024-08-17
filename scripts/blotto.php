@@ -116,6 +116,7 @@ $vars = [
    ,'BLOTTO_RESULTS_DB'
    ,'BLOTTO_TICKET_DB'
    ,'BLOTTO_TICKET_PRICE'
+   ,'BLOTTO_WIN_FIRST'
 ];
 
 if (!array_key_exists(1,$argv)) {

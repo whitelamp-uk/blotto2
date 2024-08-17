@@ -31,6 +31,7 @@ else {
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js"></script>
     <script src="./media/reconcile.js"></script>
+    <script src="./media/visual.js"></script>
     <script>
 var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
     </script>
@@ -42,6 +43,50 @@ var profits = <?php echo profits(); ?>;
     <section class="content">
       <h2>Summary data</h2>
     </section>
+
+    <section id="chart9a" class="chart popout">
+      <section class="graph-button"><h3>Revenue/expense over recent months (ending before selected date)</h3></section>
+      <?php echo links_report ('revenue_expense_recent_months',9,'Month'); ?>
+      <canvas id="revenue-expense-recent-months"></canvas>
+    </section>
+    <script>
+var data9a = <?php echo chart (9,'graph',$to,'m'); ?>;
+if (data9a) {
+    chartRender (
+        'revenue-expense-recent-months',
+        'bar',
+        data9a,
+        {
+            title: "Revenue/expense over recent months",
+            link: true
+        }
+    );
+    console.log ('Rendered data9a');
+}
+    </script>
+
+    <section id="chart9b" class="chart popout">
+      <section class="graph-button"><h3>Revenue/expense over recent weeks (ending before selected date)</h3></section>
+      <?php echo links_report ('revenue_expense_recent_weeks',9,'Week'); ?>
+      <canvas id="revenue-expense-recent-weeks"></canvas>
+    </section>
+    <script>
+var data9b = <?php echo chart (9,'graph',$to,'w'); ?>;
+if (data9b) {
+    chartRender (
+        'revenue-expense-recent-weeks',
+        'bar',
+        data9b,
+        {
+            title: "Revenue/expense over recent weeks",
+            link: true
+        }
+    );
+    console.log ('Rendered data0b');
+}
+    </script>
+
+
 
     <form id="profit" data-price="<?php echo intval (BLOTTO_TICKET_PRICE) ?>">
 
@@ -131,7 +176,7 @@ var profits = <?php echo profits(); ?>;
       </ol>
 
     </form>
-
+<!--
     <script>
 window.document.addEventListener (
     'DOMContentLoaded',
@@ -160,7 +205,7 @@ window.document.addEventListener (
     }
 );
     </script>
-
+-->
     <section id="reconciliation">
 
       <form class="dates" method="get" action="./">

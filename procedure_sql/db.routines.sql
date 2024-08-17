@@ -1286,7 +1286,7 @@ BEGIN
   SET
     `opening_supporters`=`closing_supporters`+`revenue_gross`
   ;
-  -- Tidy
+  -- tidy
   DROP TABLE `MoniesTemp`
   ;
 END $$
