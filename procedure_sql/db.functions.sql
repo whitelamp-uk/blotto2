@@ -97,6 +97,50 @@ END$$
 
 
 DELIMITER $$
+DROP FUNCTION IF EXISTS `dayOne`$$
+CREATE FUNCTION `dayOne`(
+) RETURNS date DETERMINISTIC
+BEGIN
+  /*
+  funny things can happen in early-days lottoland
+  things might start off in not quite the right
+  order with questionable data referencing eg
+   - migrating existing players
+   - back log of early imports
+  to offer reporting a common long-term-stable "start
+  date" here we give a deterministic answer
+  */
+  SET @dt = CURDATE();
+  SELECT
+    IFNULL(MIN(`created`),@dt) INTO @s1
+  FROM `blotto_supporter`
+  ;
+  SELECT
+    IFNULL(MIN(`StartDate`),@dt) INTO @m1
+  FROM `blotto_build_mandate`
+  ;
+  SELECT
+    IFNULL(MIN(`DateDue`),@dt) INTO @c1
+  FROM `blotto_build_collection`
+  ;
+  SELECT
+    IFNULL(MIN(`draw_closed`),@dt) INTO @e1
+  FROM `blotto_entry`
+  ;
+  -- ooh a new trick to get min value from "array" of primitives
+  SET @d1 = LEAST(@s1,@m1,@c1,@e1)
+  ;
+  IF @d1<@dt THEN
+    RETURN @d1
+    ;
+  END IF
+  ;
+  RETURN null
+  ;
+END$$
+
+
+DELIMITER $$
 DROP FUNCTION IF EXISTS `digitsOnly`$$
 CREATE FUNCTION `digitsOnly`(
   `str` varchar(255)
@@ -126,8 +170,8 @@ END$$
 DELIMITER $$
 DROP FUNCTION IF EXISTS `feeRate`$$
 CREATE FUNCTION `feeRate`(
-   feeName varchar(64) character set ascii
-  ,feeDate date
+  feeName varchar(64) character set ascii
+ ,feeDate date
 ) RETURNS int(11) unsigned DETERMINISTIC
 BEGIN
   SET @rate = 0
@@ -146,8 +190,8 @@ END$$
 DELIMITER $$
 DROP FUNCTION IF EXISTS `dp`$$
 CREATE FUNCTION `dp`(
-   floatValue float
-  ,DP int(11)
+  floatValue float
+ ,DP int(11)
 ) RETURNS varchar(255) CHARACTER SET ascii DETERMINISTIC
 BEGIN
   RETURN REPLACE(FORMAT(floatValue,DP),',','');
@@ -157,8 +201,8 @@ END$$
 DELIMITER $$
 DROP FUNCTION IF EXISTS `sfRound`$$
 CREATE FUNCTION `sfRound`(
-   floatValue float
-  ,SF int(11)
+  floatValue float
+ ,SF int(11)
 ) RETURNS varchar(255) CHARACTER SET ascii DETERMINISTIC
 BEGIN
   DECLARE DP int(11);
@@ -174,6 +218,18 @@ BEGIN
 END$$
 
 
+DELIMITER $$
+DROP FUNCTION IF EXISTS `weekCommencingDate`$$
+CREATE FUNCTION `weekCommencingDate`(
+  day date
+) RETURNS date DETERMINISTIC
+BEGIN
+  /*
+  lottery reporting week is Sat-Fri
+  */
+  RETURN DATE_SUB(day,INTERVAL DAYOFWEEK(day)%7 DAY)
+  ;
+END$$
 
 
 DELIMITER ;
