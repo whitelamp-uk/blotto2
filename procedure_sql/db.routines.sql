@@ -65,6 +65,37 @@ END$$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `activityBank`$$
+CREATE PROCEDURE `activityBank` (
+)
+BEGIN
+    SELECT
+      SUBSTR(`s`.`created`,1,7) AS `month`
+     ,`m`.`Name`
+     ,`m`.`Sortcode`
+     ,`m`.`Account`
+     ,COUNT(`c`.`RefNo`) AS `collections`
+     ,SUM(`c`.`PaidAmount`) AS `collected`
+     ,COUNT(DISTINCT `s`.`original_client_ref`) AS `signups_in_month`
+     ,MIN(`s`.`supporter_first_mandate`) AS `first_mandated`
+     ,GROUP_CONCAT(DISTINCT CONCAT(`s`.`name_first`,' ',`s`.`name_last`)) AS `names`
+     ,GROUP_CONCAT(DISTINCT `s`.`original_client_ref` ORDER BY `s`.`original_client_ref`) AS `client_refs`
+    FROM `Supporters` AS `s`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`supporter_id`=`s`.`supporter_id`
+    JOIN `blotto_build_mandate` AS `m`
+      ON `m`.`ClientRef`=`p`.`client_ref`
+    JOIN `blotto_build_collection` AS `c`
+      ON `c`.`RefNo`=`m`.`RefNo`
+    WHERE `m`.`Account`!=''
+    GROUP BY `month`,`Sortcode`,`Account`
+    HAVING `signups_in_month`>1
+    ORDER BY `month` DESC,`signups_in_month` DESC,`Sortcode`,`Account`
+  ;
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `activityMobile`$$
 CREATE PROCEDURE `activityMobile` (
 )
@@ -1027,6 +1058,238 @@ END$$
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `mandates`$$
 -- Functionality moved to rsm-api
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `monies`$$
+CREATE PROCEDURE `monies` (
+)
+BEGIN
+  DROP TABLE IF EXISTS `Monies`
+  ;
+  DROP TABLE IF EXISTS `MoniesTemp`
+  ;
+  CREATE TABLE `MoniesTemp` (
+    `accrue_date` date NOT NULL,
+    `wc_date` date NULL,
+    `type` char(8) character set ascii,
+    `opening_supporters` decimal(8,2) default 0.00,
+    `revenue_gross` decimal(8,2) default 0.00,
+    `less_external` decimal(8,2) default 0.00,
+    `plus_claims` decimal (8,2) default 0.00,
+    `less_paid_out` decimal (8,2) default 0.00,
+    `revenue_nett` decimal(8,2) default 0.00,
+    `less_rbe_fees` decimal (8,2) default 0.00,
+    `less_anl_post` decimal (8,2) default 0.00,
+    `less_anl_email` decimal (8,2) default 0.00,
+    `less_anl_sms` decimal (8,2) default 0.00,
+    `less_email` decimal (8,2) default 0.00,
+    `less_admin` decimal (8,2) default 0.00,
+    `less_tickets` decimal (8,2) default 0.00,
+    `less_insure` decimal (8,2) default 0.00,
+    `expenses_nett` decimal(8,2) default 0.00,
+    `profit_loss` decimal(8,2) default 0.00,
+    `profit_loss_cumulative` decimal(8,2) default 0.00,
+    `closing_supporters` decimal(8,2) default 0.00,
+    `we_date` date NULL,
+    PRIMARY KEY (`accrue_date`,`type`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+  ;
+  -- closing supporter balances
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`closing_supporters`)
+  SELECT
+    `DateDue`
+   ,'collect'
+   ,SUM(`PaidAmount`) -- not cumulative yet
+  FROM `blotto_build_collection`
+  GROUP BY `DateDue`
+  ;
+  -- revenue
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`revenue_gross`)
+  SELECT
+      `draw_closed`
+     ,'entries'
+     ,ROUND(COUNT(`id`)*{{BLOTTO_TICKET_PRICE}}/100,2)
+  FROM `blotto_entry`
+  GROUP BY `draw_closed`
+  ;
+  -- external
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_external`)
+  SELECT
+      `draw_closed`
+     ,'external'
+     ,ROUND(COUNT(`ticket_number`)*{{BLOTTO_TICKET_PRICE}}/100,2)
+  FROM `blotto_external`
+  GROUP BY `draw_closed`
+  ;
+  -- claimed against winnings insurance
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`plus_claims`)
+  SELECT
+    `payment_received`
+   ,'claims'
+   ,SUM(IFNULL(`amount`,0))
+  FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
+  WHERE `org_code`='{{BLOTTO_ORG_CODE}}'
+  GROUP BY `payment_received`
+  ;
+  -- winnings paid out
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_paid_out`)
+  SELECT
+    `e`.`draw_closed`
+   ,'wnr_post'
+   ,SUM(`w`.`amount`)
+  FROM `blotto_winner` AS `w`
+  JOIN `blotto_entry` AS `e`
+    ON `e`.`id`=`w`.`entry_id`
+  GROUP BY `draw_closed`
+  ;
+  -- superdraw entries
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_rbe_fees`)
+  SELECT
+    `draw_closed`
+   ,'rbe_fees'
+   ,IFNULL(SUM(`amount`),0)
+  FROM `blotto_super_entry`
+  GROUP BY `draw_closed`
+  ;
+  -- anl_post
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_post`)
+  SELECT
+      `tickets_issued`
+     ,'anl_post'
+     ,IFNULL(SUM(`letter_status` NOT  LIKE 'email%' AND `letter_status` NOT LIKE 'sms%')*feeRate('anl_post',`tickets_issued`)/100,0)
+  FROM `ANLs`
+  GROUP BY `tickets_issued`
+  ;
+  -- anl_email
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_email`)
+  SELECT
+      `tickets_issued`
+     ,'anl_email'
+     ,IFNULL(SUM(`letter_status`='email_received')*feeRate('anl_email',`tickets_issued`)/100,0)
+  FROM `ANLs`
+  GROUP BY `tickets_issued`
+  ;
+  -- anl_sms
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_sms`)
+  SELECT
+      `tickets_issued`
+     ,'anl_sms'
+     ,IFNULL(SUM(`letter_status`='sms_received')*feeRate('anl_sms',`tickets_issued`)/100,0)
+  FROM `ANLs`
+  GROUP BY `tickets_issued`
+  ;
+  -- email services per draw
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_email`)
+  SELECT
+      `draw_closed`
+     ,'email'
+     ,feeRate('email',`draw_closed`)/100
+  FROM `blotto_entry`
+  GROUP BY `draw_closed`
+  ;
+  -- admin charges per draw
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_admin`)
+  SELECT
+      `draw_closed`
+     ,'admin'
+     ,feeRate('admin',`draw_closed`)/100
+  FROM `blotto_entry`
+  GROUP BY `draw_closed`
+  ;
+  -- tickets
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_tickets`)
+  SELECT
+      `draw_closed`
+     ,'tickets'
+     ,COUNT(`id`)*feeRate('ticket',`draw_closed`)/100
+  FROM `blotto_entry`
+  GROUP BY `draw_closed`
+  ;
+  -- insure tickets
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_insure`)
+  SELECT
+      `draw_closed`
+     ,'insure'
+     ,COUNT(`id`)*feeRate('insure',`draw_closed`)/100
+  FROM `blotto_entry`
+  GROUP BY `draw_closed`
+  ;
+  -- Group and sum by accrue_date
+  CREATE TABLE `Monies` AS
+  SELECT
+    `accrue_date`
+   ,`wc_date`
+   ,SUM(`opening_supporters`) AS `opening_supporters`
+   ,SUM(`revenue_gross`) AS `revenue_gross`
+   ,SUM(`less_external`) AS `less_external`
+   ,SUM(`plus_claims`) AS `plus_claims`
+   ,SUM(`less_paid_out`) AS `less_paid_out`
+   ,SUM(`revenue_nett`) AS `revenue_nett`
+   ,SUM(`less_rbe_fees`) AS `less_rbe_fees`
+   ,SUM(`less_anl_post`) AS `less_anl_post`
+   ,SUM(`less_anl_email`) AS `less_anl_email`
+   ,SUM(`less_anl_sms`) AS `less_anl_sms`
+   ,SUM(`less_email`) AS `less_email`
+   ,SUM(`less_admin`) AS `less_admin`
+   ,SUM(`less_tickets`) AS `less_tickets`
+   ,SUM(`less_insure`) AS `less_insure`
+   ,SUM(`expenses_nett`) AS `expenses_nett`
+   ,SUM(`profit_loss`) AS `profit_loss`
+   ,SUM(`profit_loss_cumulative`) AS `profit_loss_cumulative`
+   ,SUM(`closing_supporters`) AS `closing_supporters`
+   ,`we_date`
+  FROM `MoniesTemp`
+  GROUP BY `accrue_date`
+  ;
+  -- primary key
+  ALTER TABLE `Monies` ADD PRIMARY KEY (`accrue_date`)
+  ;
+  -- calculate derived non-cumulative columns
+  UPDATE `Monies`
+  SET
+    `wc_date`=weekCommencingDate(`accrue_date`)
+   ,`revenue_nett`=`revenue_gross`+`plus_claims`-(`less_external`+`less_paid_out`)
+   ,`expenses_nett`=`less_rbe_fees`+`less_anl_post`+`less_anl_email`+`less_anl_sms`+`less_email`+`less_admin`+`less_tickets`+`less_insure`
+  ;
+  UPDATE `Monies`
+  SET
+    `profit_loss`= `revenue_nett`-`expenses_nett`
+   ,`profit_loss_cumulative`= `revenue_nett`-`expenses_nett` -- not cumulative yet
+   ,`we_date`=DATE_ADD(`wc_date`,INTERVAL 6 DAY)
+  ;
+  -- calculate cumulative columns
+  SET @running_supporter := 0
+  ;
+  SET @running_lottery := 0
+  ;
+  UPDATE `Monies`
+  JOIN (
+    SELECT
+      `accrue_date`
+     ,(
+        @running_lottery := @running_lottery + `profit_loss_cumulative`
+      ) AS `profit_loss_cumulative`
+     ,(
+        @running_supporter := @running_supporter + `closing_supporters` - `revenue_gross`
+      ) AS `closing_supporters`
+    FROM `Monies`
+    ORDER BY `accrue_date`
+  ) AS `cumulative`
+    ON `cumulative`.`accrue_date`=`Monies`.`accrue_date`
+  SET
+    `Monies`.`profit_loss_cumulative`=`cumulative`.`profit_loss_cumulative`
+   ,`Monies`.`closing_supporters`=`cumulative`.`closing_supporters`
+  ;
+  -- calculate closing supporter balances
+  UPDATE `Monies`
+  SET
+    `opening_supporters`=`closing_supporters`+`revenue_gross`
+  ;
+  -- Tidy
+  DROP TABLE `MoniesTemp`
+  ;
+END $$
 
 
 DELIMITER $$
