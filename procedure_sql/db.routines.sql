@@ -1102,6 +1102,7 @@ BEGIN
    ,'collect'
    ,SUM(`PaidAmount`) -- not cumulative yet
   FROM `blotto_build_collection`
+  WHERE `DateDue`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `DateDue`
   ;
   -- revenue
@@ -1111,6 +1112,7 @@ BEGIN
      ,'entries'
      ,ROUND(COUNT(`id`)*{{BLOTTO_TICKET_PRICE}}/100,2)
   FROM `blotto_entry`
+  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
   -- external
@@ -1120,6 +1122,7 @@ BEGIN
      ,'external'
      ,ROUND(COUNT(`ticket_number`)*{{BLOTTO_TICKET_PRICE}}/100,2)
   FROM `blotto_external`
+  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
   -- claimed against winnings insurance
@@ -1130,6 +1133,7 @@ BEGIN
    ,SUM(IFNULL(`amount`,0))
   FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
   WHERE `org_code`='{{BLOTTO_ORG_CODE}}'
+    AND `payment_received`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `payment_received`
   ;
   -- winnings paid out
@@ -1141,6 +1145,7 @@ BEGIN
   FROM `blotto_winner` AS `w`
   JOIN `blotto_entry` AS `e`
     ON `e`.`id`=`w`.`entry_id`
+  WHERE `e`.`draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
   -- superdraw entries
@@ -1150,72 +1155,35 @@ BEGIN
    ,'rbe_fees'
    ,IFNULL(SUM(`amount`),0)
   FROM `blotto_super_entry`
+  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
-  -- anl_post
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_post`)
-  SELECT
-      `tickets_issued`
-     ,'anl_post'
-     ,IFNULL(SUM(`letter_status` NOT  LIKE 'email%' AND `letter_status` NOT LIKE 'sms%')*feeRate('anl_post',`tickets_issued`)/100,0)
-  FROM `ANLs`
-  GROUP BY `tickets_issued`
-  ;
-  -- anl_email
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_email`)
-  SELECT
-      `tickets_issued`
-     ,'anl_email'
-     ,IFNULL(SUM(`letter_status`='email_received')*feeRate('anl_email',`tickets_issued`)/100,0)
-  FROM `ANLs`
-  GROUP BY `tickets_issued`
-  ;
-  -- anl_sms
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_sms`)
-  SELECT
-      `tickets_issued`
-     ,'anl_sms'
-     ,IFNULL(SUM(`letter_status`='sms_received')*feeRate('anl_sms',`tickets_issued`)/100,0)
-  FROM `ANLs`
-  GROUP BY `tickets_issued`
-  ;
-  -- email services per draw
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_email`)
+  -- draw_fee
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_email`,`less_admin`,`less_tickets`,`less_insure`)
   SELECT
       `draw_closed`
-     ,'email'
+     ,'draw_fee'
      ,feeRate('email',`draw_closed`)/100
-  FROM `blotto_entry`
-  GROUP BY `draw_closed`
-  ;
-  -- admin charges per draw
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_admin`)
-  SELECT
-      `draw_closed`
-     ,'admin'
      ,feeRate('admin',`draw_closed`)/100
-  FROM `blotto_entry`
-  GROUP BY `draw_closed`
-  ;
-  -- tickets
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_tickets`)
-  SELECT
-      `draw_closed`
-     ,'tickets'
      ,COUNT(`id`)*feeRate('ticket',`draw_closed`)/100
-  FROM `blotto_entry`
-  GROUP BY `draw_closed`
-  ;
-  -- insure tickets
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_insure`)
-  SELECT
-      `draw_closed`
-     ,'insure'
      ,COUNT(`id`)*feeRate('insure',`draw_closed`)/100
   FROM `blotto_entry`
+  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
-  -- Group and sum by accrue_date
+  -- anl_fee
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_post`,`less_anl_email`,`less_anl_sms`)
+  SELECT
+      `tickets_issued`
+     ,'anl_fee'
+     ,IFNULL(SUM(`letter_status` NOT  LIKE 'email%' AND `letter_status` NOT LIKE 'sms%')*feeRate('anl_post',`tickets_issued`)/100,0)
+     ,IFNULL(SUM(`letter_status`='email_received')*feeRate('anl_email',`tickets_issued`)/100,0)
+     ,IFNULL(SUM(`letter_status`='sms_received')*feeRate('anl_sms',`tickets_issued`)/100,0)
+  FROM `ANLs`
+  WHERE `tickets_issued`>='{{BLOTTO_WIN_FIRST}}'
+  GROUP BY `tickets_issued`
+  ;
+  -- group by accrue_date and aggregate
   CREATE TABLE `Monies` AS
   SELECT
     `accrue_date`
@@ -1252,6 +1220,7 @@ BEGIN
    ,`revenue_nett`=`revenue_gross`+`plus_claims`-(`less_external`+`less_paid_out`)
    ,`expenses_nett`=`less_rbe_fees`+`less_anl_post`+`less_anl_email`+`less_anl_sms`+`less_email`+`less_admin`+`less_tickets`+`less_insure`
   ;
+  -- another bite
   UPDATE `Monies`
   SET
     `profit_loss`= `revenue_nett`-`expenses_nett`
@@ -1259,19 +1228,19 @@ BEGIN
    ,`we_date`=DATE_ADD(`wc_date`,INTERVAL 6 DAY)
   ;
   -- calculate cumulative columns
-  SET @running_supporter := 0
+  SET @cumLottery := 0
   ;
-  SET @running_lottery := 0
+  SET @cumSupporter := 0
   ;
   UPDATE `Monies`
   JOIN (
     SELECT
       `accrue_date`
      ,(
-        @running_lottery := @running_lottery + `profit_loss_cumulative`
+        @cumLottery := @cumLottery + `profit_loss_cumulative`
       ) AS `profit_loss_cumulative`
      ,(
-        @running_supporter := @running_supporter + `closing_supporters` - `revenue_gross`
+        @cumSupporter := @cumSupporter + `closing_supporters` - `revenue_gross`
       ) AS `closing_supporters`
     FROM `Monies`
     ORDER BY `accrue_date`
@@ -1281,7 +1250,7 @@ BEGIN
     `Monies`.`profit_loss_cumulative`=`cumulative`.`profit_loss_cumulative`
    ,`Monies`.`closing_supporters`=`cumulative`.`closing_supporters`
   ;
-  -- calculate closing supporter balances
+  -- calculate opening supporter balances
   UPDATE `Monies`
   SET
     `opening_supporters`=`closing_supporters`+`revenue_gross`
