@@ -1530,7 +1530,7 @@ function fee_units ($name,$day_first,$day_last) {
         // Per ANL generated
         $qs = "
           SELECT
-            COUNT(`ClientRef`) AS `units`
+            IFNULL(COUNT(`ClientRef`),0) AS `units`
           FROM `ANLs`
           WHERE `tickets_issued`>='$day_first'
             AND `tickets_issued`<='$day_last'
