@@ -724,6 +724,7 @@ function download_csv ( ) {
     $d1         = esc ($_GET['from']);
     $d2         = esc ($_GET['to']);
     $cond       = strtolower($t) == 'wins' && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST;
+    $usepri     = strtolower($t) != 'moniesweekly';
     $gp         = array_key_exists('grp',$_GET) && $_GET['grp']>0 && in_array(strtolower($t),['cancellations','draws','supporters']);
     $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0;
     $file       = $_GET['table'];
@@ -765,7 +766,7 @@ function download_csv ( ) {
           SELECT
 {{DATA}}
           FROM `$t`
-          USE INDEX (PRIMARY)
+{{USEPRI}}
           WHERE `$f`>='$d1'
             AND `$f`<='$d2'
 {{CONDITION}}
@@ -793,6 +794,12 @@ function download_csv ( ) {
     else {
         $cond       = "";
     }
+    if ($usepri) {
+        $usepri     = "USE INDEX (PRIMARY)";
+    }
+    else {
+        $usepri     = "";
+    }
     if ($gp) {
         if ($t=='Supporters') {
             $gpby   = "GROUP BY `original_client_ref`\n";
@@ -806,6 +813,7 @@ function download_csv ( ) {
     }
     $q              = str_replace ('{{HEADINGS}}',implode(",\n",$headings),$q);
     $q              = str_replace ('{{DATA}}',implode(",\n",$data),$q);
+    $q              = str_replace ('{{USEPRI}}',$usepri,$q);
     $q              = str_replace ('{{CONDITION}}',$cond,$q);
     $q              = str_replace ('{{GROUP}}',$gpby,$q);
     $fp             = fopen ($of,'w');
@@ -827,6 +835,7 @@ function download_csv ( ) {
     }
     catch (\mysqli_sql_exception $e) {
         fclose ($fp);
+        error_log ('download_csv(): '.$q);
         error_log ('download_csv(): '.$e->getMessage());
         return "SQL failure [2]";
     }
@@ -2256,6 +2265,7 @@ function link_query ($target,$table,$date,$interval=null) {
         'Changes'          => 'changed_date',
         'Draws'            => 'draw_closed',
         'Insurance'        => 'draw_close_date',
+        'MoniesWeekly'     => 'accrue_date',
         'Supporters'       => 'created',
         'Updates'          => 'updated',
         'Wins'             => 'draw_closed'
@@ -2407,12 +2417,12 @@ function months ($date1=null,$date2=null,$format='Y-m-d') {
         $date2      = date ($f);
     }
     // Convert and validate
-    $ds             = DateTime::createFromFormat($f, $date1);
+    $ds             = \DateTime::createFromFormat($f, $date1);
     if (!$ds || $ds->format($f)!==$date1) {
         throw new \Exception ('First date is not valid');
         return false;
     }
-    $de             = DateTime::createFromFormat($f, $date2);
+    $de             = \DateTime::createFromFormat($f, $date2);
     if (!$de || $de->format($f)!==$date2) {
         throw new \Exception ('Second date is not valid');
         return false;
@@ -5425,12 +5435,12 @@ function weeks ($dow,$date1,$date2=null,$format='Y-m-d') {
         $date2      = date ($f);
     }
     // Convert and validate
-    $ds             = DateTime::createFromFormat ($f,$date1);
+    $ds             = \DateTime::createFromFormat ($f,$date1);
     if (!$ds || $ds->format($f)!==$date1) {
         throw new \Exception ('First date is not valid');
         return false;
     }
-    $de             = DateTime::createFromFormat ($f,$date2);
+    $de             = \DateTime::createFromFormat ($f,$date2);
     if (!$de || $de->format($f)!==$date2) {
         throw new \Exception ('Second date is not valid');
         return false;
