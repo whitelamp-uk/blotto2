@@ -611,7 +611,7 @@ function menuActivate (buttonId) {
     }
     buttons = document.querySelectorAll ('#options a');
     for (b of buttons) {
-        if (b.id=='logoout' || b==button) {
+        if (b.id=='logout' || b==button) {
             continue;
         }
         b.classList.remove ('active');
