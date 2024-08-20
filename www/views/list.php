@@ -6,6 +6,7 @@ $tables         = [
     'Changes'          => 'Canvassing company returns by date',
     'Draws'            => 'Draw entries by close date',
     'Insurance'        => 'Insurance by draw close date',
+    'MoniesWeekly'     => 'Profit analysis by lottery week ending (Friday)',
     'Supporters'       => 'Supporters by create date',
     'Updates'          => 'CRM data by date updated',
     'Wins'             => 'Winners by draw close date'
@@ -14,7 +15,7 @@ $tables         = [
 $org_code   = BLOTTO_ORG_USER;
 $days       = [];
 $months     = [];
-$day1       = day_one ($table=='Wins');
+$day1       = day_one (in_array($table,['MoniesWeekly','Wins']));
 $day2       = null;
 $last       = false;
 $dates      = [];

@@ -48,6 +48,7 @@ $list          = [
     'Changes',
     'Draws',
     'Insurance',
+    'MoniesWeekly',
     'Supporters',
     'Updates',
     'Wins'
