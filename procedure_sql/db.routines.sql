@@ -402,7 +402,7 @@ BEGIN
   ;
   DROP TABLE `blotto_calculation`
   ;
-END $$
+END$$
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `cancellationsByAge`$$
@@ -624,7 +624,7 @@ BEGIN
   ALTER TABLE `Changes`
   DROP COLUMN `collected_amount`
   ;
-END $$
+END$$
 
 
 DELIMITER $$
@@ -672,7 +672,56 @@ BEGIN
   ;
   DROP TABLE `blotto_changes_summary_tmp`
   ;
-END $$
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `dashboard`$$
+CREATE PROCEDURE `dashboard` (
+)
+BEGIN
+  SELECT
+    IF(
+      `recent`.`client_ref` IS NULL
+     ,'dormant'
+     ,IF(
+       `e`.`id` IS NULL
+       ,IF(
+         `p`.`first_draw_close` IS NULL
+         ,IF(
+           `u`.`id` IS NULL
+           ,IF(
+              `letter_status` IS NULL
+             ,'importing' -- there is a player but nothing much has happened
+             ,'collecting' -- mandate/ANL/first collection is underway
+            )
+           ,'entering' -- has first collection
+          )
+         ,'loading' -- a draw close date is set
+        )
+       ,'playing' -- at least one draw entry
+      )
+    ) AS `status`
+   ,COUNT(DISTINCT(`p`.`supporter_id`)) AS `supporters`
+   ,COUNT(`e`.`ticket_number`) AS `tickets`
+  FROM `blotto_player` AS `p`
+  LEFT JOIN `blotto_update` AS `u`
+         ON `u`.`player_id`=`p`.`id`
+        AND `u`.`milestone`='first_collection'
+  LEFT JOIN `blotto_entry` AS `e`
+    ON `e`.`client_ref`=`p`.`client_ref`
+   AND `e`.`draw_closed`=`p`.`first_draw_close`
+  LEFT JOIN (
+    SELECT
+      DISTINCT `client_ref`
+    FROM `blotto_entry`
+    WHERE `draw_closed`>DATE_SUB(CURDATE(),INTERVAL {{BLOTTO_CANCEL_RULE}})
+  )      AS `recent`
+         ON `recent`.`client_ref`=`e`.`client_ref`
+  GROUP BY `status`
+  ORDER BY `status`='entered',`status`='loading',`status`='transacting'
+  ;
+END$$
 
 
 DELIMITER $$
@@ -1056,11 +1105,6 @@ END$$
 
 
 DELIMITER $$
-DROP PROCEDURE IF EXISTS `mandates`$$
--- Functionality moved to rsm-api
-
-
-DELIMITER $$
 DROP PROCEDURE IF EXISTS `monies`$$
 CREATE PROCEDURE `monies` (
 )
@@ -1074,6 +1118,7 @@ BEGIN
     `wc_date` date NULL,
     `type` char(8) character set ascii,
     `opening_supporters` decimal(8,2) default 0.00,
+    `received_players` decimal(8,2) default 0.00,
     `revenue_gross` decimal(8,2) default 0.00,
     `less_external` decimal(8,2) default 0.00,
     `plus_claims` decimal (8,2) default 0.00,
@@ -1087,6 +1132,7 @@ BEGIN
     `less_admin` decimal (8,2) default 0.00,
     `less_tickets` decimal (8,2) default 0.00,
     `less_insure` decimal (8,2) default 0.00,
+    `less_winner_post` decimal (8,2) default 0.00,
     `expenses_nett` decimal(8,2) default 0.00,
     `profit_loss` decimal(8,2) default 0.00,
     `profit_loss_cumulative` decimal(8,2) default 0.00,
@@ -1095,14 +1141,14 @@ BEGIN
     PRIMARY KEY (`accrue_date`,`type`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8
   ;
-  -- closing supporter balances
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`closing_supporters`)
+  -- received from players
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`received_players`,`closing_supporters`)
   SELECT
     `DateDue`
    ,'collect'
-   ,SUM(`PaidAmount`) -- not cumulative yet
+   ,SUM(`PaidAmount`)
+   ,SUM(`PaidAmount`)
   FROM `blotto_build_collection`
-  WHERE `DateDue`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `DateDue`
   ;
   -- revenue
@@ -1112,7 +1158,6 @@ BEGIN
      ,'entries'
      ,ROUND(COUNT(`id`)*{{BLOTTO_TICKET_PRICE}}/100,2)
   FROM `blotto_entry`
-  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
   -- external
@@ -1122,7 +1167,6 @@ BEGIN
      ,'external'
      ,ROUND(COUNT(`ticket_number`)*{{BLOTTO_TICKET_PRICE}}/100,2)
   FROM `blotto_external`
-  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
   -- claimed against winnings insurance
@@ -1133,7 +1177,6 @@ BEGIN
    ,SUM(IFNULL(`amount`,0))
   FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
   WHERE `org_code`='{{BLOTTO_ORG_CODE}}'
-    AND `payment_received`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `payment_received`
   ;
   -- winnings paid out
@@ -1145,7 +1188,6 @@ BEGIN
   FROM `blotto_winner` AS `w`
   JOIN `blotto_entry` AS `e`
     ON `e`.`id`=`w`.`entry_id`
-  WHERE `e`.`draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
   -- superdraw entries
@@ -1155,7 +1197,6 @@ BEGIN
    ,'rbe_fees'
    ,IFNULL(SUM(`amount`),0)
   FROM `blotto_super_entry`
-  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
   ;
   -- draw_fee
@@ -1168,8 +1209,18 @@ BEGIN
      ,COUNT(`id`)*feeRate('ticket',`draw_closed`)/100
      ,COUNT(`id`)*feeRate('insure',`draw_closed`)/100
   FROM `blotto_entry`
-  WHERE `draw_closed`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `draw_closed`
+  ;
+  -- winner_fee
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_winner_post`)
+  SELECT
+      `e`.`draw_closed`
+     ,'winner_fee'
+     ,COUNT(`w`.`id`)*feeRate('winner_post',`e`.`draw_closed`)/100
+  FROM `blotto_winner` AS `w`
+  JOIN `blotto_entry` AS `e`
+    ON `e`.`id`=`w`.`entry_id`
+  GROUP BY `e`.`draw_closed`
   ;
   -- anl_fee
   INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_post`,`less_anl_email`,`less_anl_sms`)
@@ -1180,7 +1231,6 @@ BEGIN
      ,IFNULL(SUM(`letter_status`='email_received')*feeRate('anl_email',`tickets_issued`)/100,0)
      ,IFNULL(SUM(`letter_status`='sms_received')*feeRate('anl_sms',`tickets_issued`)/100,0)
   FROM `ANLs`
-  WHERE `tickets_issued`>='{{BLOTTO_WIN_FIRST}}'
   GROUP BY `tickets_issued`
   ;
   -- group by accrue_date and aggregate
@@ -1189,6 +1239,7 @@ BEGIN
     `accrue_date`
    ,`wc_date`
    ,SUM(`opening_supporters`) AS `opening_supporters`
+   ,SUM(`received_players`) AS `received_players`
    ,SUM(`revenue_gross`) AS `revenue_gross`
    ,SUM(`less_external`) AS `less_external`
    ,SUM(`plus_claims`) AS `plus_claims`
@@ -1202,6 +1253,7 @@ BEGIN
    ,SUM(`less_admin`) AS `less_admin`
    ,SUM(`less_tickets`) AS `less_tickets`
    ,SUM(`less_insure`) AS `less_insure`
+   ,SUM(`less_winner_post`) AS `less_winner_post`
    ,SUM(`expenses_nett`) AS `expenses_nett`
    ,SUM(`profit_loss`) AS `profit_loss`
    ,SUM(`profit_loss_cumulative`) AS `profit_loss_cumulative`
@@ -1218,7 +1270,8 @@ BEGIN
   SET
     `wc_date`=weekCommencingDate(`accrue_date`)
    ,`revenue_nett`=`revenue_gross`+`plus_claims`-(`less_external`+`less_paid_out`)
-   ,`expenses_nett`=`less_rbe_fees`+`less_anl_post`+`less_anl_email`+`less_anl_sms`+`less_email`+`less_admin`+`less_tickets`+`less_insure`
+   ,`expenses_nett`=`less_rbe_fees`+`less_anl_post`+`less_anl_email`+`less_anl_sms`
+                   +`less_email`+`less_admin`+`less_tickets`+`less_insure`+`less_winner_post`
   ;
   -- another bite
   UPDATE `Monies`
@@ -1253,7 +1306,7 @@ BEGIN
   -- calculate opening supporter balances
   UPDATE `Monies`
   SET
-    `opening_supporters`=`closing_supporters`+`revenue_gross`
+    `opening_supporters`=`closing_supporters`+`revenue_gross`-`received_players`
   ;
   -- tidy
   DROP TABLE `MoniesTemp`
@@ -1263,6 +1316,7 @@ BEGIN
     `accrue_date`
    ,`mc_date`
    ,`opening_supporters`
+   ,`received_players`
    ,`revenue_gross`
    ,`less_external`
    ,`plus_claims`
@@ -1276,6 +1330,7 @@ BEGIN
    ,`less_admin`
    ,`less_tickets`
    ,`less_insure`
+   ,`less_winner_post`
    ,`expenses_nett`
    ,`profit_loss`
    ,`profit_loss_cumulative`
@@ -1290,8 +1345,9 @@ BEGIN
         )
        ,INTERVAL 1 DAY
       ) AS `ad`
-     ,CAST(CONCAT(SUBSTR(`accrue_date`,1,7),'-01') AS date)
+     ,CAST(CONCAT(SUBSTR(`accrue_date`,1,7),'-01') AS date) AS `mc`
      ,CAST(GROUP_CONCAT(`opening_supporters` ORDER BY `accrue_date` ASC LIMIT 1) AS decimal(8,2))
+     ,SUM(`received_players`)
      ,SUM(`revenue_gross`)
      ,SUM(`less_external`)
      ,SUM(`plus_claims`)
@@ -1305,10 +1361,12 @@ BEGIN
      ,SUM(`less_admin`)
      ,SUM(`less_tickets`)
      ,SUM(`less_insure`)
+     ,SUM(`less_winner_post`)
      ,SUM(`expenses_nett`)
      ,SUM(`profit_loss`)
      ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(8,2))
      ,CAST(GROUP_CONCAT(`closing_supporters` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(8,2))
+      -- seems no way to not repeat oneself in code if one wants to repeat a column 
      ,DATE_SUB(
         DATE_ADD(
           CAST(CONCAT(SUBSTR(`accrue_date`,1,7),'-01') AS date)
@@ -1318,6 +1376,7 @@ BEGIN
       )
     FROM `Monies`
     GROUP BY `ad`
+    HAVING `mc`>='{{BLOTTO_WIN_FIRST}}'
     ORDER BY `ad`
   ;
   -- weekly view
@@ -1325,6 +1384,7 @@ BEGIN
     `accrue_date`
    ,`wc_date`
    ,`opening_supporters`
+   ,`received_players`
    ,`revenue_gross`
    ,`less_external`
    ,`plus_claims`
@@ -1338,6 +1398,7 @@ BEGIN
    ,`less_admin`
    ,`less_tickets`
    ,`less_insure`
+   ,`less_winner_post`
    ,`expenses_nett`
    ,`profit_loss`
    ,`profit_loss_cumulative`
@@ -1348,6 +1409,7 @@ BEGIN
       `we_date`
      ,`wc_date`
      ,CAST(GROUP_CONCAT(`opening_supporters` ORDER BY `accrue_date` ASC LIMIT 1) AS decimal(8,2))
+     ,SUM(`received_players`)
      ,SUM(`revenue_gross`)
      ,SUM(`less_external`)
      ,SUM(`plus_claims`)
@@ -1361,6 +1423,7 @@ BEGIN
      ,SUM(`less_admin`)
      ,SUM(`less_tickets`)
      ,SUM(`less_insure`)
+     ,SUM(`less_winner_post`)
      ,SUM(`expenses_nett`)
      ,SUM(`profit_loss`)
      ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(8,2))
@@ -1368,9 +1431,10 @@ BEGIN
      ,`we_date`
     FROM `Monies`
     GROUP BY `wc_date`
+    HAVING `wc_date`>='{{BLOTTO_WIN_FIRST}}'
     ORDER BY `wc_date`
   ;
-END $$
+END$$
 
 
 DELIMITER $$
