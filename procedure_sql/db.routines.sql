@@ -905,11 +905,11 @@ BEGIN
      ,'' AS `LastUpdated`
      ,'' AS `LastPayment`
      ,'Single' AS `Freq`
-     ,CAST(`s`.`projected_chances`*@CostPerPlay/100 AS decimal(8,2)) AS `Amount`
+     ,CAST(`s`.`projected_chances`*@CostPerPlay/100 AS decimal(10,2)) AS `Amount`
      ,1 AS `PaymentsCollected`
-     ,CAST(`s`.`projected_chances`*@CostPerPlay/100 AS decimal(8,2)) AS `AmountCollected`
+     ,CAST(`s`.`projected_chances`*@CostPerPlay/100 AS decimal(10,2)) AS `AmountCollected`
      ,IF(`ext`.`draw_closed`<CURDATE(),1,0) AS `plays`
-     ,CAST(@CostPerPlay/100 AS decimal(8,2))
+     ,CAST(@CostPerPlay/100 AS decimal(10,2))
      ,0.00 AS `balance`
      ,'SINGLE' AS `active`
      ,'EXTERNAL' AS `status`
@@ -931,12 +931,12 @@ BEGIN
      ,'' AS `FirstPayment`
      ,'' AS `FirstCreated`
      ,1 AS `PaymentsCollected`
-     ,CAST(`p`.`chances`*@CostPerPlay/100 AS decimal(8,2)) AS `AmountCollected`
+     ,CAST(`p`.`chances`*@CostPerPlay/100 AS decimal(10,2)) AS `AmountCollected`
      ,IF(`ext`.`draw_closed`<CURDATE(),1,0) AS `plays`
      ,IF(
         `ext`.`draw_closed`<CURDATE()
        ,0.00
-       ,CAST(`p`.`chances`*@CostPerPlay/100 AS decimal(8,2))
+       ,CAST(`p`.`chances`*@CostPerPlay/100 AS decimal(10,2))
       ) AS `balance`
     FROM `blotto_external` AS `ext`
     JOIN `blotto_player` AS `p`
@@ -1117,26 +1117,26 @@ BEGIN
     `accrue_date` date NOT NULL,
     `wc_date` date NULL,
     `type` char(8) character set ascii,
-    `opening_supporters` decimal(8,2) default 0.00,
-    `received_players` decimal(8,2) default 0.00,
-    `revenue_gross` decimal(8,2) default 0.00,
-    `less_external` decimal(8,2) default 0.00,
-    `plus_claims` decimal (8,2) default 0.00,
-    `less_paid_out` decimal (8,2) default 0.00,
-    `revenue_nett` decimal(8,2) default 0.00,
-    `less_rbe_fees` decimal (8,2) default 0.00,
-    `less_anl_post` decimal (8,2) default 0.00,
-    `less_anl_email` decimal (8,2) default 0.00,
-    `less_anl_sms` decimal (8,2) default 0.00,
-    `less_email` decimal (8,2) default 0.00,
-    `less_admin` decimal (8,2) default 0.00,
-    `less_tickets` decimal (8,2) default 0.00,
-    `less_insure` decimal (8,2) default 0.00,
-    `less_winner_post` decimal (8,2) default 0.00,
-    `expenses_nett` decimal(8,2) default 0.00,
-    `profit_loss` decimal(8,2) default 0.00,
-    `profit_loss_cumulative` decimal(8,2) default 0.00,
-    `closing_supporters` decimal(8,2) default 0.00,
+    `opening_supporters` decimal(10,2) default 0.00,
+    `received_players` decimal(10,2) default 0.00,
+    `revenue_gross` decimal(10,2) default 0.00,
+    `less_external` decimal(10,2) default 0.00,
+    `plus_claims` decimal(10,2) default 0.00,
+    `less_paid_out` decimal(10,2) default 0.00,
+    `revenue_nett` decimal(10,2) default 0.00,
+    `less_rbe_fees` decimal(10,2) default 0.00,
+    `less_anl_post` decimal(10,2) default 0.00,
+    `less_anl_email` decimal(10,2) default 0.00,
+    `less_anl_sms` decimal(10,2) default 0.00,
+    `less_email` decimal(10,2) default 0.00,
+    `less_admin` decimal(10,2) default 0.00,
+    `less_tickets` decimal(10,2) default 0.00,
+    `less_insure` decimal(10,2) default 0.00,
+    `less_winner_post` decimal(10,2) default 0.00,
+    `expenses_nett` decimal(10,2) default 0.00,
+    `profit_loss` decimal(10,2) default 0.00,
+    `profit_loss_cumulative` decimal(10,2) default 0.00,
+    `closing_supporters` decimal(10,2) default 0.00,
     `we_date` date NULL,
     PRIMARY KEY (`accrue_date`,`type`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8
@@ -1346,7 +1346,7 @@ BEGIN
        ,INTERVAL 1 DAY
       ) AS `ad`
      ,CAST(CONCAT(SUBSTR(`accrue_date`,1,7),'-01') AS date) AS `mc`
-     ,CAST(GROUP_CONCAT(`opening_supporters` ORDER BY `accrue_date` ASC LIMIT 1) AS decimal(8,2))
+     ,CAST(GROUP_CONCAT(`opening_supporters` ORDER BY `accrue_date` ASC LIMIT 1) AS decimal(10,2))
      ,SUM(`received_players`)
      ,SUM(`revenue_gross`)
      ,SUM(`less_external`)
@@ -1364,8 +1364,8 @@ BEGIN
      ,SUM(`less_winner_post`)
      ,SUM(`expenses_nett`)
      ,SUM(`profit_loss`)
-     ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(8,2))
-     ,CAST(GROUP_CONCAT(`closing_supporters` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(8,2))
+     ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(10,2))
+     ,CAST(GROUP_CONCAT(`closing_supporters` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(10,2))
       -- seems no way to not repeat oneself in code if one wants to repeat a column 
      ,DATE_SUB(
         DATE_ADD(
@@ -1408,7 +1408,7 @@ BEGIN
     SELECT
       `we_date`
      ,`wc_date`
-     ,CAST(GROUP_CONCAT(`opening_supporters` ORDER BY `accrue_date` ASC LIMIT 1) AS decimal(8,2))
+     ,CAST(GROUP_CONCAT(`opening_supporters` ORDER BY `accrue_date` ASC LIMIT 1) AS decimal(10,2))
      ,SUM(`received_players`)
      ,SUM(`revenue_gross`)
      ,SUM(`less_external`)
@@ -1426,8 +1426,8 @@ BEGIN
      ,SUM(`less_winner_post`)
      ,SUM(`expenses_nett`)
      ,SUM(`profit_loss`)
-     ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(8,2))
-     ,CAST(GROUP_CONCAT(`closing_supporters` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(8,2))
+     ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(10,2))
+     ,CAST(GROUP_CONCAT(`closing_supporters` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(10,2))
      ,`we_date`
     FROM `Monies`
     GROUP BY `wc_date`
