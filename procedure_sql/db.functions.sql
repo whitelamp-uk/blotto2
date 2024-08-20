@@ -232,5 +232,22 @@ BEGIN
 END$$
 
 
+DELIMITER $$
+DROP FUNCTION IF EXISTS `weekUnix`$$
+CREATE FUNCTION `weekUnix`(
+  day date
+) RETURNS date DETERMINISTIC
+BEGIN
+  /*
+  lottery reporting week is Sat-Fri
+  unix week 0 Sat 1969-12-27 - Fri 1970-01-02
+  */
+  RETURN CEILING((UNIX_TIMESTAMP('1970-01-03')-5*24*60*60)/(7*24*60*60))
+  ;
+END$$
+
+
+
+
 DELIMITER ;
 
