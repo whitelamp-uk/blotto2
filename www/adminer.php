@@ -24,11 +24,13 @@ function adminer_object ( ) {
     include_once "/var/www/adminer/plugins/adminer-unloading.php";
     include_once "/var/www/adminer/plugins/blotto-maintenance.php";
     include_once "/var/www/adminer/plugins/dump-qcsv.php";
+    include_once "/var/www/adminer/plugins/select-local-functions.php";
     $plugins = [
         new AdminerFrames,
         new AdminerUnloading,
         new BlottoMaintenance,
         new AdminerDumpQcsv,
+        new SelectLocalFunctions,
     ];
     class AdminerCustomization extends AdminerPlugin {
         function loginForm() {
@@ -41,6 +43,6 @@ function adminer_object ( ) {
 
 // Go mining!
 
-require "/var/www/adminer/index.php";
+require "/var/www/adminer/adminer.php";
 
 
