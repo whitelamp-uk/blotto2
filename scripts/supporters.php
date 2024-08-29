@@ -301,7 +301,7 @@ if ($errors) {
     exit (0);
 }
 
-
+$count = 0;
 echo "\nUSE `".BLOTTO_MAKE_DB."`;\n\n";
 echo "ALTER TABLE `blotto_contact` DROP INDEX IF EXISTS `search_idx`;\n\n";
 foreach ($supporters as $s) {
