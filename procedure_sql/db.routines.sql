@@ -676,55 +676,6 @@ END$$
 
 
 DELIMITER $$
-DROP PROCEDURE IF EXISTS `dashboard`$$
-CREATE PROCEDURE `dashboard` (
-)
-BEGIN
-  SELECT
-    IF(
-      `recent`.`client_ref` IS NULL
-     ,'dormant'
-     ,IF(
-       `e`.`id` IS NULL
-       ,IF(
-         `p`.`first_draw_close` IS NULL
-         ,IF(
-           `u`.`id` IS NULL
-           ,IF(
-              `letter_status` IS NULL
-             ,'importing' -- there is a player but nothing much has happened
-             ,'collecting' -- mandate/ANL/first collection is underway
-            )
-           ,'entering' -- has first collection
-          )
-         ,'loading' -- a draw close date is set
-        )
-       ,'playing' -- at least one draw entry
-      )
-    ) AS `status`
-   ,COUNT(DISTINCT(`p`.`supporter_id`)) AS `supporters`
-   ,COUNT(`e`.`ticket_number`) AS `tickets`
-  FROM `blotto_player` AS `p`
-  LEFT JOIN `blotto_update` AS `u`
-         ON `u`.`player_id`=`p`.`id`
-        AND `u`.`milestone`='first_collection'
-  LEFT JOIN `blotto_entry` AS `e`
-    ON `e`.`client_ref`=`p`.`client_ref`
-   AND `e`.`draw_closed`=`p`.`first_draw_close`
-  LEFT JOIN (
-    SELECT
-      DISTINCT `client_ref`
-    FROM `blotto_entry`
-    WHERE `draw_closed`>DATE_SUB(CURDATE(),INTERVAL {{BLOTTO_CANCEL_RULE}})
-  )      AS `recent`
-         ON `recent`.`client_ref`=`e`.`client_ref`
-  GROUP BY `status`
-  ORDER BY `status`='entered',`status`='loading',`status`='transacting'
-  ;
-END$$
-
-
-DELIMITER $$
 DROP PROCEDURE IF EXISTS `draws`$$
 CREATE PROCEDURE `draws` (
 )
@@ -1105,6 +1056,146 @@ END$$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `journeys`$$
+CREATE PROCEDURE `journeys` (
+)
+BEGIN
+  DROP TABLE IF EXISTS `Journeys`
+  ;
+  CREATE TABLE `Journeys` AS
+  SELECT
+    `p`.`id` AS `player_id`
+   ,DATE(`p`.`created`) AS `player_created`
+   ,weekCommencingDate(DATE(`p`.`created`)) AS `created_wc`
+   ,CAST(CONCAT(SUBSTR(`p`.`created`,1,7),'-01') AS date) AS `created_mc`
+   ,IF(
+     `e`.`client_ref` IS NULL -- not loaded yet
+     ,IF(
+       `p`.`first_draw_close` IS NULL
+       ,IF(
+         `u`.`id` IS NULL
+         ,IF(
+            `p`.`letter_status` IS NULL
+           ,'importing' -- there is a player but nothing much has happened
+           ,'collecting' -- mandate/ANL/first collection is underway
+          )
+         ,'entering' -- has first collection
+        )
+       ,'loading' -- a draw close date is set
+      )
+     ,'entered' -- entered at least once
+    ) AS `status`
+   ,IF(
+      `e`.`last_draw_closed`<DATE_SUB(CURDATE(),INTERVAL {{BLOTTO_CANCEL_RULE}})
+      ,`e`.`last_draw_closed`
+      ,null
+    ) AS `dormancy_date`
+   ,1 AS `supporters`
+   ,`p`.`chances` AS `tickets`
+  FROM `blotto_player` AS `p`
+  LEFT JOIN `blotto_update` AS `u`
+         ON `u`.`player_id`=`p`.`id`
+        AND `u`.`milestone`='first_collection'
+  LEFT JOIN (
+    SELECT
+      `client_ref`
+     ,MAX(`draw_closed`) AS `last_draw_closed`
+    FROM `blotto_entry`
+    GROUP BY `client_ref`
+  )      AS `e`
+         ON `e`.`client_ref`=`p`.`client_ref`
+  GROUP BY `player_id`
+  ;
+  ALTER TABLE `Journeys` ADD COLUMN `player_day` int(10) NOT NULL DEFAULT 0 FIRST
+  ;
+  ALTER TABLE `Journeys` ADD COLUMN `player_week` int(10) NOT NULL DEFAULT 0 FIRST
+  ;
+  ALTER TABLE `Journeys` ADD COLUMN `player_month` int(10) NOT NULL DEFAULT 0 FIRST
+  ;
+  UPDATE `Journeys` AS `j`
+  JOIN (
+    SELECT
+      MIN(DATE(`created`)) AS `day_1`
+    FROM `blotto_player`
+  ) AS `ps`
+    ON 1
+  SET
+    `j`.`player_day` = DATEDIFF(DATE(`j`.`player_created`),`ps`.`day_1`)+1
+   ,`j`.`player_week` = CEILING(DATEDIFF(DATE(`j`.`player_created`),`ps`.`day_1`)+1/7)
+   ,`j`.`player_month` = TIMESTAMPDIFF(MONTH,CONCAT(SUBSTR(`ps`.`day_1`,1,7),'-01'),CONCAT(SUBSTR(DATE(`j`.`player_created`),1,7),'-01'))+1
+  ;
+  ALTER TABLE `Journeys` ADD PRIMARY KEY (`player_id`)
+  ;
+  ALTER TABLE `Journeys` ADD INDEX (`dormancy_date`)
+  ;
+  -- Monthly summary
+  DROP TABLE IF EXISTS `JourneysMonthly`
+  ;
+  CREATE TABLE `JourneysMonthly` AS
+  SELECT
+    `players`.`player_month`
+   ,`players`.`created_mc` AS `mc`
+   ,`players`.`tickets` AS `tickets_playing`
+   ,IFNULL(`dormancies`.`tickets`,0) AS `tickets_dormant`
+   ,0.0000 AS `dormancy_rate`
+  FROM (
+    SELECT
+      `player_month`
+     ,`created_mc`
+     ,SUM(`supporters`) AS `supporters` -- not yet cumulative
+     ,SUM(`tickets`) AS `tickets` -- not yet cumulative
+    FROM `Journeys`
+    WHERE `status`='entered'
+    GROUP BY `player_month`
+  ) AS `players`
+  LEFT JOIN (
+    SELECT
+      DATE(CONCAT(SUBSTR(`dormancy_date`,1,7),'-01')) AS `dormancy_mc`
+     ,SUM(`supporters`) AS `supporters`
+     ,SUM(`tickets`) AS `tickets`
+    FROM `Journeys`
+    WHERE `status`='entered'
+      AND `dormancy_date` IS NOT NULL
+    GROUP BY `dormancy_mc`
+  ) AS `dormancies`
+    ON `dormancies`.`dormancy_mc`=`players`.`created_mc`
+  ;
+  -- tickets_playing needs to be cumulative
+  SET @cumTickets := 0
+  ;
+  UPDATE `JourneysMonthly` AS `j1`
+  JOIN (
+    SELECT
+      `player_month`
+     ,( @cumTickets := @cumTickets + `tickets_playing` - `tickets_dormant` ) AS `tickets_playing`
+    FROM `JourneysMonthly`
+  ) AS `j2`
+    ON `j2`.`player_month`=`j1`.`player_month`
+  SET
+    `j1`.`tickets_playing`=`j2`.`tickets_playing`
+  ;
+  UPDATE `JourneysMonthly`
+  SET
+    `dormancy_rate`=ROUND(`tickets_dormant`/`tickets_playing`,4)
+  ;
+  CREATE OR REPLACE VIEW `JourneysDormancy` AS
+  SELECT
+    `j`.*
+   ,IFNULL(`b`.`dormancy_rate`,0) AS `benchmark_dormancy_rate`
+   ,IF(
+      `j`.`dormancy_rate`>0 AND `b`.`dormancy_rate`>0
+     ,ROUND((1-`j`.`dormancy_rate`)/(1-`b`.`dormancy_rate`),4)
+     ,1.00
+    ) AS `retention_ratio` -- higher = better
+   ,ROUND(IFNULL(`b`.`data_points`,0)*1.0639,4) AS `confidence_ratio` -- disguise the strangely round numbers you get
+  FROM `JourneysMonthly` AS `j`
+  LEFT JOIN `{{BLOTTO_CONFIG_DB}}`.`BenchmarksAggregate` AS `b`
+    ON `b`.`player_month`=`j`.`player_month`
+  ;
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `monies`$$
 CREATE PROCEDURE `monies` (
 )
@@ -1124,15 +1215,15 @@ BEGIN
     `plus_claims` decimal(10,2) default 0.00,
     `less_paid_out` decimal(10,2) default 0.00,
     `revenue_nett` decimal(10,2) default 0.00,
-    `less_rbe_fees` decimal(10,2) default 0.00,
-    `less_anl_post` decimal(10,2) default 0.00,
-    `less_anl_email` decimal(10,2) default 0.00,
-    `less_anl_sms` decimal(10,2) default 0.00,
-    `less_email` decimal(10,2) default 0.00,
-    `less_admin` decimal(10,2) default 0.00,
-    `less_tickets` decimal(10,2) default 0.00,
-    `less_insure` decimal(10,2) default 0.00,
-    `less_winner_post` decimal(10,2) default 0.00,
+    `fee_rbe` decimal(10,2) default 0.00,
+    `fee_anl_post` decimal(10,2) default 0.00,
+    `fee_anl_email` decimal(10,2) default 0.00,
+    `fee_anl_sms` decimal(10,2) default 0.00,
+    `fee_email` decimal(10,2) default 0.00,
+    `fee_admin` decimal(10,2) default 0.00,
+    `fee_tickets` decimal(10,2) default 0.00,
+    `fee_insure` decimal(10,2) default 0.00,
+    `fee_winner_post` decimal(10,2) default 0.00,
     `expenses_nett` decimal(10,2) default 0.00,
     `profit_loss` decimal(10,2) default 0.00,
     `profit_loss_cumulative` decimal(10,2) default 0.00,
@@ -1191,7 +1282,7 @@ BEGIN
   GROUP BY `draw_closed`
   ;
   -- superdraw entries
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_rbe_fees`)
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`fee_rbe`)
   SELECT
     `draw_closed`
    ,'rbe_fees'
@@ -1200,7 +1291,7 @@ BEGIN
   GROUP BY `draw_closed`
   ;
   -- draw_fee
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_email`,`less_admin`,`less_tickets`,`less_insure`)
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`fee_email`,`fee_admin`,`fee_tickets`,`fee_insure`)
   SELECT
       `draw_closed`
      ,'draw_fee'
@@ -1212,7 +1303,7 @@ BEGIN
   GROUP BY `draw_closed`
   ;
   -- winner_fee
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_winner_post`)
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`fee_winner_post`)
   SELECT
       `e`.`draw_closed`
      ,'winner_fee'
@@ -1223,7 +1314,7 @@ BEGIN
   GROUP BY `e`.`draw_closed`
   ;
   -- anl_fee
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`less_anl_post`,`less_anl_email`,`less_anl_sms`)
+  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`fee_anl_post`,`fee_anl_email`,`fee_anl_sms`)
   SELECT
       `tickets_issued`
      ,'anl_fee'
@@ -1245,15 +1336,15 @@ BEGIN
    ,SUM(`plus_claims`) AS `plus_claims`
    ,SUM(`less_paid_out`) AS `less_paid_out`
    ,SUM(`revenue_nett`) AS `revenue_nett`
-   ,SUM(`less_rbe_fees`) AS `less_rbe_fees`
-   ,SUM(`less_anl_post`) AS `less_anl_post`
-   ,SUM(`less_anl_email`) AS `less_anl_email`
-   ,SUM(`less_anl_sms`) AS `less_anl_sms`
-   ,SUM(`less_email`) AS `less_email`
-   ,SUM(`less_admin`) AS `less_admin`
-   ,SUM(`less_tickets`) AS `less_tickets`
-   ,SUM(`less_insure`) AS `less_insure`
-   ,SUM(`less_winner_post`) AS `less_winner_post`
+   ,SUM(`fee_rbe`) AS `fee_rbe`
+   ,SUM(`fee_anl_post`) AS `fee_anl_post`
+   ,SUM(`fee_anl_email`) AS `fee_anl_email`
+   ,SUM(`fee_anl_sms`) AS `fee_anl_sms`
+   ,SUM(`fee_email`) AS `fee_email`
+   ,SUM(`fee_admin`) AS `fee_admin`
+   ,SUM(`fee_tickets`) AS `fee_tickets`
+   ,SUM(`fee_insure`) AS `fee_insure`
+   ,SUM(`fee_winner_post`) AS `fee_winner_post`
    ,SUM(`expenses_nett`) AS `expenses_nett`
    ,SUM(`profit_loss`) AS `profit_loss`
    ,SUM(`profit_loss_cumulative`) AS `profit_loss_cumulative`
@@ -1270,8 +1361,8 @@ BEGIN
   SET
     `wc_date`=weekCommencingDate(`accrue_date`)
    ,`revenue_nett`=`revenue_gross`+`plus_claims`-(`less_external`+`less_paid_out`)
-   ,`expenses_nett`=`less_rbe_fees`+`less_anl_post`+`less_anl_email`+`less_anl_sms`
-                   +`less_email`+`less_admin`+`less_tickets`+`less_insure`+`less_winner_post`
+   ,`expenses_nett`=`fee_rbe`+`fee_anl_post`+`fee_anl_email`+`fee_anl_sms`
+                   +`fee_email`+`fee_admin`+`fee_tickets`+`fee_insure`+`fee_winner_post`
   ;
   -- another bite
   UPDATE `Monies`
@@ -1322,15 +1413,15 @@ BEGIN
    ,`plus_claims`
    ,`less_paid_out`
    ,`revenue_nett`
-   ,`less_rbe_fees`
-   ,`less_anl_post`
-   ,`less_anl_email`
-   ,`less_anl_sms`
-   ,`less_email`
-   ,`less_admin`
-   ,`less_tickets`
-   ,`less_insure`
-   ,`less_winner_post`
+   ,`fee_rbe`
+   ,`fee_anl_post`
+   ,`fee_anl_email`
+   ,`fee_anl_sms`
+   ,`fee_email`
+   ,`fee_admin`
+   ,`fee_tickets`
+   ,`fee_insure`
+   ,`fee_winner_post`
    ,`expenses_nett`
    ,`profit_loss`
    ,`profit_loss_cumulative`
@@ -1353,15 +1444,15 @@ BEGIN
      ,SUM(`plus_claims`)
      ,SUM(`less_paid_out`)
      ,SUM(`revenue_nett`)
-     ,SUM(`less_rbe_fees`)
-     ,SUM(`less_anl_post`)
-     ,SUM(`less_anl_email`)
-     ,SUM(`less_anl_sms`)
-     ,SUM(`less_email`)
-     ,SUM(`less_admin`)
-     ,SUM(`less_tickets`)
-     ,SUM(`less_insure`)
-     ,SUM(`less_winner_post`)
+     ,SUM(`fee_rbe`)
+     ,SUM(`fee_anl_post`)
+     ,SUM(`fee_anl_email`)
+     ,SUM(`fee_anl_sms`)
+     ,SUM(`fee_email`)
+     ,SUM(`fee_admin`)
+     ,SUM(`fee_tickets`)
+     ,SUM(`fee_insure`)
+     ,SUM(`fee_winner_post`)
      ,SUM(`expenses_nett`)
      ,SUM(`profit_loss`)
      ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(10,2))
@@ -1390,15 +1481,15 @@ BEGIN
    ,`plus_claims`
    ,`less_paid_out`
    ,`revenue_nett`
-   ,`less_rbe_fees`
-   ,`less_anl_post`
-   ,`less_anl_email`
-   ,`less_anl_sms`
-   ,`less_email`
-   ,`less_admin`
-   ,`less_tickets`
-   ,`less_insure`
-   ,`less_winner_post`
+   ,`fee_rbe`
+   ,`fee_anl_post`
+   ,`fee_anl_email`
+   ,`fee_anl_sms`
+   ,`fee_email`
+   ,`fee_admin`
+   ,`fee_tickets`
+   ,`fee_insure`
+   ,`fee_winner_post`
    ,`expenses_nett`
    ,`profit_loss`
    ,`profit_loss_cumulative`
@@ -1415,15 +1506,15 @@ BEGIN
      ,SUM(`plus_claims`)
      ,SUM(`less_paid_out`)
      ,SUM(`revenue_nett`)
-     ,SUM(`less_rbe_fees`)
-     ,SUM(`less_anl_post`)
-     ,SUM(`less_anl_email`)
-     ,SUM(`less_anl_sms`)
-     ,SUM(`less_email`)
-     ,SUM(`less_admin`)
-     ,SUM(`less_tickets`)
-     ,SUM(`less_insure`)
-     ,SUM(`less_winner_post`)
+     ,SUM(`fee_rbe`)
+     ,SUM(`fee_anl_post`)
+     ,SUM(`fee_anl_email`)
+     ,SUM(`fee_anl_sms`)
+     ,SUM(`fee_email`)
+     ,SUM(`fee_admin`)
+     ,SUM(`fee_tickets`)
+     ,SUM(`fee_insure`)
+     ,SUM(`fee_winner_post`)
      ,SUM(`expenses_nett`)
      ,SUM(`profit_loss`)
      ,CAST(GROUP_CONCAT(`profit_loss_cumulative` ORDER BY `accrue_date` DESC LIMIT 1) AS decimal(10,2))
