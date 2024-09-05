@@ -811,15 +811,21 @@ function supporterSearchResults (responseText) {
         return;
     }
     for (i=0;results[i];i++) {
-        // meh. Friday night mess 
+        // RSM: CANCELLED, DELETED, FAILED, LIVE
+        // Paysuite: Active, Inactive
+        // Cardnet: FAILED, LIVE
+        // or maybe just null, no mandate yet
         status = 'inactive';
         if (results[i]['Status'] !== null) {
             lcstatus = results[i]['Status'].toLowerCase(); 
             if (lcstatus=='active' || lcstatus=='live') { // convert to paysuite style.
                 status = 'active';
             }
+        } else {
+            status = 'new';
         }
         delete results[i]['Status'];
+
         if (results[i]['BCR'] != null) {
             results[i]['Mandate'] += ' Last BCR: ' + results[i]['BCR'];
         }
@@ -900,6 +906,7 @@ function supporterSelect (evt) {
 }
 
 function supporterSelectResult (responseText,status) {
+    // status is new, active, inactive
     var body,cancel,cell,field,fields,fname,form,heading,i,input,label,msg,response,row,tips;
     msg = document.querySelector ('.update-message');
     msg.classList.remove ('active');
@@ -922,26 +929,6 @@ function supporterSelectResult (responseText,status) {
         return;
     }
     form = document.getElementById ('change-supporter');
-
-// TODO - re-enable / hide / in response to status and letter_batch_ref
-    form.resend_anl.disabled = false;
-    console.log("sSR");    console.log (response);    console.log (status);
-    if (status=='active' && response.data[0].letter_batch_ref != null) {
-console.log("show");
-        form.resend_anl.disabled = false;
-        form.resend_anl.hidden = false;
-    } else {
-console.log("hide");
-        form.resend_anl.disabled = true;
-        form.resend_anl.hidden = true;
-    }
-/*    if (status=='active') { 
-        form.block_mandate.disabled = false;
-        form.block_mandate.hidden = false;
-    } else {
-        form.block_mandate.disabled = true;
-        form.block_mandate.hidden = true;
-    }*/
 
     form.classList.remove ('changed');
     form.block_mandate.dataset.state = response.data[0].mandate_blocked;
@@ -992,9 +979,12 @@ console.log("hide");
         row.appendChild (cell);
         body.appendChild (row);
     }
+
     fields = form.querySelectorAll ('button,input,select');
     label = form.querySelector ('label:first-of-type');
-    if ('mandate_blocked' in response.data[0] && 1*response.data[0].mandate_blocked) {
+
+    if ((1*response.data[0].mandate_blocked) || status=='inactive') { // NB cast string to integer
+        console.log("wtf "+ 1*response.data[0].mandate_blocked);
         closebutton = form.querySelector ('.form-close');
         for (field of fields) {
             if (field != closebutton) {
@@ -1002,12 +992,16 @@ console.log("hide");
             }
         }
         form.classList.add ('blocked');
-        form.update.disabled = true;
-        if ('block_mandate' in form) {
+        //form.update.disabled = true;
+        if (status == 'new') { // 
             form.block_mandate.disabled = false;
             form.block_mandate.dataset.state = '1';
             form.block_mandate.textContent = 'Unblock mandate';
-            label.textContent = 'Blocked';
+            label.textContent = 'Blocked'; 
+        } else { //reset text to default
+            form.block_mandate.dataset.state = '0';
+            form.block_mandate.textContent = 'Block mandate';
+            label.textContent = '';
         }
     }
     else {
@@ -1015,14 +1009,35 @@ console.log("hide");
             field.disabled = false;
         }
         form.classList.remove ('blocked');
-        form.update.disabled = false;
-        if ('block_mandate' in form) {
-            form.block_mandate.disabled = false;
-            form.block_mandate.dataset.state = '0';
-            form.block_mandate.textContent = 'Block mandate';
-            label.textContent = '';
+        console.log("form.update.disabled " + form.update.disabled);
+        //form.update.disabled = false;
+        //if ('block_mandate' in form) {
+        //form.block_mandate.disabled = false;
+        form.block_mandate.dataset.state = '0';
+        form.block_mandate.textContent = 'Block mandate';
+        label.textContent = '';
+        //}
+        if (status != 'new') {
+            form.block_mandate.disabled = true;
+        }
+        if (response.data[0].letter_batch_ref == null) {
+            form.resend_anl.disabled = true;
         }
     }
+    
+/*
+    if (status=='active' && response.data[0].letter_batch_ref != null) {
+        form.resend_anl.disabled = false;
+    } else {
+        form.resend_anl.disabled = true;
+    }
+    if (!response.data[0].mandate_blocked && (status=='active' || status=='new')) { 
+        form.block_mandate.disabled = false;
+    } else {
+        form.block_mandate.disabled = true;
+    }
+*/
+
     form.classList.add ('active');
 }
 

@@ -609,6 +609,7 @@ form#change-supporter input {
 
 form#change-supporter button.change-supporter:disabled {
     opacity: 0.5;
+    /*color: red;*/
 }
 
 #about {

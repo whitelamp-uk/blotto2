@@ -3964,17 +3964,17 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         `bacs`.`BCR` 
         ,CONCAT_WS(
           ' '
-         ,`s`.`signed`
-         ,CONCAT_WS(' ',`s`.`title`,`s`.`name_first`,`s`.`name_last`)
-         ,`s`.`email`
-         ,`s`.`mobile`
-         ,`s`.`telephone`
-         ,CONCAT_WS(' ',`s`.`address_1`,`s`.`address_2`,`s`.`address_3`)
-         ,`s`.`town`
-         ,`s`.`county`
-         ,`s`.`postcode`
-         ,`s`.`dob`
-       ) AS `Supporter`
+          ,`s`.`signed`
+          ,CONCAT_WS(' ',`s`.`title`,`s`.`name_first`,`s`.`name_last`)
+          ,`s`.`email`
+          ,`s`.`mobile`
+          ,`s`.`telephone`
+          ,CONCAT_WS(' ',`s`.`address_1`,`s`.`address_2`,`s`.`address_3`)
+          ,`s`.`town`
+          ,`s`.`county`
+          ,`s`.`postcode`
+          ,`s`.`dob`
+        ) AS `Supporter`
         ,`s`.`current_client_ref` AS `CurrentClientRef`
         ,`m`.`ClientRef` AS `MandateClientRef`
         ,`m`.`Status`
@@ -4043,12 +4043,11 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
             ) AGAINST ('$fulltextsearch' IN BOOLEAN MODE)
       )
     ";
-    $indexm = "";
-        foreach ($crefterms as $term) {
+    foreach ($crefterms as $term) {
           $qw .= "
             OR ( `s`.`current_client_ref` LIKE '%$term%' )
           ";
-        }
+    }
     $qg = "
       GROUP BY `s`.`supporter_id`
     ";
@@ -4095,6 +4094,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     return json_encode ($rows,JSON_PRETTY_PRINT);
 }
 
+// called from search() when client_ref has been provided
 function select ($type) {
     $cref = $_GET['r'];
     if (!$cref) {
@@ -4104,14 +4104,15 @@ function select ($type) {
     $response->data = [];
     $response->fields = [];
     $zo = connect ();
-    $cref = esc (explode(BLOTTO_CREF_SPLITTER,$cref)[0]);
-    //$match = '^'.$cref.BLOTTO_CREF_SPLITTER.'[0-9]{4}$';
+    //originally we were extracting the original clientref (i.e. remove -0001) and 
+    // searching with wildcards
+    //$cref = esc (explode(BLOTTO_CREF_SPLITTER,$cref)[0]);
     if ($type=='m') {
       $q = "
         SELECT
           *
         FROM `blotto_build_mandate`
-        WHERE `ClientRef` LIKE '%$cref%'
+        WHERE `ClientRef` = '$cref'
         ORDER BY `ClientRef` DESC
       ";
     }
@@ -4139,7 +4140,7 @@ function select ($type) {
             `supporter_id`
             ,`letter_batch_ref`
           FROM `blotto_player`
-          WHERE `client_ref` LIKE '%$cref%'
+          WHERE `client_ref` = '$cref'
           ORDER BY `client_ref` DESC
           LIMIT 0,1
         ) AS `player`
