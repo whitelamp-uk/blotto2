@@ -13,6 +13,30 @@ GRANT SELECT ON `{{BLOTTO_DB}}`.`Changes`
 TO '{{BLOTTO_ORG_USER}}'
 ;
 
+GRANT SELECT ON `{{BLOTTO_DB}}`.`Journeys`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
+GRANT SELECT ON `{{BLOTTO_DB}}`.`JourneysDormancy`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
+GRANT SELECT ON `{{BLOTTO_DB}}`.`JourneysMonthly`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
+GRANT SELECT ON `{{BLOTTO_DB}}`.`Monies`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
+GRANT SELECT ON `{{BLOTTO_DB}}`.`MoniesMonthly`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
+GRANT SELECT ON `{{BLOTTO_DB}}`.`MoniesWeekly`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
 GRANT SELECT ON `{{BLOTTO_DB}}`.`Supporters`
 TO '{{BLOTTO_ORG_USER}}'
 ;
