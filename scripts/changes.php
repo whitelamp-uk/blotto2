@@ -127,28 +127,9 @@ $qss = [
        ,`u`.`supporter_id`
        ,`u`.`player_id`
        ,`p`.`client_ref`
-       ,`ps`.`players`
-       ,`ps`.`collections`
       FROM `blotto_update` AS `u`
       JOIN `blotto_player` AS `p`
         ON `p`.`id`=`u`.`player_id`
-      JOIN (
-        SELECT
-          `plyr`.`supporter_id`
-         ,GROUP_CONCAT(`plyr`.`client_ref` SEPARATOR ' ') AS `players`
-         ,`cs`.`collections`
-        FROM `blotto_player` AS `plyr`
-        LEFT JOIN (
-          SELECT
-            `ClientRef`
-           ,GROUP_CONCAT(`DateDue` ORDER BY `DateDue` SEPARATOR ' ') AS `collections`
-          FROM `blotto_build_collection`
-          GROUP BY `ClientRef`
-        )      AS `cs`
-               ON `cs`.`ClientRef`=`plyr`.`client_ref`
-        GROUP BY `supporter_id`
-      ) AS `ps`
-        ON `ps`.`supporter_id`=`u`.`supporter_id`
       WHERE `u`.`milestone` IN ('first_collection')
       GROUP BY `u`.`player_id`
       HAVING `quantity`>1
