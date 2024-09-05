@@ -1178,6 +1178,9 @@ BEGIN
   SET
     `dormancy_rate`=ROUND(`tickets_dormant`/`tickets_playing`,4)
   ;
+  -- recalculate benchmarks (ensure the latest data is available)
+  CALL `{{BLOTTO_CONFIG_DB}}`.benchmarks()
+  ;
   CREATE OR REPLACE VIEW `JourneysDormancy` AS
   SELECT
     `j`.*
@@ -1189,6 +1192,7 @@ BEGIN
     ) AS `retention_ratio` -- higher = better
    ,ROUND(IFNULL(`b`.`data_points`,0)*1.0639,4) AS `confidence_ratio` -- disguise the strangely round numbers you get
   FROM `JourneysMonthly` AS `j`
+  -- use recalculated benchmarks
   LEFT JOIN `{{BLOTTO_CONFIG_DB}}`.`BenchmarksAggregate` AS `b`
     ON `b`.`player_month`=`j`.`player_month`
   ;
