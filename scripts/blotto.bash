@@ -531,22 +531,29 @@ then
     echo "    CALL winners();"
     mariadb $dbm                                      <<< "CALL winners();"
     abort_on_error 26h $?
+    echo "    CALL journeys();"
+    mariadb $dbm                                      <<< "CALL journeys();"
+    abort_on_error 26i $?
+    echo "    CALL monies();"
+    mariadb $dbm                                      <<< "CALL monies();"
+    abort_on_error 26j $?
+
 else
     echo "    CALL drawsRBE();"
     mariadb $dbm                                      <<< "CALL drawsRBE();"
-    abort_on_error 26i $?
+    abort_on_error 26k $?
     echo "    CALL drawsSummariseRBE();"
     mariadb $dbm                                      <<< "CALL drawsSummariseRBE();"
-    abort_on_error 26j $?
+    abort_on_error 26l $?
     if [ "$nxi" ]
     then
         echo "    CALL insureRBE();"
         mariadb $dbm                                  <<< "CALL insureRBE();"
-        abort_on_error 26k $?
+        abort_on_error 26m $?
     fi
     echo "    CALL winnersRBE();"
     mariadb $dbm                                      <<< "CALL winnersRBE();"
-    abort_on_error 26l $?
+    abort_on_error 26n $?
 fi
 
 echo "27. Do bespoke SQL"
