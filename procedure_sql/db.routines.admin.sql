@@ -296,6 +296,131 @@ BEGIN
 END$$
 
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `integers`$$
+CREATE PROCEDURE `integers` (
+  IN      `min` mediumint(6) unsigned
+ ,IN      `max` mediumint(6) unsigned
+)
+labelLeave :
+BEGIN
+  DROP TABLE IF EXISTS `Integers`
+  ;
+  IF min<=max THEN
+    SET @lo = min
+    ;
+    SET @hi = max
+    ;
+  ELSE
+    SET @lo = max
+    ;
+    SET @hi = min
+    ;
+  END IF
+  ;
+  CREATE OR REPLACE VIEW `Integer1` AS
+    SELECT 0 AS `integer`
+    UNION ALL SELECT 1
+    UNION ALL SELECT 2
+    UNION ALL SELECT 3
+    UNION ALL SELECT 4
+    UNION ALL SELECT 5
+    UNION ALL SELECT 6
+    UNION ALL SELECT 7
+    UNION ALL SELECT 8
+    UNION ALL SELECT 9
+    ORDER BY `integer`
+  ;
+  IF @hi<10 THEN
+    CREATE TABLE `Integers` AS
+    SELECT * FROM `Integer1`
+    WHERE `integer`>=@lo
+      AND `integer`<=@hi
+    ORDER BY `integer`
+    ;
+    CALL integersTidy()
+    ;
+    LEAVE labelLeave
+    ;
+  END IF
+  ;
+  CREATE OR REPLACE VIEW `Integer2` AS
+    SELECT
+      1*CONCAT(`t1`.`integer`,`t2`.`integer`) AS `integer`
+    FROM `Integer1` AS `t1`
+    JOIN `Integer1` AS `t2`
+      ON 1
+    ORDER BY `integer`
+  ;
+  IF @hi<100 THEN
+    CREATE TABLE `Integers` AS
+    SELECT * FROM `Integer2`
+    WHERE `integer`>=@lo
+      AND `integer`<=@hi
+      ORDER BY `integer`
+    ;
+    CALL integersTidy()
+    ;
+    LEAVE labelLeave
+    ;
+  END IF
+  ;
+  CREATE OR REPLACE VIEW Integer4 AS
+    SELECT
+      1*CONCAT(`t1`.`integer`,`t2`.`integer`) AS `integer`
+    FROM `Integer2` AS `t1`
+    JOIN `Integer2` AS `t2`
+      ON 1
+    ORDER BY `integer`
+  ;
+  IF @hi<10000 THEN
+    CREATE TABLE `Integers` AS
+    SELECT * FROM `Integer4`
+    WHERE `integer`>=@lo
+      AND `integer`<=@hi
+      ORDER BY `integer`
+    ;
+    CALL integersTidy()
+    ;
+    LEAVE labelLeave
+    ;
+  END IF
+  ;
+  CREATE OR REPLACE VIEW Integer6 AS
+    SELECT
+      1*CONCAT(`t1`.`integer`,`t2`.`integer`) AS `integer`
+    FROM `Integer2` AS `t1`
+    JOIN `Integer4` AS `t2`
+      ON 1
+    ORDER BY `integer`
+  ;
+  CREATE TABLE `Integers` AS
+  SELECT * FROM `Integer4`
+  WHERE `integer`>=@lo
+    AND `integer`<=@hi
+    ORDER BY `integer`
+  ;
+  CALL integersTidy()
+  ;
+END labelLeave$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `integersTidy`$$
+CREATE PROCEDURE `integersTidy` (
+)
+BEGIN
+  DROP VIEW IF EXISTS `Integer1`
+  ;
+  DROP VIEW IF EXISTS `Integer2`
+  ;
+  DROP VIEW IF EXISTS `Integer4`
+  ;
+  DROP VIEW IF EXISTS `Integer6`
+  ;
+END$$
+
+
 DELIMITER ;
 
 
