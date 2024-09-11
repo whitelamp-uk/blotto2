@@ -145,6 +145,20 @@ elseif ($session=www_session($timestamp)) {
         draw_report_serve ($_GET['drawreport']);
         exit;
     }
+    // Test processes available in the user session
+    if (array_key_exists('test_email_anl',$_POST)) {
+        if ($anl=www_anl_random($msg)) {
+            $api = email_api ();
+            $api->keySet (org()['signup_cm_key']);
+            $emref = $api->send (
+                $_POST['template_ref'],
+                $_POST['email'],
+            );
+            if (!$emref) {
+                $msg[] = $api->errorLast;
+            }
+        }
+    }
 }
 else {
     if ($opt && array_key_exists($opt,['download','report','invoice','statement','drawreport','gratiscollect'])) {

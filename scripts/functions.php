@@ -5802,6 +5802,25 @@ function winnings_super ($wins,$type) {
     return true;
 }
 
+function www_anl_random (&$msg=[]) {
+    $qs = "SELECT * FROM `ANLs` WHERE `Freq` IN ('1','Monthly') ORDER BY RAND() LIMIT 0,1";
+    $anl = false;
+    $zo = connect ();
+    if ($zo) {
+        try {
+            $anl = $zo->query ($qs);
+            if ($anl=$anl->fetch_assoc()) {
+                return $anl;
+            }
+        }
+        catch (\Exception $e) {
+            $msg[] = $e->getMessage ();
+        }
+    }
+    $msg[] = 'Unable to find an ANL';
+    return false;
+}
+
 function www_auth ($db,&$time,&$err,&$msg) {
     if (!isset($_SESSION)) {
         www_session_start ();
