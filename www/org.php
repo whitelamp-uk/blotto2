@@ -153,6 +153,7 @@ elseif ($session=www_session($timestamp)) {
             $emref = $api->send (
                 $_POST['template_ref'],
                 $_POST['email'],
+                $anl
             );
             if (!$emref) {
                 $msg[] = $api->errorLast;
