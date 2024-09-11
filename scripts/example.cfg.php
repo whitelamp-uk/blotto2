@@ -201,8 +201,8 @@ define ( 'BLOTTO_SELFEX_EMAIL',         'SelfExclusionYLH@MyHelpDomain.com' );
 
 
 // Email
-define ( 'BLOTTO_ANL_EMAIL',            false           );
-define ( 'BLOTTO_ANL_EMAIL_FROM',       '2023-01-25'    );
+define ( 'BLOTTO_ANL_EMAIL',            false           ); // Turn on ANLs by email
+define ( 'BLOTTO_ANL_EMAIL_FROM',       '2001-01-06'    ); // Do not email tickets issued before this Saturday w/c
 
 // Campaign Monitor
 define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR', '/opt/campaignmonitor-api/CampaignMonitor.php'  );
