@@ -155,7 +155,10 @@ elseif ($session=www_session($timestamp)) {
                 $_POST['email'],
                 $anl
             );
-            if (!$emref) {
+            if ($emref) {
+                $msg[] = "ANL for {$anl['ClientRef']} sent to {$_POST['email']} ref: $emref";
+            }
+            else {
                 $msg[] = $api->errorLast;
             }
         }
