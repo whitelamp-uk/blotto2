@@ -2932,7 +2932,8 @@ function profits ( ) {
     $data = [];
     $qs = "
       SELECT
-        DATE_ADD(CONCAT(SUBSTR(MIN(`signed`),1,7),'-01'),INTERVAL 1 MONTH) AS `start`
+        DATE_ADD(CONCAT(SUBSTR(MIN(IF(`signed`='',`created`,`signed`)),1,7),'-01'),INTERVAL 1 MONTH) AS `start`
+       ,DATE_ADD(CONCAT(SUBSTR(CURDATE(),1,7),'-01'),INTERVAL 1 MONTH) AS `next`
       FROM `Supporters`
       ;
     ";
@@ -2940,9 +2941,11 @@ function profits ( ) {
         $zo             = connect (BLOTTO_DB);
         $start          = $zo->query ($qs);
         $start          = $start->fetch_assoc ();
-        $start          = $start['start'];
-        if (!$start) {
-            return json_encode ([ 'history'=>[], "projection"=>[] ],JSON_PRETTY_PRINT);
+        if ($start['start']) {
+            $start      = $start['start'];
+        }
+        else {
+            $start      = $start['next'];
         }
     }
     catch (\mysqli_sql_exception $e) {
