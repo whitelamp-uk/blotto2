@@ -2942,7 +2942,7 @@ function profits ( ) {
         $start          = $start->fetch_assoc ();
         $start          = $start['start'];
         if (!$start) {
-            return $data;
+            return json_encode ([ 'history'=>[], "projection"=>[] ],JSON_PRETTY_PRINT);
         }
     }
     catch (\mysqli_sql_exception $e) {
