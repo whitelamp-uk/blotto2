@@ -71,7 +71,8 @@ if ($table=='Changes') {
 if ($day1) {
     $day1 = $day1->format ('Y-m-d');
     if ($table=='ANLs' || $table=='Wins') {
-        www_letter_status_refresh ();
+// Stop doing this because it is horrendously slow and Crucible in any event is a daily reporting system
+//        www_letter_status_refresh ();
     }
     if ($table=='Insurance') {
         $day2   = new DateTime ();
