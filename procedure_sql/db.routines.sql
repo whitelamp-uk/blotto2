@@ -1056,6 +1056,32 @@ END$$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `journeySummary`$$
+CREATE PROCEDURE `journeySummary` (
+)
+BEGIN
+  SELECT  
+  SUM(`tickets`) as tickets
+  ,SUM(IF (`status`='importing', `tickets`, 0)) as importing
+  ,SUM(IF (`status`='collecting', `tickets`, 0)) as collecting
+  ,SUM(IF (`status`='entering', `tickets`, 0)) as entering
+  ,SUM(IF (`status`='loading', `tickets`, 0)) as loading
+  ,SUM(IF (`status`='entered', `tickets`, 0)) as entered
+  FROM `Journeys`
+  ;
+  SELECT  
+  COUNT(`player_id`) as players
+  ,SUM(`status`='importing') as importing
+  ,SUM(`status`='collecting') as collecting
+  ,SUM(`status`='entering') as entering
+  ,SUM(`status`='loading') as loading
+  ,SUM(`status`='entered') as entered
+  FROM `Journeys`
+  ;
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `journeys`$$
 CREATE PROCEDURE `journeys` (
 )
