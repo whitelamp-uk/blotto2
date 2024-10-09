@@ -35,7 +35,7 @@ Date.prototype.futureDate = function (days) {
 function calculate ( ) {
     // Declare all internal variables and get it over with before doing anything else
     var balance=0,brkevn,brkevne,cancelled,chances,cell,cnli,cnlis=[],cnla,cnlas=[],columns,cost;
-    var d,days=[],delay,df,dps,expenses,i,invest=0,investe,k,inc,label,loaded,now,profit,row;
+    var d,days=[],delay,df,dps,expenses,i,invest=0,investe,k,inc,label,loaded,now,profit,rfnd,row;
     var section,slffnd,slffnde,span,start,tbody,tickets=0,total=0,week=0,weeks={},worst=0;
     var years,yearse,yr,yrcount=1,yr1,yrprofits=[];
     years = 11;
@@ -59,8 +59,10 @@ function calculate ( ) {
     delay   = 1 * document.querySelector ('[name="delay"]').value;
     // Profit from lottery revenue %
     profit  = 1 * document.querySelector ('[name="profit"]').value;
-    // Cancellation rate in later years %
+    // Cancellation rate except immediately %
     cnla    = 1 * document.querySelector ('[name="cancellation_a"]').value;
+    // Refund rate % of cost
+    rfnd    = 0; //1 * document.querySelector ('[name="refund"]').value;
     // The HTML table for writing out the simulation to screen
     tbody   = document.querySelector ('#results');
     // The self-funding date element for writing out the simulation to screen
@@ -102,7 +104,9 @@ function calculate ( ) {
             weeks[k].signed      = 1 * loaded;
             weeks[k].loaded      = loaded * (1-(cnli/100));
             weeks[k].year        = Math.floor ((d.getTime()-now.getTime())/(1000*60*60*24*365));
-            weeks[k].cost        = loaded * (1-(cnli/100)) * (cost + (weeks[k].year*inc));
+            weeks[k].cost        = loaded * chances  * (cost + (weeks[k].year*inc)); // * (1-(cnli/100))
+            weeks[k].cost       *= 1 - rfnd/100;
+console.error ('test: '+(1-(cnli/100)));
 //console.log (weeks[k]);
             // Future date for first payment
             df = d.futureDate (7*delay);
@@ -120,7 +124,7 @@ function calculate ( ) {
             }
 //console.log ('Add tickets delayed to '+k);
             weeks[k].ticketsAdded = 1*(chances*loaded*(1-(cnli/100))).toFixed(1);
-//console.log (weeks[k]);
+console.log (weeks[k]);
             // Future date for cancellation attrition
             df = new Date ();
             df = d.futureDate (7*26);
@@ -397,8 +401,8 @@ td.positive {
       </section>
 
       <section>
-        <label>Cost per sign-up <strong>&pound;</strong></label>
-        <input name="cost" type="number" min="0.00" max="100.00" step="0.01" value="50.00" />
+        <label>Cost per chances signed-up <strong>&pound;</strong></label>
+        <input name="cost" type="number" min="0.00" max="100.00" step="0.01" value="40.00" />
       </section>
 
       <section>
@@ -428,6 +432,11 @@ td.positive {
         <label>Cancellation (attrition) <strong>% pa</strong></label>
         <input name="cancellation_a" type="number" min="0.0" max="20.0" step="0.1" value="7.0" />
       </section>
+
+      <!-- section>
+        <label>Refund rate <strong>% of cost</strong></label>
+        <input name="refund" type="number" min="0.0" max="20.0" step="0.1" value="16.0" />
+      </section -->
 
       <section>
         <label>&nbsp;</label>
