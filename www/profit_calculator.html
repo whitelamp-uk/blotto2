@@ -106,7 +106,7 @@ function calculate ( ) {
             weeks[k].year        = Math.floor ((d.getTime()-now.getTime())/(1000*60*60*24*365));
             weeks[k].cost        = loaded * chances  * (cost + (weeks[k].year*inc)); // * (1-(cnli/100))
             weeks[k].cost       *= 1 - rfnd/100;
-console.error ('test: '+(1-(cnli/100)));
+//console.error ('test: '+(1-(cnli/100)));
 //console.log (weeks[k]);
             // Future date for first payment
             df = d.futureDate (7*delay);
@@ -124,11 +124,10 @@ console.error ('test: '+(1-(cnli/100)));
             }
 //console.log ('Add tickets delayed to '+k);
             weeks[k].ticketsAdded = 1*(chances*loaded*(1-(cnli/100))).toFixed(1);
-console.log (weeks[k]);
             // Future date for cancellation attrition
             df = new Date ();
             df = d.futureDate (7*26);
-           for (i=0;i<years;i++) {
+            for (i=0;i<years;i++) {
                 k = df.ymd ('wc');
 //console.log ('middle of year '+i+': '+k);
                 if (!weeks[k]) {
@@ -143,13 +142,18 @@ console.log (weeks[k]);
                     }
                 }
                 weeks[k].year = Math.floor ((df.getTime()-now.getTime())/(1000*60*60*24*365));
-                weeks[k].ticketsCancelled = 1*((1*weeks[k].ticketsCancelled)+(chances*loaded*(1-(cnli/100))*(cnla/100))).toFixed(1);
+
+
+                weeks[k].ticketsCancelled = 1*( (1*weeks[k].ticketsCancelled) + ((chances*loaded*(1-(cnli/100))-weeks[k].ticketsCancelled) * (cnla/100))).toFixed(1);
+
+
                 df.setDate (df.getDate()+(7*52));
             }
         }
     }
 //console.log ('----------------');
 //console.log ('----------------');
+
     tbody.innerHTML     = '';
     yearse.innerHTML    = '';
     for (d=now;d.getFullYear()<=(yr1+(years-1));d.setDate(d.getDate()+1)) {
