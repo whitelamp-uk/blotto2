@@ -258,18 +258,23 @@ window.location.href = '#<?php echo $go; ?>';
 <?php
     if ($step==1) {
         require __DIR__.'/views/signup.php';
+        error_log("tickets.php signup");
     }
     elseif ($step==3) {
         require __DIR__.'/views/finished.php';
+        error_log("tickets.php finished");
     }
     else {
         $api->start ($error);
+        error_log("tickets.php cardnet");
     }
 ?>
 
     </section>
 
-<?php if (count($error)): ?>
+<?php if (count($error)): 
+    error_log(print_r($error, true));
+    ?>
       <script defer>
 <?php     foreach($error as $e): ?>
         setTimeout ('userMessage("<?php echo str_replace ("\"","\\\"",$e); ?>")',1000);
