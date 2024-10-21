@@ -75,7 +75,7 @@ catch (\Exception $e) {
         <hr/>
 
         <label for="mobile" class="hidden">Mobile number</label>
-        <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" pattern="[0-9]{10,12}" required />
+        <input type="tel" id="mobile" name="mobile" value="<?php echo htmlspecialchars ($v['mobile']); ?>" placeholder="Mobile number" title="Mobile number" required />
 
 <?php   if ($org['signup_verify_sms']>0): ?>
         <label for="mobile_verify" class="hidden">Verify</label>
