@@ -4071,7 +4071,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         }
     }
     catch (\mysqli_sql_exception $e) {
-        error_log ('search_result(): '.$qry);
+        //error_log ('search_result(): '.$qry);
         error_log ('search_result(): '.$e->getMessage());
         throw new \Exception ('{ "error" : 123 }');
         return false;
@@ -4088,7 +4088,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         $rows = $result->fetch_all(MYSQLI_ASSOC);
     }
     catch (\mysqli_sql_exception $e) {
-        error_log ('search_result(): '.$qry);
+        //error_log ('search_result(): '.$qry);
         error_log ('search_result(): '.$e->getMessage());
         throw new \Exception ('{ "error" : 124 }');
         return false;
