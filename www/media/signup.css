@@ -340,6 +340,6 @@ section.signup input[type="submit"] {
 section.signup small.warning {
     display:            block;
     margin:             0.3em 0 1em 0.8em;
-    color:              rgb(180,80,0);
+    color:              rgb(80,180,0);
 }
 
