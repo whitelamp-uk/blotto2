@@ -5273,6 +5273,7 @@ function update ( ) {
                 if (!$error) {
                     $pn_mandate = [
                             'ClientRef'            => $ncr,
+                            'Type'                 => 'C',
                             'ClientRefPrevious'    => $fields['ClientRef'],
                             'Name'                 => $fields['Name'],
                             'Sortcode'             => ($fields['Sortcode']  ?: $m['Sortcode']),
