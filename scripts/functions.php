@@ -4082,7 +4082,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         return false;
     }
 
-    $qry = $qs.$qt.$qw.$qg.$qo.$ql; error_log ('search_result(): '.$qry);
+    $qry = $qs.$qt.$qw.$qg.$qo.$ql;
     try {
         $result = $zo->query ($qry);
         $rows = $result->fetch_all(MYSQLI_ASSOC);
