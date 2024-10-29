@@ -1067,6 +1067,7 @@ BEGIN
   ,SUM(IF (`status`='entering', `tickets`, 0)) as entering
   ,SUM(IF (`status`='loading', `tickets`, 0)) as loading
   ,SUM(IF (`status`='entered', `tickets`, 0)) as entered
+  ,SUM(IF (`status`='entered' AND `dormancy_date` IS NULL, `tickets`, 0)) as current
   FROM `Journeys`
   ;
   SELECT  
@@ -1076,6 +1077,7 @@ BEGIN
   ,SUM(`status`='entering') as entering
   ,SUM(`status`='loading') as loading
   ,SUM(`status`='entered') as entered
+  ,SUM(`status`='entered' AND `dormancy_date` IS NULL) as current
   FROM `Journeys`
   ;
 END$$
