@@ -9,6 +9,7 @@ tee ("    Draw entry engine\n");
 $ticket_db  = BLOTTO_TICKET_DB;
 $price      = BLOTTO_TICKET_PRICE;
 $org_ref    = strtoupper (BLOTTO_ORG_USER);
+$org_id     = BLOTTO_ORG_ID;
 $quiet      = get_argument('q',$Sw) !== false;
 $rbe        = get_argument('r',$Sw) !== false;
 if ($rbe && !function_exists('enter')) {
@@ -90,14 +91,17 @@ foreach ($close_dates as $date) {
 -- HORRIBLE HACK
 -- TODO: we need a better logical distinction between DD players and online players
 -- Freq='Single' was one idea but eventually we will support online players with repeat payments
-          WHERE (`ClientRef` LIKE 'STRP%' AND `DateDue`<='$date')
-             OR (`ClientRef` NOT LIKE 'STRP%' AND `DateDue`<='$date_dd')
+-- TDOD change to use `Provider` and define list of debit card processors (CDNT etc) in config
+
+          WHERE (`ClientRef` LIKE 'CDNT%' AND `DateDue`<='$date')
+             OR (`ClientRef` NOT LIKE 'CDNT%' AND `DateDue`<='$date_dd')
 
           GROUP BY `ClientRef`
       ) AS `c_sum`
         ON `c_sum`.`ClientRef`=`p`.`client_ref`
       JOIN `$ticket_db`.`blotto_ticket` AS `tk`
         ON `tk`.`client_ref`=`p`.`client_ref`
+     WHERE `tk`.`org_id` = $org_id
 
 -- NEW INSURANCE BIT
       LEFT JOIN (
@@ -134,21 +138,19 @@ foreach ($close_dates as $date) {
             $ticket_numbers = explode (',',$r['ticket_numbers']);
             $chances        = count ($ticket_numbers);
             if ($balance>=round($price*$chances/100,2)) {
-                if (!$insured && defined('BLOTTO_INSURE') && BLOTTO_INSURE && $date>=BLOTTO_INSURE_FROM) {
+                if (defined('BLOTTO_INSURE') && BLOTTO_INSURE && $date>=BLOTTO_INSURE_FROM && !$insured) {
                     fwrite (STDERR,"WARNING: '$date', refusing to enter uninsured player '{$r['client_ref']}'\n");
                     fwrite (STDERR,"This could be a catch 22 if you have not thought about BLOTTO_INSURE_FROM\n");
                 }
                 else {
-
                     foreach ($ticket_numbers as $key => $ticket_number) {
                         $q     .= "( '$date', '$ticket_number', '$cref' ), ";
                         $n++;
                     }
-
                 }
             }
-            elseif ($balance<0) {
-                fwrite (STDERR,"WARNING: ClientRef '$cref' has a negative balance!\n");
+            else {
+                fwrite (STDERR,"WARNING: ClientRef '$cref' has a balance ".$balance." trying to buy ".$chances." ticket(s) at ".$price." pence\n");
             } 
         }
     }
@@ -161,7 +163,7 @@ foreach ($close_dates as $date) {
 // external tickets
 // update blotto_entry set `draw_closed`='$date' where draw_closed is null
 // add $ex = affected_rows to the count
-
+    echo rtrim($q)."\n";
     $q              = substr ($q,0,-2);
     try {
         if ($n>0) {
@@ -183,6 +185,7 @@ foreach ($close_dates as $date) {
           FROM `blotto_external`
           WHERE `draw_closed`='$date'
         ";
+        echo rtrim($q)."\n";
         $result = $zo->query ($q);
         $ex = $zo->affected_rows;
         if ($ex>0) {
