@@ -101,7 +101,7 @@ foreach ($close_dates as $date) {
         ON `c_sum`.`ClientRef`=`p`.`client_ref`
       JOIN `$ticket_db`.`blotto_ticket` AS `tk`
         ON `tk`.`client_ref`=`p`.`client_ref`
-     WHERE `tk`.`org_id` = $org_id
+       AND `tk`.`org_id` = $org_id
 
 -- NEW INSURANCE BIT
       LEFT JOIN (
