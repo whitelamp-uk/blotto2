@@ -4622,21 +4622,29 @@ function stannp_status ($batch_names) {
         $refs[$campaign_name] = [];
         $recipients = false;
         $campaign = $stannp->campaign ($campaign_name);
-        if ($campaign && array_key_exists('recipient_list',$campaign)) {
-            $recipients = $campaign['recipient_list'];
-            foreach ($recipients as $r) {
-                if (!array_key_exists($r['mailpiece_status'],$refs[$campaign_name])) {
-                    $refs[$campaign_name][$r['mailpiece_status']] = [];
+        $errmsg = '';
+        if ($campaign) {
+            if (array_key_exists('recipient_list',$campaign)) {
+                $recipients = $campaign['recipient_list'];
+                foreach ($recipients as $r) {
+                    if (!array_key_exists($r['mailpiece_status'],$refs[$campaign_name])) {
+                        $refs[$campaign_name][$r['mailpiece_status']] = [];
+                    }
+                    $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
                 }
-                $refs[$campaign_name][$r['mailpiece_status']][] = $r['ref_id'];
-            }
-        }
-        else {
-            if (defined('STDERR')) {
-                fwrite (STDERR,"WARNING: campaign $campaign_name was not found or has no recipients\n");
             }
             else {
-                error_log ("WARNING: campaign $campaign_name was not found or has no recipients");
+                $errmsg = "WARNING: campaign $campaign_name found but has no recipients";
+            }
+        } else {
+            $errmsg = "WARNING: campaign $campaign_name was not found";
+        }
+        if ($errmsg) {
+            if (defined('STDERR')) {
+                fwrite (STDERR,$errmsg."\n");
+            }
+            else {
+                error_log ($errmsg);
             }
         }
     }

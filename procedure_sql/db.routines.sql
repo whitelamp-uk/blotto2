@@ -1084,6 +1084,7 @@ BEGIN
 END$$
 
 
+-- DL: at some point, a sequence of IF ELSE statements so that it's easier to grasp then nested IFs.
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `journeys`$$
 CREATE PROCEDURE `journeys` (
