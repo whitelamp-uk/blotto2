@@ -923,6 +923,7 @@ BEGIN
      AND `p`.`first_draw_close`<=futureCloseDate
     JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` as `tk`
       ON `tk`.`client_ref`=`m`.`ClientRef`
+     AND `tk`.`org_id` = {{BLOTTO_ORG_ID}}
     LEFT JOIN (
       SELECT
         `client_ref`
