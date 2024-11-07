@@ -364,6 +364,14 @@ CREATE TABLE IF NOT EXISTS `blotto_entry` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
+CREATE TABLE IF NOT EXISTS `blotto_fee` (
+  `fee` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `starts` date NOT NULL DEFAULT '2000-01-01',
+  `rate` int(11) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`fee`,`starts`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
 CREATE TABLE IF NOT EXISTS `blotto_generation` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `generated` datetime DEFAULT NULL,
