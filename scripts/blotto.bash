@@ -517,9 +517,14 @@ then
     abort_on_error 26d $?
     if [ "$nxi" ]
     then
-        echo "    CALL insure('$nxi');"
-        mariadb $dbm                                  <<< "CALL insure('$nxi');"
-        abort_on_error 26e $?
+        if [ "$pfz" = "" ]
+        then
+            echo "    CALL insure('$nxi');"
+            mariadb $dbm                                  <<< "CALL insure('$nxi');"
+            abort_on_error 26e $?
+        else
+            echo "BLOTTO_DEV_PAY_FREEZE==true so not calling insure()"
+        fi
     fi
     echo "    CALL supporters();"
     mariadb $dbm                                      <<< "CALL supporters();"
