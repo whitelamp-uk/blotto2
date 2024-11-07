@@ -501,14 +501,9 @@ then
     echo "    CALL anls();"
     mariadb $dbm                                      <<< "CALL anls();"
     abort_on_error 26a $?
-    if [ "$pfz" = "" ]
-    then
-        echo "    CALL cancellationsByRule();"
-        mariadb $dbm                                  <<< "CALL cancellationsByRule();"
-        abort_on_error 26b $?
-    else
-        echo "BLOTTO_DEV_PAY_FREEZE==true so not calling cancellationsByRule()"
-    fi
+    echo "    CALL cancellationsByRule();"
+    mariadb $dbm                                      <<< "CALL cancellationsByRule();"
+    abort_on_error 26b $?
     echo "    CALL draws();"
     mariadb $dbm                                      <<< "CALL draws();"
     abort_on_error 26c $?
@@ -517,14 +512,9 @@ then
     abort_on_error 26d $?
     if [ "$nxi" ]
     then
-        if [ "$pfz" = "" ]
-        then
-            echo "    CALL insure('$nxi');"
-            mariadb $dbm                                  <<< "CALL insure('$nxi');"
-            abort_on_error 26e $?
-        else
-            echo "BLOTTO_DEV_PAY_FREEZE==true so not calling insure()"
-        fi
+        echo "    CALL insure('$nxi');"
+        mariadb $dbm                                  <<< "CALL insure('$nxi');"
+        abort_on_error 26e $?
     fi
     echo "    CALL supporters();"
     mariadb $dbm                                      <<< "CALL supporters();"
