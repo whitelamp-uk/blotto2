@@ -180,9 +180,11 @@ CREATE TABLE IF NOT EXISTS `blotto_external` (
   `client_ref` varchar(255) not null,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`ticket_number`),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`ticket_number`),
   KEY `draw_closed` (`draw_closed`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
 
 
 CREATE TABLE IF NOT EXISTS `blotto_player` (
