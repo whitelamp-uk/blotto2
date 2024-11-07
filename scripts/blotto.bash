@@ -273,22 +273,21 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 if [ "$rbe" = "" ]
 then
 
+    echo " 4. Generate mandate / collection table create SQL in $ddc"
+    start=$SECONDS
+    /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
+    abort_on_error 4 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
+
+    echo " 5. Create mandate / collection tables using $ddc"
+    start=$SECONDS
+    mariadb                                             < $ddc
+    abort_on_error 5 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
     if [ "$pfz" = "" ]
     then
-
-        echo " 4. Generate mandate / collection table create SQL in $ddc"
-        start=$SECONDS
-        /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
-        abort_on_error 4 $?
-        echo "    Completed in $(($SECONDS-$start)) seconds"
-
-
-        echo " 5. Create mandate / collection tables using $ddc"
-        start=$SECONDS
-        mariadb                                             < $ddc
-        abort_on_error 5 $?
-        echo "    Completed in $(($SECONDS-$start)) seconds"
-
 
         echo "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
         start=$SECONDS
