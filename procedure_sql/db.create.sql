@@ -1,4 +1,4 @@
-
+-- character set for "codes" (e.g. the org code) is ascii so as to constrain 
 
 CREATE DATABASE IF NOT EXISTS `{{BLOTTO_CONFIG_DB}}`
   DEFAULT CHARACTER SET = utf8
@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS `_readme` (
 INSERT IGNORE INTO `_readme` (`project`, `location`) VALUES
 ('whitelamp-uk/blotto2', 'https://github.com/whitelamp-uk/blotto2.git');
 
+-- TODO should this table be mostly ascii?
 CREATE TABLE IF NOT EXISTS `blotto_bacs` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `requested_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -56,15 +57,6 @@ CREATE TABLE IF NOT EXISTS `blotto_bacs` (
   PRIMARY KEY (`id`),
   KEY `org_id` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-CREATE TABLE IF NOT EXISTS `blotto_fee` (
-  `fee` varchar(64) CHARACTER SET ascii NOT NULL,
-  `starts` date NOT NULL DEFAULT '2000-01-01',
-  `val` varchar(64) CHARACTER SET ascii DEFAULT NULL,
-  PRIMARY KEY (`fee`,`starts`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-;
 
 
 CREATE TABLE IF NOT EXISTS `blotto_help` (
