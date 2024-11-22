@@ -1164,6 +1164,7 @@ function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
     return false;
 }
 
+// TODO remove this obsolete function - originally intended for superdraws
 function draw_upcoming_dow_nths_in_months ($dow,$nths,$months,$today=null) {
     $dt             = new \DateTime ($today);
     // Allow dow to be loose
@@ -6334,11 +6335,36 @@ function www_session_start ( ) {
 function www_signup_dates ($org,&$e) {
     $e = false;
     $now = new \DateTime ();
-    $dates = [];
-    if (array_key_exists('d',$_GET)) {
-        $c = connect ();
-        foreach (explode(',',$_GET['d']) AS $d) {
-            $d = trim ($d);
+    $today = $now->format ('Y-m-d');
+    $outdates = [];
+
+    if (isset($_GET['d'])) {
+        $indates = $_GET['d'];
+    } else {
+        $indates = 'next_superdraw';
+    }
+    $c = connect ();
+    foreach (explode(',',$indates) AS $d) {
+        $d = trim ($d);
+        if ($d == 'next_superdraw') {
+            $sdsql = "SELECT `starts` FROM `blotto_prize` AS `p` WHERE `p`.`level` = 1 AND `p`.`expires` > '".$now->format ('Y-m-d')."' ORDER BY `p`.`expires` LIMIT 0,2";
+            $sdrows = $c->query($sdsql);
+            $row1 = $sdrows->fetch_assoc();
+            if ($row1) {
+                $draw_closed = draw_upcoming($row1['starts']);  // in Y-m-d
+                //$draw_closed = '2024-11-21';
+                if ($draw_closed < $today) { // edge case - e.g. today is Saturday, the draw closed yesterday. If today Sunday we are already on to the next.
+                    $row2 = $sdrows->fetch_assoc();
+                    if ($row2) {
+                        $draw_closed = draw_upcoming($row2['starts']);  // in Y-m-d
+                    }
+                    else {
+                        $draw_closed = '1970-01-01';
+                    }
+                }
+            }
+        }
+        else {
             if (!preg_match('<^[0-9]{4}-[0-9]{2}-[0-9]{2}$>',$d)) {
                 $e = "'$d' has an incorrect format - should be yyyy-mm-dd";
                 return false;
@@ -6351,48 +6377,50 @@ function www_signup_dates ($org,&$e) {
                 return false;
             }
             $draw_closed = $d->format ('Y-m-d');
-            if ($draw_closed>=BLOTTO_DRAW_CLOSE_1) {
-                try {
+        }
+
+        if ($draw_closed>=BLOTTO_DRAW_CLOSE_1) {
+            try {
 /*
-                    $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
-                    $date = $rs->fetch_assoc()['draw_date'];
-                    $end = new \DateTime ("$date 00:00:00");
-                    $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
-                    if ($end>$now) {
-                        $dates[$draw_closed] = new \DateTime ($date);
-                    }
+                $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
+                $date = $rs->fetch_assoc()['draw_date'];
+                $end = new \DateTime ("$date 00:00:00");
+                $end->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
+                if ($end>$now) {
+                    $outdates[$draw_closed] = new \DateTime ($date);
+                }
 */
 // I think that was all wrong... instead something like:
-                    // A draw is closed exactly one day after the day begins
-                    $closed = new \DateTime ($draw_closed.' 00:00:00');
-                    $closed->add (new \DateInterval('P1D'));
-                    if (defined('BLOTTO_INSURE') && BLOTTO_INSURE && BLOTTO_INSURE_DAYS>0) {
-                        // The www promotion for a draw date needs to close BLOTTO_INSURE_DAYS earlier than DD
-                        $closed->sub (new \DateInterval('P'.BLOTTO_INSURE_DAYS.'D'));
-                    }
-                    // Promoters sometimes prefer closing at 5pm rather than midnight (7 hours)
-                    // Preferred approach is to set this to zero hours so that terms and conditions
-                    // for DD and online players are harmonised
-                    $closed->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
-                    // Only if the time now is before the calculated cut-off can the date be available
-                    if ($now<$closed) {
-                        $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
-                        $dates[$draw_closed] = new \DateTime ($rs->fetch_assoc()['draw_date']);
-                    }
+                // A draw is closed exactly one day after the day begins
+                $closed = new \DateTime ($draw_closed.' 00:00:00');
+                $closed->add (new \DateInterval('P1D'));
+                if (defined('BLOTTO_INSURE') && BLOTTO_INSURE && BLOTTO_INSURE_DAYS>0) {
+                    // The www promotion for a draw date needs to close BLOTTO_INSURE_DAYS earlier than DD
+                    $closed->sub (new \DateInterval('P'.BLOTTO_INSURE_DAYS.'D'));
                 }
-                catch (\mysqli_sql_exception $e) {
-                    throw new \Exception ($e->getMessage());
-                    return false;
+                // Promoters sometimes prefer closing at 5pm rather than midnight (7 hours)
+                // Preferred approach is to set this to zero hours so that terms and conditions
+                // for DD and online players are harmonised
+                $closed->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
+                // Only if the time now is before the calculated cut-off can the date be available
+                if ($now<$closed) {
+                    $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
+                    $outdates[$draw_closed] = new \DateTime ($rs->fetch_assoc()['draw_date']);
                 }
             }
-        }
-        if (!count($dates)) {
-            // At least one date passed but no dates are in scope
-            $e = "No date passed is in scope";
-            return false;
+            catch (\mysqli_sql_exception $e) {
+                throw new \Exception ($e->getMessage());
+                return false;
+            }
         }
     }
-    return $dates;
+    if (!count($outdates)) {
+        // At least one date passed but no dates are in scope
+        $e = "No date passed is in scope";
+        return false;
+    }
+    
+    return $outdates;
 }
 
 function www_signup_vars ( ) {

@@ -186,8 +186,8 @@ catch (\Exception $e) {
 
         </div>
 
-        <div id="signup-cost" class="signup-cost">
-          &pound;<output data-decsepchar="-"><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output>
+        <div id="signup-cost" class="signup-cost"> <?php //someone wanted whole pounds only - could go in config in due course ?>
+          &pound;<output data-decsepchar="-"><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,0,'-',','); ?></output>
         </div>
 
       </fieldset>
@@ -281,7 +281,13 @@ catch (\Exception $e) {
 
       <fieldset>
 
-        <legend>Select payment method to pay <span id="signup-cost-confirm" class="signup-cost">&pound;<output><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,2,'-',','); ?></output></span></legend>
+        <legend>Select payment method to pay <span id="signup-cost-confirm" class="signup-cost">&pound;<output>
+         <?php 
+         // see comment above, removeing zeroes from ticket form
+         $price = $v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100;
+         echo number_format ($price,0,'-',','); 
+         ?>
+         </output></span></legend>
 
         <small class="warning">We are sorry but we cannot accept credit cards due to Gambling Commission rules.</small>
 
