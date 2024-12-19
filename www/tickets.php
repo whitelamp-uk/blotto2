@@ -100,7 +100,7 @@ if (1) {
                     $response->diagnostic = $sms_response;
                     $response->e        = $e_default;
                     $response->eCode    = 112;
-                    error_log("tickets.php SMS: ".print_r($response,true));
+                    error_log("tickets.php SMS: request: ".print_r($request,true)." response: ".print_r($response,true));
                 }
             }
             else {
