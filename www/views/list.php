@@ -7,7 +7,8 @@ $tables         = [
     'Draws'            => 'Draw entries by close date',
     'Insurance'        => 'Insurance by draw close date',
     'MoniesWeekly'     => 'Profit analysis by lottery week ending (Friday)',
-    'Supporters'       => 'Supporters by create date',
+    'Supporters'       => 'Supporters by create date (1 row / ticket)',
+    'SupportersView'   => 'Supporters by create date (1 row / member)',
     'Updates'          => 'CRM data by date updated',
     'Wins'             => 'Winners by draw close date'
 ];

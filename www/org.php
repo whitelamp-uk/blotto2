@@ -50,6 +50,7 @@ $list          = [
     'Insurance',
     'MoniesWeekly',
     'Supporters',
+    'SupportersView',
     'Updates',
     'Wins'
 ];
@@ -284,11 +285,12 @@ elseif (array_key_exists('load',$_GET) || array_key_exists('login',$_GET)) {
 }
 elseif (count($_GET) && !array_key_exists('P',$_GET)) {
     require __DIR__.'/views/error.php';
-    if (strpos($_SERVER['HTTP_HOST'],"://dev.")) {
+    if (strpos ($_SERVER['SERVER_NAME'],'dev.')===0) {
         echo "<pre>";
         echo "POST: "; print_r($_POST);
         echo "GET: "; print_r($_GET);
-        print_r(get_defined_vars());
+        echo "backtrace: "; debug_print_backtrace();
+        echo "defined vars: "; print_r(get_defined_vars());
         echo "</pre>";
     }
 }

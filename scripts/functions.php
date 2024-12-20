@@ -1126,6 +1126,7 @@ function draw_report_serve ($file) {
     echo file_get_contents (BLOTTO_DIR_DRAW.'/'.$file);
 }
 
+// TODO (probably) remove this obsolete function - originally intended for superdraws (probably)
 function draw_upcoming_dow_last_in_months ($dow,$months,$today=null) {
     // Allow dow to be loose
     $dow            = intval($dow) %7;
@@ -1213,7 +1214,7 @@ function draw_upcoming_weekly ($dow,$today=null) {
     // Get draw close date of next weekly draw
     // in the future (today is in the future)
     // for a given day of week
-    $dow = intval($dow) % 7;
+    $dow = intval($dow) % 7; // 0 Sunday -> 6 Saturday
     $day = new \DateTime ($today);
     for ($i=0;$i<7;$i++) {
         if ($day->format('w')==$dow) {
@@ -2268,6 +2269,7 @@ function link_query ($target,$table,$date,$interval=null) {
         'Insurance'        => 'draw_close_date',
         'MoniesWeekly'     => 'accrue_date',
         'Supporters'       => 'created',
+        'SupportersView'   => 'created',
         'Updates'          => 'updated',
         'Wins'             => 'draw_closed'
     ];
@@ -6352,7 +6354,7 @@ function www_signup_dates ($org,&$e) {
             $row1 = $sdrows->fetch_assoc();
             if ($row1) {
                 $draw_closed = draw_upcoming($row1['starts']);  // in Y-m-d
-                //$draw_closed = '2024-11-21';
+                //TODO don't ignore insurance as not relevant and also signup_close_advance_hours
                 if ($draw_closed < $today) { // edge case - e.g. today is Saturday, the draw closed yesterday. If today Sunday we are already on to the next.
                     $row2 = $sdrows->fetch_assoc();
                     if ($row2) {
