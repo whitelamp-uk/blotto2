@@ -1772,7 +1772,7 @@ BEGIN
           `m`.`Status`=''
          ,''
          ,IF(
-            `m`.`Status` IN ('DELETED','CANCELLED','FAILED')
+            `m`.`Status` IN ('DELETED','CANCELLED','FAILED','Inactive')
            ,'DEAD'
            ,IF(
               `m`.`Freq`='SINGLE'
