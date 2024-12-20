@@ -1796,6 +1796,8 @@ BEGIN
         FROM `blotto_build_collection`
         -- Await BACS jitter
         WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+        -- Unless cardnet
+           OR `Provider` = 'CDNT'
         GROUP BY `Provider`,`RefNo`
       ) AS `cl`
         ON `cl`.`Provider`=`m`.`Provider`
