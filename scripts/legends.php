@@ -68,3 +68,11 @@ for ($i=0;$i<10;$i++) {
 }
 
 
+echo "\n-- Create `SupportersView` --\n";
+echo "
+    CREATE OR REPLACE VIEW `SupportersView` 
+    AS
+    SELECT * FROM `Supporters`
+    GROUP BY `supporter_id`
+    ;
+";
