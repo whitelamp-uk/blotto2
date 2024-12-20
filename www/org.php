@@ -190,7 +190,14 @@ else {
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="description" content="" />
-    <title><?php echo strtoupper(BLOTTO_ORG_USER) ; ?> @ <?php echo htmlspecialchars (BLOTTO_BRAND); ?> <?php version(__DIR__); ?></title>
+    <title>
+        <?php 
+        if (strpos ($_SERVER['SERVER_NAME'],'dev.')===0) {
+            echo "dev:";
+        }
+        echo strtoupper(BLOTTO_ORG_USER).' @ '.htmlspecialchars (BLOTTO_BRAND); ?> <?php version(__DIR__); 
+        ?>
+    </title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
     <script src="./media/global.js"></script>
     <script defer src="./media/draw_calendar.js"></script>
