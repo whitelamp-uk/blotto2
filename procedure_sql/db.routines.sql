@@ -1794,10 +1794,12 @@ BEGIN
          ,COUNT(`DateDue`) AS `SuccessfulPayments`
          ,SUM(`PaidAmount`) AS `AmountCollected`
         FROM `blotto_build_collection`
+        -- ## BACS jitter should be dealt with at the time of import from collection table to build table
+        -- in select_collection.sql in the payment API
         -- Await BACS jitter
-        WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+        -- WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
         -- Unless cardnet
-           OR `Provider` = 'CDNT'
+        -- OR `Provider` = 'CDNT'
         GROUP BY `Provider`,`RefNo`
       ) AS `cl`
         ON `cl`.`Provider`=`m`.`Provider`
