@@ -177,8 +177,9 @@ foreach ($close_dates as $date) {
             echo "no tickets for `draw_closed`='$date'\n";
         }
         // External tickets must now go in contiguously for this draw_closed
+        // ignore if already in there - this may be a rebuild.  For "normal" tickets the balance prevents reinsertion.
         $q = "
-          INSERT INTO `blotto_entry`
+          INSERT IGNORE INTO `blotto_entry`
           (`draw_closed`,`ticket_number`,`client_ref`)
           SELECT
           `draw_closed`,`ticket_number`,`client_ref`

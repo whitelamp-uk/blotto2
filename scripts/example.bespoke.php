@@ -18,7 +18,7 @@ function chances ($frequency,$amount) {
         $ratio = 60;
     }
     else {
-        throw new \Exception ('chances_weekly(): frequency "$frequency" not recognised');
+        throw new \Exception ('bespoke chances(): frequency "$frequency" not recognised');
         return false;
     }
     return intval((100*$amount)/round($ratio*BLOTTO_TICKET_PRICE));
@@ -31,6 +31,11 @@ function draw_first ($first_collection_date,$ccc) {
         // Debit cards and gratis-api tickets require no balance accumulation
         return draw_first_asap ($first_collection_date);
     }
+
+    // if five draws a month no need to "buffer" the money to deal with months with five Fridays 
+    // but still need to deal with BACS jitter (and maybe a bit more)
+    return draw_first_asap ($first_collection_date, BLOTTO_PAY_DELAY);
+
     // Library function for the balance accumulation model
     return draw_first_zaffo_model ($first_collection_date,5);
 }
