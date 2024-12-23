@@ -1892,8 +1892,8 @@ BEGIN
          ,COUNT(`DateDue`) AS `SuccessfulPayments`
          ,SUM(`PaidAmount`) AS `AmountCollected`
         FROM `blotto_build_collection`
-        -- await BACS jitter
-        WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
+        -- await BACS jitter as above, deal with in API
+        -- WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
         GROUP BY `Provider`,`RefNo`
       ) AS `cl`
         ON `cl`.`Provider`=`m`.`Provider`
@@ -1933,6 +1933,7 @@ BEGIN
   CHANGE `balance` `balance` decimal(6,2) NOT NULL AFTER `plays`
   ;
 -- Add supporters and players from external tickets
+-- currently a manual process and with any luck we have done the last one
 --  CALL externals();
   -- Add player data to supporter data
   DROP TABLE IF EXISTS `Supporters`
