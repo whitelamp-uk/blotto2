@@ -40,6 +40,7 @@ finish_up () {
         /usr/bin/php "$prm" "$cfg" "$brd build completed successfully"
     fi
     echo ""
+    date +%T
     echo "That's all folks!"
     echo ""
 }
@@ -97,6 +98,19 @@ get_args () {
         fi
     done
 }
+
+maybe_cat () {
+    # uncomment to output whatever
+    # cat $1
+}
+
+stage () {
+  t=$(date +%T)
+  echo -n $t
+  echo -n " Stage "
+  echo $1
+}
+
 
 # Arguments
 get_args "$@"
@@ -200,15 +214,15 @@ then
     exit
 fi
 
-echo " 0. Set SQL_MODE to ensure compatibility (for now!)"
+stage " 0. Set SQL_MODE to ensure compatibility (for now!)"
 mariadb <<< "SET GLOBAL SQL_MODE='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'"
 abort_on_error 0 $?
 
-echo " 1. Create databases (if missing) $dbm and $dbt"
+stage " 1. Create databases (if missing) $dbm and $dbt"
 start=$SECONDS
 echo "    For all games"
 /usr/bin/php $prg $sw "$cfg" sql db.create.sql          > $tmp
-abort_on_error 1a $? $tmp
+abort_on_error 1a $? maybe_$tmp
 cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 1b $?
@@ -217,7 +231,7 @@ then
     echo "    For standard (non-RBE) games"
     /usr/bin/php $prg $sw "$cfg" sql db.create.std.sql  > $tmp
     abort_on_error 1e $? $tmp
-    cat $tmp
+    maybe_cat $tmp
     mariadb                                             < $tmp
     abort_on_error 1f $?
 fi
@@ -235,36 +249,36 @@ then
 fi
 
 
-echo " 2. Create/overwrite stored procedures"
+stage " 2. Create/overwrite stored procedures"
 start=$SECONDS
 /usr/bin/php $prg $sw "$cfg" sql db.functions.sql       > $tmp
 abort_on_error 2a $? $tmp
-cat $tmp
+maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2b $?
 /usr/bin/php $prg $sw "$cfg" sql db.routines.sql        > $tmp
 abort_on_error 2c $? $tmp
-cat $tmp
+maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2d $?
 /usr/bin/php $prg $sw "$cfg" sql db.routines.rbe.sql    > $tmp
 abort_on_error 2e $? $tmp
-cat $tmp
+maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2f $?
 /usr/bin/php $prg $sw "$cfg" sql db.routines.admin.sql  > $tmp
 abort_on_error 2g $? $tmp
-cat $tmp
+maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2h $?
 /usr/bin/php $prg $sw "$cfg" sql db.routines.org.sql    > $tmp
 abort_on_error 2i $? $tmp
-cat $tmp
+maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2j $?
 
 
-echo " 3. Bespoke SQL functions"
+stage " 3. Bespoke SQL functions"
 start=$SECONDS
 mariadb $dbm                                            < $bpf
 abort_on_error 3 $?
@@ -273,14 +287,14 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 if [ "$rbe" = "" ]
 then
 
-    echo " 4. Generate mandate / collection table create SQL in $ddc"
+    stage " 4. Generate mandate / collection table create SQL in $ddc"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
     abort_on_error 4 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo " 5. Create mandate / collection tables using $ddc"
+    stage " 5. Create mandate / collection tables using $ddc"
     start=$SECONDS
     mariadb                                             < $ddc
     abort_on_error 5 $?
@@ -289,21 +303,21 @@ then
     if [ "$pfz" = "" ]
     then
 
-        echo "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
+        stage "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
         start=$SECONDS
         /usr/bin/php $prg $sw "$cfg" exec payment_fetch.php
         abort_on_error 6 $?
         echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-        echo " 7. Generate mandate / collection table index / transform SQL in $ddx"
+        stage " 7. Generate mandate / collection table index / transform SQL in $ddx"
         start=$SECONDS
         /usr/bin/php $prg $sw "$cfg" sql payment.update.sql > $ddx
         abort_on_error 7 $?
         echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-        echo " 8. Index / transform mandate / collection tables using $ddx"
+        stage " 8. Index / transform mandate / collection tables using $ddx"
         start=$SECONDS
         mariadb                                             < $ddx
         abort_on_error 8 $?
@@ -332,21 +346,21 @@ then
             continue
         fi
 
-        echo "     9. Generate supporter temp table SQL for $sdr/$dir"
+        stage "     9. Generate supporter temp table SQL for $sdr/$dir"
         start=$SECONDS
         # $prg finds the last file in the import directory
         /usr/bin/php $prg $sw "$cfg" sql import.supporter.sql "$sdr/$dir" > $tmp
         abort_on_error 9 $? $tmp
-        cat $tmp
+        maybe_cat $tmp
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-        echo "    10. Create supporter temp table"
+        stage "    10. Create supporter temp table"
         start=$SECONDS
         mariadb                                         < $tmp
         abort_on_error 10 $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-        echo "    11a. Generate supporter insert SQL in $sps-$dir.log"
+        stage "    11a. Generate supporter insert SQL in $sps-$dir.log"
         start=$SECONDS
         /usr/bin/php $prg $sw "$cfg" exec supporters.php $dir > "$sps-$dir.log"
         abort_on_error 11a $?
@@ -354,7 +368,7 @@ then
 
         if [ "$pfz" = "" ]
         then
-            echo "    11b. Generate mandates"
+            stage "    11b. Generate mandates"
             /usr/bin/php $prg $sw "$cfg" exec payment_mandate.php
             abort_on_error 11b $?
             echo "        Completed in $(($SECONDS-$start)) seconds"
@@ -376,7 +390,7 @@ then
         fi
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-        echo "    12. Insert supporters/first players from $sps-$dir.log"
+        stage "    12. Insert supporters/first players from $sps-$dir.log"
         start=$SECONDS
         mariadb                                         < "$sps-$dir.log"
         abort_on_error 12 $?
@@ -386,35 +400,35 @@ then
     done
 
 
-    echo "13. Generate replacement player insert SQL in $pls"
+    stage "13. Generate replacement player insert SQL in $pls"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players.php       > $pls
     abort_on_error 13 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "14. Insert replacement players using $pls"
+    stage "14. Insert replacement players using $pls"
     start=$SECONDS
     mariadb                                             < $pls
     abort_on_error 14 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "15. Generate first-draw and chance (for all players) SQL in $plu"
+    stage "15. Generate first-draw and chance (for all players) SQL in $plu"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players_update.php > $plu
     abort_on_error 15 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "16. Set first-draw and chance (for all players) using $plu"
+    stage "16. Set first-draw and chance (for all players) using $plu"
     start=$SECONDS
     mariadb                                             < $plu
     abort_on_error 16 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "17. Complete final player and mandate checks"
+    stage "17. Complete final player and mandate checks"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec players_check.php -q
     abort_on_error 17 $?
@@ -428,19 +442,19 @@ then
 
 fi
 
-echo "18. Generate ticket pool update SQL in $tks"
+stage "18. Generate ticket pool update SQL in $tks"
 start=$SECONDS
 /usr/bin/php $prg $sw "$cfg" exec tickets.php           > $tks
 abort_on_error 18 $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
-echo "19. Update ticket pool from $tks"
+stage "19. Update ticket pool from $tks"
 start=$SECONDS
 mariadb                                                 < $tks
 abort_on_error 19 $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
-echo "20. Check for ticket discrepancies"
+stage "20. Check for ticket discrepancies"
 start=$SECONDS
 if [ "$rbe" = "" ]
 then
@@ -456,11 +470,11 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 start=$SECONDS
 if [ "$rbe" = "" ]
 then
-    echo "21. Generate draw entries based on calculated balances"
+    stage "21. Generate draw entries based on calculated balances"
     /usr/bin/php $prg $sw "$cfg" exec entries.php -q
     abort_on_error 21 $?
 else
-    echo "22. Generate draw entries from other organisations based on rules"
+    stage "22. Generate draw entries from other organisations based on rules"
     /usr/bin/php $prg $sw "$cfg" exec entries.php -qr
     abort_on_error 22 $?
 fi
@@ -470,22 +484,22 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 start=$SECONDS
 if [ "$rbe" = "" ]
 then
-    echo "23. Do draws with notarisation and insert winners"
+    stage "23. Do draws with notarisation and insert winners"
     /usr/bin/php $prg $sw "$cfg" exec draws.php -q
     abort_on_error 23 $?
 else
-    echo "24. Do rule-based-entry draws with notarisation, insert winners and organisation-specific winners"
+    stage "24. Do rule-based-entry draws with notarisation, insert winners and organisation-specific winners"
     /usr/bin/php $prg $sw "$cfg" exec draws.php -qr
     abort_on_error 24 $?
 fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo " 25. Generate result history file at $rhf"
+stage " 25. Generate result history file at $rhf"
 start=$SECONDS
 /usr/bin/php $prg $sw $cfg sql results.export.sql       > $tmp
 abort_on_error 25a $?
-cat $tmp
+maybe_cat $tmp
 rm -f "$ofl"
 mariadb $dbm                                            < $tmp
 abort_on_error 25b $?
@@ -494,7 +508,7 @@ mv "$ofl" "$rhf"
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "26. Build results tables in make database"
+stage "26. Build results tables in make database"
 start=$SECONDS
 if [ "$rbe" = "" ]
 then
@@ -550,7 +564,7 @@ else
     abort_on_error 26n $?
 fi
 
-echo "27. Do bespoke SQL"
+stage "27. Do bespoke SQL"
 start=$SECONDS
 if [ -f "$bpu" ]
 then
@@ -568,26 +582,26 @@ if [ "$rbe" = "" ]
 then
 
 
-    echo "27+. [Interim] If appropriate, generate Zaffo superdraw entries (insurance format)"
+    stage "27+. [Interim] If appropriate, generate Zaffo superdraw entries (insurance format)"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec superdraw_export.php
     abort_on_error 27z $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "28a. Generate CCR insert SQL in $chi"
+    stage "28a. Generate CCR insert SQL in $chi"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec changes.php       > $chi
     abort_on_error 28a $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    echo "28b. Insert new changes data using $ddc"
+    stage "28b. Insert new changes data using $ddc"
     start=$SECONDS
     mariadb                                             < $chi
     abort_on_error 28b $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    echo "28c. Generate CCR output table Changes"
+    stage "28c. Generate CCR output table Changes"
     echo "    CALL changes();"
     mariadb $dbm                                      <<< "CALL changes();"
     abort_on_error 28c $?
@@ -596,20 +610,20 @@ then
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "29. Generate preference column names in $lgs"
+    stage "29. Generate preference column names in $lgs"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec legends.php       > $lgs
     abort_on_error 29 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-    echo "30. Alter/drop preference columns in make database"
+    stage "30. Alter/drop preference columns in make database"
     start=$SECONDS
     mariadb                                             < $lgs
     abort_on_error 30 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    echo "31. Generate missing draw reports, invoices and statements"
+    stage "31. Generate missing draw reports, invoices and statements"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec draw_reports.php
     abort_on_error 31a $?
@@ -619,7 +633,7 @@ then
     abort_on_error 31b $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    echo "32. Send ANLs to email service, send bounces to snailmail service"
+    stage "32. Send ANLs to email service, send bounces to snailmail service"
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" exec anls.php
     abort_on_error 32 $?
@@ -627,27 +641,27 @@ then
 
 fi
 
-echo "33. Send winner letters to postal service"
+stage "33. Send winner letters to postal service"
 start=$SECONDS
 /usr/bin/php $prg $sw "$cfg" exec wins.php
 abort_on_error 33 $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-echo "34. Generating dump file of make database at $dfl ..."
+stage "34. Generating dump file of make database at $dfl ..."
 start=$SECONDS
 if [ ! "$no_tidy" ]
 then
     echo "    Dropping construction stored procedures, functions and temporary tables from make database"
     /usr/bin/php $prg $sw "$cfg" sql db.routines.drop.sql > $tmp
     abort_on_error 34a $? $tmp
-    cat $tmp
+    maybe_cat $tmp
     /usr/bin/php $prg $sw "$cfg" sql db.functions.drop.sql > $tmp
     abort_on_error 34b $? $tmp
-    cat $tmp
+    maybe_cat $tmp
     /usr/bin/php $prg $sw "$cfg" sql db.tables.drop.sql > $tmp
     abort_on_error 34c $? $tmp
-    cat $tmp
+    maybe_cat $tmp
     mariadb                                             < $tmp
     abort_on_error 34d $?
 fi
@@ -662,7 +676,7 @@ else
     echo "    Completed in $(($SECONDS-$start)) seconds"
 fi
 
-echo "35. Recreate organisation database"
+stage "35. Recreate organisation database"
 if [ "$rehearse" ]
 then
     echo "    Rehearsal only - skipping"
@@ -688,7 +702,7 @@ else
 fi
 
 
-echo "36. Grant organisation database permissions to admin user and organisation role"
+stage "36. Grant organisation database permissions to admin user and organisation role"
 if [ "$rehearse" ]
 then
     echo "    Rehearsal only - skipping"
@@ -696,19 +710,19 @@ else
     start=$SECONDS
     /usr/bin/php $prg $sw "$cfg" sql db.permissions.sql > $tmp
     abort_on_error 36a $? $tmp
-    cat $tmp
+    maybe_cat $tmp
     mariadb                                             < $tmp
     abort_on_error 36b $?
     /usr/bin/php $prg $sw "$cfg" sql db.permissions.reports.sql > $tmp
     abort_on_error 36c $? $tmp
-    cat $tmp
+    maybe_cat $tmp
     mariadb                                             < $tmp
     abort_on_error 36d $?
     if [ "$rbe" = "" ]
     then
         /usr/bin/php $prg $sw "$cfg" sql db.permissions.reports.standard.sql > $tmp
         abort_on_error 36e $? $tmp
-        cat $tmp
+        maybe_cat $tmp
         mariadb                                         < $tmp
         abort_on_error 36f $?
     fi
@@ -726,7 +740,7 @@ fi
 if [ "$rbe" = "" ]
 then
 
-    echo "37. Cache slow front-end SQL"
+    stage "37. Cache slow front-end SQL"
     if [ "$rehearse" ]
     then
         echo "    Rehearsal only - skipping"

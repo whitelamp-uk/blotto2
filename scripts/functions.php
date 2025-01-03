@@ -6418,7 +6418,7 @@ function www_signup_dates ($org,&$e) {
     }
     if (!count($outdates)) {
         // At least one date passed but no dates are in scope
-        $e = "No date passed is in scope";
+        $e = "Sorry, that draw is now closed to new entries";
         return false;
     }
     
