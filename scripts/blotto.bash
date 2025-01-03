@@ -224,8 +224,8 @@ stage " 1. Create databases (if missing) $dbm and $dbt"
 start=$SECONDS
 echo "    For all games"
 /usr/bin/php $prg $sw "$cfg" sql db.create.sql          > $tmp
-abort_on_error 1a $? maybe_$tmp
-cat $tmp
+abort_on_error 1a $? $tmp
+maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 1b $?
 if [ "$rbe" = "" ]
