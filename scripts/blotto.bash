@@ -102,6 +102,8 @@ get_args () {
 maybe_cat () {
     # uncomment to output whatever
     # cat $1
+    # do nothing command - empty functions are not allowed
+    true
 }
 
 stage () {
