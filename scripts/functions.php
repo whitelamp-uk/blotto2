@@ -585,37 +585,46 @@ function days_working_date ($start_date,$working_days,$reverse=false) {
     }
     if (!$BacsHolidays) {
         $file = '/tmp/bank-holidays.cfg.php';
-        if (is_readable($file) && filemtime($file) <= time() - (7*24*60*60) ) { //cache for a week (or more?)
+        if (is_readable($file) && time() - filemtime($file) < 604800) { //cache for a week (more?)  7*24*60*60 = 604800
             // Almost always just include the file
             $BacsHolidays = include ($file);
+            $age = time() - filemtime($file); // not going to be "clever" and assign this inside the conditional
+            error_log ("include bank holiday cache ".$file." age: ".$age); // for now
         }
         else {
+            error_log ("recreate bank holiday cache"); // for now
             // Rewrite the include file
             $json = file_get_contents ('https://www.gov.uk/bank-holidays.json'); // if fails returns false 
-            $json = json_decode ($json,JSON_PRETTY_PRINT); // decoding false produces null
-            if (!$json) { // catches both errors
-                $BacsHolidays = [];
-                foreach ($json as $division=>$events) {
-                    // TODO it has been proposed that it is better just to use banks holidays for England
-                    if ($division!='northern-ireland' || territory_permitted('BT')) {
-                        foreach ($events['events'] as $bh) {
-                            if (!in_array($bh['date'],$BacsHolidays)) {
-                                $BacsHolidays[] = $bh['date'];
+            if ($json) {
+                $json = json_decode ($json,true); // true for associative arrays not objects
+                if ($json) { 
+                    $BacsHolidays = [];
+                    foreach ($json as $division=>$events) {
+                        // TODO it has been proposed that it is better just to use banks holidays for England
+                        if ($division!='northern-ireland' || territory_permitted('BT')) {
+                            foreach ($events['events'] as $bh) {
+                                if (!in_array($bh['date'],$BacsHolidays)) {
+                                    $BacsHolidays[] = $bh['date'];
+                                }
                             }
                         }
                     }
-                }
-                $fp = @fopen ($file,'w');
-                if ($fp) {
-                    fwrite ($fp,'<?php return '.var_export($BacsHolidays,true).';');
-                    fclose ($fp);
+                    $fp = @fopen ($file,'w');
+                    if ($fp) {
+                        fwrite ($fp,'<?php return '.var_export($BacsHolidays,true).';');
+                        fclose ($fp);
+                    }
+                    else {
+                        error_log ('Unable to open file for writing: '.$file);
+                    }
                 }
                 else {
-                    error_log ('Unable to open file for writing: '.$file);
+                    error_log('failed to decode https://www.gov.uk/bank-holidays.json');
+                    error_log('json_last_error():'. json_last_error());
                 }
             }
             else {
-                error_log('failed to fetch or decode https://www.gov.uk/bank-holidays.json');
+                error_log('failed to fetch https://www.gov.uk/bank-holidays.json');
             }
         }
     }
@@ -640,7 +649,7 @@ function days_working_date ($start_date,$working_days,$reverse=false) {
                 return false;
             }
             if (($dow=$dt->format('N'))!=6 && $dow!=7) {
-                if (!in_array($dt->format('Y-m-d'),$BacsHolidays)) {
+                if (!$BacsHolidays || !in_array($dt->format('Y-m-d'),$BacsHolidays)) { // if BacsHolidays has failed somehow we can still process weekends
                     $days++;
                 }
             }
@@ -2422,7 +2431,7 @@ function months ($date1=null,$date2=null,$format='Y-m-d') {
         $date1      = day_one()->format ($f);
     }
     if ($date2===null) {
-        $date2      = date ($f);
+        $date2      = date ($f); // todo gmdate???
     }
     // Convert and validate
     $ds             = \DateTime::createFromFormat($f, $date1);
@@ -3665,7 +3674,7 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
     $request->params->licenseData->maxPayoutValue->currency = 'GBP';
     $request->params->licenseData->maxPayoutValue->amount = $payout_max;
 */
-    $datetime                       = date ('Y-m-d H:i:s');
+    $datetime                       = date ('Y-m-d H:i:s'); // todo gmdate() ??
     $c                              = curl_init (BLOTTO_TRNG_API_URL);
     if (!$c) {
         throw new \Exception ('Failed to curl_init("'.BLOTTO_TRNG_API_URL.'")');
@@ -5453,7 +5462,7 @@ function weeks ($dow,$date1,$date2=null,$format='Y-m-d') {
     $f              = 'Y-m-d';
     $dow            = $dow % 7;
     if ($date2===null) {
-        $date2      = date ($f);
+        $date2      = date ($f); // todo gmdate() ??
     }
     // Convert and validate
     $ds             = \DateTime::createFromFormat ($f,$date1);

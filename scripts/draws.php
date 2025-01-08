@@ -93,7 +93,7 @@ if ($ds->num_rows==0 && !$quiet) {
 }
 
 echo "    Processing draws\n";
-$now                = date ('Y-m-d H:i:s');
+$now                = gmdate ('Y-m-d H:i:s');
 $amounts            = [];
 register_shutdown_function ('finish_up');
 while ($d=$ds->fetch_assoc()) {
