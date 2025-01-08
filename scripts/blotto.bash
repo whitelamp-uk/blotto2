@@ -216,9 +216,13 @@ then
     exit
 fi
 
-stage " 0. Set SQL_MODE to ensure compatibility (for now!)"
+stage " 0a. Generate daily config "
+/usr/bin/php $prg $sw "$cfg" exec daily_config.php
+abort_on_error 0a $?
+
+stage " 0b. Set SQL_MODE to ensure compatibility (for now!)"
 mariadb <<< "SET GLOBAL SQL_MODE='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'"
-abort_on_error 0 $?
+abort_on_error 0b $?
 
 stage " 1. Create databases (if missing) $dbm and $dbt"
 start=$SECONDS

@@ -67,6 +67,7 @@ $file = [
        ,'changes.php'
        ,'changes_email.php'
        ,'clone.php'
+       ,'daily_config.php'
        ,'draws.php'
        ,'draw_reports.php'
        ,'engine.php'

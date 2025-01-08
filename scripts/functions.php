@@ -585,32 +585,37 @@ function days_working_date ($start_date,$working_days,$reverse=false) {
     }
     if (!$BacsHolidays) {
         $file = '/tmp/bank-holidays.cfg.php';
-        if (is_readable($file) && gmdate("Y-m-d",filemtime($file))==gmdate('Y-m-d')) {
+        if (is_readable($file) && filemtime($file) <= time() - (7*24*60*60) ) { //cache for a week (or more?)
             // Almost always just include the file
             $BacsHolidays = include ($file);
         }
         else {
             // Rewrite the include file
-            $json = file_get_contents ('https://www.gov.uk/bank-holidays.json');
-            $json = json_decode ($json,JSON_PRETTY_PRINT);
-            $BacsHolidays = [];
-            foreach ($json as $division=>$events) {
-                // TODO it has been proposed that it is better just to use banks holidays for England
-                if ($division!='northern-ireland' || territory_permitted('BT')) {
-                    foreach ($events['events'] as $bh) {
-                        if (!in_array($bh['date'],$BacsHolidays)) {
-                            $BacsHolidays[] = $bh['date'];
+            $json = file_get_contents ('https://www.gov.uk/bank-holidays.json'); // if fails returns false 
+            $json = json_decode ($json,JSON_PRETTY_PRINT); // decoding false produces null
+            if (!$json) { // catches both errors
+                $BacsHolidays = [];
+                foreach ($json as $division=>$events) {
+                    // TODO it has been proposed that it is better just to use banks holidays for England
+                    if ($division!='northern-ireland' || territory_permitted('BT')) {
+                        foreach ($events['events'] as $bh) {
+                            if (!in_array($bh['date'],$BacsHolidays)) {
+                                $BacsHolidays[] = $bh['date'];
+                            }
                         }
                     }
                 }
-            }
-            $fp = @fopen ($file,'w');
-            if ($fp) {
-                fwrite ($fp,'<?php return '.var_export($BacsHolidays,true).';');
-                fclose ($fp);
+                $fp = @fopen ($file,'w');
+                if ($fp) {
+                    fwrite ($fp,'<?php return '.var_export($BacsHolidays,true).';');
+                    fclose ($fp);
+                }
+                else {
+                    error_log ('Unable to open file for writing: '.$file);
+                }
             }
             else {
-                error_log ('Unable to open file for writing: '.$file);
+                error_log('failed to fetch or decode https://www.gov.uk/bank-holidays.json');
             }
         }
     }
