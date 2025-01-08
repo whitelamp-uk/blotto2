@@ -31,7 +31,7 @@ date '+%Y-%m-%d %H:%M:%S'
 # -c for count; -f for search full path so it finds script name; add "$@"" for other parameters, i.e. config
 # cronjobs match twice as there is the calling process
 numprocs=`pgrep -c -f "$0"`
-if [ $CRONJOB ]; then
+if [[ $CRONJOB || $SUDO_UID ]]; then
     limit=2
 else
     limit=1
