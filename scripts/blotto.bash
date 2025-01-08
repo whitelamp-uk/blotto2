@@ -107,10 +107,10 @@ maybe_cat () {
 }
 
 stage () {
-  t=$(date +%T)
-  echo -n $t
-  echo -n " Stage "
+  echo -n "Stage "
   echo $1
+  t=$(date +%T)
+  echo $t
 }
 
 
