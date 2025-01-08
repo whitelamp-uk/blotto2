@@ -219,7 +219,7 @@ fi
 stage " 0a. Generate daily config "
 /usr/bin/php $prg $sw "$cfg" exec daily_config.php
 abort_on_error 0a $?
-exit
+
 stage " 0b. Set SQL_MODE to ensure compatibility (for now!)"
 mariadb <<< "SET GLOBAL SQL_MODE='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'"
 abort_on_error 0b $?
