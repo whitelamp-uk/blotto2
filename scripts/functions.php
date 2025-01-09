@@ -6362,14 +6362,20 @@ function www_signup_dates ($org,&$e) {
     $c = connect ();
     foreach (explode(',',$indates) AS $d) {
         $d = trim ($d);
-        if ($d == 'next_superdraw') {
+        if ($d == 'next_superdraw') {  // expires is generally sunday 
             $sdsql = "SELECT `starts` FROM `blotto_prize` AS `p` WHERE `p`.`level` = 1 AND `p`.`expires` > '".$now->format ('Y-m-d')."' ORDER BY `p`.`expires` LIMIT 0,2";
             $sdrows = $c->query($sdsql);
             $row1 = $sdrows->fetch_assoc();
             if ($row1) {
                 $draw_closed = draw_upcoming($row1['starts']);  // in Y-m-d
-                //TODO don't ignore insurance as not relevant and also signup_close_advance_hours
-                if ($draw_closed < $today) { // edge case - e.g. today is Saturday, the draw closed yesterday. If today Sunday we are already on to the next.
+                // todo - this is a copy of code below, spin off into a function
+                $closed = new \DateTime ($draw_closed.' 00:00:00');
+                $closed->add (new \DateInterval('P1D'));
+                if (defined('BLOTTO_INSURE') && BLOTTO_INSURE && BLOTTO_INSURE_DAYS>0) {
+                    $closed->sub (new \DateInterval('P'.BLOTTO_INSURE_DAYS.'D'));
+                }
+                $closed->sub (new \DateInterval('PT'.$org['signup_close_advance_hours'].'H'));
+                if ($now > $closed) { // edge case - e.g. today is Saturday, the draw closed yesterday. If today Sunday we are already on to the next.
                     $row2 = $sdrows->fetch_assoc();
                     if ($row2) {
                         $draw_closed = draw_upcoming($row2['starts']);  // in Y-m-d
@@ -6407,6 +6413,7 @@ function www_signup_dates ($org,&$e) {
                 }
 */
 // I think that was all wrong... instead something like:
+                // NB this is duplicated above, should be spun out into a function.
                 // A draw is closed exactly one day after the day begins
                 $closed = new \DateTime ($draw_closed.' 00:00:00');
                 $closed->add (new \DateInterval('P1D'));
@@ -6432,7 +6439,7 @@ function www_signup_dates ($org,&$e) {
     }
     if (!count($outdates)) {
         // At least one date passed but no dates are in scope
-        $e = "Sorry, that draw is now closed to new entries";
+        $e = "Sorry, that draw is now closed to new entries".BLOTTO_DB;
         return false;
     }
     

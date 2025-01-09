@@ -259,15 +259,15 @@ window.location.href = '#<?php echo $go; ?>';
 <?php
     if ($step==1) {
         require __DIR__.'/views/signup.php';
-        error_log("tickets.php signup");
+        //error_log("tickets.php signup");
     }
     elseif ($step==3) {
         require __DIR__.'/views/finished.php';
-        error_log("tickets.php finished");
+        //error_log("tickets.php finished");
     }
     else {
         $api->start ($error);
-        error_log("tickets.php cardnet");
+        //error_log("tickets.php cardnet");
     }
 ?>
 
