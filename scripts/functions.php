@@ -1224,18 +1224,64 @@ function draw_upcoming_dow_nths_in_months ($dow,$nths,$months,$today=null) {
     return false;
 }
 
-function draw_upcoming_weekly ($dow,$today=null) {
-    // Get draw close date of next weekly draw
-    // in the future (today is in the future)
-    // for a given day of week
-    $dow = intval($dow) % 7; // 0 Sunday -> 6 Saturday
-    $day = new \DateTime ($today);
-    for ($i=0;$i<7;$i++) {
-        if ($day->format('w')==$dow) {
-            return $day->format ('Y-m-d');
+function draw_upcoming_weekly ($dow='Friday',$today=null) { // allow 0 (sunday) to 6 for $dow, or "fri", or "THU", or empty string for $dow to default.
+    $daymap = ['Sun' => 'Sunday', 'Mon' => 'Monday', 'Tue' => 'Tuesday', 'Wed' => 'Wednesday', 'Thu' => 'Thursday', 'Fri' => 'Friday', 'Sat' => 'Saturday'];
+    if (is_numeric($dow)) {
+        $dow = intval($dow) % 7;
+        $dow = array_values($daymap)[$dow];
+    } else{
+        $dow = ucfirst(strtolower($dow)); // convert to "Mon" or "Monday"
+        if (strlen($dow) == 0) { 
+            $dow = 'Friday';
         }
-        $day->add (new \DateInterval('P1D'));
+        if (strlen($dow) == 3) {
+            $dow = $daymap[$dow];
+        }
     }
+    if (!in_array($dow, $daymap)) {
+        return false;
+    }
+    // $dow now 'Friday' or whatever
+    $day = new \DateTime ($today);
+    if ($day->format('l') != $dow) {  // today is $dow
+        $day->modify ('next '.$dow);
+    }
+    return $day->format ('Y-m-d');
+}
+
+// can also take 'fri', 'tue' etc, Just not numbers.
+// if both days are the same you are a psychopath and it *will* go wrong
+function draw_upcoming_weekly_with_bonus ($dow='Friday',$alt_dow='Tuesday',$today=null) {
+    // Close date of next draw to take place
+    // Today included
+    if (!$today) {
+        // Today is real-time actually today if not specified yyyy-mm-dd
+        $today = gmdate ('Y-m-d');
+    }
+    $month = substr ($today,0,7); // get the month of today yyyy-mm
+    // Get next "Friday" (today is included)
+    $day_next = draw_upcoming_weekly ($dow,$today); // our existing weekly draw function
+    // but next draw close might be a "Tuesday" so:
+    $day_4 = gmdate ('Y-m-d',strtotime("$month-00 fourth ".$dow));
+    $day_5 = gmdate ('Y-m-d',strtotime("$month-00 fifth ".$dow));
+    if (substr($day_5,0,7)>substr($day_4,0,7)) {
+        // fifth "Friday" is next month so when is the last "Tuesday"?
+        $day_4 = gmdate ('Y-m-d',strtotime("$month-00 fourth ".$alt_dow));
+        $day_5 = gmdate ('Y-m-d',strtotime("$month-00 fifth ".$alt_dow));
+        if (substr($day_5,0,7)==substr($day_4,0,7)) {
+            // fifth Alt is this month
+            $day_next_alt = $day_5;
+        }
+        else {
+            // fifth Alt is next month
+            $day_next_alt = $day_4;
+        }
+        if ($day_next_alt>=$today && $day_next_alt<$day_next) {
+            // alternative draw close is earlier than the next "normal" draw day
+            $day_next = $day_next_alt;
+        }
+    }
+    return $day_next;
 }
 
 function draws ($from,$to) {
