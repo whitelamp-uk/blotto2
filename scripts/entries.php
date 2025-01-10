@@ -149,7 +149,7 @@ foreach ($close_dates as $date) {
                     }
                 }
             }
-            else {
+            else if ($balance < 0) { // too many people with 68p credit...
                 fwrite (STDERR,"WARNING: ClientRef '$cref' has a balance ".$balance." trying to buy ".$chances." ticket(s) at ".$price." pence\n");
             } 
         }
@@ -163,7 +163,7 @@ foreach ($close_dates as $date) {
 // external tickets
 // update blotto_entry set `draw_closed`='$date' where draw_closed is null
 // add $ex = affected_rows to the count
-    echo rtrim($q)."\n";
+    //echo rtrim($q)."\n";  
     $q              = substr ($q,0,-2);
     try {
         if ($n>0) {
