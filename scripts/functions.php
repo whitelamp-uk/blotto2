@@ -6195,6 +6195,8 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
 
 }
 
+//TODO you can enter *any* email address and get sent the code; it then fails on the SMS stage
+//and it just says "failed to send" without saying why.
 function www_auth_reset_prep ($mode,&$errMsg=null) {
     if ($mode==0) {
         // User is going back to login
