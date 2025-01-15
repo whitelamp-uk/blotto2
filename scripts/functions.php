@@ -6243,7 +6243,7 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
                 FROM `blotto_user`
                 WHERE `org_code`='$org_code'
                   AND `username`='{$_SESSION['reset']['un']}'
-                  AND `email`='{$_SESSION['reset']['em']}'
+                  AND LOWER(`email`)=LOWER('{$_SESSION['reset']['em']}')
             ";
             $zo = connect (BLOTTO_CONFIG_DB);
             $u = $zo->query ($qs);

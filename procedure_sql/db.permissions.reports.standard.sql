@@ -41,6 +41,10 @@ GRANT SELECT ON `{{BLOTTO_DB}}`.`Supporters`
 TO '{{BLOTTO_ORG_USER}}'
 ;
 
+GRANT SELECT ON `{{BLOTTO_DB}}`.`SupportersView`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
 GRANT SELECT ON `{{BLOTTO_DB}}`.`Updates`
 TO '{{BLOTTO_ORG_USER}}'
 ;
