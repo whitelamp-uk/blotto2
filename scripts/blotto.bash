@@ -53,6 +53,7 @@ get_args () {
     manual=""
     no_tidy=""
     rehearse=""
+    payfreeze=""
     while [ 1 ]
     do
         if [ $# -lt 2 ]
@@ -95,6 +96,12 @@ get_args () {
                 rehearse="1"
                 sw="$sw -R"
             fi
+            if [[ "$sws" == *"z"* ]]
+            then
+                echo  "Option: force pay freeze (no payment API usage)"
+                payfreeze="1"
+                sw="$sw -R"
+            fi
         fi
     done
 }
@@ -127,6 +134,7 @@ then
     echo "    -R                     rehearsal only (do not recreate front-end BLOTTO_DB)"
     echo "    -s                     single draw only (do next required draw and exit)"
     echo "    -v                     verbose (echo full log to STDOUT)"
+    echo "    -z                     Pay freeze - don't interact with payment API"
     exit 102
 fi
 if [ ! -f "$cfg" ]
@@ -216,6 +224,18 @@ then
     finish_up
     exit
 fi
+
+        if [ "$pfz" = "" ] && [ "$payfreeze" = "" ]
+        then
+            echo "Do mandate stuff"
+        else
+            if [ "$pfz" = "" ]            
+            then
+            echo "forced pay freeze so not attempting to set up new mandates"
+            else
+            echo "BLOTTO_DEV_PAY_FREEZE==true so not attempting to set up new mandates"
+            fi
+        fi
 
 stage " 0a. Generate daily config "
 /usr/bin/php $prg $sw "$cfg" exec daily_config.php
@@ -307,7 +327,7 @@ then
     abort_on_error 5 $?
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    if [ "$pfz" = "" ]
+    if [ "$pfz" = "" ] && [ "$payfreeze" = "" ]
     then
 
         stage "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
@@ -373,7 +393,7 @@ then
         abort_on_error 11a $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-        if [ "$pfz" = "" ]
+        if [ "$pfz" = "" ] && [ "$payfreeze" = "" ]
         then
             stage "    11b. Generate mandates"
             /usr/bin/php $prg $sw "$cfg" exec payment_mandate.php

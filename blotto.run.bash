@@ -51,7 +51,7 @@ get_args "$@"
 if [ ! "$cfg" ]
 then
     echo "/bin/bash $0 [-options] path_to_config_file"
-    echo "  options can be combined eg. -nv"
+    echo "  options should be combined eg. -nv"
     echo "    -n = no tidying"
     echo "    -v = verbose (echo full log to STDOUT)"
     exit 101
