@@ -213,6 +213,9 @@ try {
         $amount = $p['Amount'];
         $freq = $p['Freq'];
         if ($freq == 'Monthly') {
+            if ($amount == '13.00') {
+                $amount = 13.02; // hack for that one stupid SHC mandate
+            }
             $chances = intval($amount / 4.34); // works up to six tickets
         } else if ($freq == 'Annually') {
             $chances = intval($amount / 52); // works up to six tickets
