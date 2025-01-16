@@ -21,6 +21,6 @@ $num = $interval->format("%d");
 
 $output  = "<?php\n";
 $output .= "define ( 'BLOTTO_PAY_DELAY', 'P".$num."D' );\n";
-$output .= "//define ( 'PST_PAY_INTERVAL',        '".$num." DAY' ); // seems to be obsolete\n";  // TODO same for RSM?
+$output .= "define ( 'PST_PAY_INTERVAL',        '".$num." DAY' );\n";  // TODO same for RSM?
 file_put_contents($file, $output);
 
