@@ -1224,6 +1224,8 @@ function draw_upcoming_dow_nths_in_months ($dow,$nths,$months,$today=null) {
     return false;
 }
 
+//TODO make $today first parameter (and rename); ensure all calls use named $dow not '5' - or use default
+// perhaps just use "with_bonus" version with null alt_dow for legacy?
 function draw_upcoming_weekly ($dow='Friday',$today=null) { // allow 0 (sunday) to 6 for $dow, or "fri", or "THU", or empty string for $dow to default.
     $daymap = ['Sun' => 'Sunday', 'Mon' => 'Monday', 'Tue' => 'Tuesday', 'Wed' => 'Wednesday', 'Thu' => 'Thursday', 'Fri' => 'Friday', 'Sat' => 'Saturday'];
     if (is_numeric($dow)) {
@@ -1251,7 +1253,8 @@ function draw_upcoming_weekly ($dow='Friday',$today=null) { // allow 0 (sunday) 
 
 // can also take 'fri', 'tue' etc, Just not numbers.
 // if both days are the same you are a psychopath and it *will* go wrong
-function draw_upcoming_weekly_with_bonus ($dow='Friday',$alt_dow='Tuesday',$today=null) {
+// NB order or parameters currently different to "legacy" function
+function draw_upcoming_weekly_with_bonus ($today=null,$dow='Friday',$alt_dow='Tuesday') {
     // Close date of next draw to take place
     // Today included
     if (!$today) {
