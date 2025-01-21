@@ -169,15 +169,33 @@ try {
     echo "-- Update chances\n";
     while ($p=$ps->fetch_assoc()) {
         $chances = explode (',',$p['ChancesCsv']);
-        $chances = intval (trim(array_pop($chances)));
+        $chances = intval (trim(array_pop($chances))); // get latest if more than one (for history).  In current practice (Jan 2025) only one
         if ($chances<1) {
-            fwrite (STDERR,"$chances chances is not valid from mandate ChancesCsv={$p['ChancesCsv']} for {$p['ClientRef']}. Trying mandate amount instead\n");
-        } else {
-            if (!array_key_exists($chances,$chances_options)) {
-                $chances_options[$chances]  = [];
+            // try to use amount and freq;
+            // "1"  "Monthly" "Quarterly" "6 Monthly" "Annually" 
+            $amount = $p['Amount'];
+            $freq = $p['Freq'];
+            if ($freq == 'Monthly' || $freq == '1') {
+                if ($amount == '13.00') {
+                    $amount = 13.02; // hack for that one stupid SHC mandate
+                }
+                $chances = intval($amount / 4.34); // works up to six tickets
+            } else if ($freq == 'Quarterly') {
+                $chances = intval($amount / 13); // works up to six tickets
+            } else if ($freq == '6 Monthly') {
+                $chances = intval($amount / 26); // works up to six tickets
+            } else if ($freq == 'Annually') {
+                $chances = intval($amount / 52); // works up to six tickets
             }
-            $chances_options[$chances][] = $p['id'];
+            if ($chances<1) {
+                fwrite (STDERR,"$chances chances is not valid from mandate ChancesCsv={$p['ChancesCsv']} Amount={$p['Amount']} for {$p['ClientRef']}.\n");
+                exit (105);
+            }
         }
+        if (!array_key_exists($chances,$chances_options)) {
+            $chances_options[$chances]  = [];
+        }
+        $chances_options[$chances][] = $p['id'];
     }
 }
 catch (\mysqli_sql_exception $e) {
@@ -185,57 +203,6 @@ catch (\mysqli_sql_exception $e) {
     exit (106);
 }
 echo "-- Update player chances\n";
-foreach ($chances_options as $chances=>$ids) {
-    if (!count($ids)) {
-        continue;
-    }
-    echo "UPDATE `blotto_player` SET `chances`=$chances WHERE `id` IN (".implode(',',$ids).");\n";
-}
-
-// Set player chances using mandate amount
-$chances_options = [];
-$qs = "
-  SELECT
-    `p`.`id`
-   ,`m`.`ClientRef`
-   ,`m`.`Amount`
-   ,`m`.`Freq`
-  FROM `blotto_build_mandate` AS `m`
-  JOIN `blotto_player` AS `p`
-    ON `p`.`client_ref`=`m`.`ClientRef`
-  WHERE `p`.`chances` IS NULL
-";
-try {
-    $ps = $zo->query ($qs);
-    fwrite (STDERR,"{$ps->num_rows} players where chances not set but could be\n");
-    echo "-- Update chances\n";
-    while ($p=$ps->fetch_assoc()) {
-        $amount = $p['Amount'];
-        $freq = $p['Freq'];
-        if ($freq == 'Monthly') {
-            if ($amount == '13.00') {
-                $amount = 13.02; // hack for that one stupid SHC mandate
-            }
-            $chances = intval($amount / 4.34); // works up to six tickets
-        } else if ($freq == 'Annually') {
-            $chances = intval($amount / 52); // works up to six tickets
-        }
-        if ($chances<1) {
-            fwrite (STDERR,"$chances chances is not valid from mandate Amount={$p['Amount']} for {$p['ClientRef']}.\n");
-            exit (105);
-        } else {
-            if (!array_key_exists($chances,$chances_options)) {
-                $chances_options[$chances]  = [];
-            }
-            $chances_options[$chances][] = $p['id'];
-        }
-    }
-}
-catch (\mysqli_sql_exception $e) {
-    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-    exit (106);
-}
-echo "-- Update player chances, part 2\n";
 foreach ($chances_options as $chances=>$ids) {
     if (!count($ids)) {
         continue;
