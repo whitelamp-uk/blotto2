@@ -158,6 +158,7 @@ $qs = "
     `p`.`id`
    ,`m`.`ClientRef`
    ,`m`.`ChancesCsv`
+   ,`m`.`Amount`
   FROM `blotto_build_mandate` AS `m`
   JOIN `blotto_player` AS `p`
     ON `p`.`client_ref`=`m`.`ClientRef`
