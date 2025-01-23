@@ -4054,8 +4054,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         ,CONCAT_WS(
           ' '
          ,CASE
-             WHEN `bs`.`mandate_blocked`=1 AND (`m`.`Status`='Active' OR `m`.`Status`='Inactive') THEN 'Blocked' 
-             WHEN `bs`.`mandate_blocked`=1 AND (`m`.`Status`='LIVE' OR `m`.`Status`='NEW') THEN 'BLOCKED'
+             WHEN `bs`.`mandate_blocked`=1 AND (`m`.`Status`='Active' OR `m`.`Status`='Inactive') THEN CONCAT ('Blocked - ', `m`.`Status`)
+             WHEN `bs`.`mandate_blocked`=1 AND (`m`.`Status`='LIVE' OR `m`.`Status`='NEW') THEN CONCAT ('BLOCKED - ', `m`.`Status`)
              ELSE `m`.`Status`
           END
          ,`m`.`ClientRef`
