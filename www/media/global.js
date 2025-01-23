@@ -821,6 +821,9 @@ function supporterSearchResults (responseText) {
             if (lcstatus=='active' || lcstatus=='live') { // convert to paysuite style.
                 status = 'active';
             }
+            else if (lcstatus == 'inactive') { // if lcstatus is "inactive" then this is definitely paysuite
+                status = 'new';                // and we treat it as "new" because it might be
+            }
         } else {
             status = 'new';
         }
@@ -993,7 +996,7 @@ function supporterSelectResult (responseText,status) {
         }
         form.classList.add ('blocked');
         //form.update.disabled = true;
-        if (status == 'new') { // 
+        if (status == 'new') { // then it must be blocked and we enable unblock, but not if active or inactive because it's too late to block
             form.block_mandate.disabled = false;
             form.block_mandate.dataset.state = '1';
             form.block_mandate.textContent = 'Unblock mandate';

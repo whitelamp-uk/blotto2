@@ -4028,6 +4028,9 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
       SELECT
         `s`.`current_client_ref` AS `CurrentClientRef`
     ";
+    // Statuses: Paysuite can be Active or Inactive, which includes pending mandates, so they need to be blockable and showns as such.
+    // RSM is one of CANCELLED DELETED FAILED LIVE  (for DBH). SHC has no FAILED but has two (recent) CANCEL.
+    // PENDING mandates don't make it out of the rsm_mandate table. Note this bit is just for display of the mandate info.
     $qs = "
       SELECT
         `bacs`.`BCR` 
@@ -4051,7 +4054,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         ,CONCAT_WS(
           ' '
          ,CASE
-             WHEN `bs`.`mandate_blocked`=1 AND `m`.`Status`='Active' THEN 'Blocked'
+             WHEN `bs`.`mandate_blocked`=1 AND (`m`.`Status`='Active' OR `m`.`Status`='Inactive') THEN 'Blocked' 
              WHEN `bs`.`mandate_blocked`=1 AND (`m`.`Status`='LIVE' OR `m`.`Status`='NEW') THEN 'BLOCKED'
              ELSE `m`.`Status`
           END
