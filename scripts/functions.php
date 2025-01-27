@@ -6275,8 +6275,10 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
                     error_log ($response);
                 }
             }
-            $errMsg = "Sorry failed to send SMS - please try again";
-            error_log ($u['mobile'].' '.$code.' '.print_r($response,true));
+            if ($u) $errMsg = "Sorry failed to send SMS - please try again";
+            else $errMsg = "Sorry SMS failed - could not find username {$_SESSION['reset']['un']} and / or email {$_SESSION['reset']['em']} and / or org code $org_code";
+            if ($u) error_log ($u['mobile'].' '.$code.' '.print_r($response,true));
+            else error_log($qs);
             return false;
         }
         $errMsg = "Sorry SMS service was unavailable - please try again";
