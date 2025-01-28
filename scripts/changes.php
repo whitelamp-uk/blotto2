@@ -371,18 +371,20 @@ echo "
 ALTER TABLE `blotto_change` ADD COLUMN IF NOT EXISTS `age` tinyint unsigned DEFAULT NULL;
 ";
 echo "\n";
-// get latest contact details with valid DOB.
+// get latest contact details with valid DOB.  Because we group by supporter_id I think we are liable to get any_value for DOB, not the row with max id.
 echo "
 UPDATE `blotto_change` AS `c`
 JOIN `blotto_supporter` AS `s` 
   ON `s`.`client_ref` = `c`.`client_ref`
 JOIN  (
-  SELECT MAX(`id`), `supporter_id`, `dob`
+  SELECT MAX(`id`) AS `id`, `supporter_id`
   FROM `blotto_contact` 
   WHERE `dob` != '0000-00-00'
   GROUP BY `supporter_id`
-) AS `contact`
-  ON `contact`.`supporter_id` = `s`.`id`
+) AS `latest_contact`
+  ON `latest_contact`.`supporter_id` = `s`.`id`
+JOIN `blotto_contact` AS `contact`
+  ON `contact`.`id` = `latest_contact`.`id` 
 SET `c`.`age` = TIMESTAMPDIFF(YEAR,`contact`.`dob`,`s`.`signed`)
 ;
 ";
