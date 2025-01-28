@@ -363,6 +363,28 @@ foreach ($changes as $i=>$c) {
     }
     echo "\n";
 }
-
 echo ";\n\n";
 
+// seems safer to do it after the fact
+
+echo "
+ALTER TABLE `blotto_change` ADD COLUMN IF NOT EXISTS `age` tinyint unsigned DEFAULT NULL;
+";
+echo "\n";
+// get latest contact details with valid DOB.
+echo "
+UPDATE `blotto_change` AS `c`
+JOIN `blotto_supporter` AS `s` 
+  ON `s`.`client_ref` = `c`.`client_ref`
+JOIN  (
+  SELECT MAX(`id`), `supporter_id`, `dob`
+  FROM `blotto_contact` 
+  WHERE `dob` != '0000-00-00'
+  GROUP BY `supporter_id`
+) AS `contact`
+  ON `contact`.`supporter_id` = `s`.`id`
+SET `c`.`age` = TIMESTAMPDIFF(YEAR,`contact`.`dob`,`s`.`signed`)
+;
+";
+
+echo "\n";
