@@ -1224,67 +1224,51 @@ function draw_upcoming_dow_nths_in_months ($dow,$nths,$months,$today=null) {
     return false;
 }
 
-//TODO make $today first parameter (and rename); ensure all calls use named $dow not '5' - or use default
-// perhaps just use "with_bonus" version with null alt_dow for legacy?
-function draw_upcoming_weekly ($dow='Friday',$today=null) { // allow 0 (sunday) to 6 for $dow, or "fri", or "THU", or empty string for $dow to default.
-    $daymap = ['Sun' => 'Sunday', 'Mon' => 'Monday', 'Tue' => 'Tuesday', 'Wed' => 'Wednesday', 'Thu' => 'Thursday', 'Fri' => 'Friday', 'Sat' => 'Saturday'];
+//TODO phase this out in favour of weekly_plus version below
+function draw_upcoming_weekly ($dow='Friday',$on_or_after=null) { 
+    $daymap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     if (is_numeric($dow)) {
         $dow = intval($dow) % 7;
-        $dow = array_values($daymap)[$dow];
-    } else{
-        $dow = ucfirst(strtolower($dow)); // convert to "Mon" or "Monday"
-        if (strlen($dow) == 0) { 
-            $dow = 'Friday';
-        }
-        if (strlen($dow) == 3) {
-            $dow = $daymap[$dow];
-        }
+        $dow = $daymap[$dow];
     }
-    if (!in_array($dow, $daymap)) {
-        return false;
-    }
-    // $dow now 'Friday' or whatever
-    $day = new \DateTime ($today);
-    if ($day->format('l') != $dow) {  // today is $dow
-        $day->modify ('next '.$dow);
-    }
-    return $day->format ('Y-m-d');
+    $ooa = new \DateTime ($on_or_after);
+    return $ooa->modify("this $dow")->format ('Y-m-d'); // "this Friday" includes today; "next Friday" does not.
 }
 
-// can also take 'fri', 'tue' etc, Just not numbers.
+// allow 0 / 7 (sunday) to 6 for $dow, or case insensitive short (fri) or long (friDAY) names 
 // if both days are the same you are a psychopath and it *will* go wrong
-// NB order or parameters currently different to "legacy" function
-function draw_upcoming_weekly_with_bonus ($today=null,$dow='Friday',$alt_dow='Tuesday') {
-    // Close date of next draw to take place
-    // Today included
-    if (!$today) {
-        // Today is real-time actually today if not specified yyyy-mm-dd
-        $today = gmdate ('Y-m-d');
+// NB order of parameters currently different to "legacy" function
+// set $alt_dow to null to revert to weekly draw model.
+function draw_upcoming_weekly_plus ($on_or_after=null,$dow='Friday',$alt_dow='Tuesday') {
+    $daymap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    if (is_numeric($dow)) {
+        $dow = intval($dow) % 7;
+        $dow = $daymap[$dow];
     }
-    $month = substr ($today,0,7); // get the month of today yyyy-mm
-    // Get next "Friday" (today is included)
-    $day_next = draw_upcoming_weekly ($dow,$today); // our existing weekly draw function
-    // but next draw close might be a "Tuesday" so:
-    $day_4 = gmdate ('Y-m-d',strtotime("$month-00 fourth ".$dow));
-    $day_5 = gmdate ('Y-m-d',strtotime("$month-00 fifth ".$dow));
-    if (substr($day_5,0,7)>substr($day_4,0,7)) {
-        // fifth "Friday" is next month so when is the last "Tuesday"?
-        $day_4 = gmdate ('Y-m-d',strtotime("$month-00 fourth ".$alt_dow));
-        $day_5 = gmdate ('Y-m-d',strtotime("$month-00 fifth ".$alt_dow));
-        if (substr($day_5,0,7)==substr($day_4,0,7)) {
-            // fifth Alt is this month
-            $day_next_alt = $day_5;
-        }
-        else {
-            // fifth Alt is next month
-            $day_next_alt = $day_4;
-        }
-        if ($day_next_alt>=$today && $day_next_alt<$day_next) {
-            // alternative draw close is earlier than the next "normal" draw day
-            $day_next = $day_next_alt;
+    $ooa = new DateTime($on_or_after);
+    if (!$alt_dow) {
+        return $ooa->modify("this $dow")->format ('Y-m-d');
+    }
+
+    if (is_numeric($alt_dow)) {
+        $alt_dow = intval($alt_dow) % 7;
+        $alt_dow = $daymap[$alt_dow];
+    }
+    $month = $ooa->format('F');
+    $dates = [];
+    foreach (["first", "second", "third", "fourth", "fifth", "sixth"] as $offset) {
+        $dates[$offset] = $ooa->modify("$offset $dow of $month")->format('Y-m-d');
+    }
+    if ($dates["fifth"] != $ooa->modify("last $dow of $month")->format('Y-m-d')) {
+        $dates[] = $ooa->modify("last $alt_dow of $month")->format('Y-m-d');
+        asort($dates);
+    }
+    foreach ($dates as $dt) {
+        if ($dt >= $on_or_after) {
+            return $dt;
         }
     }
-    return $day_next;
+    return false; // fail
 }
 
 function draws ($from,$to) {
