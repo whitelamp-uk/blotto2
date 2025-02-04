@@ -122,12 +122,13 @@ INSERT IGNORE INTO `blotto_level` (`config_id`, `level`, `comments`) VALUES
 CREATE TABLE IF NOT EXISTS `blotto_log` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `remote_addr`  char(64) CHARACTER SET ascii NOT NULL,
-  `hostname` char(64) CHARACTER SET ascii NOT NULL,
-  `http_host` char(255) CHARACTER SET ascii NOT NULL,
-  `user` char(64) CHARACTER SET ascii NOT NULL,
-  `type` char(64) CHARACTER SET ascii NOT NULL,
-  `status` char(64) CHARACTER SET ascii NOT NULL,
+  `remote_addr`  varchar(64) CHARACTER SET ascii NOT NULL,
+  `hostname` varchar(64) CHARACTER SET ascii NOT NULL,
+  `http_host` varchar(255) CHARACTER SET ascii NOT NULL,
+  `user` varchar(64) CHARACTER SET ascii NOT NULL,
+  `type` varchar(64) CHARACTER SET ascii NOT NULL,
+  `status` varchar(64) CHARACTER SET ascii NOT NULL,
+  `remote_host`  varchar(255) CHARACTER SET ascii NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;

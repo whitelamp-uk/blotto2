@@ -5929,6 +5929,8 @@ function www_auth_log ($ok,$type='AUTH') {
         $h = $zo->escape_string(gethostname());
         $hh = $zo->escape_string($_SERVER['HTTP_HOST']);
         $u = $zo->escape_string($_POST['un']);
+        $rh = $zo->escape_string(gethostbyaddr($_SERVER['REMOTE_ADDR']));
+
         if ($ok) {
             $s = "OK";
         }
@@ -5944,6 +5946,7 @@ function www_auth_log ($ok,$type='AUTH') {
            ,`user`='$u'
            ,`type`='$type'
            ,`status`='$s'
+           ,`remote_host`='$rh'
         ";
         $zo->query ($qi);
     }

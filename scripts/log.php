@@ -14,7 +14,7 @@ if (!$zo) {
 $dt = new \DateTime ();
 $dt->sub (new \DateInterval('PT1H'));
 $dt = $dt->format ('Y-m-d H');
-
+// table now has remote_host as well - do we want it?  
 try {
     $qs = "
       SELECT
