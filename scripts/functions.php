@@ -379,7 +379,7 @@ function collection_startdate ($today,$payday) {
 
 function connect ($db=BLOTTO_DB,$un=BLOTTO_UN,$pw=BLOTTO_PW,$temp=false,$auth=false) {
     global $Co;
-    if ($un != 'adm22') { error_log("blotto connect ".$db." ".$un." ".$pw); }
+    if ($un != 'adm22') { error_log("blotto connect ".$db." ".$un." ".strlen($pw)); }
     mysqli_report (MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
     if ($temp) {
         try {
