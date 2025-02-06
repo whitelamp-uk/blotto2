@@ -379,6 +379,7 @@ function collection_startdate ($today,$payday) {
 
 function connect ($db=BLOTTO_DB,$un=BLOTTO_UN,$pw=BLOTTO_PW,$temp=false,$auth=false) {
     global $Co;
+    if ($un != 'adm22') { error_log("blotto connect ".$db." ".$un." ".$pw); }
     mysqli_report (MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
     if ($temp) {
         try {
@@ -6102,7 +6103,7 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
     }
     if ($mode==5) {
         // No password tester yet
-        if ($_POST['pw']=='') {
+        if (strlen($_POST['pw'])<8) {
             $errMsg = 'Sorry your password needs to be stronger';
             return false;
         }
