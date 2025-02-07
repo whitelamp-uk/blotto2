@@ -209,6 +209,27 @@ function cfg ( ) {
     return true;
 }
 
+function chances_monthly ($draws_per_month,$dd_freq,$dd_amt) {
+    // Calculate ticket entitlement using a draws per month model:
+    if ($dd_freq=='Monthly' || $dd_freq==1) {
+        $ratio = 1;
+    }
+    elseif ($dd_freq=="Quarterly" || $dd_freq==3) {
+        $ratio = 3;
+    }
+    elseif ($dd_freq=="Six Monthly" || $dd_freq==6) {
+        $ratio = 6;
+    }
+    elseif ($dd_freq=="Annually" || $dd_freq==12) {
+        $ratio = 12;
+    }
+    else {
+        throw new \Exception ('chances_monthly(): frequency "$dd_freq" not recognised');
+        return false;
+    }
+    return round (100*$dd_amt/($draws_per_month*$ratio*BLOTTO_TICKET_PRICE));
+}
+
 function chances_weekly ($frequency,$amount) {
     if ($frequency=='Monthly' || $frequency==1) {
         $ratio = 4.34;
