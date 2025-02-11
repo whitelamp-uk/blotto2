@@ -7,6 +7,7 @@ if (!$v['draws']) {
     $v['draws'] = 1;
 }
 $titles = explode (',',defn('BLOTTO_TITLES_WEB',false));
+// TODO pass $_GET['d'] as parameter if set else set array to empty
 try {
     $first_draw_dates = www_signup_dates ($org,$signup_error);
 }
