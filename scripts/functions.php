@@ -563,7 +563,7 @@ function day_one ($for_wins=false) {
             if (!$s) {
                 $s = $c;
             }
-            if ($c<$s) {
+            if ($c && $c<$s) {
                 $s = $c;
             }
         }
