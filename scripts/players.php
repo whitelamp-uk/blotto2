@@ -43,35 +43,32 @@ while ($m=$ms->fetch_assoc()) {
     $crforig = $crforig[0];
     $crf     = esc ($crf);
     $crforig = esc ($crforig);
-    if ($s['mandate_blocked']) {
-        fwrite (STDERR,"Player skipped - not required for blocked supporter original ClientRef '$crforig'\n");
-    }
-    else {
-        $qs = "
-          SELECT
-            `id`
-           ,`mandate_blocked`
-          FROM `blotto_supporter`
-          WHERE `client_ref`='$crforig'
-          LIMIT 0,1
-          ;
-        ";
-        try {
-            $orig = $zo->query ($qs);
-            if ($s=$orig->fetch_assoc()) {
+    $qs = "
+      SELECT
+        `id`
+       ,`mandate_blocked`
+      FROM `blotto_supporter`
+      WHERE `client_ref`='$crforig'
+      LIMIT 0,1
+      ;
+    ";
+    try {
+        $orig = $zo->query ($qs);
+        if ($s=$orig->fetch_assoc()) {
+            if ($s['mandate_blocked']) {
+                fwrite (STDERR,"Player not required for blocked supporter with original ClientRef '$crforig'\n");
+            }
+            else {
                 echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
                 echo "  ({$s['id']},'$crf');\n";
             }
-            else {
-                // This should not happen really
-                fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
-                exit (104);
-            }
         }
-        catch (\mysqli_sql_exception $e) {
-            fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
-            exit (105);
-        }
+        fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
+        exit (104);
+    }
+    catch (\mysqli_sql_exception $e) {
+        fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+        exit (105);
     }
 }
 
