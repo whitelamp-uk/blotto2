@@ -165,7 +165,6 @@ window.document.addEventListener (
 
       <form class="dates" method="get" action="./">
         <input type="hidden" name="reconcile" />
-        <input type="hidden" name="reconcile" />
         <input type="date" pattern="\d{4}-\d{2}-\d{2}" name="from" min="<?php echo htmlspecialchars($day1); ?>" max="<?php echo htmlspecialchars($daye); ?>" value="<?php echo htmlspecialchars($from); ?>" />
         <input type="date" pattern="\d{4}-\d{2}-\d{2}" name="to" min="<?php echo htmlspecialchars($day1); ?>" max="<?php echo htmlspecialchars($daye); ?>" value="<?php echo htmlspecialchars($to); ?>" />
         <input type="submit" value="Recalculate" />
