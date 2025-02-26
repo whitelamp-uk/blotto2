@@ -1,8 +1,34 @@
 <?php
-    $since = new DateTime ();
-    $since->sub (new DateInterval('P3M'));
-    $since = $since->format ('Y-m-d');
-    $since_text = "3 months to date";
+$year           = null;
+$month          = null;
+$from           = null;
+if (array_key_exists('year',$_GET) && array_key_exists('month',$_GET)) {
+    if ($_GET['year'] && $_GET['month']) {
+        $year   = intval ($_GET['year']);
+        $month  = str_pad (intval($_GET['month']),2,'0',STR_PAD_LEFT);
+    }
+}
+if ($year && $month) {
+    // user-entered year/month specifies year-end ytd
+    $dt         = new \DateTime ($year.'-'.$month.'-01');
+    $dt->add (new DateInterval('P1M'));
+    $dt->sub (new DateInterval('P1D'));
+    $to         = $dt->format ('Y-m-d');
+    $me         = $dt->format ('d M Y');
+    $dt->add (new DateInterval('P1D'));
+    $dt->sub (new DateInterval('P12M'));
+    $from       = $dt->format ('Y-m-d');
+}
+else {
+    // insufficient user input so load for-all-time data
+    $year       = null;
+    $month      = null;
+    $dt         = new \DateTime (gmdate('Y-m-01'));
+    $dt->sub (new DateInterval('P1D'));
+    $to         = $dt->format ('Y-m-d');
+    $me         = $dt->format ('d M Y');
+}
+$months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 ?>
 
     <script src="./media/visual.js"></script>
@@ -10,6 +36,19 @@
     <section id="visual" class="content">
 
       <h2>Summary graphs</h2>
+
+      <form class="dates" method="get" action="./">
+        <input type="hidden" name="summary" />
+        <input type="number" name="year" min="2000" value="<?php echo htmlspecialchars($year); ?>" placeholder="YTD year" />
+        <select name="month">
+          <option value="">YTD Month</option>
+<?php for ($i=1;$i<=12;$i++): ?>
+          <option value="<?php echo str_pad($i,2,'0',STR_PAD_LEFT); ?>" <?php if ($month && $i==intval($month)): ?> selected <?php endif; ?> ><?php echo str_pad($months[$i-1],2,'0',STR_PAD_LEFT); ?></option>
+<?php endfor; ?>
+        </select>
+        <input type="submit" value="Recalculate" />
+      </form>
+
 
       <section id="chart1" class="chart left">
         <?php echo links_report ('recent_draw_activity',1,'Month'); ?>
@@ -23,7 +62,7 @@ if (data1) {
         'bar',
         data1,
         {
-            title: 'Recent draw activity to <?php echo month_end_last('d M Y'); ?>',
+            title: 'Draw activity (recent)',
             link: true,
             zero: false,
             yratio: 1.3
@@ -45,7 +84,7 @@ if (data2) {
         'doughnut',
         data2,
         {
-            title: 'Tickets per player',
+            title: 'Tickets per player (all-time)',
             link: true
         }
     );
@@ -67,7 +106,7 @@ if (data3) {
         'bar',
         data3,
         {
-            title: 'Recent recruitment and cancellation (except one-off payments)',
+            title: 'Recruitment/cancellation (recent)',
             link: true,
             zero: true
         }
@@ -88,7 +127,7 @@ if (data4) {
         'bar',
         data4,
         {
-            title: 'Cumulative recruitment and cancellation',
+            title: 'Cumulative recruitment/cancellation (recent)',
             link: true,
             zero: true
         }
@@ -97,19 +136,23 @@ if (data4) {
 }
       </script>
 
+
+
+<!--
+MP: I think this one is pretty pointless
       <section id="chart5" class="chart left">
-        <?php echo links_report ('retention_of_ongoing_direct_debits',4,'Duration (months)',1); ?>
+        <?php // echo links_report ('retention_of_ongoing_direct_debits',4,'Duration (months)',1); ?>
         <canvas id="retention-playing"></canvas>
       </section>
       <script>
-var data5 = <?php echo chart (4,'graph',1); ?>;
+var data5 = <?php // echo chart (4,'graph',1); ?>;
 if (data5) {
     chartRender (
         'retention-playing',
         'bar',
         data5,
         {
-            title: 'Ongoing direct debit retention to <?php echo htmlspecialchars(day_cancels_known('j M Y')); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
+            title: 'Retention (recent) using <?php // echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule',
             link: true,
             zero: true,
             noLegend: true
@@ -118,9 +161,10 @@ if (data5) {
     console.log ('Rendered data5');
 }
       </script>
+-->
 
       <section id="chart6" class="chart right">
-        <?php echo links_report ('retention_of_cancelled_direct_debits',4,'Duration (months)',1,true); ?>
+        <?php echo links_report ('retention_of_cancelled_supporters',4,'Duration (months)',1,true); ?>
         <canvas id="retention-cancelled"></canvas>
       </section>
       <script>
@@ -131,7 +175,7 @@ if (data6) {
         'bar',
         data6,
         {
-            title: 'Cancelled direct debit retention at <?php echo day_yesterday()->format ('j M Y'); ?> (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
+            title: 'Retention of cancelled supporters (all-time) using <?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule',
             link: true,
             zero: true,
             noLegend: true
@@ -161,6 +205,12 @@ if (data8) {
 }
       </script>
 
+<?php
+$since = new DateTime ($to);
+$since->sub (new DateInterval('P3M'));
+$since = $since->format ('Y-m-d');
+$since_text = "3 months to date";
+?>
       <section id="chart7" class="chart left doughnut">
         <?php echo links_report ('ccc_performance_recent',5,'CCC',3); ?>
         <canvas id="ccc-recent"></canvas>
@@ -180,30 +230,6 @@ if (data7) {
     console.log ('Rendered data7');
 }
       </script>
-
-<!--
-      <section id="chart9" class="chart left">
-        <?php // echo links_report ('retention_by_postcode_area',5,'Postal area'); ?>
-        <canvas id="retention-geographical"></canvas>
-      </section>
-      <script>
-var data9 = <?php // echo chart (5,'graph'); ?>;
-/*
-if (data9) {
-    chartRender (
-        'retention-geographical',
-        'bar',
-        data9,
-        {
-            title: 'Retention (ppt) by postcode area',
-            link: true
-        }
-    );
-}
-*/
-      </script>
-
--->
 
 <?php endif; ?>
 
