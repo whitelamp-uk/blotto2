@@ -48,7 +48,7 @@ catch (\Exception $e) {
 }
 
 if ($count=count($bads)) {
-    fwrite (STDERR,"Bad mandates identified: ".implode(',',$bads));
+    fwrite (STDERR,"Bad mandates identified:");
     if (method_exists($api,'cancel_mandate')) {
         $msg = "The following mandates were active but the supporters are mandate_blocked. API cancellation was attempted. Results below.\n\n";
         $auto = true;
@@ -59,6 +59,7 @@ if ($count=count($bads)) {
     }
 
     foreach ($bads as $b) {
+        fwrite (STDERR,"{$b['ClientRef']} - {$b['Name']}");
         $msg .= "{$b['ClientRef']}\t{$b['Name']}";
         if ($auto) {
             try {
