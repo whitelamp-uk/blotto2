@@ -780,5 +780,11 @@ then
 
 fi
 
+# if insured, generate CSV if there's entries for today
+if [ "$nxi" ]
+then
+    /usr/bin/php $prg $sw "$cfg" exec insurance_csv.php
+fi
+
 finish_up
 
