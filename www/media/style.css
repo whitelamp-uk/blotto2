@@ -879,9 +879,8 @@ img.close {
 }
 
 #visual > form.dates {
+    display:            block;
     position:           fixed;
-    left:               15em;
-    top:                2.1em;
     background-color:   white;
 }
 
