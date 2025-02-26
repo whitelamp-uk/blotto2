@@ -878,6 +878,13 @@ img.close {
     visibility:         hidden;
 }
 
+#visual > form.dates {
+    position:           fixed;
+    left:               15em;
+    top:                2.1em;
+    background-color:   white;
+}
+
 
 .chart {
     margin:             0 auto 8em auto;
