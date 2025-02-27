@@ -134,6 +134,17 @@ CREATE TABLE IF NOT EXISTS `blotto_log` (
 ;
 
 
+CREATE TABLE IF NOT EXISTS `blotto_noshow` (
+  `month_commencing` date NOT NULL,
+  `org_code` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `noshows` int(11) unsigned NOT NULL,
+  `candidates` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`month_commencing`,`org_code`)
+)
+ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+;
+
+
 CREATE TABLE IF NOT EXISTS `blotto_org` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_code` char(16) CHARACTER SET ascii NOT NULL,
