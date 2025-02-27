@@ -1564,6 +1564,52 @@ END$$
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `noshows`$$
+CREATE PROCEDURE `noshows` (
+)
+BEGIN
+  INSERT IGNORE INTO `{{BLOTTO_CONFIG_DB}}`.`blotto_noshow`
+  SELECT
+    CONCAT(SUBSTR(`s`.`signed`,1,7),'-01') AS `month_commencing`
+   ,'{{BLOTTO_ORG_CODE}}' AS `org_code`
+   ,SUM(`c`.`ClientRef` IS NULL) AS `noshows`
+   ,COUNT(DISTINCT `s`.`id`) AS `candidates`
+  FROM `blotto_supporter` AS `s`
+  LEFT JOIN `blotto_build_collection` AS `c`
+    ON `c`.`ClientRef`=`s`.`client_ref`
+  GROUP BY `month_commencing`
+  -- denoting month commencing as n, ignore results where:
+  --   today is in month n or n+1 (or earlier but that shouldn't happen)
+  -- but provide them where:
+  --   today is in month n+2 or later (we have waited long enough)
+  HAVING SUBSTR(DATE_ADD(`month_commencing`,INTERVAL 1 MONTH),1,7)<SUBSTR(CURDATE(),1,7)
+  ;
+  CREATE OR REPLACE VIEW `BenchmarkNoShows` AS
+    SELECT
+      `noshow`.`month_commencing`
+     ,`noshow`.`noshows`
+     ,`noshow`.`candidates`
+     ,ROUND(IF(`noshow`.`candidates`=0,0,100*`noshow`.`noshows`/`noshow`.`candidates`),2) AS `performance`
+     ,`benchmark`.`performance` AS `benchmark_performance`
+    FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_noshow` AS `noshow`
+    JOIN (
+      SELECT
+        `month_commencing`
+       ,ROUND(AVG(IF(`candidates`=0,0,100*`noshows`/`candidates`)),2) AS `performance`
+      FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_noshow`
+      -- Small numbers skew results badly
+      WHERE `candidates`>50
+      GROUP BY `month_commencing`
+    ) AS `benchmark`
+      ON `benchmark`.`month_commencing`=`noshow`.`month_commencing`
+    WHERE `noshow`.`org_code`='{{BLOTTO_ORG_CODE}}'
+    -- Small numbers skew results badly
+      AND `noshow`.`candidates`>50
+  ;
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `supporterRevenue`$$
 CREATE PROCEDURE `supporterRevenue` (
   IN      approvedOnOrAfter date
