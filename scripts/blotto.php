@@ -72,6 +72,7 @@ $file = [
        ,'draw_reports.php'
        ,'engine.php'
        ,'entries.php'
+       ,'insurance_csv.php'
        ,'invoices.php'
        ,'legends.php'
        ,'mandates_check.php'
