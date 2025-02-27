@@ -17,7 +17,7 @@ $q = "SELECT `entry_urn`, `draw_close_date`, `player_urn`, `ticket_number`
 try {
     $result       = $zo->query ($q);
     if ($result->num_rows) {
-        $fname = __DIR__.'/../export/insurance/'.date('Y-m-d').'-'.BLOTTO_ORG_USER.".csv";
+        $fname = __DIR__.'/../../export/insurance/'.date('Y-m-d').'-'.BLOTTO_ORG_USER.".csv";
 
         $fp             = fopen ($fname,'w');
         if (!$fp) {

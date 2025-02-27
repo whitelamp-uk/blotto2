@@ -62,9 +62,10 @@ while ($m=$ms->fetch_assoc()) {
                 echo "INSERT INTO `blotto_player` (`supporter_id`,`client_ref`) VALUES\n";
                 echo "  ({$s['id']},'$crf');\n";
             }
+        } else {
+            fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
+            exit (104);
         }
-        fwrite (STDERR,"No supporter found for original ClientRef '$crforig' to create player for '$crf'\n");
-        exit (104);
     }
     catch (\mysqli_sql_exception $e) {
         fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
