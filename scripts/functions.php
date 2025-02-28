@@ -5981,6 +5981,18 @@ function www_auth_log ($ok,$type='AUTH') {
     }
 }
 
+// 8 chars complex = 16 points; 14 digits also makes 16
+function www_auth_password_strength ($password) {
+    $points = 0;
+    $points += preg_match('/[a-z]+/',      $password); //lower case
+    $points += preg_match('/[A-Z]+/',      $password); //upper case
+    $points += preg_match('/\d/',          $password); //digits
+    $points += preg_match("/[^\da-zA-Z]/", $password); //specials
+    $points *= 2;
+    $points += strlen($password);
+    return $points;
+}
+
 function www_auth_reset (&$currentUser,&$err=null) {
     // See $modes in www/view/login.php
     $errs = [
@@ -6126,9 +6138,8 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
         return false;
     }
     if ($mode==5) {
-        // No password tester yet
-        if (strlen($_POST['pw'])<8) {
-            $errMsg = 'Sorry your password needs to be stronger';
+        if (www_auth_password_strength($_POST['pw'])<16) { // 16 points = 8 char complex, 14 char simple
+            $errMsg = 'Sorry your password needs to be stronger - make longer or use more character types';
             return false;
         }
         // Set the new password subject to session verification
