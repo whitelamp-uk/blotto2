@@ -25,7 +25,7 @@ else {
     $month      = null;
     $dt         = new \DateTime (gmdate('Y-m-01'));
     $dt->sub (new DateInterval('P1D'));
-    $to         = $dt->format ('Y-m-d');
+    $to         = null;
     $me         = $dt->format ('d M Y');
 }
 $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
@@ -49,6 +49,28 @@ $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
         <input type="submit" value="Recalculate" />
       </form>
 
+
+      <section id="chart9" class="chart left">
+        <?php echo links_report ('noshow_benchmarking',9,'Month'); ?>
+        <canvas id="noshow-benchmarking"></canvas>
+      </section>
+      <script>
+var data9 = <?php echo chart (9,'graph',$to); ?>;
+if (data9) {
+    chartRender (
+        'noshow-benchmarking',
+        'bar',
+        data9,
+        {
+            title: 'No-show benchmarking YTD <?php echo $me; ?>',
+            link: true,
+            zero: true,
+            yratio: 1.3
+        }
+    );
+    console.log ('Rendered data9');
+}
+      </script>
 
       <section id="chart1" class="chart left">
         <?php echo links_report ('recent_draw_activity',1,'Month'); ?>
