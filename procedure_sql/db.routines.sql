@@ -1302,7 +1302,7 @@ BEGIN
    ,'claims'
    ,SUM(IFNULL(`amount`,0))
   FROM `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
-  WHERE `org_code`='{{BLOTTO_ORG_CODE}}'
+  WHERE `org_code`='{{BLOTTO_ORG_USER}}'
   GROUP BY `payment_received`
   ;
   -- winnings paid out
@@ -1571,7 +1571,7 @@ BEGIN
   INSERT IGNORE INTO `{{BLOTTO_CONFIG_DB}}`.`blotto_noshow`
   SELECT
     CONCAT(SUBSTR(`s`.`signed`,1,7),'-01') AS `month_commencing`
-   ,'{{BLOTTO_ORG_CODE}}' AS `org_code`
+   ,'{{BLOTTO_ORG_USER}}' AS `org_code`
    ,SUM(`c`.`ClientRef` IS NULL) AS `noshows`
    ,COUNT(DISTINCT `s`.`id`) AS `candidates`
   FROM `blotto_supporter` AS `s`
@@ -1602,7 +1602,7 @@ BEGIN
       GROUP BY `month_commencing`
     ) AS `benchmark`
       ON `benchmark`.`month_commencing`=`noshow`.`month_commencing`
-    WHERE `noshow`.`org_code`='{{BLOTTO_ORG_CODE}}'
+    WHERE `noshow`.`org_code`='{{BLOTTO_ORG_USER}}'
     -- Small numbers skew results badly
       AND `noshow`.`candidates`>50
   ;
