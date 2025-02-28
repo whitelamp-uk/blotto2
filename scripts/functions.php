@@ -2401,10 +2401,13 @@ function links_report ($fname,$number,$xhead) {
     require __DIR__.'/links_report.php';
 }
 
-function mail_attachments ($to,$subject,$message,$files) {
+function mail_attachments ($to,$subject,$message,$files,$from=null) {
     if (!is_array($files) || !count($files)) {
         throw new \Exception ('No file attachments given');
         return false;
+    }
+    if (!$from) {
+        $from = BLOTTO_EMAIL_FROM;
     }
     $attach             = [];
     foreach ($files as $file) {
@@ -2424,7 +2427,7 @@ function mail_attachments ($to,$subject,$message,$files) {
     }
     $uid                = md5 (uniqid(time()));
      // Additional headers
-    $hdr                = "From: ".BLOTTO_EMAIL_FROM.PHP_EOL;
+    $hdr                = "From: ".$from.PHP_EOL;
     $hdr               .= "MIME-Version: 1.0".PHP_EOL;
     $hdr               .= "Content-Type: multipart/mixed; boundary=\"".$uid."\"".PHP_EOL;
     $hdr               .= "This is a multi-part message in MIME format.".PHP_EOL;
