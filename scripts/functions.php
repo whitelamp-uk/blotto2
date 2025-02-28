@@ -6138,7 +6138,8 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
         return false;
     }
     if ($mode==5) {
-        if (www_auth_password_strength($_POST['pw'])<16) { // 16 points = 8 char complex, 14 char simple
+        //if (www_auth_password_strength($_POST['pw'])<16) { // 16 points = 8 char complex, 14 char simple
+        if (strlen($_POST['pw'])<8) { 
             $errMsg = 'Sorry your password needs to be stronger - make longer or use more character types';
             return false;
         }
