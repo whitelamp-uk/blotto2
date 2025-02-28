@@ -1578,11 +1578,8 @@ BEGIN
   LEFT JOIN `blotto_build_collection` AS `c`
     ON `c`.`ClientRef`=`s`.`client_ref`
   GROUP BY `month_commencing`
-  -- denoting month commencing as n, ignore results where:
-  --   today is in month n or n+1 (or earlier but that shouldn't happen)
-  -- but provide them where:
-  --   today is in month n+2 or later (we have waited long enough)
-  HAVING SUBSTR(DATE_ADD(`month_commencing`,INTERVAL 1 MONTH),1,7)<SUBSTR(CURDATE(),1,7)
+  -- ignore recent couple of months
+  HAVING SUBSTR(DATE_ADD(`month_commencing`,INTERVAL 2 MONTH),1,7)<SUBSTR(CURDATE(),1,7)
   ;
   CREATE OR REPLACE VIEW `BenchmarkNoShows` AS
     SELECT
