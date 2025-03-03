@@ -3709,10 +3709,11 @@ function random_numbers ($min,$max,$num_of_nums,$reuse,$payout_max,&$proof) {
         throw new \Exception ("Number range $min-$max is not big enough without reusing numbers");
         return false;
     }
-    if ($payout_max<=0) {
+    // disabling this check as we are not currently using this value
+    /*if ($payout_max<=0) {
         throw new \Exception ("Maximum payout $payout_max is not valid");
         return false;
-    }
+    }*/
     $request                        = new \stdClass ();
     $request->id                    = uniqid ();
     $request->jsonrpc               = BLOTTO_TRNG_API_VERSION;
@@ -5981,17 +5982,36 @@ function www_auth_log ($ok,$type='AUTH') {
     }
 }
 
-// 8 chars complex = 16 points; 14 digits also makes 16
+// 8 chars complex = 16 points; 16 digits makes 16
+// 16 points is 8 complex, 10 alphanum+ digit
+// 63 ^ 8 if we assume "!" as special => 2.5 x 10^ 14
+// 92 ^ 8 assuming all as special => 5 x 10 ^ 15
+// 62 ^ 10 = 8 x 10 ^ 17
+// 36 ^ 12 = 5 x 10 ^ 18
+// 26 ^ 14 = 6 x 10 ^ 19
+// 16 digits, 10 ^ 16
+// 
 function www_auth_password_strength ($password) {
     $points = 0;
-    $points += preg_match('/[a-z]+/',      $password); //lower case
-    $points += preg_match('/[A-Z]+/',      $password); //upper case
-    $points += preg_match('/\d/',          $password); //digits
-    $points += preg_match("/[^\da-zA-Z]/", $password); //specials
-    $points *= 2;
+    $points += preg_match('/[a-z]+/',      $password); // lower case
+    $points += preg_match('/[A-Z]+/',      $password); // upper case
+    $points += preg_match("/[^\da-zA-Z]/", $password); // specials
+    if ($points) {
+        $points += preg_match('/\d/',      $password); // digits - but only if you have something else
+    } else { //digits only, must be punished    
+        $points -= 4;
+    }
+    //$points *= 2;
     $points += strlen($password);
     return $points;
 }
+//without point doubling 
+// 8 chars complex = 12 points
+// 63 ^ 8 if we assume "!" as special => 2.5 x 10^ 14
+// 92 ^ 8 assuming all as special => 5 x 10 ^ 15
+// 62 ^ 9 =  10 ^ 16
+// 36 ^ 11 = 10 ^ 17
+// 26 ^ 12  = 10 ^ 17
 
 function www_auth_reset (&$currentUser,&$err=null) {
     // See $modes in www/view/login.php
