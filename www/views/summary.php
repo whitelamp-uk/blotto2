@@ -49,10 +49,17 @@ $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
         <input type="submit" value="Recalculate" />
       </form>
 
-
-      <section id="chart9" class="chart left">
+      <section id="chart9" class="chart left" style="position:relative;">
         <?php echo links_report ('noshow_benchmarking',9,'Month'); ?>
         <canvas id="noshow-benchmarking"></canvas>
+        <div class="chart-overlay">
+            <div class="chart-overlay-labels">
+              <span class="chart-overlay-label">No-shows per 100 sign-ups&nbsp;</span>
+              <span class="chart-overlay-box chart-overlay-1">&nbsp;</span> <span class="chart-overlay-label">Benchmark&nbsp;</span>
+              <span class="chart-overlay-box chart-overlay-2">&nbsp;</span> <span class="chart-overlay-label">Outcome was better&nbsp;</span>
+              <span class="chart-overlay-box chart-overlay-3">&nbsp;</span> <span class="chart-overlay-label">Outcome was worse&nbsp;</span>
+            </div>
+        </div>
       </section>
       <script>
 var data9 = <?php echo chart (9,'graph',$to); ?>;
@@ -62,10 +69,12 @@ if (data9) {
         'bar',
         data9,
         {
-            title: 'No-show benchmarking YTD <?php echo $me; ?>',
+            // empty title lines are to compensate for noLegend=true
+            title: ['No-show benchmarking YTD <?php echo $me; ?>','',''],
             link: true,
             zero: true,
-            yratio: 1.3
+            yratio: 1.3,
+            noLegend: true
         }
     );
     console.log ('Rendered data9');

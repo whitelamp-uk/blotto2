@@ -40,28 +40,13 @@ try {
     $cdo->labels    = $labels;
     $cdo->datasets  = [];
     $cdo->datasets[0] = new stdClass ();
-    $cdo->datasets[0]->label = 'Benchmark';
+    $cdo->datasets[0]->label = 'Benchmark / no-shows per 100 sign-ups';
     $cdo->datasets[0]->data = $data[0];
     $cdo->datasets[0]->backgroundColor = 1;
     $cdo->datasets[1] = new stdClass ();
+    $cdo->datasets[1]->label = null;
     $cdo->datasets[1]->data = $data[1];
     $cdo->datasets[1]->backgroundColor = $colors;
-    if ($type=='graph') {
-        $cdo->datasets[2] = new stdClass ();
-        if ($colors[0]==3) {
-            $cdo->datasets[1]->label = 'Worse';
-            $cdo->datasets[2]->label = 'Better / no-shows per 100 sign-ups';
-            $cdo->datasets[2]->backgroundColor = 2;
-        }
-        else {
-            $cdo->datasets[1]->label = 'Better';
-            $cdo->datasets[2]->label = 'Worse / no-shows per 100 sign-ups';
-            $cdo->datasets[2]->backgroundColor = 3;
-        }
-    }
-    else {
-        $cdo->datasets[1]->label = 'Outcome / no-shows per 100 sign-ups';
-    }
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

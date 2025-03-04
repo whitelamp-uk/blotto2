@@ -886,10 +886,39 @@ img.close {
 
 
 .chart {
+    position:           relative;
     margin:             0 auto 8em auto;
     width:              42em;
 }
+.chart-overlay {
+    position:           absolute;
+    left:               0;
+    top:                3em;
+    width:              100%;
+    height:             calc(100% - 3em);
+    padding-top:        1em;
+    font-size:          0.6em;
+}
 
+.chart-overlay-labels {
+    position:           relative;
+    top:                4.5em;
+}
+
+.chart-overlay-label {
+    position:           relative;
+    top:                -0.2em;
+}
+
+.chart-overlay-box,
+.chart-overlay-box,
+.chart-overlay-box,
+.chart-overlay-box {
+    display:            inline-block;
+    width:              5.2%;
+    height:             1em;
+    overflow:           hidden;
+}
 
 .chart-title {
     width:              0;
@@ -921,7 +950,8 @@ img.close {
 .chart-bar-9,
 .chart-bar-13,
 .chart-bar-17,
-.chart-bar-21 {
+.chart-bar-21,
+.chart-overlay-1 {
     background-color:   var(--blotto-color-bgd-chart-bar-1);
 }
 
@@ -930,7 +960,8 @@ img.close {
 .chart-bar-10,
 .chart-bar-14,
 .chart-bar-18,
-.chart-bar-22 {
+.chart-bar-22,
+.chart-overlay-2 {
     background-color:   var(--blotto-color-bgd-chart-bar-2);
 }
 
@@ -939,7 +970,8 @@ img.close {
 .chart-bar-11,
 .chart-bar-15,
 .chart-bar-19,
-.chart-bar-23 {
+.chart-bar-23,
+.chart-overlay-3 {
     background-color:   var(--blotto-color-bgd-chart-bar-3);
 }
 
@@ -948,7 +980,8 @@ img.close {
 .chart-bar-12,
 .chart-bar-16,
 .chart-bar-20,
-.chart-bar-24 {
+.chart-bar-24,
+.chart-overlay-4 {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
 }
 
