@@ -7,24 +7,23 @@ $me    = $p[0];
 $data  = [[],[]];
 $q = "
   SELECT
-    `chances`.`tickets`
-   ,COUNT(`chances`.`client_ref`) AS `players`
+    `chances`.`projected_chances` as `tickets`
+   ,COUNT(`chances`.`id`) AS `players`
   FROM (
     SELECT
-      `client_ref`
-     ,COUNT(DISTINCT `ticket_number`) AS `tickets`
-    FROM `blotto_entry`
-    WHERE `draw_closed`<CURDATE()
+      `id`
+     ,`projected_chances`
+    FROM `blotto_supporter`
+    WHERE `signed`<CURDATE()
     {{WHERE}}
-      AND `draw_closed` IS NOT NULL
-    GROUP BY `client_ref`
+      AND `signed` IS NOT NULL
   ) AS `chances`
   GROUP BY `tickets`
   ORDER BY `tickets`
   ;
 ";
 if ($me) {
-    $where = "  AND `draw_closed`<='$me' AND `draw_closed`>DATE_SUB('$me',INTERVAL 12 MONTH)";
+    $where = "  AND `signed`<='$me' AND `signed`>DATE_SUB('$me',INTERVAL 12 MONTH)";
 }
 else {
     $where = "";

@@ -81,7 +81,7 @@ if (data7) {
 }
       </script>
 
-      <section id="chart9" class="chart left" style="position:relative;">
+      <section id="chart9" class="chart right" style="position:relative;">
         <?php echo links_report ('noshow_benchmarking',9,'Month'); ?>
         <canvas id="noshow-benchmarking"></canvas>
         <div class="chart-overlay">
@@ -113,7 +113,27 @@ if (data9) {
 }
       </script>
 
-      <section id="chart1" class="chart left">
+      <section id="chart2" class="chart left doughnut">
+        <?php echo links_report ('chances_per_player',2,'Chances'); ?>
+        <canvas id="chances-distribution"></canvas>
+      </section>
+      <script>
+var data2 = <?php echo chart (2,'graph',$to); ?>;
+if (data2) {
+    chartRender (
+        'chances-distribution',
+        'doughnut',
+        data2,
+        {
+            title: 'Chances per new supporter by signed date <?php echo $me; ?>',
+            link: true
+        }
+    );
+    console.log ('Rendered data2');
+}
+      </script>
+
+      <section id="chart1" class="chart right">
         <?php echo links_report ('draw_activity',1,'Month'); ?>
         <canvas id="draw-activity"></canvas>
       </section>
@@ -134,28 +154,6 @@ if (data1) {
     console.log ('Rendered data1');
 }
       </script>
-
-<!--
-      <section id="chart2" class="chart right doughnut">
-        <?php echo links_report ('chances_per_player',2,'Chances'); ?>
-        <canvas id="chances-distribution"></canvas>
-      </section>
-      <script>
-var data2 = null<?php // REMOVED - SHC TAKES 65 SECONDS !!! echo chart (2,'graph',$to); ?>;
-if (data2) {
-    chartRender (
-        'chances-distribution',
-        'doughnut',
-        data2,
-        {
-            title: 'Chances per player in draws closed <?php echo $me; ?>',
-            link: true
-        }
-    );
-    console.log ('Rendered data2');
-}
-      </script>
--->
 
 <?php if (!defined('BLOTTO_RBE_ORGS')): ?>
 
@@ -201,7 +199,7 @@ if (data4) {
 }
       </script>
 
-      <section id="chart6" class="chart right">
+      <section id="chart6" class="chart left">
         <?php echo links_report ('retention_of_cancelled_supporters',4,'Duration (months)',1,true); ?>
         <canvas id="retention-cancelled"></canvas>
       </section>
