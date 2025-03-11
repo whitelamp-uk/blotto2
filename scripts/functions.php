@@ -6073,7 +6073,7 @@ function www_auth_reset (&$currentUser,&$err=null) {
             }
             // Provide multi *factor* verification where appropriate to the mode
             // (maybe other stuff later) and return the chosen mode to the view
-            if (www_auth_reset_save($mode,$currentUser,$err)) {
+            if (www_auth_reset_save($mode,$err)) {
                 $mode++;
                 if (www_auth_reset_prep($mode,$err)) {
                     return $mode;
@@ -6158,8 +6158,7 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
         return false;
     }
     if ($mode==5) {
-        //if (www_auth_password_strength($_POST['pw'])<16) { // 16 points = 8 char complex, 14 char simple
-        if (strlen($_POST['pw'])<8) { 
+        if (www_auth_password_strength($_POST['pw'])<12) { // 16 points = 8 char complex, 14 char simple
             $errMsg = 'Sorry your password needs to be stronger - make longer or use more character types';
             return false;
         }
