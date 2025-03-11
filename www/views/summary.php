@@ -140,7 +140,7 @@ if (data1) {
         <canvas id="chances-distribution"></canvas>
       </section>
       <script>
-var data2 = <?php echo chart (2,'graph',$to); ?>;
+var data2 = null<?php // REMOVED - SHC TAKES 65 SECONDS !!! echo chart (2,'graph',$to); ?>;
 if (data2) {
     chartRender (
         'chances-distribution',
