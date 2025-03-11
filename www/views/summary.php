@@ -135,6 +135,7 @@ if (data1) {
 }
       </script>
 
+<!--
       <section id="chart2" class="chart right doughnut">
         <?php echo links_report ('chances_per_player',2,'Chances'); ?>
         <canvas id="chances-distribution"></canvas>
@@ -154,6 +155,7 @@ if (data2) {
     console.log ('Rendered data2');
 }
       </script>
+-->
 
 <?php if (!defined('BLOTTO_RBE_ORGS')): ?>
 
