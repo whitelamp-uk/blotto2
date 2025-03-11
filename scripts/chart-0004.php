@@ -2,6 +2,7 @@
 
 // Cumulative recruitment and cancellation
 
+$t0         = time ();
 $bw         = $p[0];
 $cancels    = array_key_exists(1,$p) && $p[1];
 $dbcfg      = BLOTTO_CONFIG_DB;
@@ -82,6 +83,7 @@ try {
     if ($cancels) {
         $cdo->datasets[0]->backgroundColor = 2;
     }
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

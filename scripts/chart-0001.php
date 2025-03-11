@@ -2,6 +2,7 @@
 
 // Recent draw activity
 
+$t0    = time ();
 $me    = $p[0];
 $data  = [[],[]];
 $q = "
@@ -43,6 +44,7 @@ try {
     $cdo->datasets[1]->label = 'Avg tickets/draw';
     $cdo->datasets[1]->data = $data[1];
     $cdo->datasets[1]->backgroundColor = 2;
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

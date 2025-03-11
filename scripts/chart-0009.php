@@ -2,6 +2,7 @@
 
 // No-show benchmarking
 
+$t0    = time ();
 $me    = $p[0];
 $data  = [[],[]];
 if ($me) {
@@ -47,6 +48,7 @@ try {
     $cdo->datasets[1]->label = null;
     $cdo->datasets[1]->data = $data[1];
     $cdo->datasets[1]->backgroundColor = $colors;
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

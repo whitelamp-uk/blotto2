@@ -74,6 +74,9 @@ function chartRender (canvasId,type,cdo,options) {
         console.error ('No CDO given');
         return false;
     }
+    if (cdo.seconds_to_execute>0) {
+        console.log (cdo.seconds_to_execute+' seconds to execute')
+    }
     // Transform Chart Definition Object to produce data for Chart.js
     clrs = 24; // sane number of automatic colours
     cnv = cnv.getContext ('2d');

@@ -2,6 +2,7 @@
 
 // Canvassing company throughput
 
+$t0    = time ();
 $me    = $p[0];
 if ($me) {
     $where = "WHERE `signed`<='$me' AND `signed`>DATE_SUB('$me',INTERVAL 12 MONTH)";
@@ -77,6 +78,7 @@ try {
         $cdo->datasets[$cccs[$row['ccc']]]->data[$months[$row['month']]] = $row['imports'];
     }
 
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

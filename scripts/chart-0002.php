@@ -2,6 +2,7 @@
 
 // Tickets per player
 
+$t0    = time ();
 $me    = $p[0];
 $data  = [[],[]];
 $q = "
@@ -49,6 +50,7 @@ try {
     $cdo->datasets[0]->label = 'Players by nr of chances';
     $cdo->datasets[0]->data = $data[0];
     $cdo->datasets[0]->backgroundColor = 0;
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

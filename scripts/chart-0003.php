@@ -2,6 +2,7 @@
 
 // Recent recruitment and cancellation
 
+$t0    = time ();
 $me    = $p[0];
 $cum   = array_key_exists(1,$p) && $p[1];
 $data  = [[],[],[]];
@@ -73,6 +74,7 @@ try {
     $cdo->datasets[2]->label = 'Nett';
     $cdo->datasets[2]->data = $data[2];
     $cdo->datasets[2]->backgroundColor = 3;
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

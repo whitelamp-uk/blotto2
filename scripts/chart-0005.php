@@ -2,7 +2,7 @@
 
 // chart 5 is now a workflow meter using `Journeys`
 
-
+$t0 = time ();
 $data = [];
 $cdo->datasets[0] = new stdClass ();
 $cdo->datasets[0]->backgroundColor = 1;
@@ -59,6 +59,7 @@ try {
     $cdo->datasets[1]->data[3] = $params['loading'];
     $cdo->datasets[1]->data[4] = $params['entered'];
 
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

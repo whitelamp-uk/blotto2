@@ -2,7 +2,8 @@
 
 // This one is a bit crap but is an example of grouping in interesting ways
 
-$data       = [[],[]];
+$t0    = time ();
+$data = [[],[]];
 $q = "
   SELECT
     IF(`s`.`postcode` REGEXP '^[A-z][A-z]',SUBSTR(`s`.`postcode`,1,2),SUBSTR(`s`.`postcode`,1,1)) AS `area`
@@ -40,6 +41,7 @@ try {
     $cdo->datasets[1]->label = '100s of Supporters';
     $cdo->datasets[1]->data = $data[1];
     $cdo->datasets[1]->backgroundColor = 0;
+    $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());
