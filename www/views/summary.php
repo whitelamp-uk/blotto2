@@ -1,32 +1,43 @@
 <?php
-$year           = null;
-$month          = null;
-$from           = null;
+// Determine year and month
 if (array_key_exists('year',$_GET) && array_key_exists('month',$_GET)) {
+    // form submitted
     if ($_GET['year'] && $_GET['month']) {
+        // Form had value(s)
         $year   = intval ($_GET['year']);
         $month  = str_pad (intval($_GET['month']),2,'0',STR_PAD_LEFT);
     }
+    else {
+        // For all time
+        $year   = null;
+        $month  = null;
+    }
 }
+else {
+    // form not submitted so default to this month ending
+    $dt         = new \DateTime ();
+    $year       = intval ($dt->format ('Y'));
+    $month      = $dt->format ('m');
+}
+// to and month ending dates
 if ($year && $month) {
     // user-entered year/month specifies year-end ytd
     $dt         = new \DateTime ($year.'-'.$month.'-01');
     $dt->add (new DateInterval('P1M'));
     $dt->sub (new DateInterval('P1D'));
     $to         = $dt->format ('Y-m-d');
-    $me         = $dt->format ('d M Y');
+    $me         = 'YTD '.$dt->format ('d M Y');
     $dt->add (new DateInterval('P1D'));
     $dt->sub (new DateInterval('P12M'));
-    $from       = $dt->format ('Y-m-d');
 }
 else {
-    // insufficient user input so load for-all-time data
+    // for-all-time dates
     $year       = null;
     $month      = null;
     $dt         = new \DateTime (gmdate('Y-m-01'));
     $dt->sub (new DateInterval('P1D'));
     $to         = null;
-    $me         = $dt->format ('d M Y');
+    $me         = '(for all time)';
 }
 $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 ?>
@@ -49,6 +60,27 @@ $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
         <input type="submit" value="Recalculate" />
       </form>
 
+      <section id="chart7" class="chart left doughnut">
+        <?php echo links_report ('workflow',5,'Journeys',3); ?>
+        <canvas id="workflow"></canvas>
+      </section>
+      <script>
+var data7 = <?php echo chart (5,'graph'); ?>;
+if (data7) {
+    chartRender (
+        'workflow',
+        'bar',
+        data7,
+        {
+            title: "Sales funnel - supporter journeys (at this time)",
+            link: true,
+            ylogarithmic: true
+        }
+    );
+    console.log ('Rendered data7');
+}
+      </script>
+
       <section id="chart9" class="chart left" style="position:relative;">
         <?php echo links_report ('noshow_benchmarking',9,'Month'); ?>
         <canvas id="noshow-benchmarking"></canvas>
@@ -70,7 +102,7 @@ if (data9) {
         data9,
         {
             // empty title lines are to compensate for noLegend=true
-            title: ['No-show benchmarking YTD <?php echo $me; ?>','',''],
+            title: ['No-show benchmarking <?php echo $me; ?>','',''],
             link: true,
             zero: true,
             yratio: 1.3,
@@ -82,18 +114,18 @@ if (data9) {
       </script>
 
       <section id="chart1" class="chart left">
-        <?php echo links_report ('recent_draw_activity',1,'Month'); ?>
+        <?php echo links_report ('draw_activity',1,'Month'); ?>
         <canvas id="draw-activity"></canvas>
       </section>
       <script>
-var data1 = <?php echo chart (1,'graph'); ?>;
+var data1 = <?php echo chart (1,'graph',$to); ?>;
 if (data1) {
     chartRender (
         'draw-activity',
         'bar',
         data1,
         {
-            title: 'Draw activity (recent)',
+            title: 'Draw activity <?php echo $me; ?>',
             link: true,
             zero: false,
             yratio: 1.3
@@ -104,18 +136,18 @@ if (data1) {
       </script>
 
       <section id="chart2" class="chart right doughnut">
-        <?php echo links_report ('tickets_per_player',2,'Chances'); ?>
-        <canvas id="ticket-distribution"></canvas>
+        <?php echo links_report ('chances_per_player',2,'Chances'); ?>
+        <canvas id="chances-distribution"></canvas>
       </section>
       <script>
-var data2 = <?php echo chart (2,'graph'); ?>;
+var data2 = <?php echo chart (2,'graph',$to); ?>;
 if (data2) {
     chartRender (
-        'ticket-distribution',
+        'chances-distribution',
         'doughnut',
         data2,
         {
-            title: 'Tickets per player (all-time)',
+            title: 'Chances per player in draws closed <?php echo $me; ?>',
             link: true
         }
     );
@@ -126,18 +158,18 @@ if (data2) {
 <?php if (!defined('BLOTTO_RBE_ORGS')): ?>
 
       <section id="chart3" class="chart left">
-        <?php echo links_report ('recent_recruitment_and_cancellation',3,'Month'); ?>
-        <canvas id="recruitment"></canvas>
+        <?php echo links_report ('rolling_recruitment_and_cancellation',3,'Month'); ?>
+        <canvas id="recruitment-rolling"></canvas>
       </section>
       <script>
-var data3 = <?php echo chart (3,'graph'); ?>;
+var data3 = <?php echo chart (3,'graph',$to); ?>;
 if (data3) {
     chartRender (
-        'recruitment',
+        'recruitment-rolling',
         'bar',
         data3,
         {
-            title: 'Recruitment/cancellation (recent)',
+            title: 'Rolling recruitment/cancellation <?php echo $me; ?>',
             link: true,
             zero: true
         }
@@ -151,14 +183,14 @@ if (data3) {
         <canvas id="recruitment-cumulative"></canvas>
       </section>
       <script>
-var data4 = <?php echo chart (3,'graph',true); ?>;
+var data4 = <?php echo chart (3,'graph',$to,true); ?>;
 if (data4) {
     chartRender (
         'recruitment-cumulative',
         'bar',
         data4,
         {
-            title: 'Cumulative recruitment/cancellation (recent)',
+            title: 'Cumulative recruitment/cancellation <?php echo $me; ?>',
             link: true,
             zero: true
         }
@@ -166,33 +198,6 @@ if (data4) {
     console.log ('Rendered data4');
 }
       </script>
-
-
-
-<!--
-MP: I think this one is pretty pointless
-      <section id="chart5" class="chart left">
-        <?php // echo links_report ('retention_of_ongoing_direct_debits',4,'Duration (months)',1); ?>
-        <canvas id="retention-playing"></canvas>
-      </section>
-      <script>
-var data5 = <?php // echo chart (4,'graph',1); ?>;
-if (data5) {
-    chartRender (
-        'retention-playing',
-        'bar',
-        data5,
-        {
-            title: 'Retention (recent) using <?php // echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule',
-            link: true,
-            zero: true,
-            noLegend: true
-        }
-    );
-    console.log ('Rendered data5');
-}
-      </script>
--->
 
       <section id="chart6" class="chart right">
         <?php echo links_report ('retention_of_cancelled_supporters',4,'Duration (months)',1,true); ?>
@@ -206,59 +211,13 @@ if (data6) {
         'bar',
         data6,
         {
-            title: 'Retention of cancelled supporters (all-time) using <?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule',
+            title: 'Retention (viewed retrospectively) of all cancelled supporters (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
             link: true,
             zero: true,
             noLegend: true
         }
     );
     console.log ('Rendered data6');
-}
-      </script>
-
-      <section id="chart8" class="chart right doughnut">
-        <?php echo links_report ('ccc_performance_cumulative',6,'CCC'); ?>
-        <canvas id="ccc-cumulative"></canvas>
-      </section>
-      <script>
-var data8 = <?php echo chart (6,'graph'); ?>;
-if (data8) {
-    chartRender (
-        'ccc-cumulative',
-        'doughnut',
-        data8,
-        {
-            title: "Canvassing company performance (cumulative import/retention, ignoring single payments)",
-            link: true
-        }
-    );
-    console.log ('Rendered data8');
-}
-      </script>
-
-<?php
-$since = new DateTime ($to);
-$since->sub (new DateInterval('P3M'));
-$since = $since->format ('Y-m-d');
-$since_text = "3 months to date";
-?>
-      <section id="chart7" class="chart left doughnut">
-        <?php echo links_report ('ccc_performance_recent',5,'CCC',3); ?>
-        <canvas id="ccc-recent"></canvas>
-      </section>
-      <script>
-var data7 = <?php echo chart (5,'graph',$since); ?>;
-if (data7) {
-    chartRender (
-        'ccc-recent',
-        'doughnut',
-        data7,
-        {
-            title: "Canvassing company performance (imports <?php echo $since_text; ?>)",
-            link: true
-        }
-    );
-    console.log ('Rendered data7');
 }
       </script>
 

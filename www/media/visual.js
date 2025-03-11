@@ -200,6 +200,20 @@ function chartRender (canvasId,type,cdo,options) {
             opts.scales.yAxes[0].ticks.suggestedMax = range.max;
         }
     }
+    if ('ylogarithmic' in options && options.ylogarithmic) {
+        opts.scales.yAxes[0].type = 'logarithmic';
+        // Convert things like 1e+0 into numbers for the less technically-minded
+        opts.scales.yAxes[0].ticks.callback = function (value, index, values) {
+            // ticks are too squidged up so remove those starting with an odd number
+            if ((value.toString().charAt(0)*1)%2==0 || value.toString().charAt(0)=='1') {
+                if (value>0) { // disagree with ChartJS about labelling 0 on a log scale
+                    return Number (value.toString());
+                }
+            }
+            return '';
+        }
+
+    }
     if (options.link) {
         opts.bezierCurve = false;
         opts.animation = {

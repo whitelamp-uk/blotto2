@@ -2,7 +2,8 @@
 
 // Recent draw activity
 
-$data       = [[],[]];
+$me    = $p[0];
+$data  = [[],[]];
 $q = "
   SELECT
     `draw_closed`
@@ -11,18 +12,19 @@ $q = "
    ,ROUND(SUM(`supporters_entered`)/COUNT(`draw_closed`),0) AS `supporters`
    ,ROUND(SUM(`tickets_entered`)/COUNT(`draw_closed`),0) AS `tickets`
   FROM `Draws_Supersummary`
-  WHERE SUBSTR(`draw_closed`,1,7)<SUBSTR(CURDATE(),1,7)
+  WHERE `draw_closed`<CURDATE()
+  {{WHERE}}
+    AND `draw_closed` IS NOT NULL
   GROUP BY `month`
   ORDER BY `month` DESC
-  {{LIMIT}}
 ";
-if ($type=='graph') {
-    $limit = 'LIMIT 0,6';
+if ($me) {
+    $where = "  AND `draw_closed`<='$me' AND `draw_closed`>DATE_SUB('$me',INTERVAL 12 MONTH)";
 }
 else {
-    $limit = '';
+    $where = "";
 }
-$q = str_replace ('{{LIMIT}}',$limit,$q);
+$q = str_replace ('{{WHERE}}',$where,$q);
 try {
     $rows = $zo->query ($q);
     while ($row=$rows->fetch_assoc()) {

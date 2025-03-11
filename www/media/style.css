@@ -879,8 +879,9 @@ img.close {
 }
 
 #visual > form.dates {
-    display:            block;
     position:           fixed;
+    z-index:            1000;
+    display:            block;
     background-color:   white;
 }
 
@@ -946,43 +947,53 @@ img.close {
 }
 
 .chart-bar-1,
-.chart-bar-5,
-.chart-bar-9,
-.chart-bar-13,
-.chart-bar-17,
+.chart-bar-6,
+.chart-bar-11,
+.chart-bar-16,
 .chart-bar-21,
+.chart-bar-26,
 .chart-overlay-1 {
     background-color:   var(--blotto-color-bgd-chart-bar-1);
 }
 
 .chart-bar-2,
-.chart-bar-6,
-.chart-bar-10,
-.chart-bar-14,
-.chart-bar-18,
+.chart-bar-7,
+.chart-bar-12,
+.chart-bar-17,
 .chart-bar-22,
+.chart-bar-27,
 .chart-overlay-2 {
     background-color:   var(--blotto-color-bgd-chart-bar-2);
 }
 
 .chart-bar-3,
-.chart-bar-7,
-.chart-bar-11,
-.chart-bar-15,
-.chart-bar-19,
+.chart-bar-8,
+.chart-bar-13,
+.chart-bar-18,
 .chart-bar-23,
+.chart-bar-28,
 .chart-overlay-3 {
     background-color:   var(--blotto-color-bgd-chart-bar-3);
 }
 
 .chart-bar-4,
-.chart-bar-8,
-.chart-bar-12,
-.chart-bar-16,
-.chart-bar-20,
+.chart-bar-9,
+.chart-bar-14,
+.chart-bar-19,
 .chart-bar-24,
+.chart-bar-29,
 .chart-overlay-4 {
     background-color:   var(--blotto-color-bgd-chart-bar-4);
+}
+
+.chart-bar-5,
+.chart-bar-10,
+.chart-bar-15,
+.chart-bar-20,
+.chart-bar-25,
+.chart-bar-30,
+.chart-overlay-5 {
+    background-color:   var(--blotto-color-bgd-chart-bar-5);
 }
 
 #reconciliation {

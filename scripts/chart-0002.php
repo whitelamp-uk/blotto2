@@ -2,52 +2,8 @@
 
 // Tickets per player
 
-$q = "
-  SELECT
-    `chances`.`tickets`
-   ,COUNT(`chances`.`client_ref`) AS `players`
-  FROM (
-    SELECT
-      MAX(`draw_closed`) AS `draw_closed`
-    FROM `blotto_entry`
-    WHERE `draw_closed`<CURDATE()
-      AND `draw_closed` IS NOT NULL
-  ) AS `latest`
-  JOIN (
-    SELECT
-      `draw_closed`
-     ,`client_ref`
-     ,COUNT(`ticket_number`) AS `tickets`
-    FROM `blotto_entry`
-    GROUP BY `draw_closed`,`client_ref`
-  ) AS `chances`
-    ON `chances`.`draw_closed`=`latest`.`draw_closed`
-  GROUP BY `chances`.`tickets`
-  ORDER BY `chances`.`tickets`
-  ;
-";
-// That approach was getting extremely slow so two queries seems the answer:
-
-
-$q = "
-  SELECT
-    MAX(`draw_closed`) AS `latest`
-  FROM `blotto_entry`
-  WHERE `draw_closed`<CURDATE()
-    AND `draw_closed` IS NOT NULL
-  ;
-";
-
-try {
-    $rows = $zo->query ($q);
-    $row  = $rows->fetch_assoc ();
-    $date = $row['latest'];
-}
-catch (\mysqli_sql_exception $e) {
-    error_log ($q.' '.$e->getMessage());
-    return $error;
-}
-
+$me    = $p[0];
+$data  = [[],[]];
 $q = "
   SELECT
     `chances`.`tickets`
@@ -55,16 +11,24 @@ $q = "
   FROM (
     SELECT
       `client_ref`
-     ,COUNT(`ticket_number`) AS `tickets`
+     ,COUNT(DISTINCT `ticket_number`) AS `tickets`
     FROM `blotto_entry`
-    WHERE `draw_closed`='$date'
+    WHERE `draw_closed`<CURDATE()
+    {{WHERE}}
+      AND `draw_closed` IS NOT NULL
     GROUP BY `client_ref`
   ) AS `chances`
-  GROUP BY `chances`.`tickets`
-  ORDER BY `chances`.`tickets`
+  GROUP BY `tickets`
+  ORDER BY `tickets`
   ;
 ";
-
+if ($me) {
+    $where = "  AND `draw_closed`<='$me' AND `draw_closed`>DATE_SUB('$me',INTERVAL 12 MONTH)";
+}
+else {
+    $where = "";
+}
+$q = str_replace ('{{WHERE}}',$where,$q);
 try {
     $rows           = $zo->query ($q);
     $values         = [];

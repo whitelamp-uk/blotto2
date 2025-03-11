@@ -1,43 +1,64 @@
 <?php
 
-// Cnvassing company performance (recent)
+// chart 5 is now a workflow meter using `Journeys`
 
-$since = $p[0];
-$q = "
-  SELECT
-    `ccc`
-   ,COUNT(`current_client_ref`) AS `imports`
-  FROM (
-    SELECT
-      `ccc`
-     ,`current_client_ref`
-    FROM `Supporters`
-    WHERE `Created`>='$since'
-    GROUP BY `current_client_ref`
-  ) AS `s`
-  GROUP BY `ccc`
-  ORDER BY `imports` DESC
-  ;
-";
+
+$data = [];
+$cdo->datasets[0] = new stdClass ();
+$cdo->datasets[0]->backgroundColor = 1;
+$cdo->datasets[0]->label = 'Players';
+$cdo->datasets[0]->data = [];
+$cdo->datasets[1] = new stdClass ();
+$cdo->datasets[1]->backgroundColor = 2;
+$cdo->datasets[1]->label = 'Tickets';
+$cdo->datasets[1]->data = [];
+$cdo->labels[0] = 'Imported';
+$cdo->labels[1] = 'DDI requested';
+$cdo->labels[2] = 'Payment 1 collected';
+$cdo->labels[3] = 'Draw 1 selected';
+$cdo->labels[4] = 'Onboarded';
 
 try {
-    $rows           = $zo->query ($q);
-    $values         = [];
-    $signed         = 0;
-    while ($row=$rows->fetch_assoc()) {
-        $values[]   = $row;
-        $signed    += $row['imports'];
-    }
-    foreach ($values as $row) {
-       $labels[]    = $row['ccc'];
-       $data[0][]   = 1 * $row['imports'];
-    }
-    $cdo->labels = $labels;
-    $cdo->datasets = [];
-    $cdo->datasets[0] = new stdClass ();
-    $cdo->datasets[0]->label = 'Supporter imports';
-    $cdo->datasets[0]->data = $data[0];
-    $cdo->datasets[0]->backgroundColor = 0;
+
+    // Get players
+    $q = "
+      SELECT  
+        SUM(`status`='importing') as `importing`
+       ,SUM(`status`='collecting') as `collecting`
+       ,SUM(`status`='entering') as `entering`
+       ,SUM(`status`='loading') as `loading`
+       ,SUM(`status`='entered') as `entered`
+      FROM `Journeys`
+      ;
+    ";
+    $rows = $zo->query ($q);
+    $params = $rows->fetch_assoc ();
+    $cdo->datasets[0]->data[0] = $params['importing'];
+    $cdo->datasets[0]->data[1] = $params['collecting'];
+    $cdo->datasets[0]->data[2] = $params['entering'];
+    $cdo->datasets[0]->data[3] = $params['loading'];
+    $cdo->datasets[0]->data[4] = $params['entered'];
+
+
+    // Get players
+    $q = "
+      SELECT  
+        SUM(IF (`status`='importing',`tickets`,0)) as `importing`
+       ,SUM(IF (`status`='collecting',`tickets`,0)) as `collecting`
+       ,SUM(IF (`status`='entering',`tickets`,0)) as `entering`
+       ,SUM(IF (`status`='loading',`tickets`,0)) as `loading`
+       ,SUM(IF (`status`='entered',`tickets`,0)) as `entered`
+      FROM `Journeys`
+      ;
+    ";
+    $rows = $zo->query ($q);
+    $params = $rows->fetch_assoc ();
+    $cdo->datasets[1]->data[0] = $params['importing'];
+    $cdo->datasets[1]->data[1] = $params['collecting'];
+    $cdo->datasets[1]->data[2] = $params['entering'];
+    $cdo->datasets[1]->data[3] = $params['loading'];
+    $cdo->datasets[1]->data[4] = $params['entered'];
+
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());

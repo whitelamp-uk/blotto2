@@ -2,8 +2,9 @@
 
 // Recent recruitment and cancellation
 
-$cumulative = array_key_exists(0,$p) && $p[0];
-$data       = [[],[],[]];
+$me    = $p[0];
+$cum   = array_key_exists(1,$p) && $p[1];
+$data  = [[],[],[]];
 $q = "
   SELECT
     `r`.`month`
@@ -28,9 +29,16 @@ $q = "
   ) AS `c`
     ON `c`.`month`=`r`.`month`
   WHERE `r`.`month`<SUBSTR(CURDATE(),1,7)
+  {{WHERE}}
   ORDER BY `r`.`month`
 ";
-
+if ($me) {
+    $where = "  AND `r`.`month`<=SUBSTR('$me',1,7) AND `r`.`month`>SUBSTR(DATE_SUB('$me',INTERVAL 12 MONTH),1,7)";
+}
+else {
+    $where = "";
+}
+$q = str_replace ('{{WHERE}}',$where,$q);
 try {
     $rows       = $zo->query ($q);
     $recruits   = 0;
@@ -38,7 +46,7 @@ try {
     while ($row=$rows->fetch_assoc()) {
         $dt = new DateTime ($row['month'].'-01');
         array_push ($labels,$dt->format('M Y'));
-        if ($cumulative) {
+        if ($cum) {
             $recruits += $row['recruits'];
             $cancels  += $row['cancellations'];
             array_push ($data[0],1*$recruits);
@@ -50,12 +58,6 @@ try {
             array_push ($data[1],1*$row['cancellations']);
             array_push ($data[2],$row['recruits']-$row['cancellations']);
         }
-    }
-    if ($type=='graph') {
-        $labels  = array_slice ($labels,-6);
-        $data[0] = array_slice ($data[0],-6);
-        $data[1] = array_slice ($data[1],-6);
-        $data[2] = array_slice ($data[2],-6);
     }
     $cdo->labels = $labels;
     $cdo->datasets = [];

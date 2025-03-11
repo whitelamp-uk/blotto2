@@ -1,81 +1,82 @@
 <?php
 
-// Canvassing company performance  (cumulative)
+// Canvassing company throughput
 
-// Show-off with a double-dataset doughnut
-$data       = [[],[],[]];
-$blank      = 'rgba(255,255,255,1)';
-$q = "
-  SELECT
-    `ccc`
-   ,COUNT(`current_client_ref`) AS `imports`
-   ,SUM(`cancelled`='') AS `retained`
-  FROM (
-    SELECT
-      `ccc`
-     ,`current_client_ref`
-     ,`cancelled`
-    FROM `Supporters`
-    -- Ignore one-off payments
-    WHERE `latest_mandate_frequency`!='Single'
-    GROUP BY `current_client_ref`
-  ) AS `s`
-  GROUP BY `ccc`
-  ORDER BY `imports` DESC
-  ;
-";
+$me    = $p[0];
+if ($me) {
+    $where = "WHERE `signed`<='$me' AND `signed`>DATE_SUB('$me',INTERVAL 12 MONTH)";
+}
+else {
+    $where = "WHERE `signed`<CONCAT(SUBSTR(CURDATE(),1,7),'-01')";
+}
+$data       = [];
+
 try {
-    $cdo->datasets = [];
-    $cdo->datasets[0] = new stdClass ();
-    $cdo->datasets[0]->backgroundColor = [];
-    $cdo->datasets[1] = new stdClass ();
-    $cdo->datasets[1]->backgroundColor = [];
-    $cdo->datasets[2] = new stdClass ();
-    $cdo->datasets[2]->backgroundColor = [];
-    $color          = 0;
+
+    // Get canvassing company codes and data sets
+    $q = "
+      SELECT
+        `canvas_code` AS `ccc`
+      FROM `blotto_supporter`
+      $where
+      GROUP BY `ccc`
+      ORDER BY `ccc`
+      ;
+    ";
     $rows           = $zo->query ($q);
-    $rs             = [];
+    $cdo->datasets  = [];
+    $cdo->labels    = [];
+    $cccs           = [];
+    $i              = 0;
     while ($row=$rows->fetch_assoc()) {
-        array_push ($rs,$row);
+        $cccs[$row['ccc']]  = $i;
+        $cdo->datasets[$i]  = new stdClass ();
+        $cdo->datasets[$i]->backgroundColor = $i + 1;
+        $cdo->datasets[$i]->label = $row['ccc'];
+        $cdo->datasets[$i]->data = [];
+        $i++;
     }
-    foreach ($rs as $row) {
-        $color++;
-        array_push ($labels,$row['ccc'].' (imported)');
-        array_push ($data[0],1*$row['imports']);
-        array_push ($cdo->datasets[0]->backgroundColor,$color);
-        array_push ($data[1],1*$row['imports']);
-        array_push ($cdo->datasets[1]->backgroundColor,$color);
-        array_push ($data[2],0);
-        array_push ($cdo->datasets[2]->backgroundColor,$color);
+
+    // Get the months
+    $q = "
+      SELECT
+        SUBSTR(`signed`,1,7) AS `month`
+      FROM `blotto_supporter`
+      $where
+      GROUP BY `month`
+      ORDER BY `month`
+      ;
+    ";
+    $rows           = $zo->query ($q);
+    $months         = [];
+    $i              = 0;
+    while ($row=$rows->fetch_assoc()) {
+        $months[$row['month']] = $i;
+        $dt         = new DateTime ($row['month'].'-01');
+        $cdo->labels[] = $dt->format('M Y');
+        foreach ($cdo->datasets as $j=>$d) {
+            $cdo->datasets[$j]->data[$i] = 0;
+        }
+        $i++;
     }
-    array_push ($labels,'');
-    array_push ($data[0],0);
-    array_push ($cdo->datasets[0]->backgroundColor,$blank);
-    array_push ($data[1],0);
-    array_push ($cdo->datasets[1]->backgroundColor,$blank);
-    array_push ($data[2],0);
-    array_push ($cdo->datasets[2]->backgroundColor,$blank);
-    $color          = 0;
-    foreach ($rs as $row) {
-        $color++;
-        array_push ($labels,$row['ccc'].' (retained)');
-        array_push ($data[0],1*$row['retained']);
-        array_push ($cdo->datasets[0]->backgroundColor,$color);
-        array_push ($data[1],0);
-        array_push ($cdo->datasets[1]->backgroundColor,$color);
-        array_push ($data[2],1*$row['retained']);
-        array_push ($cdo->datasets[2]->backgroundColor,$color);
+
+    // Get the data
+    $q = "
+      SELECT
+        SUBSTR(`signed`,1,7) AS `month`
+       ,`canvas_code` AS `ccc`
+       ,COUNT(DISTINCT `id`) AS `imports`
+      FROM `blotto_supporter`
+      $where
+      GROUP BY `month`,`ccc`
+      ORDER BY `month`,`ccc`
+      ;
+    ";
+    $rows = $zo->query ($q);
+    while ($row=$rows->fetch_assoc()) {
+        $cdo->datasets[$cccs[$row['ccc']]]->data[$months[$row['month']]] = $row['imports'];
     }
-    $cdo->labels = $labels;
-    $cdo->datasets[0]->label = 'All';
-    $cdo->datasets[0]->weight = 0;
-    $cdo->datasets[0]->data = $data[0];
-    $cdo->datasets[1]->label = 'Imported';
-    $cdo->datasets[1]->weight = 0.5;
-    $cdo->datasets[1]->data = $data[1];
-    $cdo->datasets[2]->label = 'Retained';
-    $cdo->datasets[2]->weight = 0.5;
-    $cdo->datasets[2]->data = $data[2];
+
 }
 catch (\mysqli_sql_exception $e) {
     error_log ($q.' '.$e->getMessage());
