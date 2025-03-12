@@ -1,5 +1,4 @@
 <?php
-$supersum   = "summary";
 $daye       = day_yesterday()->format ('Y-m-d');
 $day1       = day_one (true);
 if ($day1) {
@@ -27,6 +26,7 @@ if (array_key_exists('sort',$_GET)) {
 else {
     $sort   = 'date';
 }
+$supersum   = "super-summary";
 ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js"></script>
@@ -174,7 +174,6 @@ window.document.addEventListener (
       </form>
 
 <?php if (!defined('BLOTTO_RBE_ORGS')): ?>
-<?php  $supersum   = "super-summary"; ?>
       <section class="reconcile" id="reconcile-table-reconcile">
         <a
           title="Download reconciliation as CSV"
