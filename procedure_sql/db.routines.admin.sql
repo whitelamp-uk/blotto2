@@ -3,7 +3,50 @@
 USE `{{BLOTTO_CONFIG_DB}}`
 ;
 
-
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `allWinsForWise2`$$
+CREATE PROCEDURE `allWinsForWise2`(IN `draw_closed` date)
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    SET @q = '';
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db;
+        IF NOT done THEN
+          SET @org = UPPER(SUBSTR(db,11,3));
+          IF LENGTH(@q) > 0 THEN 
+            SET @q = CONCAT(@q, ' UNION ALL ');
+          END IF;
+          SET @q = CONCAT(@q,
+            "SELECT 
+              `w`.`name` AS name
+             ,`w`.`recipientEmail` AS recipientEmail
+             ,CONCAT(`o`.`winnings_payment_ref`,SUBSTR('",draw_closed,"',9,2),\'/\',SUBSTR('",draw_closed,"',6,2)) AS paymentReference
+             ,`w`.`receiverType` AS receiverType
+             ,`w`.`amountCurrency` AS amountCurrency
+             ,`w`.`amount` AS amount
+             ,`w`.`sourceCurrency` AS sourceCurrency
+             ,`w`.`targetCurrency` AS targetCurrency
+             ,`w`.`sortCode` AS sortCode
+             ,`w`.`accountNumber` AS accountNumber
+             ,`o`.`org_code`
+            FROM `",db,"`.`WinsForWise` AS `w`
+              JOIN `blotto_config`.`blotto_org` as `o`
+                ON `o`.`org_code` = '",@org,"'
+            WHERE `w`.`draw_closed` = '",draw_closed,"'
+            AND `o`.`winnings_payment_ref` IS NOT NULL
+            "
+          );
+        END IF;
+    UNTIL done END REPEAT;
+    PREPARE stmt FROM @q;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    CLOSE crxDBs;
+END$$
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `allWinsForWise`$$
@@ -295,7 +338,7 @@ BEGIN
   ;
 END$$
 
-
+-- what is this for?????
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `integers`$$
 CREATE PROCEDURE `integers` (
@@ -419,6 +462,61 @@ BEGIN
   DROP VIEW IF EXISTS `Integer6`
   ;
 END$$
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `newSupporters`$$
+CREATE PROCEDURE `newSupporters`()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db;
+        IF NOT done THEN
+          SELECT db;
+          SET @q = CONCAT('SELECT dayname(substr( `inserted`,1,10)) as day,substr( `inserted`,1,10) as date, COUNT(*) FROM ', 
+            db, '.`blotto_supporter` GROUP BY date ORDER BY date DESC LIMIT 10');
+          PREPARE stmt FROM @q;
+          EXECUTE stmt;
+          DEALLOCATE PREPARE stmt;
+        END IF;
+    UNTIL done END REPEAT;
+    CLOSE crxDBs;
+END$$
+
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `newSupporters2`$$
+CREATE PROCEDURE `newSupporters2`()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    SET @q = '';
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db;
+        IF NOT done THEN
+          IF LENGTH(@q) > 0 THEN 
+            SET @q = CONCAT(@q, ' UNION ALL ');
+          END IF;
+          SET @q = CONCAT(@q,'SELECT \'', SUBSTR(db,11,3),'\' AS org, dayname(substr( `inserted`,1,10)) as day,substr( `inserted`,1,10) as date, COUNT(*) FROM ', 
+            db, '.`blotto_supporter` GROUP BY date ');
+        END IF;
+    UNTIL done END REPEAT;
+
+    SET @q = CONCAT(@q, ' ORDER BY date DESC, org LIMIT 45');
+    PREPARE stmt FROM @q;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    CLOSE crxDBs;
+END$$
+
 
 
 DELIMITER ;

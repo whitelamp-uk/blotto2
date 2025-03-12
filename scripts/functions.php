@@ -6008,10 +6008,16 @@ function www_auth_password_strength ($password) {
 //without point doubling 
 // 8 chars complex = 12 points
 // 63 ^ 8 if we assume "!" as special => 2.5 x 10^ 14
-// 92 ^ 8 assuming all as special => 5 x 10 ^ 15
+// 94 ^ 8 assuming all as special => 6 x 10 ^ 15
 // 62 ^ 9 =  10 ^ 16
-// 36 ^ 11 = 10 ^ 17
-// 26 ^ 12  = 10 ^ 17
+// 36 ^ 10 = 4 x 10 ^ 15
+// 26 ^ 11  = 4 x 10 ^ 15
+// ISO doc specifies 24 uppercase 23 lower case 8 digits and 26 specials:
+// ! @ # $ % ^ & ( ) _ + - = { [ ] : " ; ' < > ? , . /
+// my keyboard does 52+20+24
+// 81 ^ 10 = 1.2x10^19
+// 96 ^ 10 = 6.6x10^19
+// 26 ^ 14 = 6.5x10^19
 
 function www_auth_reset (&$currentUser,&$err=null) {
     // See $modes in www/view/login.php
