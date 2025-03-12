@@ -35,7 +35,10 @@ else {
 var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
     </script>
     <script>
+var t0 = <?php echo time(); ?>;
 var profits = <?php echo profits(); ?>;
+var t1 = <?php echo time(); ?>;
+console.log ('profits() executed in '+(t1-t0)+'s started @ '+t0);
     </script>
 
 
@@ -183,6 +186,9 @@ window.document.addEventListener (
           class="link-resource link-table"
           download="reconciliation_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
           href="#"><img /></a>
+        <script>
+var t0 = <?php echo time(); ?>;
+        </script>
 <?php
 table (
     'reconciliation-table',
@@ -193,6 +199,8 @@ table (
 );
 ?>
         <script>
+var t1 = <?php echo time(); ?>;
+console.log ('calculate() executed in '+(t1-t0)+'s started @ '+t0);
 negatise ('#reconciliation td:nth-of-type(3)');
 linkTable (html,'reconciliation');
 linkCsv ('reconciliation');
@@ -211,6 +219,9 @@ linkCsv ('reconciliation');
           class="link-resource link-table"
           download="revenue_ccc_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
           href="#"><img /></a>
+        <script>
+var t0 = <?php echo time(); ?>;
+        </script>
 <?php
 table (
     'revenue-ccc',
@@ -221,6 +232,8 @@ table (
 );
 ?>
         <script>
+var t1 = <?php echo time(); ?>;
+console.log ('revenue() executed in '+(t1-t0)+'s started @ '+t0);
 //negatise ('#reconciliation td:nth-of-type(3)');
 linkTable (html,'revenue-ccc');
 linkCsv ('revenue-ccc');
@@ -239,6 +252,9 @@ linkCsv ('revenue-ccc');
           class="link-resource link-table"
           download="draw_summary_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
         ><img /></a>
+        <script>
+var t0 = <?php echo time(); ?>;
+        </script>
 <?php
 table (
     'draw-summary',
@@ -249,6 +265,8 @@ table (
 );
 ?>
         <script>
+var t1 = <?php echo time(); ?>;
+console.log ('draws() executed in '+(t1-t0)+'s started @ '+t0);
 linkTable (html,'draw-summary');
 linkCsv ('draw-summary');
         </script>
@@ -269,6 +287,9 @@ linkCsv ('draw-summary');
           class="link-resource link-table"
           download="draw_summary-super_<?php echo htmlspecialchars($from); ?>_thru_<?php echo htmlspecialchars($to); ?>.html"
         ><img /></a>
+        <script>
+var t0 = <?php echo time(); ?>;
+        </script>
 <?php
 table (
     'draw-summary-super',
@@ -279,6 +300,8 @@ table (
 );
 ?>
         <script>
+var t1 = <?php echo time(); ?>;
+console.log ('draws_super() executed in '+(t1-t0)+'s started @ '+t0);
 linkTable (html,'draw-summary-super');
 linkCsv ('draw-summary-super');
         </script>
