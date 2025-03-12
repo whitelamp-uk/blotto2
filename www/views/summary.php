@@ -125,7 +125,7 @@ if (data2) {
         'doughnut',
         data2,
         {
-            title: 'Chances per new supporter by signed date <?php echo $me; ?>',
+            title: 'Chances per supporter signed up <?php echo $me; ?>',
             link: true
         }
     );
@@ -211,10 +211,11 @@ if (data6) {
         'bar',
         data6,
         {
-            title: 'Retention (viewed retrospectively) of all cancelled supporters (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
+            title: 'Cancelled supporter length of retention (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
             link: true,
             zero: true,
-            noLegend: true
+            noLegend: true,
+            ylogarithmic: true
         }
     );
     console.log ('Rendered data6');
