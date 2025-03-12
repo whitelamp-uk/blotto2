@@ -38,7 +38,7 @@ var html = `<?php html ("{{SNIPPET}}\n","{{TITLE}}"); ?>`;
 var t0 = <?php echo time(); ?>;
 var profits = <?php echo profits(); ?>;
 var t1 = <?php echo time(); ?>;
-console.log ('profits() executed in '+(t1-t0)+'s');
+console.log ('profits() executed in '+(t1-t0)+'s started @ '+t0);
     </script>
 
 
@@ -200,7 +200,7 @@ table (
 ?>
         <script>
 var t1 = <?php echo time(); ?>;
-console.log ('calculate() executed in '+(t1-t0)+'s');
+console.log ('calculate() executed in '+(t1-t0)+'s started @ '+t0);
 negatise ('#reconciliation td:nth-of-type(3)');
 linkTable (html,'reconciliation');
 linkCsv ('reconciliation');
@@ -233,7 +233,7 @@ table (
 ?>
         <script>
 var t1 = <?php echo time(); ?>;
-console.log ('revenue() executed in '+(t1-t0)+'s');
+console.log ('revenue() executed in '+(t1-t0)+'s started @ '+t0);
 //negatise ('#reconciliation td:nth-of-type(3)');
 linkTable (html,'revenue-ccc');
 linkCsv ('revenue-ccc');
@@ -266,7 +266,7 @@ table (
 ?>
         <script>
 var t1 = <?php echo time(); ?>;
-console.log ('draws() executed in '+(t1-t0)+'s');
+console.log ('draws() executed in '+(t1-t0)+'s started @ '+t0);
 linkTable (html,'draw-summary');
 linkCsv ('draw-summary');
         </script>
@@ -301,7 +301,7 @@ table (
 ?>
         <script>
 var t1 = <?php echo time(); ?>;
-console.log ('draws_super() executed in '+(t1-t0)+'s');
+console.log ('draws_super() executed in '+(t1-t0)+'s started @ '+t0);
 linkTable (html,'draw-summary-super');
 linkCsv ('draw-summary-super');
         </script>
