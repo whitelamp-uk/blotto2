@@ -2049,6 +2049,19 @@ function html ($snippet,$title='Untitled',$output=true) {
     return $html;
 }
 
+function html_file_to_pdf_file ($html_file,$pdf_file) {
+    require_once("/etc/php-dompdf/dompdf_config.inc.php");
+    $dompdf = new DOMPDF();
+    // https://github.com/dompdf/dompdf/issues/902 - but trying to pass as argument to class doesn't seem to work
+    $dompdf->set_option('enable_html5_parser', TRUE); 
+    $html = file_get_contents($html_file);
+    $dompdf->load_html($html);
+    $dompdf->set_paper('A4', 'portrait');
+    $dompdf->render();
+    $output = $dompdf->output();
+    file_put_contents($pdf_file, $output);
+}
+
 function insurance_draw_close ($today=null) {
     // Which draw are we insuring today?
     // This is called by bespoke draw_insuring()

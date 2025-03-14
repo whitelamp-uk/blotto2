@@ -55,18 +55,19 @@ try {
     foreach ($draws as $draw) {
         // Raise invoice for game services
         $file   = BLOTTO_DIR_INVOICE.'/';
-        $file  .= strtolower(BLOTTO_ORG_USER).'_'.$draw['draw_closed'].'_game.html';
+        $file  .= strtolower(BLOTTO_ORG_USER).'_'.$draw['draw_closed'].'_game';
+        $pdf    = $file.'.pdf';
+        $file  .= '.html';
         if (!file_exists($file)) {
             if ($inv=invoice_game($draw['draw_closed'],false)) {
-                $fp = fopen ($file,'w');
-                fwrite ($fp,$inv);
-                fclose ($fp);
+                file_put_contents($file,$inv);
+                html_file_to_pdf_file($file,$pdf);
                 if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
                     mail_attachments (
                         BLOTTO_FEE_EMAIL,
                         BLOTTO_BRAND." invoice (game services)",
                         "Game invoice for draw period closing {$draw['draw_closed']}",
-                        [$file]
+                        [$file,$pdf]
                     );
                 }
             }
@@ -74,18 +75,19 @@ try {
         // Raise invoice (pass on cost) of paying out to winners
         if ($draw['has_winners']) {
             $file   = BLOTTO_DIR_INVOICE.'/';
-            $file  .= strtolower(BLOTTO_ORG_USER).'_'.$draw['draw_closed'].'_payout.html';
+            $file  .= strtolower(BLOTTO_ORG_USER).'_'.$draw['draw_closed'].'_payout';
+            $pdf    = $file.'.pdf';
+            $file  .= '.html';
             if (!file_exists($file)) {
                 if ($inv=invoice_payout($draw['draw_closed'],false)) {
-                    $fp = fopen ($file,'w');
-                    fwrite ($fp,$inv);
-                    fclose ($fp);
+                    file_put_contents($file,$inv);
+                    html_file_to_pdf_file($file,$pdf);
                     if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
                         mail_attachments (
                             BLOTTO_FEE_EMAIL,
                             BLOTTO_BRAND." invoice (payout of winnings)",
                             "Payout invoice for draw period closing {$draw['draw_closed']}",
-                            [$file]
+                            [$file,$pdf]
                         );
                     }
                 }
@@ -135,19 +137,19 @@ try {
         // Raise custom invoice
         $file   = BLOTTO_DIR_INVOICE.'/';
         $file  .= strtolower (
-            BLOTTO_ORG_USER.'_'.$custom['raised'].'_'.strtoupper($custom['type']).'.html'
+            BLOTTO_ORG_USER.'_'.$custom['raised'].'_'.strtoupper($custom['type'])
         );
+        $pdf    = $file.'.pdf';
+        $file  .= '.html';
         if (!file_exists($file)) {
             if ($inv=invoice_custom($custom,false)) {
-                $fp = fopen ($file,'w');
-                fwrite ($fp,$inv);
-                fclose ($fp);
-                // Email as attachment
+                file_put_contents($file,$inv);
+                html_file_to_pdf_file($file,$pdf);
                 mail_attachments (
                     BLOTTO_FEE_EMAIL,
                     BLOTTO_BRAND." invoice (custom)",
                     "Custom invoice raised {$custom['raised']}",
-                    [$file]
+                    [$file,$pdf]
                 );
             }
         }
