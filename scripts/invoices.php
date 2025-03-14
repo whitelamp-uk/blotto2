@@ -51,6 +51,10 @@ catch (\mysqli_sql_exception $e) {
     exit (103);
 }
 
+// We still generate and keep the HTML files as they are useful to us even if we only 
+// send PDFs (as of March 2025).  
+// We render as A3 to get everything on the page.  A4 is not big enough and there is 
+// no clear scaling mechanism.
 try {
     foreach ($draws as $draw) {
         // Raise invoice for game services
@@ -61,13 +65,13 @@ try {
         if (!file_exists($file)) {
             if ($inv=invoice_game($draw['draw_closed'],false)) {
                 file_put_contents($file,$inv);
-                html_file_to_pdf_file($file,$pdf);
+                html_file_to_pdf_file($file,$pdf,'a3');
                 if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
                     mail_attachments (
                         BLOTTO_FEE_EMAIL,
                         BLOTTO_BRAND." invoice (game services)",
                         "Game invoice for draw period closing {$draw['draw_closed']}",
-                        [$file,$pdf]
+                        [$pdf]
                     );
                 }
             }
@@ -81,13 +85,13 @@ try {
             if (!file_exists($file)) {
                 if ($inv=invoice_payout($draw['draw_closed'],false)) {
                     file_put_contents($file,$inv);
-                    html_file_to_pdf_file($file,$pdf);
+                    html_file_to_pdf_file($file,$pdf,'a3');
                     if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
                         mail_attachments (
                             BLOTTO_FEE_EMAIL,
                             BLOTTO_BRAND." invoice (payout of winnings)",
                             "Payout invoice for draw period closing {$draw['draw_closed']}",
-                            [$file,$pdf]
+                            [$pdf]
                         );
                     }
                 }
@@ -144,12 +148,12 @@ try {
         if (!file_exists($file)) {
             if ($inv=invoice_custom($custom,false)) {
                 file_put_contents($file,$inv);
-                html_file_to_pdf_file($file,$pdf);
+                html_file_to_pdf_file($file,$pdf,'a3');
                 mail_attachments (
                     BLOTTO_FEE_EMAIL,
                     BLOTTO_BRAND." invoice (custom)",
                     "Custom invoice raised {$custom['raised']}",
-                    [$file,$pdf]
+                    [$pdf]
                 );
             }
         }

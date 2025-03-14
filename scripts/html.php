@@ -88,6 +88,13 @@ div.statement table {
     width: 10em;
     height: 5.1em;
 }
+#draw-header img,
+#invoice-header img,
+#report-header img {
+    width: 10em;
+    height: 5.1em;
+}
+
 #draw-header address,
 #invoice-header address,
 #report-header address,
