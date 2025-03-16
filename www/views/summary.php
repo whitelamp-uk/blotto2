@@ -204,14 +204,15 @@ if (data4) {
         <canvas id="retention-cancelled"></canvas>
       </section>
       <script>
-var data6 = <?php echo chart (4,'graph',1,true); ?>;
+var data6 = <?php $chart = chart (4,'graph',1,true); echo $chart; ?>;
+<?php $game_age = json_decode ($chart); $game_age = $game_age->game_age; ?>
 if (data6) {
     chartRender (
         'retention-cancelled',
         'bar',
         data6,
         {
-            title: 'Cancelled supporter length of retention (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule)',
+            title: 'Cancelled supporter length of retention (<?php echo str_replace(' ','-',strtolower(BLOTTO_CANCEL_RULE)); ?> rule), age of game: <?php echo intval($game_age); ?> months',
             link: true,
             zero: true,
             noLegend: true,
@@ -221,7 +222,7 @@ if (data6) {
     console.log ('Rendered data6');
 }
       </script>
-
+chart = <?php var_dump ($chart); ?>
 <?php endif; ?>
 
       <script>

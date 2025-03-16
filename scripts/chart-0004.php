@@ -9,56 +9,69 @@ $dbcfg      = BLOTTO_CONFIG_DB;
 $interval   = BLOTTO_CANCEL_RULE;
 $q = "
   SELECT
-    `m`.`months`
-   ,COUNT(`m`.`client_ref`) AS `quantity`
-  FROM (
-    SELECT
-      `s`.`client_ref`
-     ,IF(
-        `c`.`DateDue` IS NULL
-       ,0
-       ,TIMESTAMPDIFF(MONTH,MIN(`c`.`DateDue`),MAX(`c`.`DateDue`)) + 1
-     ) AS `months`
-    FROM `blotto_supporter` AS `s`
-    JOIN `blotto_player` AS `p`
-      ON `p`.`supporter_id`=`s`.`id`
-    LEFT JOIN (
-      SELECT
-        `cm`.`ClientRef`
-       ,`cm`.`Freq`
-       ,`cc`.`DateDue`
-      FROM `blotto_build_mandate` AS `cm`
-      LEFT JOIN `blotto_build_collection` AS `cc`
-             ON `cc`.`Provider`=`cm`.`Provider`
-            AND `cc`.`RefNo`=`cm`.`RefNo`
-    ) AS `c`
-      ON `c`.`ClientRef`=`p`.`client_ref`
-    LEFT JOIN (
-      SELECT
-        `client_ref`
-      FROM `Cancellations`
-      GROUP BY `client_ref`
-    ) AS `cs`
-      ON `cs`.`client_ref`=`s`.`client_ref`
-    WHERE {{WHERE}}
-      AND `c`.`Freq`!='Single'
-    GROUP BY `s`.`id`
-  ) AS `m`
-  GROUP BY `m`.`months`
-  ORDER BY `m`.`months` {{DESC}}
+    TIMESTAMPDIFF(
+      MONTH
+     ,IFNULL(MIN(`created_mc`),CURDATE())
+     ,CURDATE()
+    ) AS `game_age`
+  FROM `Journeys`
+  ;
 ";
-if ($cancels) {
-    $where = "`cs`.`client_ref` IS NOT NULL";
-    $desc  = "";
-}
-else {
-    $where = "`c`.`DateDue`<DATE_SUB(CURDATE(),INTERVAL $interval) AND `cs`.`client_ref` IS NULL";
-    $desc  = "DESC";
-}
-$q = str_replace ('{{WHERE}}',$where,$q);
-$q = str_replace ('{{DESC}}',$desc,$q);
-
 try {
+    $game_age   = $zo->query ($q);
+    $game_age   = $game_age->fetch_assoc ();
+    $game_age   = $game_age['game_age'];
+    $q = "
+      SELECT
+        `m`.`months`
+       ,COUNT(`m`.`client_ref`) AS `quantity`
+      FROM (
+        SELECT
+          `s`.`client_ref`
+         ,IF(
+            `c`.`DateDue` IS NULL
+           ,0
+           ,TIMESTAMPDIFF(MONTH,MIN(`c`.`DateDue`),MAX(`c`.`DateDue`)) + 1
+         ) AS `months`
+        FROM `blotto_supporter` AS `s`
+        JOIN `blotto_player` AS `p`
+          ON `p`.`supporter_id`=`s`.`id`
+        LEFT JOIN (
+          SELECT
+            `cm`.`ClientRef`
+           ,`cm`.`Freq`
+           ,`cc`.`DateDue`
+          FROM `blotto_build_mandate` AS `cm`
+          LEFT JOIN `blotto_build_collection` AS `cc`
+                 ON `cc`.`Provider`=`cm`.`Provider`
+                AND `cc`.`RefNo`=`cm`.`RefNo`
+        ) AS `c`
+          ON `c`.`ClientRef`=`p`.`client_ref`
+        LEFT JOIN (
+          SELECT
+            `client_ref`
+          FROM `Cancellations`
+          GROUP BY `client_ref`
+        ) AS `cs`
+          ON `cs`.`client_ref`=`s`.`client_ref`
+        WHERE {{WHERE}}
+          AND `c`.`Freq`!='Single'
+        GROUP BY `s`.`id`
+      ) AS `m`
+      GROUP BY `m`.`months`
+      ORDER BY `m`.`months` {{DESC}}
+    ";
+    if ($cancels) {
+        $where  = "`cs`.`client_ref` IS NOT NULL";
+        $desc   = "";
+    }
+    else {
+        $where  = "`c`.`DateDue`<DATE_SUB(CURDATE(),INTERVAL $interval) AND `cs`.`client_ref` IS NULL";
+        $desc   = "DESC";
+    }
+    $q = str_replace ('{{WHERE}}',$where,$q);
+    $q = str_replace ('{{DESC}}',$desc,$q);
+
     $rows = $zo->query ($q);
     while ($row=$rows->fetch_assoc()) {
         if ($row['months']==0) {
@@ -69,9 +82,9 @@ try {
         }
         array_push ($data[0],1*$row['quantity']);
     }
-    $cdo->labels = $labels;
-    $cdo->datasets = [];
-    $cdo->datasets[0] = new stdClass ();
+    $cdo->labels        = $labels;
+    $cdo->datasets      = [];
+    $cdo->datasets[0]   = new stdClass ();
     if ($cancels) {
         $cdo->datasets[0]->label = 'Cancelled supporter retention';
     }
@@ -83,6 +96,7 @@ try {
     if ($cancels) {
         $cdo->datasets[0]->backgroundColor = 2;
     }
+    $cdo->game_age = $game_age;
     $cdo->seconds_to_execute = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
