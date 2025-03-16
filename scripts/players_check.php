@@ -72,7 +72,7 @@ try {
         $mailbody .= "Ref : Status - Ref : Status\n";
 
         foreach ($dupes as $dupe) {
-            $mailbody .= $dupe['CR1'].' : '.$dupe['S1'].' - '.$dupe['CR1'].' : '.$dupe['S1']."\n";
+            $mailbody .= $dupe['CR1'].' : '.$dupe['S1'].' - '.$dupe['CR2'].' : '.$dupe['S2']."\n";
         }
         mail(BLOTTO_EMAIL_WARN_TO, $subj, $mailbody);
     }
