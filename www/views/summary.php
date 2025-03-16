@@ -222,7 +222,7 @@ if (data6) {
     console.log ('Rendered data6');
 }
       </script>
-chart = <?php var_dump ($chart); ?>
+
 <?php endif; ?>
 
       <script>

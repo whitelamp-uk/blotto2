@@ -11,10 +11,10 @@ $q = "
   SELECT
     TIMESTAMPDIFF(
       MONTH
-     ,IFNULL(MIN(`created_mc`),CURDATE())
+     ,IFNULL(MIN(`created`),CURDATE())
      ,CURDATE()
     ) AS `game_age`
-  FROM `Journeys`
+  FROM `blotto_supporter`
   ;
 ";
 try {
