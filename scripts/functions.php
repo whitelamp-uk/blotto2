@@ -3029,7 +3029,7 @@ function profits ( ) {
         $zo             = connect (BLOTTO_DB);
         $t0 = time ();
         $start          = $zo->query ($qs);
-        error_log ('profits() start date '.(time()-$to).' seconds');
+        error_log ('profits() start date '.(time()-$t0).' seconds');
         $start          = $start->fetch_assoc ();
         if ($start['start']) {
             $start      = $start['start'];
@@ -3206,7 +3206,7 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() ANLs '.(time()-$to).' seconds');
+        error_log ('profits() ANLs '.(time()-$t0).' seconds');
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['supporters_loaded'] = $row['supporters_loaded'];
             $data[$row['year'].'-'.$row['month']]['chances_loaded'] = $row['chances_loaded'];
@@ -3245,7 +3245,7 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() import days '.(time()-$to).' seconds');
+        error_log ('profits() import days '.(time()-$t0).' seconds');
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['days_import_entry'] = $row['days_import_entry'];
         }
@@ -3307,7 +3307,7 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() income '.(time()-$to).' seconds');
+        error_log ('profits() income '.(time()-$t0).' seconds');
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['draws'] = $row['draws'];
             $data[$row['year'].'-'.$row['month']]['entries'] = $row['entries'];
@@ -3342,7 +3342,7 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() new tickets '.(time()-$to).' seconds');
+        error_log ('profits() new tickets '.(time()-$t0).' seconds');
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['tickets_increment'] = $row['tickets_increment'];
         }
@@ -3382,7 +3382,7 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() old tickets '.(time()-$to).' seconds');
+        error_log ('profits() old tickets '.(time()-$t0).' seconds');
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['tickets_decrement'] = $row['tickets_decrement'];
         }
@@ -3409,7 +3409,7 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() cancellations '.(time()-$to).' seconds');
+        error_log ('profits() cancellations '.(time()-$t0).' seconds');
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['chances_abortive'] = $row['chances_abortive'];
             $data[$row['year'].'-'.$row['month']]['chances_attritional'] = $row['chances_attritional'];
@@ -3456,7 +3456,7 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() cancellation milestones '.(time()-$to).' seconds');
+        error_log ('profits() cancellation milestones '.(time()-$t0).' seconds');
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['ccr'][$row['collected_times']] = $row['quantity'];
         }
