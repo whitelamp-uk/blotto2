@@ -3013,7 +3013,7 @@ function prizes ($draw_closed) {
     return $prizes;
 }
 
-function profits ( ) {
+function profits ($diagnostic=false) {
     $org = BLOTTO_ORG_USER;
     $db = BLOTTO_DB; // TODO - live DB
     $cdb = BLOTTO_CONFIG_DB;
@@ -3029,7 +3029,9 @@ function profits ( ) {
         $zo             = connect (BLOTTO_DB);
         $t0 = time ();
         $start          = $zo->query ($qs);
-        error_log ('profits() start date '.(time()-$t0).' seconds');
+        if ($diagnostic) {
+            error_log ('profits() start date '.(time()-$t0).' seconds');
+        }
         $start          = $start->fetch_assoc ();
         if ($start['start']) {
             $start      = $start['start'];
@@ -3206,7 +3208,9 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() ANLs '.(time()-$t0).' seconds');
+        if ($diagnostic) {
+            error_log ('profits() ANLs '.(time()-$t0).' seconds');
+        }
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['supporters_loaded'] = $row['supporters_loaded'];
             $data[$row['year'].'-'.$row['month']]['chances_loaded'] = $row['chances_loaded'];
@@ -3245,7 +3249,9 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() import days '.(time()-$t0).' seconds');
+        if ($diagnostic) {
+            error_log ('profits() import days '.(time()-$t0).' seconds');
+        }
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['days_import_entry'] = $row['days_import_entry'];
         }
@@ -3307,7 +3313,9 @@ function profits ( ) {
     try {
         $t0 = time ();
         $results        = $zo->query ($qs);
-        error_log ('profits() income '.(time()-$t0).' seconds');
+        if ($diagnostic) {
+            error_log ('profits() income '.(time()-$t0).' seconds');
+        }
         while ($row=$results->fetch_assoc()) {
             $data[$row['year'].'-'.$row['month']]['draws'] = $row['draws'];
             $data[$row['year'].'-'.$row['month']]['entries'] = $row['entries'];
