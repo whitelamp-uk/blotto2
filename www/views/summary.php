@@ -74,7 +74,8 @@ if (data7) {
         {
             title: "Sales funnel - supporter journeys (at this time)",
             link: true,
-            ylogarithmic: true
+            ylogarithmic: true,
+            ynoticks : true
         }
     );
     console.log ('Rendered data7');

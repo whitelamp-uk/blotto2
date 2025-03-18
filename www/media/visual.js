@@ -197,20 +197,27 @@ function chartRender (canvasId,type,cdo,options) {
                 }
             ]
         }
-        if ('yratio' in options && options.yratio && !options.zero) {
+        if (options.yratio && !options.zero) {
             range = chartRange (cdo,options.yratio);
             opts.scales.yAxes[0].ticks.suggestedMin = range.min;
             opts.scales.yAxes[0].ticks.suggestedMax = range.max;
         }
     }
-    if ('ylogarithmic' in options && options.ylogarithmic) {
+    if (options.ynoticks) {
+        opts.scales.yAxes[0].ticks.callback = function (value, index, values) {
+            return '';
+        }
+    }
+    if (options.ylogarithmic) {
         opts.scales.yAxes[0].type = 'logarithmic';
         // Convert things like 1e+0 into numbers for the less technically-minded
-        opts.scales.yAxes[0].ticks.callback = function (value, index, values) {
-            if (value>0) { // disagree with ChartJS about labelling 0 on a log scale
-                return Number (value.toString());
+        if (!options.ynoticks) {
+            opts.scales.yAxes[0].ticks.callback = function (value, index, values) {
+                if (value>0) { // disagree with ChartJS about labelling 0 on a log scale
+                    return Number (value.toString());
+                }
+                return '';
             }
-            return '';
         }
     }
     if (options.link) {
