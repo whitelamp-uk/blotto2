@@ -1137,6 +1137,22 @@ BEGIN
          ON `e`.`client_ref`=`p`.`client_ref`
   GROUP BY `player_id`
   ;
+  ALTER TABLE `Journeys` ADD COLUMN `player_draw_closed` date AFTER `player_created`
+  ;
+  UPDATE `Journeys` AS `j`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`id`=`j`.`player_id`
+  JOIN (
+    SELECT
+      `client_ref`
+     ,MIN(`draw_closed`) AS `player_draw_closed`
+    FROM `blotto_entry`
+    GROUP BY `client_ref`
+  ) AS `es`
+    ON `es`.`client_ref`=`p`.`client_ref`
+  SET
+    `j`.`player_draw_closed` = `es`.`player_draw_closed`
+  ;
   ALTER TABLE `Journeys` ADD COLUMN `player_day` int(10) NOT NULL DEFAULT 0 FIRST
   ;
   ALTER TABLE `Journeys` ADD COLUMN `player_week` int(10) NOT NULL DEFAULT 0 FIRST
@@ -1166,6 +1182,7 @@ BEGIN
   SELECT
     `players`.`player_month`
    ,`players`.`created_mc` AS `mc`
+   ,`players`.`days_to_live_avg`
    ,`players`.`tickets` AS `tickets_playing`
    ,IFNULL(`dormancies`.`tickets`,0) AS `tickets_dormant`
    ,0.0000 AS `dormancy_rate`
@@ -1173,6 +1190,7 @@ BEGIN
     SELECT
       `player_month`
      ,`created_mc`
+     ,AVG(DATEDIFF(`player_draw_closed`,`player_created`)) AS `days_to_live_avg`
      ,SUM(`supporters`) AS `supporters` -- not yet cumulative
      ,SUM(`tickets`) AS `tickets` -- not yet cumulative
     FROM `Journeys`
