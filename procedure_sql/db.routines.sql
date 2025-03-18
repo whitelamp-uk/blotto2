@@ -1086,6 +1086,7 @@ END$$
 
 
 -- DL: at some point, a sequence of IF ELSE statements so that it's easier to grasp then nested IFs.
+-- MP: I believe IF() in a select statement like this is an actual function and not condition syntax ...
 DELIMITER $$
 DROP PROCEDURE IF EXISTS `journeys`$$
 CREATE PROCEDURE `journeys` (
