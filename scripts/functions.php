@@ -3186,7 +3186,7 @@ function profits ($diagnostic=false) {
       SELECT
         SUBSTR(`a`.`tickets_issued`,1,4) AS `year`
        ,SUBSTR(`a`.`tickets_issued`,6,2) AS `month`
-       ,AVG(1*DATEDIFF(`a`.`tickets_issued`,`s`.`signed`)) AS `days_signup_import`
+       ,AVG(1*DATEDIFF(`s`.`created`,`s`.`signed`)) AS `days_signup_import`
        ,COUNT(`s`.`supporter_id`) AS `supporters_loaded`
        ,SUM(`s`.`tickets`) AS `chances_loaded`
       FROM `ANLs` AS `a`
@@ -3222,11 +3222,12 @@ function profits ($diagnostic=false) {
         return false;
     }
     // Add mean turnaround from import to first draw
+    /* slow query
     $qs = "
       SELECT
         SUBSTR(`first_entered`,1,4) AS `year`
        ,SUBSTR(`first_entered`,6,2) AS `month`
-       ,AVG(1*DATEDIFF(`e`.`first_entered`,`a`.`tickets_issued`)) AS `days_import_entry`
+       ,AVG(1*DATEDIFF(`e`.`first_entered`,`s`.`created`)) AS `days_import_entry`
       FROM (
         SELECT
           `ticket_number`
@@ -3243,6 +3244,18 @@ function profits ($diagnostic=false) {
        AND `a`.`tickets_issued`>'$start'
       GROUP BY `year`,`month`
       ORDER BY `year`,`month`
+      ;
+    ";
+    */
+    // faster method: use `JourneysMonthly`.`days_to_live_avg`
+    $qs = "
+      SELECT
+        SUBSTR(`mc`,1,4) AS `year`
+       ,SUBSTR(`mc`,6,2) AS `month`
+       ,`days_to_live_avg` AS `days_import_entry`
+      FROM `JourneysMonthly`
+      WHERE `mc`>='$start'
+        AND `mc`<'$end'
       ;
     ";
     // Splice the results into the data array
