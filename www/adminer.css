@@ -207,7 +207,7 @@ a, a:visited {
     display:           none;
 }
 
-#menu .links a:first-of-type, #menu .links #dump {
+#menu .links a:first-of-type {
     display:           block;
     margin-top:        0.4em;
     margin-bottom:     0.5em;
