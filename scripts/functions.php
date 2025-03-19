@@ -3186,7 +3186,7 @@ function profits ($diagnostic=false) {
       SELECT
         SUBSTR(`a`.`tickets_issued`,1,4) AS `year`
        ,SUBSTR(`a`.`tickets_issued`,6,2) AS `month`
-       ,AVG(1*DATEDIFF(`s`.`created`,`s`.`signed`)) AS `days_signup_import`
+       ,AVG(1*DATEDIFF(DATE(`s`.`inserted`),`s`.`signed`)) AS `days_signup_import`
        ,COUNT(`s`.`supporter_id`) AS `supporters_loaded`
        ,SUM(`s`.`tickets`) AS `chances_loaded`
       FROM `ANLs` AS `a`
