@@ -33,7 +33,7 @@ profits ();
 // but it might help to run reconcile.php functions - which are pretty hardcore.
 
 echo "    Caching SQL by running profits() ... ";
-$t0 = time (); profits ();
+$t0 = time (); profits (true); // argument=true puts timing diagnostic in the error log
 echo "    done in ".(time()-$t0)." seconds\n";
 
 // reconcile.php first loads with the default date range "this calendar year so far"
