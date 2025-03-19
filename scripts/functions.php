@@ -3187,8 +3187,8 @@ function profits ($diagnostic=false) {
         SUBSTR(`a`.`tickets_issued`,1,4) AS `year`
        ,SUBSTR(`a`.`tickets_issued`,6,2) AS `month`
        ,AVG(1*DATEDIFF(DATE(`s`.`inserted`),`s`.`signed`)) AS `days_signup_import`
-       ,COUNT(`s`.`supporter_id`) AS `supporters_loaded`
-       ,SUM(`s`.`tickets`) AS `chances_loaded`
+       ,COUNT(`Ss`.`supporter_id`) AS `supporters_loaded`
+       ,SUM(`Ss`.`tickets`) AS `chances_loaded`
       FROM `ANLs` AS `a`
       JOIN (
         SELECT
@@ -3196,8 +3196,10 @@ function profits ($diagnostic=false) {
          ,COUNT(`current_ticket_number`) AS `tickets`
           FROM `Supporters`
           GROUP BY `supporter_id`
-      ) AS `s`
-        ON `s`.`original_client_ref`=`a`.`ClientRef`
+      ) AS `Ss`
+        ON `Ss`.`original_client_ref`=`a`.`ClientRef`
+      JOIN `blotto_supporter` AS `s`
+        ON `s`.`id`=`Ss`.`supporter_id`
       WHERE `a`.`tickets_issued`>='$start'
         AND `a`.`tickets_issued`<'$end'
       GROUP BY `year`,`month`
