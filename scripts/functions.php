@@ -759,8 +759,8 @@ function download_csv ( ) {
     $f          = esc ($_GET['field']);
     $d1         = esc ($_GET['from']);
     $d2         = esc ($_GET['to']);
-    $cond       = strtolower($t) == 'wins' && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST;
-    $usepri     = strtolower($t) != 'moniesweekly';
+    $cond       = strtolower($t)=='wins' && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST;
+    $usepri     = strtolower($t)!='moniesweekly' && strtolower($t)!='supportersview';
     $gp         = array_key_exists('grp',$_GET) && $_GET['grp']>0 && in_array(strtolower($t),['cancellations','draws','supporters']);
     $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0;
     $file       = $_GET['table'];
