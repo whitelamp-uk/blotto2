@@ -1143,16 +1143,8 @@ BEGIN
   UPDATE `Journeys` AS `j`
   JOIN `blotto_player` AS `p`
     ON `p`.`id`=`j`.`player_id`
-  JOIN (
-    SELECT
-      `client_ref`
-     ,MIN(`draw_closed`) AS `player_draw_closed`
-    FROM `blotto_entry`
-    GROUP BY `client_ref`
-  ) AS `es`
-    ON `es`.`client_ref`=`p`.`client_ref`
   SET
-    `j`.`player_draw_closed` = `es`.`player_draw_closed`
+    `j`.`player_draw_closed` = `p`.`first_draw_close`
   ;
   ALTER TABLE `Journeys` ADD COLUMN `player_day` int(10) NOT NULL DEFAULT 0 FIRST
   ;
