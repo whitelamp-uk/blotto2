@@ -1166,6 +1166,8 @@ BEGIN
   ;
   ALTER TABLE `Journeys` ADD PRIMARY KEY (`player_id`)
   ;
+  ALTER TABLE `Journeys` ADD FOREIGN KEY (`player_id`) REFERENCES `blotto_player` (`id`)
+  ;
   ALTER TABLE `Journeys` ADD INDEX (`dormancy_date`)
   ;
   -- Monthly summary
