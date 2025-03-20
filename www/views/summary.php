@@ -27,6 +27,7 @@ if ($year && $month) {
     $dt->sub (new DateInterval('P1D'));
     $to         = $dt->format ('Y-m-d');
     $me         = 'YTD '.$dt->format ('d M Y');
+    $ma         = 'around '.$dt->format ('d M Y');
     $dt->add (new DateInterval('P1D'));
     $dt->sub (new DateInterval('P12M'));
 }
@@ -60,7 +61,7 @@ $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
         <input type="submit" value="Recalculate" />
       </form>
 
-      <section id="chart7" class="chart left doughnut">
+      <section id="chart7" class="chart left">
         <?php echo links_report ('workflow',5,'Journeys',3); ?>
         <canvas id="workflow"></canvas>
       </section>
@@ -79,6 +80,27 @@ if (data7) {
         }
     );
     console.log ('Rendered data7');
+}
+      </script>
+
+      <section id="chart5" class="chart left">
+        <?php echo links_report ('workflow',5,'First Draws',3); ?>
+        <canvas id="player-first-draws"></canvas>
+      </section>
+      <script>
+var data5 = <?php echo chart (7,'graph',$to); ?>;
+if (data5) {
+    chartRender (
+        'player-first-draws',
+        'bar',
+        data5,
+        {
+            title: 'Player first draws <?php echo $ma; ?>',
+            link: true,
+            zero: true
+        }
+    );
+    console.log ('Rendered data5');
 }
       </script>
 
