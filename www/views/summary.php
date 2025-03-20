@@ -20,6 +20,7 @@ else {
     $month      = $dt->format ('m');
 }
 // to and month ending dates
+$ma             = 'recent/pending';
 if ($year && $month) {
     // user-entered year/month specifies year-end ytd
     $dt         = new \DateTime ($year.'-'.$month.'-01');

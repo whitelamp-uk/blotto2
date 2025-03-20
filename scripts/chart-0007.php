@@ -3,18 +3,19 @@
 // Players by their first draw
 
 $t0             = time ();
-// Draws closed "around" this date
+// Draws closed "around" this month-end date
 $ma             = $p[0];
-if (!$ma) {
-    $ma         = gmdate('Y-m').'-01';
+if ($ma) {
+    $ma         = new \DateTime ($ma);
+    $ma         = $ma->add (new \DateInterval ('P1D'));
 }
-$test = $ma;
-$ma             = new \DateTime ($ma);
+else {
+    $ma         = new \DateTime (gmdate('Y-m').'-01');
+}
 $ma->sub (new \DateInterval ('P2M'));
-$mfrom          = $ma->format ('Y-m-d');
+$mcfrom         = $ma->format ('Y-m-d');
 $ma->add (new \DateInterval ('P4M'));
-$mto            = $ma->format ('Y-m-d');
-error_log ("$mfrom -> $test -> $mto");
+$mcto           = $ma->format ('Y-m-d');
 $data           = [[],[]];
 $bgcs           = [];
 $q = "
@@ -29,7 +30,7 @@ $q = "
   ORDER BY `player_draw_closed`
 ";
 if ($ma) {
-    $where      = "  WHERE `player_draw_closed`<'$mto' AND `player_draw_closed`>='$mfrom'";
+    $where      = "  WHERE `player_draw_closed`>='$mcfrom' AND `player_draw_closed`<'$mcto'";
 }
 else {
     $where      = "";
