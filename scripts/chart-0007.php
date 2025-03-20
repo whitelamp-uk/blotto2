@@ -43,7 +43,7 @@ try {
     $rows                       = $zo->query ($q);
     while ($row=$rows->fetch_assoc()) {
         $dt                     = new DateTime ($row['player_draw_closed']);
-        $label                  = $dt->format ('M Y');
+        $label                  = $dt->format ('j M Y');
         if ($row['pending']) {
             $label              = 'pending: '.$label;
             $bgs[]              = 3;
