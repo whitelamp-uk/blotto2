@@ -1,6 +1,6 @@
 <?php
 
-// chart 5 is now a workflow meter using `Journeys`
+// chart 5 is now a workflow meter using `Journeys`; BAs like to call this a "sales funnel"
 
 $t0 = time ();
 $data = [];
