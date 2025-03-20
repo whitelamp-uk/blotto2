@@ -84,18 +84,18 @@ if (data7) {
       </script>
 
       <section id="chart5" class="chart left">
-        <?php echo links_report ('workflow',5,'First Draws',3); ?>
-        <canvas id="player-first-draws"></canvas>
+        <?php echo links_report ('new_player_first_draws',5,'New player first draws '.$ma,3); ?>
+        <canvas id="new-player-first-draws"></canvas>
       </section>
       <script>
 var data5 = <?php echo chart (7,'graph',$to); ?>;
 if (data5) {
     chartRender (
-        'player-first-draws',
+        'new-player-first-draws',
         'bar',
         data5,
         {
-            title: 'Player first draws <?php echo $ma; ?>',
+            title: 'New player first draws <?php echo $ma; ?>',
             link: true,
             zero: true
         }
