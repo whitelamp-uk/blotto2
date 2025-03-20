@@ -1062,6 +1062,7 @@ DROP PROCEDURE IF EXISTS `journeySummary`$$
 CREATE PROCEDURE `journeySummary` (
 )
 BEGIN
+  -- As of 2025-03-20 this has not been used (scripts/chart-0005.php uses similar code)
   SELECT  
   SUM(`tickets`) as tickets
   ,SUM(IF (`status`='importing', `tickets`, 0)) as importing
@@ -1136,7 +1137,6 @@ BEGIN
     GROUP BY `client_ref`
   )      AS `e`
          ON `e`.`client_ref`=`p`.`client_ref`
-  GROUP BY `player_id`
   ;
   ALTER TABLE `Journeys` ADD COLUMN `player_draw_closed` date AFTER `player_created`
   ;
