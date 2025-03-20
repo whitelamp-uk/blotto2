@@ -27,7 +27,7 @@ if ($year && $month) {
     $dt->sub (new DateInterval('P1D'));
     $to         = $dt->format ('Y-m-d');
     $me         = 'YTD '.$dt->format ('d M Y');
-    $ma         = 'around '.$dt->format ('d M Y');
+    $ma         = $dt->format ('d M Y').', recent/pending';
     $dt->add (new DateInterval('P1D'));
     $dt->sub (new DateInterval('P12M'));
 }

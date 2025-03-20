@@ -8,11 +8,13 @@ $ma             = $p[0];
 if (!$ma) {
     $ma         = gmdate('Y-m').'-01';
 }
+$test = $ma;
 $ma             = new \DateTime ($ma);
-$ma->sub (new \DateInterval ('P4M'));
+$ma->sub (new \DateInterval ('P2M'));
 $mfrom          = $ma->format ('Y-m-d');
-$ma->add (new \DateInterval ('P6M'));
+$ma->add (new \DateInterval ('P4M'));
 $mto            = $ma->format ('Y-m-d');
+error_log ("$mfrom -> $test -> $mto");
 $data           = [[],[]];
 $bgcs           = [];
 $q = "
@@ -46,23 +48,19 @@ try {
         $label                  = $dt->format ('j M Y');
         if ($row['pending']) {
             $label              = 'pending: '.$label;
-            $bgs[]              = 3;
+            $bgcs[]             = 3;
         }
         else {
-            $bgs[]              = 2;
+            $bgcs[]             = 2;
         }
         $labels[]               = $label;
         $data[0][]              = 1*$row['players'];
         $data[1][]              = 1*$row['tickets'];
     }
     $cdo->labels                = $labels;
-    $cdo->datasets[1]->backgroundColor = $bgs;
+    $cdo->datasets[1]->backgroundColor = $bgcs;
     $cdo->datasets[0]->data     = $data[0];
     $cdo->datasets[1]->data     = $data[1];
-    if (count($bgcs[0])) {
-        $cdo->datasets[0]->backgroundColor = 1;
-        $cdo->datasets[1]->backgroundColor = $bgs;
-    }
     $cdo->seconds_to_execute    = time() - $t0;
 }
 catch (\mysqli_sql_exception $e) {
