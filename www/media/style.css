@@ -212,6 +212,7 @@ button, input[type="submit"] {
     color:              var(--blotto-color-fgd-button);
     font-size:          var(--blotto-font-size-button-default);
     font-weight:        var(--blotto-dfn-fwt-default);
+    cursor:             pointer;
 }
 
 section.update-message {
