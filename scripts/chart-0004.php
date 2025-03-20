@@ -3,7 +3,7 @@
 // Cumulative recruitment and cancellation
 
 $t0         = time ();
-$bw         = $p[0];
+$me         = $p[0];
 $cancels    = array_key_exists(1,$p) && $p[1];
 $dbcfg      = BLOTTO_CONFIG_DB;
 $interval   = BLOTTO_CANCEL_RULE;
