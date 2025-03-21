@@ -4,7 +4,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lottery Report <?php echo htmlspecialchars ($title); ?></title>
+    <title><?php echo htmlspecialchars ($title); ?></title>
     <style>
 table {
     margin-top:         1em;

@@ -267,7 +267,7 @@ function chances2Amount ($freq,$chances) {
     return false;
 }
 
-function chart ($number,$type) {
+function chart ($number,$type='no_type',$html_id='no_html_id') {
     if (!in_array($type,['graph','table','csv'])) {
         return '';
     }
@@ -293,8 +293,9 @@ function chart ($number,$type) {
     try {
         // Using parameters - $p, print a Chart Definition Object - $cdo
         $p          = func_get_args ();
-        array_shift ($p);
-        array_shift ($p);
+        array_shift ($p); // chart number
+        array_shift ($p); // type
+        array_shift ($p); // html_id
         require $file;
         if ($type=='graph') {
             $obj = null;
@@ -325,16 +326,9 @@ function chart ($number,$type) {
             array_unshift ($data,$head);
             return csv ($data);
         }
-        // Tables require a readable identifier
-        // for both file name and ID attribute
-        $id = 'report-'.$number;
-        foreach ($p as $value) {
-            $id .= '-'.$value;
-        }
-        $class = 'report-'.$number;
         return html (
             table ($id,'report',null,$head,$data,false),
-            $id,
+            $html_id,
             false
         );
     }
@@ -2108,7 +2102,7 @@ function invoice_custom ($inv,$output=true) {
     foreach ($inv as $k=>$v) {
         $invoice->$k        = $v;
     }
-    $invoice->html_title    = "Invoice {$invoice->type} {$invoice->raised}";
+    $invoice->html_title    = "Lottery custom invoice {$invoice->type} {$invoice->raised}";
     $invoice->html_table_id = "invoice-custom";
     $invoice->date          = $invoice->raised;
     $invoice->reference     = strtoupper (
@@ -2169,7 +2163,7 @@ function invoice_game ($draw_closed_date,$output=true) {
     $code                       = strtoupper (BLOTTO_ORG_USER);
     $org                        = org ();
     $invoice                    = new \stdClass ();
-    $invoice->html_title        = "Invoice LOT{$code}-{$date_draw}";
+    $invoice->html_title        = "Lottery game invoice LOT{$code}-{$date_draw}";
     $invoice->html_table_id     = "invoice-game";
     $invoice->date              = $date_draw;
     $invoice->reference         = "LOT{$code}-{$draw_closed_date}";
@@ -2212,7 +2206,7 @@ function invoice_payout ($draw_closed_date,$output=true) {
         return false;
     }
     $invoice = new \stdClass ();
-    $invoice->html_title    = "Invoice WIN{$code}-{$date_draw}";
+    $invoice->html_title    = "Lottery payout invoice WIN{$code}-{$date_draw}";
     $invoice->html_table_id = "invoice-payout";
     $invoice->date          = $date_draw;
     $invoice->reference     = "WIN{$code}-{$draw_closed_date}";
@@ -2262,7 +2256,7 @@ function invoice_render ($invoice,$output=true) {
 /*
     // Test object
     $invoice = '{
-        "html_title" : "Invoice LOTDBH-2021-08-1",
+        "html_title" : "Lottery game invoice LOTDBH-2021-08-1",
         "html_table_id" : "invoice-game",
         "date" : "2021-08-14",
         "reference" : "LOTDBH-2021-08-14",
@@ -3892,7 +3886,7 @@ function report ( ) {
             $p[substr($k,1)] = $v;
         }
     }
-    $output     = chart ($_GET['nr'],$_GET['type'],...$p);
+    $output     = chart ($_GET['nr'],$_GET['type'],$_GET['fn'],...$p);
     if (!$output) {
         return 'chart has no output';
     }
@@ -4836,7 +4830,7 @@ function statement_render ($day_first,$day_last,$description,$output=true) {
     $stmt               = new \stdClass ();
     $stmt->from         = $from->format ('Y M d');
     $stmt->to           = $to->format ('Y M d');
-    $stmt->html_title   = "Statement {$stmt->from} through {$stmt->to}";
+    $stmt->html_title   = "Lottery statement {$stmt->from} through {$stmt->to}";
     $stmt->description  = str_replace ('{{d}}',$stmt->to,$description);
     $stmt->description  = str_replace ('{{o}}',BLOTTO_ORG_USER,$stmt->description);
     $stmt->description  = str_replace ('{{on}}',BLOTTO_ORG_NAME,$stmt->description);

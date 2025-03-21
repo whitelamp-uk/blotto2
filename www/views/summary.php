@@ -42,6 +42,7 @@ else {
     $me         = '(for all time)';
 }
 $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+$today      = gmdate ('j M Y');
 ?>
 
     <script src="./media/visual.js"></script>
@@ -63,11 +64,11 @@ $months     = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
       </form>
 
       <section id="chart7" class="chart left">
-        <?php echo links_report ('workflow',5,'Journeys',3); ?>
+        <?php echo links_report ('sales_funnel',5,'Journeys',3); ?>
         <canvas id="workflow"></canvas>
       </section>
       <script>
-var data7 = <?php echo chart (5,'graph'); ?>;
+var data7 = <?php echo chart (5,'graph','sales_funnel'); ?>;
 if (data7) {
     chartRender (
         'workflow',
@@ -85,18 +86,18 @@ if (data7) {
       </script>
 
       <section id="chart5" class="chart left">
-        <?php echo links_report ('new_player_first_draws',7,'New player first draws '.$ma,$to); ?>
+        <?php echo links_report ('new_player_first_draws_'.gmdate('Y-m-d'),7,"New player first draws $ma calculated @ $today",$to); ?>
         <canvas id="new-player-first-draws"></canvas>
       </section>
       <script>
-var data5 = <?php echo chart (7,'graph',$to); ?>;
+var data5 = <?php echo chart (7,'graph','new_player_first_draws_'.gmdate('Y-m-d'),$to); ?>;
 if (data5) {
     chartRender (
         'new-player-first-draws',
         'bar',
         data5,
         {
-            title: 'New player first draws <?php echo $ma; ?>',
+            title: 'New player first draws <?php echo $ma; ?> calculated @ <?php echo $today; ?>',
             link: true,
             zero: true
         }
@@ -118,7 +119,7 @@ if (data5) {
         </div>
       </section>
       <script>
-var data9 = <?php echo chart (9,'graph',$to); ?>;
+var data9 = <?php echo chart (9,'graph','noshow_benchmarking',$to); ?>;
 if (data9) {
     chartRender (
         'noshow-benchmarking',
@@ -142,7 +143,7 @@ if (data9) {
         <canvas id="chances-distribution"></canvas>
       </section>
       <script>
-var data2 = <?php echo chart (2,'graph',$to); ?>;
+var data2 = <?php echo chart (2,'graph','chances_per_player',$to); ?>;
 if (data2) {
     chartRender (
         'chances-distribution',
@@ -162,7 +163,7 @@ if (data2) {
         <canvas id="draw-activity"></canvas>
       </section>
       <script>
-var data1 = <?php echo chart (1,'graph',$to); ?>;
+var data1 = <?php echo chart (1,'graph','draw_activity',$to); ?>;
 if (data1) {
     chartRender (
         'draw-activity',
@@ -186,7 +187,7 @@ if (data1) {
         <canvas id="recruitment-rolling"></canvas>
       </section>
       <script>
-var data3 = <?php echo chart (3,'graph',$to); ?>;
+var data3 = <?php echo chart (3,'graph','rolling_recruitment_and_cancellation',$to); ?>;
 if (data3) {
     chartRender (
         'recruitment-rolling',
@@ -207,7 +208,7 @@ if (data3) {
         <canvas id="recruitment-cumulative"></canvas>
       </section>
       <script>
-var data4 = <?php echo chart (3,'graph',$to,true); ?>;
+var data4 = <?php echo chart (3,'graph','cumulative_recruitment_and_cancellation',$to,true); ?>;
 if (data4) {
     chartRender (
         'recruitment-cumulative',
@@ -228,7 +229,7 @@ if (data4) {
         <canvas id="retention-cancelled"></canvas>
       </section>
       <script>
-var data6 = <?php $chart = chart (4,'graph',true); echo $chart; ?>;
+var data6 = <?php $chart = chart (4,'graph','retention_of_cancelled_supporters',true); echo $chart; ?>;
 <?php $game_age = json_decode ($chart); $game_age = $game_age->game_age; ?>
 if (data6) {
     chartRender (

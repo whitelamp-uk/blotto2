@@ -53,7 +53,7 @@ try {
         $file   = BLOTTO_DIR_DRAW.'/';
         $file  .= BLOTTO_ORG_USER.'_'.$draw['draw_closed'].'_draw_report.html';
         if (!file_exists($file)) {
-            if ($dr=draw_report_render($draw['draw_closed'],false)) {
+            if ($dr=draw_report_render('Lottery Draw Report - '.$draw['draw_closed'],false)) {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$dr);
                 fclose ($fp);
