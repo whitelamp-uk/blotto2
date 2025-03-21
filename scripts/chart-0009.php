@@ -2,9 +2,12 @@
 
 // No-show benchmarking
 
-$t0    = time ();
-$me    = $p[0];
-$data  = [[],[]];
+$t0 = time ();
+$me = null;
+if (count($p)) {
+    $me = $p[0];
+}
+$data = [[],[]];
 if ($me) {
     $q = "
       SELECT
@@ -40,12 +43,14 @@ try {
     }
     $cdo->labels    = $labels;
     $cdo->datasets  = [];
+    $cdo->headings_tabular = [];
     $cdo->datasets[0] = new stdClass ();
     $cdo->datasets[0]->label = 'Benchmark / no-shows per 100 sign-ups';
     $cdo->datasets[0]->data = $data[0];
     $cdo->datasets[0]->backgroundColor = 1;
     $cdo->datasets[1] = new stdClass ();
     $cdo->datasets[1]->label = null;
+    $cdo->headings_tabular[] = 'Outcome';
     $cdo->datasets[1]->data = $data[1];
     $cdo->datasets[1]->backgroundColor = $colors;
     $cdo->seconds_to_execute = time() - $t0;

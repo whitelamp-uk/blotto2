@@ -46,7 +46,7 @@ try {
     $cdo->labels = $labels;
     $cdo->datasets = [];
     $cdo->datasets[0] = new stdClass ();
-    $cdo->datasets[0]->label = 'Players by nr of chances';
+    $cdo->datasets[0]->label = 'Players';
     $cdo->datasets[0]->data = $data[0];
     $cdo->datasets[0]->backgroundColor = 0;
     $cdo->seconds_to_execute = time() - $t0;

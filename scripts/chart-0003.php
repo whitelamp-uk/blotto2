@@ -1,9 +1,13 @@
 <?php
 
 // Recent recruitment and cancellation
+error_log (print_r($p,true));
 
 $t0    = time ();
-$me    = $p[0];
+$me    = null;
+if (array_key_exists(0,$p) && $p[0]) {
+    $me = $p[0];
+}
 $cum   = array_key_exists(1,$p) && $p[1];
 $data  = [[],[],[]];
 $q = "

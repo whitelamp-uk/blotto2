@@ -85,7 +85,7 @@ if (data7) {
       </script>
 
       <section id="chart5" class="chart left">
-        <?php echo links_report ('new_player_first_draws',5,'New player first draws '.$ma,3); ?>
+        <?php echo links_report ('new_player_first_draws',7,'New player first draws '.$ma,$to); ?>
         <canvas id="new-player-first-draws"></canvas>
       </section>
       <script>
@@ -126,7 +126,7 @@ if (data9) {
         data9,
         {
             // empty title lines are to compensate for noLegend=true
-            title: ['No-show benchmarking <?php echo $me; ?>','',''],
+            title: 'No-show benchmarking <?php echo $me; ?>',
             link: true,
             zero: true,
             yratio: 1.3,
@@ -158,7 +158,7 @@ if (data2) {
       </script>
 
       <section id="chart1" class="chart right">
-        <?php echo links_report ('draw_activity',1,'Month'); ?>
+        <?php echo links_report ('draw_activity',1,'Month (nr draws)'); ?>
         <canvas id="draw-activity"></canvas>
       </section>
       <script>
@@ -203,7 +203,7 @@ if (data3) {
       </script>
 
       <section id="chart4" class="chart right">
-        <?php echo links_report ('cumulative_recruitment_and_cancellation',3,'Month',true); ?>
+        <?php echo links_report ('cumulative_recruitment_and_cancellation',3,'Month',null,true); ?>
         <canvas id="recruitment-cumulative"></canvas>
       </section>
       <script>
@@ -224,11 +224,11 @@ if (data4) {
       </script>
 
       <section id="chart6" class="chart left">
-        <?php echo links_report ('retention_of_cancelled_supporters',4,'Duration (months)',1,true); ?>
+        <?php echo links_report ('retention_of_cancelled_supporters',4,'Duration (months)',true); ?>
         <canvas id="retention-cancelled"></canvas>
       </section>
       <script>
-var data6 = <?php $chart = chart (4,'graph',1,true); echo $chart; ?>;
+var data6 = <?php $chart = chart (4,'graph',true); echo $chart; ?>;
 <?php $game_age = json_decode ($chart); $game_age = $game_age->game_age; ?>
 if (data6) {
     chartRender (
