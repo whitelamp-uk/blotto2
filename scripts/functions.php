@@ -307,6 +307,17 @@ function chart ($number,$type) {
             error_log ("Could not encode a sensible object");
             return str_replace('[n]',"[chart $number, error 2]",$error);
         }
+        // Reintroduce headings hidden on graph for presentational reasons
+        if (property_exists($cdo,'headings_tabular') && is_array($cdo->headings_tabular)) {
+            foreach ($cdo->datasets as $i=>$d) {
+                if (!count($cdo->headings_tabular)) {
+                    break;
+                }
+                if (!$cdo->datasets[$i]->label) {
+                    $cdo->datasets[$i]->label = array_shift ($cdo->headings_tabular);
+                }
+            }
+        }
         // Other types are array-based
         $data = chart2Array ($cdo);
         $head = chart2Headings ($cdo);
@@ -353,7 +364,7 @@ function chart2Array ($chartObj) {
 function chart2Headings ($chartObj) {
     $arr = ['{{XHEAD}}'];
     foreach ($chartObj->datasets as $i=>$d) {
-        if (!array_key_exists('label',$d) || !$d->label) {
+        if (!property_exists($d,'label') || !$d->label) {
             $arr[] = 'Unspecified';
             continue;
         }
