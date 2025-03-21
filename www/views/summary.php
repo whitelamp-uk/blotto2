@@ -126,7 +126,7 @@ if (data9) {
         data9,
         {
             // empty title lines are to compensate for noLegend=true
-            title: 'No-show benchmarking <?php echo $me; ?>',
+            title: [ 'No-show benchmarking <?php echo $me; ?>',' ',' ',' ' ],
             link: true,
             zero: true,
             yratio: 1.3,
