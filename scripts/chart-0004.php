@@ -1,6 +1,6 @@
 <?php
 
-// Cumulative recruitment and cancellation
+// All time retention - for supporters either remaining - $p[0]=false - or cancelled - $p[0]=true
 
 $t0         = time ();
 $cancels    = array_key_exists(0,$p) && $p[0];
