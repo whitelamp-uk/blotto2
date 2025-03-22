@@ -219,10 +219,24 @@ function chartRender (canvasId,type,cdo,options) {
         opts.scales.yAxes[0].type = 'logarithmic';
         if (!options.ynoticks) {
             opts.scales.yAxes[0].ticks.callback = function (value, index, values) {
-                if (value>0) { // disagree with ChartJS about labelling 0 on a log scale
-                    return Number (value.toString());
+                var v;
+                if (value==0) { // disagree with ChartJS about labelling 0 on a log scale
+                    return '';
                 }
-                return '';
+                if (options.ylogTickRestrict) {
+                    v = 1*(''+value).replace (/[^0-9\.]/,value);
+                    while (v<1) {
+                        v *= 10;
+                    }
+                    if ([6,8,9].includes(1*(''+v).charAt(0))) {
+                        return '';
+                    }
+                }
+                v = Number (value.toString());
+                if (options.yTickSuffix) {
+                    v = '' + v + options.yTickSuffix;
+                }
+                return v;
             }
         }
     }
