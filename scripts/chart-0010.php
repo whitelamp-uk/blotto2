@@ -53,7 +53,7 @@ try {
     $cdo->labels        = $labels;
     $cdo->datasets      = [];
     $cdo->datasets[0]   = new stdClass ();
-    $cdo->datasets[0]->label = 'Revenue';
+    $cdo->datasets[0]->label = 'Revenue %';
     $cdo->datasets[0]->data = $data;
     $cdo->datasets[0]->backgroundColor = 2;
     $cdo->game_age      = $game_age;
