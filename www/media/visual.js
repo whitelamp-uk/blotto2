@@ -165,7 +165,14 @@ function chartRender (canvasId,type,cdo,options) {
                 fontColor: style.legend.color
             },
             position: 'top'
+        },
+        tooltips: {
+            callbacks: {
+            }
         }
+    }
+    if (options.noTooltip) {
+        opts.tooltips.display = false;
     }
     if (options.noLegend) {
         opts.legend.display = false;
@@ -210,7 +217,6 @@ function chartRender (canvasId,type,cdo,options) {
     }
     if (options.ylogarithmic) {
         opts.scales.yAxes[0].type = 'logarithmic';
-        // Convert things like 1e+0 into numbers for the less technically-minded
         if (!options.ynoticks) {
             opts.scales.yAxes[0].ticks.callback = function (value, index, values) {
                 if (value>0) { // disagree with ChartJS about labelling 0 on a log scale
@@ -225,6 +231,12 @@ function chartRender (canvasId,type,cdo,options) {
         opts.animation = {
             onComplete: chartDownload
         }
+    }
+    if (typeof options.tooltipLabel==='function') {
+        opts.tooltips.callbacks.label = options.tooltipLabel;
+    }
+    if (typeof options.yTick==='function') {
+        opts.scales.yAxes[0].ticks.callback = options.yTick;
     }
     // Deploy Chart.js
     cht = new Chart (

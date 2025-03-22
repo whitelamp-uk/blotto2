@@ -131,7 +131,10 @@ if (data9) {
             link: true,
             zero: true,
             yratio: 1.3,
-            noLegend: true
+            noLegend: true,
+            tooltipLabel: function (item) {
+                return item.yLabel + '% no-shows';
+            }
         }
     );
     console.log ('Rendered data9');
@@ -241,10 +244,46 @@ if (data6) {
             link: true,
             zero: true,
             noLegend: true,
-            ylogarithmic: true
+            ylogarithmic: true,
+            tooltipLabel: function (item) {
+                return item.yLabel + ' cancellations';
+            }
         }
     );
     console.log ('Rendered data6');
+}
+      </script>
+
+      <section id="chart8" class="chart left">
+        <?php echo links_report ('revenue_by_chances',10,'Duration (months)'); ?>
+        <canvas id="revenue-chances"></canvas>
+      </section>
+      <script>
+var data8 = <?php $chart = chart (10,'graph','revenue_by_chances'); echo $chart; ?>;
+<?php $game_age = json_decode ($chart); $game_age = $game_age->game_age; ?>
+if (data8) {
+    chartRender (
+        'revenue-chances',
+        'bar',
+        data8,
+        {
+            title: 'Revenue by chances per supporter, age of game: <?php echo intval($game_age); ?> months',
+            link: true,
+            zero: true,
+            ylogarithmic: true,
+            noLegend: true,
+            yTick: function (value,index,values) {
+                if (value>0) {
+                    return Number(value.toString()) + '%';
+                }
+                return '';
+            },
+            tooltipLabel: function (item) {
+                return item.yLabel + '%';
+            }
+        }
+    );
+    console.log ('Rendered data8');
 }
       </script>
 

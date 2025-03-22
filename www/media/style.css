@@ -897,7 +897,8 @@ img.close {
     left:               0;
     top:                3em;
     width:              100%;
-    height:             calc(100% - 3em);
+    height:             5em;
+    overflow-y:         visible;
     padding-top:        1em;
     font-size:          0.6em;
 }
