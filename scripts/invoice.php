@@ -12,12 +12,15 @@
 
   <section id="invoice-date">
     <h4>Date</h4>
-    <div class="invoice-pre"><?php echo htmlspecialchars ($invoice->date); ?></div>
+    <div class="invoice-pre">
+      <?php echo htmlspecialchars ($invoice->date); ?></div>
   </section>
 
   <section id="invoice-address">
     <h4>To</h4>
-    <div class="invoice-pre"><?php echo htmlspecialchars ($invoice->address); ?></div>
+    <div class="invoice-pre">
+      <?php echo htmlspecialchars ($invoice->address); ?>
+    </div>
   </section>
 
 <?php
@@ -39,7 +42,9 @@
 
   <section id="invoice-payment-details">
     <h4>Bank details</h4>
-    <div class="invoice-pre"><?php echo htmlspecialchars (BLOTTO_BANK_NAME."\n".BLOTTO_BANK_SORT."\n".BLOTTO_BANK_ACNR."\n".BLOTTO_TAX_REF); ?></div>
+    <div class="invoice-pre">
+      <?php echo htmlspecialchars (BLOTTO_BANK_NAME."\n".BLOTTO_BANK_SORT."\n".BLOTTO_BANK_ACNR."\n".BLOTTO_TAX_REF); ?>
+    </div>
   </section>
 
 </div>

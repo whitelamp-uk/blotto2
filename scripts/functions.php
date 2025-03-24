@@ -5497,7 +5497,7 @@ function update ( ) {
         if ($send) {
             if (!$cancellation) {
                 if ($fields['StartDate']) {
-                    $message .= "A start date has been specified.\n";
+                    $message .= "A start date (".$fields['StartDate'].") has been specified.\n";
                 }
                 if ($fields['Name']!=$m['Name']) {
                     $message .= "Caution: the mandate account name has changed - do you also need to modify supporter contact details?\n";
