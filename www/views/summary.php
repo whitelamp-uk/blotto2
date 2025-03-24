@@ -228,7 +228,7 @@ if (data4) {
       </script>
 
       <section id="chart8" class="chart left">
-        <?php echo links_report ('revenue_by_chances',10,'Duration (months)'); ?>
+        <?php echo links_report ('revenue_by_chances',10,'Chances per supporter'); ?>
         <canvas id="revenue-chances"></canvas>
       </section>
       <script>

@@ -1070,7 +1070,7 @@ function draw_report_render ($draw_closed,$output=true) {
     }
     $draw                   = new \stdClass ();
     $draw->date             = $date_draw;
-    $draw->html_title       = "Draw DRW{$code}-{$draw_closed}";
+    $draw->html_title       = "Lottery draw report DRW{$code}-{$draw_closed}";
     $draw->reference        = "DRW{$code}-{$draw_closed}";
     $draw->description      = "Report for draw closing {$draw_closed}";
     $draw->results          = [];
@@ -1153,7 +1153,6 @@ function draw_report_render ($draw_closed,$output=true) {
     }
     $snippet = draw_report ($draw,false);
     return html ($snippet,$draw->html_title,$output);
-
 }
 
 function draw_report_serve ($file) {
