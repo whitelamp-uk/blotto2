@@ -1,18 +1,49 @@
 
 
+-- IN CASE ONBOARDING TABLE IS MISSING
+
+CREATE TABLE IF NOT EXISTS `{{BLOTTO_CONFIG_DB}}`.`{{BLOTTO_BRAND}}_onboarding_{{BLOTTO_ORG_USER}}`
+LIKE `{{BLOTTO_CONFIG_DB}}`.`blotto_onboarding`
+;
+
+
 -- ADMIN ROLE
 
 CREATE ROLE IF NOT EXISTS
   '{{BLOTTO_ADMIN_USER}}'
 ;
 
+
+-- ADMIN CONFIG
+
+GRANT SELECT
+ON `mysql`.`proc`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+
+GRANT SELECT
+ON `mysql`.`user`
+TO `{{BLOTTO_ADMIN_USER}}`
+;
+
+GRANT UPDATE (`value`)
+ON `{{BLOTTO_CONFIG_DB}}`.`{{BLOTTO_BRAND}}_onboarding_{{BLOTTO_ORG_USER}}`
+TO `{{BLOTTO_ADMIN_USER}}`
+;
+
 GRANT SELECT,EXECUTE
 ON `{{BLOTTO_CONFIG_DB}}`.*
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
+
+GRANT INSERT,UPDATE ON `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+
 GRANT INSERT ON `{{BLOTTO_CONFIG_DB}}`.`blotto_invoice`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
+
 GRANT UPDATE(
   `org_code`
  ,`type`
@@ -27,47 +58,59 @@ GRANT UPDATE(
 ON `{{BLOTTO_CONFIG_DB}}`.`blotto_invoice`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
-GRANT UPDATE(
+
+GRANT INSERT,UPDATE(
   `admin_email`
  ,`admin_phone`
- ,`signup_verify_email`
- ,`signup_verify_sms`
- ,`signup_paid_email`
- ,`signup_paid_sms`
- ,`pref_nr_email`
- ,`pref_nr_sms`
- ,`pref_nr_post`
- ,`pref_nr_phone`
- ,`signup_cm_key`
- ,`signup_cm_id`
- ,`signup_cm_id_verify`
- ,`signup_cm_id_trigger`
- ,`signup_ticket_options`
- ,`signup_amount_cap`
- ,`signup_dd_text`
- ,`signup_dd_link`
- ,`signup_draw_options`
- ,`signup_sms_from`
- ,`signup_verify_sms_message`
- ,`signup_done_message_ok`
- ,`signup_done_message_fail`
- ,`signup_sms_message`
- ,`signup_url_privacy`
- ,`signup_url_terms`
+ ,`anl_cm_id`
  ,`invoice_address`
  ,`invoice_terms_game`
  ,`invoice_terms_payout`
+ ,`pref_nr_email`
+ ,`pref_nr_phone`
+ ,`pref_nr_post`
+ ,`pref_nr_sms`
+ ,`signup_amount_cap`
+ ,`signup_close_advance_hours`
+ ,`signup_cm_id`
+ ,`signup_cm_id_trigger`
+ ,`signup_cm_id_verify`
+ ,`signup_cm_key`
+ ,`signup_dd_link`
+ ,`signup_dd_text`
+ ,`signup_done_message_fail`
+ ,`signup_done_message_ok`
+ ,`signup_draw_options`
+ ,`signup_paid_email`
+ ,`signup_paid_sms`
+ ,`signup_sms_from`
+ ,`signup_sms_message`
+ ,`signup_ticket_options`
+ ,`signup_url_privacy`
+ ,`signup_url_terms`
+ ,`signup_verify_email`
+ ,`signup_verify_sms`
+ ,`signup_verify_sms_message`
+ ,`territories_csv`
 )
 ON `{{BLOTTO_CONFIG_DB}}`.`blotto_org`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
-GRANT INSERT,UPDATE ON `{{BLOTTO_CONFIG_DB}}`.`blotto_user`
-TO '{{BLOTTO_ADMIN_USER}}'
+
+GRANT INSERT, UPDATE ON `{{BLOTTO_CONFIG_DB}}`.`blotto_user`
+TO `{{BLOTTO_ADMIN_USER}}`
 ;
 
 
+-- ADMIN ORG DATABASES
+
 GRANT SELECT
 ON `{{BLOTTO_TICKET_DB}}`.*
+TO '{{BLOTTO_ADMIN_USER}}'
+;
+
+GRANT SELECT
+ON `{{BLOTTO_MAKE_DB}}`.*
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
 
@@ -82,11 +125,6 @@ TO '{{BLOTTO_ADMIN_USER}}'
 
 GRANT SELECT
 ON `{{BLOTTO_DB}}`.*
-TO '{{BLOTTO_ADMIN_USER}}'
-;
-
-GRANT SELECT
-ON `mysql`.`proc`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
 
@@ -109,13 +147,17 @@ TO '{{BLOTTO_ADMIN_USER}}'
 
 -- ORGANISATION ROLE AND TEST USER
 
-
 CREATE USER IF NOT EXISTS
   '{{BLOTTO_ORG_USER}}'@'localhost'
 ;
 
 CREATE ROLE IF NOT EXISTS
   '{{BLOTTO_ORG_USER}}'
+;
+
+GRANT SELECT
+ON `mysql`.`proc`
+TO '{{BLOTTO_ORG_USER}}'
 ;
 
 GRANT '{{BLOTTO_ORG_USER}}'
