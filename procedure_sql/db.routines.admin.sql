@@ -517,6 +517,33 @@ BEGIN
     CLOSE crxDBs;
 END$$
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `queryAll`$$
+CREATE PROCEDURE `queryAll`(
+IN `qry` TEXT
+)
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;  -- in case query fails because db doesn't contain e.g. rsm_mandate
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db;
+        IF NOT done THEN
+          SELECT db;
+          SET @q = REGEXP_REPLACE(`qry`, '(?i)FROM ', CONCAT('FROM ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)JOIN ', CONCAT('JOIN ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)UPDATE ', CONCAT('UPDATE ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)INSERT INTO ', CONCAT('INSERT INTO ',db,'.'));
+          PREPARE stmt FROM @q;
+          EXECUTE stmt;
+          DEALLOCATE PREPARE stmt;
+        END IF;
+    UNTIL done END REPEAT;
+    CLOSE crxDBs;
+END$$
 
 
 DELIMITER ;

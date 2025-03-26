@@ -1,3 +1,11 @@
+-- vague attempt to get cancellation stats by age, canvasser
+-- select canvas_agent_ref, count(supporter_id), count(distinct(supporter_id))
+-- ,SUM(CASE WHEN cancelled != '' THEN 1 END)
+-- ,FLOOR(TIMESTAMPDIFF(YEAR, dob,signed)/5) * 5 as age
+-- from Supporters
+-- where ccc='BB'
+-- group by canvas_agent_ref, age
+-- order by canvas_agent_ref, age
 
 
 USE `{{BLOTTO_TICKET_DB}}`
@@ -2674,7 +2682,17 @@ BEGIN
 
 END$$
 
-
+-- draft winnersThisWeek.
+-- SELECT w.amount, e.draw_closed as dc, c.name_first, c.name_last
+-- FROM blotto_winner as w
+-- JOIN blotto_entry as e 
+-- on w.entry_id = e.id
+-- JOIN blotto_player as p
+-- on p.client_ref = e.client_ref
+-- JOIN blotto_contact as c
+-- on c.supporter_id = p.supporter_id
+-- WHERE e.draw_closed <= CURDATE()
+-- AND e.draw_closed > DATE_SUB(CURDATE(), INTERVAL 7 DAY)
 
 DELIMITER ;
 
