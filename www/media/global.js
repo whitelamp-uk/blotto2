@@ -162,6 +162,7 @@ function inputProfitParameter (evt) {
 function inputProfitSet (evt) {
     var form;
     form = document.querySelector ('form#profit');
+    // use 12-months-to-date mean averages
     form.days_signup_import.value   = (1*profits.projection.m12.days_signup_import).toFixed (form.days_signup_import.dataset.dp);
     form.days_import_entry.value    = (1*profits.projection.m12.days_import_entry).toFixed (form.days_import_entry.dataset.dp);
     form.abortive_pct.value         = (1*profits.projection.m12.chances_abortive_pct).toFixed (form.abortive_pct.dataset.dp);
