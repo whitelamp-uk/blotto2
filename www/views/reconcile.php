@@ -49,7 +49,7 @@ console.log ('profits() executed in '+(t1-t0)+'s started @ '+t0);
     <form id="profit" data-price="<?php echo intval (BLOTTO_TICKET_PRICE) ?>">
 
       <table>
-        <caption><strong>Profit analysis</strong> &nbsp; &nbsp;<small class="wrn">&nbsp; Caution! This tool is experimental... &nbsp;</small></caption>
+        <caption><strong>Profit analysis</strong></caption>
         <tbody>
           <tr>
             <td><strong>Profit history</strong></td>
@@ -57,22 +57,25 @@ console.log ('profits() executed in '+(t1-t0)+'s started @ '+t0);
             <td><a title="Download historical profit data as HTML" class="link-profit html history" download="<?php echo BLOTTO_ORG_USER; ?>_profit_history_<?php echo date('Y-m-d'); ?>.html" href="#"><img /></a><a title="Download historical profit data as CSV" class="link-profit csv history" download="<?php echo BLOTTO_ORG_USER; ?>_profit_history_<?php echo date('Y-m-d'); ?>.csv" href="#"><img /></a></td>
           </tr>
           <tr>
-            <td>Mean avg days sign-up to import</td>
+            <td colspan="3"><strong>Mean averages (over 12 months to current month):</strong></td>
+          </tr>
+          <tr>
+            <td>Days sign-up to import</td>
             <td><input name="days_signup_import" type="number" min="5" max="10" step="0.1" data-reset="8" value="8" data-dp="1" /></td>
             <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
-            <td>Mean avg days import to first play</td>
+            <td>Days import to first play</td>
             <td><input name="days_import_entry" type="number" min="20" max="100" step="0.1" data-reset="30" value="30" data-dp="1" /></td>
             <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
-            <td>Abortive cancellation <strong>%</strong> (of previous import)</td>
+            <td>Abortive cancellation <strong>%</strong> (of previous month&#039;s imports)</td>
             <td><input name="abortive_pct" type="number" min="5.0" max="10.0" step="1" data-reset="8.00" value="8.00" data-dp="2" /></td>
             <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
-            <td>Attritional cancellation <strong>%</strong> (of previous ticket count)</td>
+            <td>Attritional cancellation <strong>%</strong> (of previous month&#039;s tickets)</td>
             <td><input name="attritional_pct" type="number" min="2.00" max="4.00" step="0.01" data-reset="3.20" value="3.20" data-dp="2" /></td>
             <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
@@ -82,7 +85,7 @@ console.log ('profits() executed in '+(t1-t0)+'s started @ '+t0);
             <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
-            <td>Mean avg chances per sign-up</td>
+            <td>Chances per sign-up</td>
             <td><input name="cps" type="number" min="1.00" max="2.00" step="0.01" data-reset="1.30" value="1.30" data-dp="2" /></td>
             <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
