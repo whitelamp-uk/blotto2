@@ -88,12 +88,12 @@ console.log ('profits() executed in '+(t1-t0)+'s started @ '+t0);
           </tr>
           <tr>
             <td>Sign-ups <strong>pcm</strong></td>
-            <td><input name="supporters" type="number" min="100" max="1000" step="1" data-reset="217" value="217" data-dp="0" /></td>
+            <td><input name="supporters" type="number" min="100" max="2000" step="1" data-reset="217" value="217" data-dp="0" /></td>
             <td><a onclick="var i=this.closest('tr').querySelector('input');i.value=i.dataset.reset;i.dispatchEvent(new Event('input'));return false" title="Reset to 12-month average">Reset</a></td>
           </tr>
           <tr>
             <td>[per week]</td>
-            <td><input name="supporters_pw" type="number" min="20" max="200" step="1" data-reset="50" value="50" data-dp="0" /></td>
+            <td><input name="supporters_pw" type="number" min="20" max="500" step="1" data-reset="50" value="50" data-dp="0" /></td>
             <td>&nbsp;</td>
           </tr>
           <tr>
@@ -173,7 +173,6 @@ window.document.addEventListener (
         <input type="submit" value="Recalculate" />
       </form>
 
-<?php if (!defined('BLOTTO_RBE_ORGS')): ?>
       <section class="reconcile" id="reconcile-table-reconcile">
         <a
           title="Download reconciliation as CSV"
@@ -272,8 +271,6 @@ linkCsv ('draw-summary');
       </section>
 
       <hr/>
-
-<?php endif; ?>
 
       <section class="reconcile" id="reconcile-table-draw-summary-super">
         <a
