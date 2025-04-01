@@ -33,8 +33,8 @@ try {
     $params = $rows->fetch_assoc ();
     $cdo->datasets[0]->data[0] = $params['importing'];
     $cdo->datasets[0]->data[1] = $params['collecting'];
-    $cdo->datasets[0]->data[3] = $params['loading'];
-    $cdo->datasets[0]->data[4] = $params['entered'];
+    $cdo->datasets[0]->data[2] = $params['loading'];
+    $cdo->datasets[0]->data[3] = $params['entered'];
 
 
     // Get players
