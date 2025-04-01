@@ -1132,8 +1132,10 @@ BEGIN
       ,null
     ) AS `dormancy_date`
    ,1 AS `supporters`
-   ,`p`.`chances` AS `tickets`
+   ,IFNULL(`p`.`chances`,`s`.`projected_chances`) AS `tickets`
   FROM `blotto_player` AS `p`
+  JOIN `blotto_supporter` AS `s`
+    ON `s`.`id`=`p`.`supporter_id`
   LEFT JOIN `blotto_update` AS `u`
          ON `u`.`player_id`=`p`.`id`
         AND `u`.`milestone`='first_collection'
