@@ -1,52 +1,52 @@
 <?php
 
 // Global config
-define ( 'BLOTTO_FILE_CFG',         '/home/blotto/config.global.php'    );
+define ( 'BLOTTO_FILE_CFG',         '/home/blotto/config.global.php' );
 if (is_readable(BLOTTO_FILE_CFG)) {
     require BLOTTO_FILE_CFG;
 }
 
 // Bogons
-define ( 'BLOTTO_FILE_BOGONS',      __DIR__.'/ylh.cfg.bogons.php'       );
+define ( 'BLOTTO_FILE_BOGONS',      __DIR__.'/ylh.cfg.bogons.php' );
 if (is_readable(BLOTTO_FILE_BOGONS)) {
     require BLOTTO_FILE_BOGONS;
 }
 
 // Bespoke functions
 if (!function_exists('chances')) {
-    define ( 'BLOTTO_BESPOKE_FUNC', __DIR__.'/ylh.bespoke.php'          );
+    define ( 'BLOTTO_BESPOKE_FUNC', __DIR__.'/ylh.bespoke.php' );
     require BLOTTO_BESPOKE_FUNC;
 }
 
 // Bespoke SQL
 define ( 'BLOTTO_BESPOKE_SQL_FNC',  __DIR__.'/ylh.bespoke.functions.sql' );
-//define ( 'BLOTTO_BESPOKE_SQL_PRM',  __DIR__.'/ylh.bespoke.perms.sql'  );
-//define ( 'BLOTTO_BESPOKE_SQL_UPD',  __DIR__.'/ylh.bespoke.updates.sql' );
+//define ( 'BLOTTO_BESPOKE_SQL_PRM', __DIR__.'/ylh.bespoke.perms.sql' );
+//define ( 'BLOTTO_BESPOKE_SQL_UPD', __DIR__.'/ylh.bespoke.updates.sql' );
 
 // Org
-define ( 'BLOTTO_ORG_NAME',         'Your Organisation'                 );
+define ( 'BLOTTO_ORG_NAME',         'Your Organisation' );
 define ( 'BLOTTO_ORG_ID',           8                   );
 define ( 'BLOTTO_ORG_USER',         'ylh'               );
-define ( 'BLOTTO_GAME_NAME',        'Your Local Hospice'                );
+define ( 'BLOTTO_GAME_NAME',        'Your Local Hospice' );
 define ( 'BLOTTO_MAKE_DB',          'mylotto_ylh_make'  );
-define ( 'BLOTTO_DUMP_FILE',        '/home/blotto/export/ylh/dump.sql'  );
+define ( 'BLOTTO_DUMP_FILE',        '/home/blotto/export/ylh/dump.sql' );
 define ( 'BLOTTO_DB',               'mylotto_ylh'       );
 define ( 'BLOTTO_BELL',             ''                  );
-define ( 'BLOTTO_DIR_EXPORT',       '/home/blotto/export/ylh'           );
-define ( 'BLOTTO_DIR_INVOICE',      '/home/blotto/invoice/ylh'          );
-define ( 'BLOTTO_DIR_STATEMENT',    '/home/blotto/statement/ylh'        );
-define ( 'BLOTTO_DIR_DRAW',         '/home/blotto/draw/ylh'             );
-define ( 'BLOTTO_CSV_DIR_S',        '/home/sct/blotto/ylh/supporters'   );
-define ( 'BLOTTO_CSV_DIR_M',        '/home/sct/blotto/ylh/mandates'     );
-define ( 'BLOTTO_CSV_DIR_C',        '/home/sct/blotto/ylh/collections'  );
-define ( 'BLOTTO_LOG_DIR',          '/home/blotto/log/ylh'              );
-define ( 'BLOTTO_TICKET_DB',        'blotto_ticket_demo'                );
+define ( 'BLOTTO_DIR_EXPORT',       '/home/blotto/export/ylh' );
+define ( 'BLOTTO_DIR_INVOICE',      '/home/blotto/invoice/ylh' );
+define ( 'BLOTTO_DIR_STATEMENT',    '/home/blotto/statement/ylh' );
+define ( 'BLOTTO_DIR_DRAW',         '/home/blotto/draw/ylh' );
+define ( 'BLOTTO_CSV_DIR_S',        '/home/sct/blotto/ylh/supporters' );
+define ( 'BLOTTO_CSV_DIR_M',        '/home/sct/blotto/ylh/mandates' );
+define ( 'BLOTTO_CSV_DIR_C',        '/home/sct/blotto/ylh/collections' );
+define ( 'BLOTTO_LOG_DIR',          '/home/blotto/log/ylh' );
+define ( 'BLOTTO_TICKET_DB',        BLOTTO_MAKE_DB      );
 define ( 'BLOTTO_TICKET_MIN',       '000000'            );
 define ( 'BLOTTO_TICKET_MAX',       '999999'            );
-define ( 'BLOTTO_TICKET_CHKSUM',    'https://some.where/sum.txt'        );
+define ( 'BLOTTO_TICKET_CHKSUM',    'https://some.where/sum.txt' );
 define ( 'BLOTTO_RESULTS_DB',       BLOTTO_MAKE_DB      );
-define ( 'BLOTTO_PROOF_DIR',        __DIR__.'/../export/ylh/proof'      );
-define ( 'BLOTTO_OUTFILE',          '/tmp/blotto.ylh.outfile.csv'       );
+define ( 'BLOTTO_PROOF_DIR',        __DIR__.'/../export/ylh/proof' );
+define ( 'BLOTTO_OUTFILE',          '/tmp/blotto.ylh.outfile.csv' );
 define ( 'BLOTTO_TICKET_PRICE',     100                 );  // In pennies
 define ( 'BLOTTO_TICKETS_AUTO',     true                );
 define ( 'BLOTTO_TICKETS_GRATIS',   false               );  // Allow tickets to be sold outside the system
