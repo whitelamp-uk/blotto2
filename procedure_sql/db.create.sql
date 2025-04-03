@@ -412,6 +412,28 @@ CREATE TABLE IF NOT EXISTS `blotto_insurance` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
+CREATE TABLE IF NOT EXISTS `blotto_player` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `started` date DEFAULT NULL,
+  `supporter_id` int(11) unsigned DEFAULT NULL,
+  `client_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
+  `first_draw_close` date DEFAULT NULL,
+  `letter_batch_ref` varchar(64) CHARACTER SET ascii DEFAULT NULL,
+  `letter_status` varchar(64) CHARACTER SET ascii DEFAULT NULL,
+  `letter_batch_ref_prev` varchar(64) CHARACTER SET ascii DEFAULT NULL,
+  `opening_balance` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `chances` int(11) unsigned DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `client_ref` (`client_ref`),
+  UNIQUE KEY `supporter_id_started` (`supporter_id`,`started`),
+  KEY `supporter_id` (`supporter_id`),
+  KEY `letter_batch_ref` (`letter_batch_ref`),
+  KEY `created` (`created`),
+  CONSTRAINT `blotto_player_ibfk_1` FOREIGN KEY (`supporter_id`) REFERENCES `blotto_supporter` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS `blotto_prize` (
   `starts` date NOT NULL DEFAULT '2000-01-01',
   `level` tinyint(3) unsigned NOT NULL,
@@ -432,6 +454,33 @@ CREATE TABLE IF NOT EXISTS `blotto_prize` (
   PRIMARY KEY (`starts`,`level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
   COMMENT='expires column only matters if a prize level is removed rather than replaced'
+;
+
+CREATE TABLE IF NOT EXISTS `blotto_supporter` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `created` date NULL,
+  `signed` date DEFAULT NULL,
+  `approved` date DEFAULT NULL,
+  `redacted` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `mandate_blocked` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `self_excluded` date NULL,
+  `death_reported` date NULL,
+  `death_by_suicide` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `projected_first_draw_close` date DEFAULT NULL,
+  `projected_chances` tinyint(3) unsigned DEFAULT NULL,
+  `canvas_code` char(16) CHARACTER SET ascii DEFAULT NULL,
+  `canvas_agent_ref` varchar(16) CHARACTER SET ascii,
+  `canvas_ref` int(11) unsigned,
+  `client_ref` varchar(64) CHARACTER SET ascii,
+  `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `client_ref` (`client_ref`),
+  KEY `created` (`created`),
+  KEY `signed` (`signed`),
+  KEY `approved` (`approved`),
+  KEY `projected_first_draw_close` (`projected_first_draw_close`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
 CREATE TABLE IF NOT EXISTS `blotto_verification` (
