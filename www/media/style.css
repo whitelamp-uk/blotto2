@@ -1032,8 +1032,9 @@ img.close {
 }
 
 #reconcile-table-reconcile tbody tr:nth-of-type(1),
-#reconcile-table-reconcile tbody tr:nth-of-type(12),
-#reconcile-table-reconcile tbody tr:nth-of-type(18) {
+#reconcile-table-reconcile tbody tr:nth-of-type(8),
+#reconcile-table-reconcile tbody tr:nth-of-type(14),
+#reconcile-table-reconcile tbody tr:nth-of-type(19) {
     font-weight:        bold;
 }
 

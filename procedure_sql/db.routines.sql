@@ -319,7 +319,7 @@ BEGIN
   ;
   SELECT
     IFNULL(SUM(`PaidAmount`),0)
-  INTO @allCollected
+  INTO @collectedAll
   FROM `blotto_build_collection`
   -- await BACS jitter
   WHERE `DateDue`<DATE_SUB(CURDATE(),INTERVAL 7 DAY)
@@ -334,15 +334,8 @@ BEGIN
     AND `payment_received`<=ends
   ;
   SELECT
-    IFNULL(SUM(`amount`),0)
-  INTO @fees
-  FROM `blotto_super_entry`
-  WHERE `draw_closed`>=starts
-    AND `draw_closed`<=ends
-  ;
-  SELECT
     IFNULL(COUNT(*),0)
-  INTO @plays
+  INTO @playsPeriod
   FROM `blotto_entry`
   WHERE `draw_closed`>=starts
     AND `draw_closed`<=ends
@@ -350,27 +343,48 @@ BEGIN
   -- as 'ends' is usually recent it is quite a bit faster to subtract 'new' from all
   SELECT
     IFNULL(COUNT(*),0)
-  INTO @allPlaysAllTime
+  INTO @playsAllTime
   FROM `blotto_entry`
   WHERE `draw_closed` IS NOT NULL
   ;
   SELECT
     IFNULL(COUNT(*),0)
-  INTO @newPlays
+  INTO @playsNew
   FROM `blotto_entry`
   WHERE `draw_closed`>ends
   ;
-  SET @allPlays     = @allPlaysAllTime - @newPlays
+  SELECT
+    IFNULL(COUNT(*),0)
+  INTO @playsPeriodExternal
+  FROM `blotto_external`
+  WHERE `draw_closed`>=starts
+    AND `draw_closed`<=ends
   ;
-  SET @perplay      = {{BLOTTO_TICKET_PRICE}}
+  SELECT
+    IFNULL(COUNT(*),0)
+  INTO @playsAllTimeExternal
+  FROM `blotto_external`
+  WHERE `draw_closed` IS NOT NULL
   ;
-  SET @played       = @perplay/100 * @plays
+  SELECT
+    IFNULL(COUNT(*),0)
+  INTO @playsNewExternal
+  FROM `blotto_external`
+  WHERE `draw_closed`>ends
   ;
-  SET @allPlayed    = @perplay/100 * @allPlays
+  SET @playsEnd             = @playsAllTime - @playsNew
   ;
-  SET @balOpen      = ( @starting + @allCollected - @collections) - ( @allPlayed - @played )
+  SET @playsEndExternal     = @playsAllTimeExternal - @playsNewExternal
   ;
-  SET @balClose     = @starting + @allCollected - @AllPlayed
+  SET @perplay              = {{BLOTTO_TICKET_PRICE}}
+  ;
+  SET @playedEndFunded      = @perplay/100 * ( @playsEnd - @playsEndExternal )
+  ;
+  SET @playedPeriodFunded   = @perplay/100 * ( @playsPeriod - @playsPeriodExternal )
+  ;
+  SET @balOpen              = ( @starting + @collectedAll - @collections) - ( @playedEndFunded - @playedPeriodFunded )
+  ;
+  SET @balClose             = @starting + @collectedAll - @playedEndFunded
   ;
   SELECT
     IFNULL(SUM(`w`.`amount`),0)
@@ -381,39 +395,40 @@ BEGIN
   WHERE `e`.`draw_closed`>=starts
     AND `e`.`draw_closed`<=ends
   ;
-  SET @nett         = (@played - @payout) + (@claims - @fees)
+  SET @nett         = (@playedPeriodFunded - @payout) + @claims
   ;
-  SET @reconcile    = ( @balOpen + @collections ) - ( @played + @balClose )
+  SET @reconcile    = ( @balOpen + @collections ) - ( @playedPeriodFunded + @balClose )
   ;
   INSERT INTO `blotto_calculation` ( `item`, `units`, `amount`, `notes` )  VALUES
-    ( 'head_reconcile',     '',     '',                              'Reconciliation'                         ),
-    ( 'draw_first',         '',     DATE_FORMAT(@first,'%Y %b %d'),  'first draw in this period'              ),
-    ( 'draw_last',          '',     DATE_FORMAT(@last,'%Y %b %d'),   'last draw in this period'               ),
-    ( 'draws',              '',     dp(@weeks,0),                    'draws in this period'                   ),
-    ( 'amount_per_play',    'GBP',  dp(@perplay/100,2),              'charge per play'                        ),
-    ( 'plays',              '',     @plays,                          'total plays in this period'             ),
-    ( 'balances_opening',   'GBP',  dp(@balOpen,2),                  '+ player opening balances'              ),
-    ( 'collected',          'GBP',  dp(@collections,2),              '+ collected this period'                ),
-    ( 'play_value',         'GBP',  dp(0-@played,2),                 '− played this period'                   ),
-    ( 'balances_closing',   'GBP',  dp(0-@balClose,2),               '− player closing balances'              ),
-    ( 'reconciliation',     'GBP',  dp(@reconcile,2),                '≡ to be reconciled'                     ),
-    ( 'head_return',        '',     '',                              'Revenue'                                ),
-    ( 'revenue',            'GBP',  dp(@played,2),                   '+ revenue from plays'                   ),
-    ( 'winnings',           'GBP',  dp(0-@payout,2),                 '− paid out (except superdraws)'         ),
-    ( 'claims',             'GBP',  dp(@claims,2),                   '+ insurance payouts'                    ),
-    ( 'fees',               'GBP',  dp(0-@fees,2),                   '− superdraw fees'                       ),
-    ( 'nett',               'GBP',  dp(@nett,2),                     '≡ return generated (before fees)'       )
+    ( 'head_summary',       '',     '',                                     'Summary'                       ),
+    ( 'amount_per_play',    'GBP',  dp(@perplay/100,2),                     'charge per play'               ),
+    ( 'draw_first',         '',     DATE_FORMAT(@first,'%Y %b %d'),         'first draw'                    ),
+    ( 'draw_last',          '',     DATE_FORMAT(@last,'%Y %b %d'),          'last draw'                     ),
+    ( 'draws',              '',     dp(@weeks,0),                           'draws completed'               ),
+    ( 'plays_funded',       '',     @playsPeriod - @playsPeriodExternal,    'purchased plays'               ),
+    ( 'plays_external',     '',     @playsPeriodExternal,                   'external plays (unreconciled)' ),
+    ( 'head_balance',       '',     '',                                     'Balance'                       ),
+    ( 'balances_opening',   'GBP',  dp(@balOpen,2),                         '+ player opening balances'     ),
+    ( 'collected',          'GBP',  dp(@collections,2),                     '+ collected this period'       ),
+    ( 'play_value',         'GBP',  dp(0-@playedPeriodFunded,2),            '− plays purchased'             ),
+    ( 'balances_closing',   'GBP',  dp(0-@balClose,2),                      '− player closing balances'     ),
+    ( 'reconciliation',     'GBP',  dp(@reconcile,2),                       '≡ to be reconciled'            ),
+    ( 'head_return',        '',     '',                                     'Revenue'                       ),
+    ( 'revenue',            'GBP',  dp(@playedPeriodFunded,2),              '+ revenue from plays'          ),
+    ( 'winnings',           'GBP',  dp(0-@payout,2),                        '− winnings paid out'           ),
+    ( 'claims',             'GBP',  dp(@claims,2),                          '+ insurance claimed'           ),
+    ( 'nett',               'GBP',  dp(@nett,2),                            '≡ nett return before fees'     )
   ;
   SELECT
     *
   FROM `blotto_calculation`
   ;
-  DROP TABLE `blotto_calculation`
+  DROP TABLE `b    lotto_calculation`
   ;
 END$$
 
 DELIMITER $$
-DROP PROCEDURE IF EXISTS `cancellationsByAge`$$
+DPROCEDURE IF EXISTS `cancellationsByAge`$$
 CREATE PROCEDURE `cancellationsByAge` (
 )
 BEGIN
