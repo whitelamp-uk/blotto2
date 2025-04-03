@@ -14,9 +14,8 @@ $cdo->datasets[1]->label = 'Tickets';
 $cdo->datasets[1]->data = [];
 $cdo->labels[0] = 'Imported';
 $cdo->labels[1] = 'DDI requested';
-$cdo->labels[2] = 'Payment 1 collected';
-$cdo->labels[3] = 'Draw 1 selected';
-$cdo->labels[4] = 'Onboarded';
+$cdo->labels[2] = 'Draw 1 selected';
+$cdo->labels[3] = 'Onboarded';
 
 try {
 
@@ -25,8 +24,7 @@ try {
       SELECT  
         SUM(`status`='importing') as `importing`
        ,SUM(`status`='collecting') as `collecting`
-       ,SUM(`status`='entering') as `entering`
-       ,SUM(`status`='loading') as `loading`
+       ,SUM(`status`='entering' OR `status`='loading') as `loading`
        ,SUM(`status`='entered') as `entered`
       FROM `Journeys`
       ;
@@ -35,9 +33,8 @@ try {
     $params = $rows->fetch_assoc ();
     $cdo->datasets[0]->data[0] = $params['importing'];
     $cdo->datasets[0]->data[1] = $params['collecting'];
-    $cdo->datasets[0]->data[2] = $params['entering'];
-    $cdo->datasets[0]->data[3] = $params['loading'];
-    $cdo->datasets[0]->data[4] = $params['entered'];
+    $cdo->datasets[0]->data[2] = $params['loading'];
+    $cdo->datasets[0]->data[3] = $params['entered'];
 
 
     // Get players
@@ -45,8 +42,7 @@ try {
       SELECT  
         SUM(IF (`status`='importing',`tickets`,0)) as `importing`
        ,SUM(IF (`status`='collecting',`tickets`,0)) as `collecting`
-       ,SUM(IF (`status`='entering',`tickets`,0)) as `entering`
-       ,SUM(IF (`status`='loading',`tickets`,0)) as `loading`
+       ,SUM(IF (`status`='entering' OR `status`='loading',`tickets`,0)) as `loading`
        ,SUM(IF (`status`='entered',`tickets`,0)) as `entered`
       FROM `Journeys`
       ;
@@ -55,9 +51,8 @@ try {
     $params = $rows->fetch_assoc ();
     $cdo->datasets[1]->data[0] = $params['importing'];
     $cdo->datasets[1]->data[1] = $params['collecting'];
-    $cdo->datasets[1]->data[2] = $params['entering'];
-    $cdo->datasets[1]->data[3] = $params['loading'];
-    $cdo->datasets[1]->data[4] = $params['entered'];
+    $cdo->datasets[1]->data[2] = $params['loading'];
+    $cdo->datasets[1]->data[3] = $params['entered'];
 
     $cdo->seconds_to_execute = time() - $t0;
 }

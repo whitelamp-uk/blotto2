@@ -266,8 +266,89 @@ BEGIN
 END$$
 
 
-DELIMITER ;
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `newSupporters`$$
+CREATE PROCEDURE `newSupporters`()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db;
+        IF NOT done THEN
+          SELECT db;
+          SET @q = CONCAT('SELECT dayname(substr( `inserted`,1,10)) as day,substr( `inserted`,1,10) as date, COUNT(*) FROM ', 
+            db, '.`blotto_supporter` GROUP BY date ORDER BY date DESC LIMIT 10');
+          PREPARE stmt FROM @q;
+          EXECUTE stmt;
+          DEALLOCATE PREPARE stmt;
+        END IF;
+    UNTIL done END REPEAT;
+    CLOSE crxDBs;
+END$$
+
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `newSupporters2`$$
+CREATE PROCEDURE `newSupporters2`()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    SET @q = '';
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db;
+        IF NOT done THEN
+          IF LENGTH(@q) > 0 THEN 
+            SET @q = CONCAT(@q, ' UNION ALL ');
+          END IF;
+          SET @q = CONCAT(@q,'SELECT \'', SUBSTR(db,11,3),'\' AS org, dayname(substr( `inserted`,1,10)) as day,substr( `inserted`,1,10) as date, COUNT(*) FROM ', 
+            db, '.`blotto_supporter` GROUP BY date ');
+        END IF;
+    UNTIL done END REPEAT;
+
+    SET @q = CONCAT(@q, ' ORDER BY date DESC, org LIMIT 45');
+    PREPARE stmt FROM @q;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    CLOSE crxDBs;
+END$$
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `queryAllMake`$$
+CREATE PROCEDURE `queryAllMake`(
+IN `qry` TEXT
+)
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____\_make';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;  -- in case query fails because db doesn't contain e.g. rsm_mandate
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db;
+        IF NOT done THEN
+          SELECT db;
+          SET @q = REGEXP_REPLACE(`qry`, '(?i)FROM ', CONCAT('FROM ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)JOIN ', CONCAT('JOIN ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)UPDATE ', CONCAT('UPDATE ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)INSERT INTO ', CONCAT('INSERT INTO ',db,'.'));
+          PREPARE stmt FROM @q;
+          EXECUTE stmt;
+          DEALLOCATE PREPARE stmt;
+        END IF;
+    UNTIL done END REPEAT;
+    CLOSE crxDBs;
+END$$
+
+DELIMITER ;
 
 
 USE `{{BLOTTO_MAKE_DB}}`
@@ -462,61 +543,6 @@ BEGIN
   DROP VIEW IF EXISTS `Integer6`
   ;
 END$$
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS `newSupporters`$$
-CREATE PROCEDURE `newSupporters`()
-BEGIN
-    DECLARE done INT DEFAULT 0;
-    DECLARE db VARCHAR(255);
-    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-
-    OPEN crxDBs;
-    REPEAT
-        FETCH crxDBs INTO db;
-        IF NOT done THEN
-          SELECT db;
-          SET @q = CONCAT('SELECT dayname(substr( `inserted`,1,10)) as day,substr( `inserted`,1,10) as date, COUNT(*) FROM ', 
-            db, '.`blotto_supporter` GROUP BY date ORDER BY date DESC LIMIT 10');
-          PREPARE stmt FROM @q;
-          EXECUTE stmt;
-          DEALLOCATE PREPARE stmt;
-        END IF;
-    UNTIL done END REPEAT;
-    CLOSE crxDBs;
-END$$
-
-
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS `newSupporters2`$$
-CREATE PROCEDURE `newSupporters2`()
-BEGIN
-    DECLARE done INT DEFAULT 0;
-    DECLARE db VARCHAR(255);
-    DECLARE crxDBs CURSOR FOR SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'crucible2\____';
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-    SET @q = '';
-    OPEN crxDBs;
-    REPEAT
-        FETCH crxDBs INTO db;
-        IF NOT done THEN
-          IF LENGTH(@q) > 0 THEN 
-            SET @q = CONCAT(@q, ' UNION ALL ');
-          END IF;
-          SET @q = CONCAT(@q,'SELECT \'', SUBSTR(db,11,3),'\' AS org, dayname(substr( `inserted`,1,10)) as day,substr( `inserted`,1,10) as date, COUNT(*) FROM ', 
-            db, '.`blotto_supporter` GROUP BY date ');
-        END IF;
-    UNTIL done END REPEAT;
-
-    SET @q = CONCAT(@q, ' ORDER BY date DESC, org LIMIT 45');
-    PREPARE stmt FROM @q;
-    EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
-    CLOSE crxDBs;
-END$$
-
 
 
 DELIMITER ;
