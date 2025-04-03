@@ -159,7 +159,7 @@ BEGIN
      ,`m`.`ClientRef`
      ,DATE_FORMAT(drawOnOrAfter(`p`.`projected_first_draw_close`),'%a %D %b %Y') AS `projected_first_play`
      ,GROUP_CONCAT(`tk`.`number` SEPARATOR ', ') AS `ticket_numbers`
-     ,`sdtk`.`ticket_numbers` AS `superdraw_tickets`
+     ,'' AS `blank`
      ,`p`.`title`
      ,`p`.`name_first`
      ,`p`.`name_last`
@@ -227,18 +227,6 @@ BEGIN
       -- this join does not use mandate table so m.Provider=EXT tickets will get included
      AND `tk`.`mandate_provider`=`m`.`Provider`
      AND `tk`.`org_id`={{BLOTTO_ORG_ID}}
-    LEFT JOIN (
-      SELECT
-        `client_ref`
-       ,GROUP_CONCAT(
-          `ticket_number`
-          ORDER BY `superdraw_db`,`ticket_number`
-          SEPARATOR ', '
-        ) AS `ticket_numbers`
-      FROM `blotto_super_ticket`
-      GROUP BY `client_ref`
-    )      AS `sdtk`
-           ON `sdtk`.`client_ref`=`p`.`client_ref`
     -- One-off payments do not need an ANL
 -- TODO: Actually this is more about online payment that one-off payment - or is it?
 -- The online/DD condition problem exists in other to-do comments
@@ -1352,15 +1340,6 @@ BEGIN
   FROM `blotto_winner` AS `w`
   JOIN `blotto_entry` AS `e`
     ON `e`.`id`=`w`.`entry_id`
-  GROUP BY `draw_closed`
-  ;
-  -- superdraw entries
-  INSERT INTO `MoniesTemp` (`accrue_date`,`type`,`fee_rbe`)
-  SELECT
-    `draw_closed`
-   ,'rbe_fees'
-   ,IFNULL(SUM(`amount`),0)
-  FROM `blotto_super_entry`
   GROUP BY `draw_closed`
   ;
   -- draw_fee
@@ -2527,7 +2506,7 @@ BEGIN
       `e`.`draw_closed`
      ,`w`.`amount` AS `winnings`
      ,`w`.`number` AS `ticket_number`
-     ,'N' AS `superdraw`
+     ,'' AS `blank`
      ,`pz`.`name` AS `prize`
      ,`e`.`client_ref`
      ,`mandate`.`Sortcode`
@@ -2562,75 +2541,6 @@ BEGIN
      ,IFNULL(`w`.`letter_status`,'') AS `letter_status`
     FROM `blotto_winner` AS `w`
     JOIN `blotto_entry` AS `e`
-      ON `e`.`id`=`w`.`entry_id`
-    LEFT JOIN `blotto_player` AS `p`
-      ON `p`.`client_ref`=`e`.`client_ref`
-    LEFT JOIN (
-      SELECT
-        *
-      FROM `Supporters`
-      GROUP BY `supporter_id`
-    ) AS `s`
-      ON `s`.`supporter_id`=`p`.`supporter_id`
-    LEFT JOIN (
-      SELECT
-        `supporter_id`
-       ,MAX(`started`) AS `started`
-        FROM `blotto_player`
-        GROUP BY `supporter_id`
-    ) AS `ps`
-      ON `ps`.`supporter_id`=`s`.`supporter_id`
-    LEFT JOIN `blotto_player` AS `pl`
-      ON `pl`.`supporter_id`=`ps`.`supporter_id`
-     AND `pl`.`started`=`ps`.`started`
-    LEFT JOIN `blotto_prize` AS `pz`
-           ON `pz`.`level`=`w`.`prize_level`
-          AND `pz`.`starts`=`w`.`prize_starts`
-    LEFT JOIN `blotto_build_mandate` AS `mandate`
-           ON `mandate`.`ClientRef`=`pl`.`client_ref`
-    ORDER BY `e`.`draw_closed`,`winnings`,`ticket_number`
-  ;
-  INSERT INTO `WinsAdmin`
-    SELECT
-      `e`.`draw_closed`
-     ,`w`.`amount` AS `winnings`
-     ,`w`.`number` AS `ticket_number`
-     ,'Y' AS `superdraw`
-     ,`w`.`prize_name` AS `prize`
-     ,`e`.`client_ref`
-     ,`mandate`.`Sortcode`
-     ,`mandate`.`Account`
-     ,`s`.`created`
-     ,`s`.`cancelled`
-     ,`s`.`ccc`
-     ,`s`.`canvas_agent_ref`
-     ,`s`.`canvas_ref`
-     ,`s`.`supporter_id`
-     ,`s`.`title`
-     ,`s`.`name_first`
-     ,`s`.`name_last`
-     ,`s`.`email`
-     ,`s`.`mobile`
-     ,`s`.`telephone`
-     ,`s`.`address_1`
-     ,`s`.`address_2`
-     ,`s`.`address_3`
-     ,`s`.`town`
-     ,`s`.`county`
-     ,`s`.`postcode`
-     ,`s`.`latest_payment_collected`
-     ,`s`.`active`
-     ,`s`.`status`
-     ,`s`.`fail_reason`
-     ,`s`.`latest_mandate_frequency`
-     ,`s`.`latest_mandate_amount`
-    -- TODO: SUPER WINNERS GET LETTER FROM SUPER GAME INSTEAD?
-     ,'' AS `entry_id`
-     ,'' AS `draw_date`
-     ,'' AS `letter_batch_ref`
-     ,'' AS `letter_status`
-    FROM `blotto_super_winner` AS `w`
-    JOIN `blotto_super_entry` AS `e`
       ON `e`.`id`=`w`.`entry_id`
     LEFT JOIN `blotto_player` AS `p`
       ON `p`.`client_ref`=`e`.`client_ref`
@@ -2723,7 +2633,6 @@ BEGIN
   `w`.`draw_closed` DESC,
   `w`.`name_last`
   ;
-
 END$$
 
 -- draft winnersThisWeek.
