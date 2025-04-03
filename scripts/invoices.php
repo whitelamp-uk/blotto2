@@ -51,10 +51,30 @@ catch (\mysqli_sql_exception $e) {
     exit (103);
 }
 
-// We still generate and keep the HTML files as they are useful to us even if we only 
-// send PDFs (as of March 2025).  
-// We render as A3 to get everything on the page.  A4 is not big enough and there is 
-// no clear scaling mechanism.
+/*
+We still generate and keep the HTML files as they are useful to us even if we only 
+send PDFs (as of March 2025).  
+We render as A3 to get everything on the page.  A4 is not big enough and there is 
+no clear scaling mechanism.
+
+MP TODO (1) lack of scaling mechanism seems strange - is there not a standard approach?
+Such as:
+ * clever stuff with CSS media queries
+ * using the right CSS units
+ * use bigger PDF dpi
+What about a media query for print with font size overrides in pt?
+Does DomPDF not recognise CSS very well? 
+
+MP TODO (2) it is nice that both HTML and PDF invoice formats are available via the front end.
+It would be nice if the same applied to these:
+ * statements
+ * draw reports
+ * summary graph data tables
+There is a question mark over whether we move to a standard policy of always emailing files as
+ * PDFs
+ * both formats
+Obviously the always-HTML option has already been rejected
+*/
 try {
     foreach ($draws as $draw) {
         // Raise invoice for game services
