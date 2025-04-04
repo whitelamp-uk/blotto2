@@ -416,7 +416,7 @@ BEGIN
 END$$
 
 DELIMITER $$
-DPROCEDURE IF EXISTS `cancellationsByAge`$$
+DROP PROCEDURE IF EXISTS `cancellationsByAge`$$
 CREATE PROCEDURE `cancellationsByAge` (
 )
 BEGIN
