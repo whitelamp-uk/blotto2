@@ -2231,7 +2231,6 @@ function invoice_payout ($draw_closed_date,$output=true) {
             ON `p`.`level`=`w`.`prize_level`
            AND `p`.`starts`=`w`.`prize_starts`
           WHERE `Wins`.`draw_closed`='$draw_closed_date'
-            AND `Wins`.`superdraw`='N'
             AND `p`.`insure`=0
           GROUP BY `Wins`.`prize`
           ORDER BY `Wins`.`winnings`

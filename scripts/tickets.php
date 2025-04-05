@@ -84,23 +84,12 @@ try {
     }
 
     // Generate SQL
-    $super = [];
     foreach ($players as $p) {
-        if (!array_key_exists($p['db']['make'],$super)) {
-            $super[$p['db']['make']] = [];
-        }
-        if (!array_key_exists($p['db']['frontend'],$super)) {
-            $super[$p['db']['frontend']] = [];
-        }
         $crf        = escm ($p['ClientRef']);
         $rno        = escm ($p['RefNo']);
         for ($i=0;$i<$p['qty'];$i++) {
             $tkt    = array_shift ($tickets);
             echo "INSERT INTO `blotto_ticket` SET `org_id`={$p['org_id']},`mandate_provider`='{$p['Provider']}',`dd_ref_no`='$rno',`client_ref`='$crf',`issue_date`=@today,`number`='{$tkt}';\n";
-            if (defined('BLOTTO_RBE_DBS')) {
-                $super[$p['db']['make']][$tkt] = $crf;
-                $super[$p['db']['frontend']][$tkt] = $crf;
-            }
         }
     }
 
@@ -108,19 +97,5 @@ try {
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
     exit (104);
-}
-
-
-if (!defined('BLOTTO_RBE_DBS')) {
-    exit (0);
-}
-
-// Superdraw ticket feedback
-foreach ($super as $db=>$players) {
-    echo "\n\n-- Pass tickets back to $db\n\n";
-    echo "USE $db;\n\n";
-    foreach ($players as $ticket=>$cref) {
-        echo "INSERT IGNORE INTO `blotto_super_ticket` SET `superdraw_db`='$fdb',`superdraw_name`='$org',`ticket_number`='$ticket',`client_ref`='$cref';\n";
-    }
 }
 
