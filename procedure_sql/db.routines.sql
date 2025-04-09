@@ -2295,32 +2295,32 @@ BEGIN
     GROUP BY `c`.`id`
   ;
   -- `milestone`='win'
-  INSERT IGNORE INTO `blotto_update`
-    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
-    SELECT
-      CURDATE()
-     ,'win'
-     ,`e`.`draw_closed`
-     ,`s`.`id`
-     ,MAX(`p`.`id`)
-     ,`c`.`id`
-    FROM `blotto_winner` AS `w`
-    JOIN `blotto_entry` AS `e`
-      ON `e`.`id`=`w`.`entry_id`
-    JOIN `blotto_player` AS `p`
-      ON `p`.`client_ref`=`e`.`client_ref`
-     AND `p`.`started`<=DATE(`e`.`draw_closed`)
-    JOIN `blotto_supporter` AS `s`
-      ON `s`.`id`=`p`.`supporter_id`
-    JOIN (
-      SELECT
-        *
-      FROM `blotto_contact`
-    ) AS `c`
-      ON `c`.`supporter_id`=`s`.`id`
-     AND DATE(`c`.`created`)<=`e`.`draw_closed`
-    GROUP BY `w`.`id`
-  ;
+--  INSERT IGNORE INTO `blotto_update`
+--    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
+--    SELECT
+--      CURDATE()
+--     ,'win'
+--     ,`e`.`draw_closed`
+--     ,`s`.`id`
+--     ,MAX(`p`.`id`)
+--     ,`c`.`id`
+--    FROM `blotto_winner` AS `w`
+--    JOIN `blotto_entry` AS `e`
+--      ON `e`.`id`=`w`.`entry_id`
+--    JOIN `blotto_player` AS `p`
+--      ON `p`.`client_ref`=`e`.`client_ref`
+--     AND `p`.`started`<=DATE(`e`.`draw_closed`)
+--    JOIN `blotto_supporter` AS `s`
+--      ON `s`.`id`=`p`.`supporter_id`
+--    JOIN (
+--      SELECT
+--        *
+--      FROM `blotto_contact`
+--    ) AS `c`
+--      ON `c`.`supporter_id`=`s`.`id`
+--     AND DATE(`c`.`created`)<=`e`.`draw_closed`
+--    GROUP BY `w`.`id`
+--  ;
   -- `milestone`='cancellation'
   -- cancelled_date changes with BLOTTO_CANCEL_RULE but the primary partial key
   -- milestone_date always gets repaired above so this insert-ignore does not
