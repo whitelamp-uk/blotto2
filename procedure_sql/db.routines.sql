@@ -411,7 +411,7 @@ BEGIN
     *
   FROM `blotto_calculation`
   ;
-  DROP TABLE `b    lotto_calculation`
+  DROP TABLE `blotto_calculation`
   ;
 END$$
 
