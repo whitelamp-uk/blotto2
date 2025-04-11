@@ -196,3 +196,36 @@ DROP TABLE IF EXISTS `blotto_super_ticket`
 DROP TABLE IF EXISTS `blotto_super_winner`
 ;
 
+-- if first build has a pay freeze cancellationsByRule() will not create a table
+-- lots of select statements will break
+CREATE TABLE IF NOT EXISTS `Cancellations` (
+  `cancelled_date` date NOT NULL,
+  `cancelled_date_legacy` date DEFAULT NULL,
+  `ccc` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `client_ref` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `ticket_number` varchar(6) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `supporter_created` date DEFAULT NULL,
+  `supporter_name` text CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `payments_collected` bigint(21) NOT NULL,
+  `amount_collected_(all_tickets)` decimal(32,2) NOT NULL,
+  `payment_first` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `payment_last` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `mandate_provider` varchar(4) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `mandate_reference` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `mandate_reference_provider` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `mandate_created` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `mandate_startdate` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `mandate_frequency` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `mandate_amount` decimal(10,2) NOT NULL,
+  `mandate_status` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `mandate_fail_reason` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  PRIMARY KEY (`cancelled_date`,`ccc`,`client_ref`,`ticket_number`),
+  UNIQUE KEY `client_ref_ticket_number` (`client_ref`,`ticket_number`),
+  KEY `cancelled_date` (`cancelled_date`),
+  KEY `ccc` (`ccc`),
+  KEY `client_ref` (`client_ref`),
+  KEY `ticket_number` (`ticket_number`),
+  KEY `mandate_provider_reference` (`mandate_provider`,`mandate_reference`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+;
+
