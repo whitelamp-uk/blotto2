@@ -3,7 +3,8 @@ $files = [];
 if (defined('BLOTTO_DIR_INVOICE') && is_dir(BLOTTO_DIR_INVOICE)) {
     $scan = scandir (BLOTTO_DIR_INVOICE.'/', SCANDIR_SORT_DESCENDING);
     foreach ($scan as $f) {
-        if ($f != '.' && $f != '..') {
+        //if ($f != '.' && $f != '..') {
+        if (substr(tolower($f),-4) == '.pdf') {
             $files[] = $f;
         }
     }
