@@ -23,6 +23,7 @@ try {
     $q = "
       SELECT
         `chances`
+       ,COUNT(DISTINCT `supporter_id`) AS `supporters`
        ,SUM(`supporter_total_amount`) AS `revenue`
       FROM (
         SELECT
@@ -38,24 +39,32 @@ try {
       ;
     ";
     $rows = $zo->query ($q);
-    $total = 0;
+    $revenue = 0;
+    $supporters = 0;
     while ($row=$rows->fetch_assoc()) {
-        $labels[] = "{$row['chances']} chances";
-        $data[] = 1*$row['revenue'];
-        $total += 1*$row['revenue'];
+        $data[] = $row;
+        $supporters += 1*$row['supporters'];
+        $revenue += 1*$row['revenue'];
     }
-    $datalabels         = [];
     foreach ($data as $i=>$d) {
-        $data[$i]       = 100*$data[$i] / $total;
-        $data[$i]       = number_format ($data[$i],3,'.','');
-        $datalabels[$i] = $data[$i].'%';
+        $labels[$i] = "{$data[$i]['chances']} chances";
+        $data[$i]['supporters'] = 100*$data[$i]['supporters'] / $supporters;
+        $data[$i]['supporters'] = number_format ($data[$i]['supporters'],3,'.','');
+        $data[$i]['revenue'] = 100*$data[$i]['revenue'] / $revenue;
+        $data[$i]['revenue'] = number_format ($data[$i]['revenue'],3,'.','');
     }
     $cdo->labels        = $labels;
     $cdo->datasets      = [];
     $cdo->datasets[0]   = new stdClass ();
-    $cdo->datasets[0]->label = 'Revenue %';
-    $cdo->datasets[0]->data = $data;
-    $cdo->datasets[0]->backgroundColor = 2;
+    $cdo->datasets[0]->label = 'Supporters %';
+    $cdo->datasets[0]->backgroundColor = 1;
+    $cdo->datasets[1]   = new stdClass ();
+    $cdo->datasets[1]->label = 'Revenue %';
+    $cdo->datasets[1]->backgroundColor = 2;
+    foreach ($data as $i=>$d) {
+        $cdo->datasets[0]->data[] = $data[$i]['supporters'];
+        $cdo->datasets[1]->data[] = $data[$i]['revenue'];
+    }
     $cdo->game_age      = $game_age;
     $cdo->seconds_to_execute = time() - $t0;
 }

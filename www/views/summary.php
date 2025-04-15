@@ -247,7 +247,6 @@ if (data8) {
             zero: true,
             ylogarithmic: true,
             ylogTickRestrict: true,
-            noLegend: true,
             yTickSuffix: '%',
             tooltipLabel: function (item) {
                 return item.yLabel + '%';
