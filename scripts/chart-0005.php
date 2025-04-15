@@ -1,6 +1,8 @@
 <?php
 
 // chart 5 is now a workflow meter using `Journeys`; BAs like to call this a "sales funnel"
+// 2025-04-15 it is now a sort-of-sales funnel; replacing "entered" with "playing"
+// means that the dormant players have disappeared from the funnel without trace...
 
 $t0 = time ();
 $data = [];
@@ -15,17 +17,18 @@ $cdo->datasets[1]->data = [];
 $cdo->labels[0] = 'Imported';
 $cdo->labels[1] = 'DDI requested';
 $cdo->labels[2] = 'Draw 1 selected';
-$cdo->labels[3] = 'Onboarded';
+$cdo->labels[3] = 'Playing';
 
 try {
 
     // Get players
     $q = "
       SELECT  
-        SUM(`status`='importing') as `importing`
-       ,SUM(`status`='collecting') as `collecting`
-       ,SUM(`status`='entering' OR `status`='loading') as `loading`
-       ,SUM(`status`='entered') as `entered`
+        SUM(`status`='importing') AS `importing`
+       ,SUM(`status`='collecting') AS `collecting`
+       ,SUM(`status`='entering' OR `status`='loading') AS `loading`
+       ,SUM(`status`='entered') AS `entered`
+       ,SUM(`status`='entered' AND `dormancy_date` IS NOT NULL) AS `dormant`
       FROM `Journeys`
       ;
     ";
@@ -34,16 +37,16 @@ try {
     $cdo->datasets[0]->data[0] = $params['importing'];
     $cdo->datasets[0]->data[1] = $params['collecting'];
     $cdo->datasets[0]->data[2] = $params['loading'];
-    $cdo->datasets[0]->data[3] = $params['entered'];
+    $cdo->datasets[0]->data[3] = $params['entered'] - $params['dormant'];
 
-
-    // Get players
+    // Get chances
     $q = "
       SELECT  
         SUM(IF (`status`='importing',`tickets`,0)) as `importing`
        ,SUM(IF (`status`='collecting',`tickets`,0)) as `collecting`
        ,SUM(IF (`status`='entering' OR `status`='loading',`tickets`,0)) as `loading`
        ,SUM(IF (`status`='entered',`tickets`,0)) as `entered`
+       ,SUM(IF (`status`='entered' AND `dormancy_date` IS NOT NULL,`tickets`,0)) as `dormant`
       FROM `Journeys`
       ;
     ";
@@ -52,7 +55,7 @@ try {
     $cdo->datasets[1]->data[0] = $params['importing'];
     $cdo->datasets[1]->data[1] = $params['collecting'];
     $cdo->datasets[1]->data[2] = $params['loading'];
-    $cdo->datasets[1]->data[3] = $params['entered'];
+    $cdo->datasets[1]->data[3] = $params['entered'] - $params['dormant'];
 
     $cdo->seconds_to_execute = time() - $t0;
 }
