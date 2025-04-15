@@ -141,25 +141,27 @@ if (data9) {
 }
       </script>
 
+<!--
       <section id="chart2" class="chart left doughnut">
-        <?php echo links_report ('chances_per_player',2,'Chances'); ?>
+        <?php //echo links_report ('chances_per_player',2,'Chances'); ?>
         <canvas id="chances-distribution"></canvas>
       </section>
       <script>
-var data2 = <?php echo chart (2,'graph','chances_per_player',$to); ?>;
+var data2 = <?php //echo chart (2,'graph','chances_per_player',$to); ?>;
 if (data2) {
     chartRender (
         'chances-distribution',
         'doughnut',
         data2,
         {
-            title: 'Chances per supporter signed up <?php echo $me; ?>',
+            title: 'Chances per supporter signed up <?php //echo $me; ?>',
             link: true
         }
     );
     console.log ('Rendered data2');
 }
       </script>
+-->
 
       <section id="chart1" class="chart right">
         <?php echo links_report ('draw_activity',1,'Month (nr draws)'); ?>
