@@ -75,7 +75,7 @@ if (data7) {
         'bar',
         data7,
         {
-            title: "Sales funnel - supporter journeys (at this time)",
+            title: "Supporter journeys (at this time)",
             link: true,
             ylogarithmic: true,
             ynoticks : true
