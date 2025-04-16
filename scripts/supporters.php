@@ -293,9 +293,9 @@ catch (\mysqli_sql_exception $e) {
     exit (110);
 }
 
-
+// TODO perhaps configure addressee in database per org
 if ($errors) {
-    notify (BLOTTO_EMAIL_WARN_TO,"Rejected import from $ccc",$errors);
+    notify (BLOTTO_EMAIL_IMPORTS_TO,"Rejected import from $ccc",$errors);
     fwrite (STDERR,"Rejected import from $ccc\n");
     // Skip import without aborting
     exit (0);
