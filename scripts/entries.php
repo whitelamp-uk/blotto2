@@ -11,11 +11,15 @@ $price      = BLOTTO_TICKET_PRICE;
 $org_ref    = strtoupper (BLOTTO_ORG_USER);
 $org_id     = BLOTTO_ORG_ID;
 $quiet      = get_argument('q',$Sw) !== false;
+/*
 $rbe        = get_argument('r',$Sw) !== false;
 if ($rbe && !function_exists('enter')) {
     fwrite (STDERR,"Bespoke function enter() was not found\n");
     exit (101);
 }
+*/
+$rbe        = false; // this is obsolete, RBE entries are now external tickets
+// TODO remove it
 
 $zo = connect (BLOTTO_MAKE_DB);
 if (!$zo) {

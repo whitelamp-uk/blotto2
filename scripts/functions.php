@@ -5751,6 +5751,8 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
                         echo "TICKET = {$e['ticket_number']}\n";
                     }
                     $qw   .= "({$e['id']},'{$e['ticket_number']}',{$prizewon['level']},'{$prizewon['starts']}',$amount),";
+
+                    // TODO obsolete approach to RBE games:
                     if ($rbe) {
                         $wins[] = [
                             'entry_id'      => $eid,
@@ -5761,6 +5763,7 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
                             'amount'        => $amount
                         ];
                     }
+
                 }
             }
         }
@@ -5787,9 +5790,12 @@ function winnings_nrmatch ($nrmatchprizes,$entries,$matchtickets,$rbe,$verbose=f
             throw new \Exception ($e->getMessage());
             return false;
         }
+
+        // TODO obsolete approach to RBE games:
         if ($rbe) {
             winnings_super ($wins,'number-match');
         }
+
     }
     // Return the total amount won for each level that matched
     return $amounts;
@@ -5836,6 +5842,8 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
         $amounts[$p['level']] += $amount;
         $qr            .= "('{$entry['draw_closed']}',drawOnOrAfter('{$entry['draw_closed']}'),{$p['level']},'{$entry['ticket_number']}'),";
         $qw            .= "($eid,'{$entry['ticket_number']}',{$p['level']},'{$p['starts']}',$amount),";
+
+        // TODO obsolete approach to RBE games:
         if ($rbe) {
             $wins[] = [
                 'entry_id'      => $eid,
@@ -5846,6 +5854,7 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
                 'amount'        => $amount
             ];
         }
+
     }
     $qr                 = substr ($qr,0,-1);
     $qw                 = substr ($qw,0,-1);
@@ -5867,10 +5876,13 @@ function winnings_raffle ($prizes,$entries,$rafflewinners,$rbe=false,$adhoc=fals
         throw new \Exception ($e->getMessage());
         return false;
     }
+
+    // TODO obsolete approach to RBE games:
     if ($rbe) {
         // Call bespoke function
         winnings_super ($wins,'raffle');
     }
+
     return $amounts;
 }
 
