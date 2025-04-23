@@ -15,11 +15,17 @@ $rdb            = BLOTTO_RESULTS_DB;
 $quiet          = get_argument('q',$Sw) !== false;
 $placeholder    = str_pad ('',strlen(BLOTTO_TICKET_MAX),'-');
 $single         = get_argument('s',$Sw) !== false;
+/*
 $rbe            = get_argument('r',$Sw) !== false;
 if ($rbe && !function_exists('winnings_super')) {
     fwrite (STDERR,"RBE bespoke function winnings_super() does not exist\n");
     exit (101);
 }
+*/
+$rbe        = false; // this is obsolete
+// TODO remove it
+// RBE games are now similar to normal games except they use external tickets rather than payments from supporters
+
 if (!function_exists('prize_amount')) {
     fwrite (STDERR,"Warning: calculating prize amounts without a bespoke prize_amount() function\n");
 }
