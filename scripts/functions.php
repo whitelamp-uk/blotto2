@@ -1271,7 +1271,7 @@ function draw_upcoming_weekly_plus ($on_or_after=null,$dow='Friday',$alt_dow='Tu
         $dow = intval($dow) % 7;
         $dow = $daymap[$dow];
     }
-    $ooa = new DateTime($on_or_after);
+    $ooa = new DateTimeImmutable($on_or_after);
     if (!$alt_dow) {
         return $ooa->modify("this $dow")->format ('Y-m-d');
     }
