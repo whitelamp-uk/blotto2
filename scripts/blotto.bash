@@ -98,7 +98,6 @@ get_args () {
             fi
             if [[ "$sws" == *"z"* ]]
             then
-                echo  "Option: force pay freeze (no payment API usage)"
                 payfreeze="1"
                 sw="$sw -R"
             fi
@@ -205,6 +204,21 @@ prm="$(dirname $0)/mail.php"
 echo "Temp file: $tmp"
 
 
+# Pay freeze
+if [ "$pfz" ] || [ "$payfreeze" ]
+then
+    if [ "$payfreeze" ]
+    then
+        echo -n "CLI option -z"
+    else
+        echo -n "Config BLOTTO_DEV_PAY_FREEZE"
+    fi
+    echo " forcing pay freeze (no use of payment APIs during build)"
+    pfz="1"
+    sw="$sw -z"
+fi
+
+
 # Maintenance check
 if [ -f "$(dirname "$drp")/blotto.maintenance" ]
 then
@@ -225,17 +239,6 @@ then
     exit
 fi
 
-        if [ "$pfz" = "" ] && [ "$payfreeze" = "" ]
-        then
-            echo "Do mandate stuff"
-        else
-            if [ "$pfz" = "" ]            
-            then
-            echo "forced pay freeze so not attempting to set up new mandates"
-            else
-            echo "BLOTTO_DEV_PAY_FREEZE==true so not attempting to set up new mandates"
-            fi
-        fi
 
 stage " 0a. Generate daily config "
 /usr/bin/php $prg $sw "$cfg" exec daily_config.php
@@ -278,26 +281,32 @@ fi
 
 stage " 2. Create/overwrite stored procedures"
 start=$SECONDS
+
 /usr/bin/php $prg $sw "$cfg" sql db.functions.sql       > $tmp
 abort_on_error 2a $? $tmp
 maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2b $?
+
 /usr/bin/php $prg $sw "$cfg" sql db.routines.sql        > $tmp
 abort_on_error 2c $? $tmp
 maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2d $?
-/usr/bin/php $prg $sw "$cfg" sql db.routines.rbe.sql    > $tmp
-abort_on_error 2e $? $tmp
-maybe_cat $tmp
-mariadb                                                 < $tmp
-abort_on_error 2f $?
+
+# TODO delete
+#/usr/bin/php $prg $sw "$cfg" sql db.routines.rbe.sql    > $tmp
+#abort_on_error 2e $? $tmp
+#maybe_cat $tmp
+#mariadb                                                 < $tmp
+#abort_on_error 2f $?
+
 /usr/bin/php $prg $sw "$cfg" sql db.routines.admin.sql  > $tmp
 abort_on_error 2g $? $tmp
 maybe_cat $tmp
 mariadb                                                 < $tmp
 abort_on_error 2h $?
+
 /usr/bin/php $prg $sw "$cfg" sql db.routines.org.sql    > $tmp
 abort_on_error 2i $? $tmp
 maybe_cat $tmp
@@ -314,21 +323,21 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 if [ "$rbe" = "" ]
 then
 
-    stage " 4. Generate mandate / collection table create SQL in $ddc"
-    start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
-    abort_on_error 4 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
-
-
-    stage " 5. Create mandate / collection tables using $ddc"
-    start=$SECONDS
-    mariadb                                             < $ddc
-    abort_on_error 5 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
-
-    if [ "$pfz" = "" ] && [ "$payfreeze" = "" ]
+    if [ "$pfz" = "" ]
     then
+
+        stage " 4. Generate mandate / collection table create SQL in $ddc"
+        start=$SECONDS
+        /usr/bin/php $prg $sw "$cfg" sql payment.create.sql > $ddc
+        abort_on_error 4 $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
+
+        stage " 5. Create mandate / collection tables using $ddc"
+        start=$SECONDS
+        mariadb                                             < $ddc
+        abort_on_error 5 $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
+
 
         stage "6. Fetch mandate/collection data, purge bogons and spit out nice tables"
         start=$SECONDS
@@ -352,8 +361,7 @@ then
 
     else
 
-        # The stuff above will not happen if BLOTTO_DEV_PAY_FREEZE is true
-        echo "BLOTTO_DEV_PAY_FREEZE==true so not touching mandate or collection tables"
+        echo "Pay freeze - so not touching mandate or collection tables"
 
     fi
 
@@ -393,14 +401,18 @@ then
         abort_on_error 11a $?
         echo "        Completed in $(($SECONDS-$start)) seconds"
 
-        if [ "$pfz" = "" ] && [ "$payfreeze" = "" ]
+        if [ "$pfz" = "" ]
         then
-            stage "    11b. Generate mandates"
+
+            stage "    11b. Generate new mandates"
             /usr/bin/php $prg $sw "$cfg" exec payment_mandate.php
             abort_on_error 11b $?
             echo "        Completed in $(($SECONDS-$start)) seconds"
+
         else
-            echo "BLOTTO_DEV_PAY_FREEZE==true so not attempting to set up new mandates"
+
+            echo "Pay freeze - so not attempting to generate new mandates"
+
         fi
 
         if [ "$no_tidy" ]
@@ -467,6 +479,11 @@ then
     fi
     echo "    Completed in $(($SECONDS-$start)) seconds"
 
+else
+
+    # The stuff above - importing payment and supporter - does not happen for RBE games
+    echo "RBE game - so not touching mandate, collection or supporter-related tables"
+
 fi
 
 stage "18. Generate ticket pool update SQL in $tks"
@@ -494,45 +511,54 @@ fi
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-start=$SECONDS
-if [ "$rbe" = "" ]
+if [ "$pfz" = "" ]
 then
-    stage "21. Generate draw entries based on calculated balances"
+
+    start=$SECONDS
+    stage "21. Generate draw entries based on both payment balances and external tickets"
     /usr/bin/php $prg $sw "$cfg" exec entries.php -q
     abort_on_error 21 $?
-else
-    stage "22. Generate draw entries from other organisations based on rules"
-    /usr/bin/php $prg $sw "$cfg" exec entries.php -qr
-    abort_on_error 22 $?
-fi
-echo "    Completed in $(($SECONDS-$start)) seconds"
+    echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-start=$SECONDS
-if [ "$rbe" = "" ]
-then
+    # obsolete approach
+    #stage "22. Generate draw entries from other organisations based on rules"
+    #/usr/bin/php $prg $sw "$cfg" exec entries.php -qr
+    #abort_on_error 22 $?
+
+
+    start=$SECONDS
     stage "23. Do draws with notarisation and insert winners"
     /usr/bin/php $prg $sw "$cfg" exec draws.php -q
     abort_on_error 23 $?
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
+
+    # obsolete approach
+    #stage "24. Do rule-based-entry draws with notarisation, insert winners and organisation-specific winners"
+    #/usr/bin/php $prg $sw "$cfg" exec draws.php -qr
+    #abort_on_error 24 $?
+    # The stuff above - importing payment and supporter - does not happen for RBE games
+
+
+    stage " 25. Generate result history file at $rhf"
+    start=$SECONDS
+    /usr/bin/php $prg $sw $cfg sql results.export.sql       > $tmp
+    abort_on_error 25a $?
+    maybe_cat $tmp
+    rm -f "$ofl"
+    mariadb $dbm                                            < $tmp
+    abort_on_error 25b $?
+    rm -f "$rhf"
+    mv "$ofl" "$rhf"
+    echo "    Completed in $(($SECONDS-$start)) seconds"
+
 else
-    stage "24. Do rule-based-entry draws with notarisation, insert winners and organisation-specific winners"
-    /usr/bin/php $prg $sw "$cfg" exec draws.php -qr
-    abort_on_error 24 $?
+
+    # missing payments => inaccurate balances => draws have high drop-out rate
+    echo "Pay freeze - refusing to act: draw entries that may need making, draws that may need running"
+
 fi
-echo "    Completed in $(($SECONDS-$start)) seconds"
-
-
-stage " 25. Generate result history file at $rhf"
-start=$SECONDS
-/usr/bin/php $prg $sw $cfg sql results.export.sql       > $tmp
-abort_on_error 25a $?
-maybe_cat $tmp
-rm -f "$ofl"
-mariadb $dbm                                            < $tmp
-abort_on_error 25b $?
-rm -f "$rhf"
-mv "$ofl" "$rhf"
-echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
 stage "26. Build results tables in make database"
@@ -540,58 +566,55 @@ start=$SECONDS
 if [ "$rbe" = "" ]
 then
     echo "    CALL anls();"
-    mariadb $dbm                                      <<< "CALL anls();"
+    mariadb $dbm                                  <<< "CALL anls();"
     abort_on_error 26a $?
-    echo "    CALL cancellationsByRule();"
-    mariadb $dbm                                      <<< "CALL cancellationsByRule();"
-    abort_on_error 26b $?
-    echo "    CALL draws();"
-    mariadb $dbm                                      <<< "CALL draws();"
-    abort_on_error 26c $?
-    echo "    CALL drawsSummarise();"
-    mariadb $dbm                                      <<< "CALL drawsSummarise();"
-    abort_on_error 26d $?
-    if [ "$nxi" ]
-    then
-        echo "    CALL insure('$nxi');"
-        mariadb $dbm                                  <<< "CALL insure('$nxi');"
-        abort_on_error 26e $?
-    fi
-    echo "    CALL supporters();"
-    mariadb $dbm                                      <<< "CALL supporters();"
-    abort_on_error 26f $?
-    echo "    CALL updates();"
-    mariadb $dbm                                      <<< "CALL updates();"
-    abort_on_error 26g $?
-    echo "    CALL winners();"
-    mariadb $dbm                                      <<< "CALL winners();"
-    abort_on_error 26h $?
-    echo "    CALL journeys();"
-    mariadb $dbm                                      <<< "CALL journeys();"
-    abort_on_error 26i $?
-    echo "    CALL monies();"
-    mariadb $dbm                                      <<< "CALL monies();"
-    abort_on_error 26j $?
-    echo "    CALL noshows();"
-    mariadb $dbm                                      <<< "CALL noshows();"
-    abort_on_error 26k $?
-else
-    echo "    CALL drawsRBE();"
-    mariadb $dbm                                      <<< "CALL drawsRBE();"
-    abort_on_error 26l $?
-    echo "    CALL drawsSummariseRBE();"
-    mariadb $dbm                                      <<< "CALL drawsSummariseRBE();"
-    abort_on_error 26m $?
-    if [ "$nxi" ]
-    then
-        echo "    CALL insureRBE();"
-        mariadb $dbm                                  <<< "CALL insureRBE();"
-        abort_on_error 26n $?
-    fi
-    echo "    CALL winnersRBE();"
-    mariadb $dbm                                      <<< "CALL winnersRBE();"
-    abort_on_error 26o $?
 fi
+if [ "$pfz" = "" ]
+then
+    echo "    CALL cancellationsByRule();"
+    mariadb $dbm                                  <<< "CALL cancellationsByRule();"
+    abort_on_error 26b $?
+else
+    # if we know not about collections then we know not about the latest cancellation situation
+    echo "Pay freeze - skipping cancellationsByRule() (ie preserving Cancellations table)"
+fi
+echo "    CALL draws();"
+mariadb $dbm                                      <<< "CALL draws();"
+abort_on_error 26c $?
+echo "    CALL drawsSummarise();"
+mariadb $dbm                                      <<< "CALL drawsSummarise();"
+abort_on_error 26d $?
+if [ "$nxi" ]
+then
+    echo "    CALL insure('$nxi');"
+    mariadb $dbm                                  <<< "CALL insure('$nxi');"
+    abort_on_error 26e $?
+fi
+echo "    CALL supporters();"
+mariadb $dbm                                      <<< "CALL supporters();"
+abort_on_error 26f $?
+if [ "$pfz" = "" ]
+then
+    echo "    CALL updates();"
+    mariadb $dbm                                  <<< "CALL updates();"
+    abort_on_error 26g $?
+else
+    # if collections data not current, leave CRM well alone as well
+    echo "Pay freeze - skipping routine updates() (ie preserving Updates table)"
+fi
+echo "    CALL winners();"
+mariadb $dbm                                      <<< "CALL winners();"
+abort_on_error 26h $?
+echo "    CALL journeys();"
+mariadb $dbm                                      <<< "CALL journeys();"
+abort_on_error 26i $?
+echo "    CALL monies();"
+mariadb $dbm                                      <<< "CALL monies();"
+abort_on_error 26j $?
+echo "    CALL noshows();"
+mariadb $dbm                                      <<< "CALL noshows();"
+abort_on_error 26k $?
+
 
 stage "27. Do bespoke SQL"
 start=$SECONDS
@@ -610,50 +633,60 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 if [ "$rbe" = "" ]
 then
 
+    if [ "$pfz" = "" ]
+    then
 
-    stage "28a. Generate CCR insert SQL in $chi"
-    start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" exec changes.php       > $chi
-    abort_on_error 28a $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+        stage "28a. Generate CCR insert SQL in $chi"
+        start=$SECONDS
+        /usr/bin/php $prg $sw "$cfg" exec changes.php   > $chi
+        abort_on_error 28a $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    stage "28b. Insert new changes data using $ddc"
-    start=$SECONDS
-    mariadb                                             < $chi
-    abort_on_error 28b $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+        stage "28b. Insert new changes data using $ddc"
+        start=$SECONDS
+        mariadb                                         < $chi
+        abort_on_error 28b $?
+        echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    stage "28c. Generate CCR output table Changes"
-    echo "    CALL changes();"
-    mariadb $dbm                                      <<< "CALL changes();"
-    abort_on_error 28c $?
-    /usr/bin/php $prg $sw "$cfg" exec changes_email.php
-    abort_on_error 28d $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+    else
+        # if collections data less than perfect, better to leave CCR data well alone
+        echo "Pay freeze - skipping changes.php - no new CCR data was calculated"
+    fi
 
+fi
 
-    stage "29. Generate preference column names in $lgs"
-    start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" exec legends.php       > $lgs
-    abort_on_error 29 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+stage "28c. Generate CCR output table Changes"
+echo "    CALL changes();"
+mariadb $dbm                                      <<< "CALL changes();"
+abort_on_error 28c $?
+/usr/bin/php $prg $sw "$cfg" exec changes_email.php
+abort_on_error 28d $?
+echo "    Completed in $(($SECONDS-$start)) seconds"
 
+stage "29. Generate preference column names in $lgs"
+start=$SECONDS
+/usr/bin/php $prg $sw "$cfg" exec legends.php       > $lgs
+abort_on_error 29 $?
+echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    stage "30. Alter/drop preference columns in make database"
-    start=$SECONDS
-    mariadb                                             < $lgs
-    abort_on_error 30 $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+stage "30. Alter/drop preference columns in make database"
+start=$SECONDS
+mariadb                                             < $lgs
+abort_on_error 30 $?
+echo "    Completed in $(($SECONDS-$start)) seconds"
 
-    stage "31. Generate missing draw reports, invoices and statements"
-    start=$SECONDS
-    /usr/bin/php $prg $sw "$cfg" exec draw_reports.php
-    abort_on_error 31a $?
-    /usr/bin/php $prg $sw "$cfg" exec invoices.php
-    abort_on_error 31b $?
-    /usr/bin/php $prg $sw "$cfg" exec statements.php
-    abort_on_error 31b $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
+stage "31. Generate missing draw reports, invoices and statements"
+start=$SECONDS
+/usr/bin/php $prg $sw "$cfg" exec draw_reports.php
+abort_on_error 31a $?
+/usr/bin/php $prg $sw "$cfg" exec invoices.php
+abort_on_error 31b $?
+/usr/bin/php $prg $sw "$cfg" exec statements.php
+abort_on_error 31b $?
+echo "    Completed in $(($SECONDS-$start)) seconds"
+
+if [ "$rbe" = "" ]
+then
 
     stage "32. Send ANLs to email service, send bounces to snailmail service"
     start=$SECONDS
