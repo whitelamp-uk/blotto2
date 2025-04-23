@@ -5,7 +5,10 @@ cfg ();
 require $argv[1];
 
 $orgid = BLOTTO_ORG_ID;
-
+$pfz = get_argument('z',$Sw) !== false;
+if ($pfz) {
+    echo "\n-- PAY FREEZE - leave structure of Updates alone (only Supporters table altered here)\n";
+}
 
 echo "\n\nUSE `".BLOTTO_MAKE_DB."`;\n\n\n";
 
@@ -48,11 +51,13 @@ for ($i=0;$i<10;$i++) {
           CHANGE COLUMN `p$i` `$legend` VARCHAR(255) CHARACTER SET utf8
           ;
         ";
-        echo "
-          ALTER TABLE `Updates`
-          CHANGE COLUMN `p$i` `$legend` VARCHAR(255) CHARACTER SET utf8
-          ;
-        ";
+        if (!$pfz) {
+            echo "
+              ALTER TABLE `Updates`
+              CHANGE COLUMN `p$i` `$legend` VARCHAR(255) CHARACTER SET utf8
+              ;
+            ";
+        }
         continue;
     }
     echo "
@@ -60,11 +65,13 @@ for ($i=0;$i<10;$i++) {
         DROP COLUMN `p$i`
         ;
     ";
-    echo "
-        ALTER TABLE `Updates`
-        DROP COLUMN `p$i`
-        ;
-    ";
+    if (!$pfz) {
+        echo "
+            ALTER TABLE `Updates`
+            DROP COLUMN `p$i`
+            ;
+        ";
+    }
 }
 
 
