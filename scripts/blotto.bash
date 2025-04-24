@@ -14,7 +14,12 @@ abort_on_error () {
     echo "Aborting at step $1 on error status = $2"
     if [ ! "$aux" ]
     then
-        /usr/bin/php "$prm" "$cfg" "$brd build aborted at step $1 on error status = $2"
+        if [ "$pfz" ]
+        then
+            /usr/bin/php "$prm" "$cfg" "$brd build aborted at step $1 on error status = $2" -z
+        else
+            /usr/bin/php "$prm" "$cfg" "$brd build aborted at step $1 on error status = $2"
+        fi
     fi
     rm -f $cfg.inhibit
     rm -f $ofl
@@ -37,7 +42,12 @@ finish_up () {
     fi
     if [ ! "$aux" ]
     then
-        /usr/bin/php "$prm" "$cfg" "$brd build completed successfully"
+        if [ "$pfz" ]
+        then
+            /usr/bin/php "$prm" "$cfg" "$brd build completed successfully" -z
+        else
+            /usr/bin/php "$prm" "$cfg" "$brd build completed successfully"
+        fi
     fi
     echo ""
     date +%T
