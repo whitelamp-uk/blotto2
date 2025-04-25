@@ -41,17 +41,19 @@ Warning: pay freeze was used on this build; all the following were prevented:
  * recording of draw entries
  * uncompleted draws
  * recalculation of cancellations
- * recording of CRM milestones";
+ * recording of CRM milestones
+This happened because";
+    if ($pfzc) {
+        $body .= " - the constant BLOTTO_DEV_PAY_FREEZE is true";
+    }
+    if ($pfzc && $pfz) {
+        $body .= "And also";
+    }
+    if ($pfz) {
+        $body .= " - the build CLI option -z was used";
+    }
 }
 
-if ($pfzc) {
-    $body .= "
-This happened because the constant BLOTTO_DEV_PAY_FREEZE is true";
-}
-else {
-    $body .= "
-This happened because the build CLI option -z was used";
-}
 
 mail (
     BLOTTO_EMAIL_WARN_TO,
