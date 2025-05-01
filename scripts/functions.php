@@ -2178,8 +2178,10 @@ function invoice_game ($draw_closed_date,$output=true) {
 //fwrite (STDERR,"           \$units = ");
 //fwrite (STDERR,var_export(fee_units($f,$p['from'],$p['to']),true));
 //fwrite (STDERR,"\n");
-            if ($f=='insure' && (!defined('BLOTTO_INVOICE_INSURANCE') || !BLOTTO_INVOICE_INSURANCE)) {
-                $invoice->items[] = [ $label, fee_units($f,$p['from'],$p['to']), $p['rate']/100, '', 0 ];
+            if ($f=='insure') {
+                if (!defined('BLOTTO_INVOICE_INSURANCE') || !BLOTTO_INVOICE_INSURANCE) {
+                    $invoice->items[] = [ $label, fee_units($f,$p['from'],$p['to']), $p['rate']/100, '', 0 ];
+                }
             }
             else {
                 $invoice->items[] = [ $label, fee_units($f,$p['from'],$p['to']), $p['rate']/100 ];
