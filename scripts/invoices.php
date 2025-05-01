@@ -95,6 +95,32 @@ try {
                     );
                 }
             }
+            if (defined('BLOTTO_INVOICE_INSURANCE') && BLOTTO_INVOICE_INSURANCE) {
+                $file   = BLOTTO_DIR_INVOICE.'/';
+                $file  .= strtolower(BLOTTO_ORG_USER).'_'.$draw['draw_closed'].'_insurance';
+                $pdf    = $file.'.pdf';
+                $file  .= '.html';
+                // insurance invoice "piggy-backs" the game invoice
+                // if we (re)build the latter we always (re)build the former
+                if (file_exists($file)) {
+                    unlink ($file);
+                }
+                if (file_exists($pdf)) {
+                    unlink ($pdf);
+                }
+                if ($inv=invoice_insurance($draw['draw_closed'],false)) {
+                    file_put_contents($file,$inv);
+                    html_file_to_pdf_file($file,$pdf,'a3');
+                    if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
+                        mail_attachments (
+                            BLOTTO_FEE_EMAIL,
+                            BLOTTO_BRAND." invoice (ticket insurance)",
+                            "Ticket insurance invoice for draw period closing {$draw['draw_closed']}",
+                            [$pdf]
+                        );
+                    }
+                }
+            }
         }
         // Raise invoice (pass on cost) of paying out to winners
         if ($draw['has_winners']) {

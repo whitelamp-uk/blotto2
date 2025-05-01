@@ -2178,7 +2178,7 @@ function invoice_game ($draw_closed_date,$output=true) {
 //fwrite (STDERR,"           \$units = ");
 //fwrite (STDERR,var_export(fee_units($f,$p['from'],$p['to']),true));
 //fwrite (STDERR,"\n");
-            if ($f=='insure') {
+            if ($f=='insure' && (!defined('BLOTTO_INVOICE_INSURANCE') || !BLOTTO_INVOICE_INSURANCE)) {
                 $invoice->items[] = [ $label, fee_units($f,$p['from'],$p['to']), $p['rate']/100, '', 0 ];
             }
             else {
@@ -2187,6 +2187,62 @@ function invoice_game ($draw_closed_date,$output=true) {
         }
     }
 //fwrite (STDERR,var_export($invoice->items,true));
+    return invoice_render ($invoice,$output);
+}
+
+function invoice_insurance ($draw_closed_date,$output=true) {
+    if (!defined('BLOTTO_INVOICE_INSURANCE') || !BLOTTO_INVOICE_INSURANCE) {
+        throw new \Exception ('Cannot call invoice_insurance() if BLOTTO_INVOICE_INSURANCE is not true');
+        return false;
+    }
+    $fees = [
+        'insure'        => 'Ticket insurance fee',
+    ];
+    try {
+        $qs                     = "SELECT DATE(drawOnOrAfter('$draw_closed_date')) AS `dt`";
+        $zo                     = connect (BLOTTO_MAKE_DB);
+        $date_draw              = $zo->query ($qs);
+        $date_draw              = $date_draw->fetch_assoc ();
+        $date_draw              = $date_draw['dt'];
+        $qs = "
+          SELECT
+            DISTINCT DATE_ADD(`draw_closed`,INTERVAL 1 DAY) AS `start_date`
+          FROM `blotto_entry`
+          WHERE `draw_closed`<'$draw_closed_date'
+            AND `draw_closed` IS NOT NULL -- superfluous but for clarity
+          ORDER BY `draw_closed` DESC
+          LIMIT 0,1
+        ";
+        $start_date                 = $zo->query ($qs);
+        $start_date                 = $start_date->fetch_assoc ();
+        if ($start_date) {
+            $start_date             = $start_date['start_date'];
+        }
+        else {
+            $start_date             = '0000-00-00';
+        }
+    }
+    catch (\mysqli_sql_exception $e) {
+        throw new \Exception ($qs."\n".$e->getMessage());
+        return false;
+    }
+    $code                       = strtoupper (BLOTTO_ORG_USER);
+    $org                        = org ();
+    $invoice                    = new \stdClass ();
+    $invoice->html_title        = "Insurance invoice INS{$code}-{$date_draw}";
+    $invoice->html_table_id     = "invoice-insurance";
+    $invoice->date              = $date_draw;
+    $invoice->reference         = "INS{$code}-{$draw_closed_date}";
+    $invoice->address           = $org['invoice_address'];
+    $invoice->description       = "Insurance for draw closing {$draw_closed_date}";
+    $invoice->items             = [];
+    $invoice->terms             = $org['invoice_terms_game'];
+    foreach ($fees as $f=>$label) {
+        $periods                 = fee_periods ($f,$start_date,$draw_closed_date);
+        foreach ($periods as $p) {
+            $invoice->items[] = [ $label, fee_units($f,$p['from'],$p['to']), $p['rate']/100, '', 0 ]; // insurance is zero-rated
+        }
+    }
     return invoice_render ($invoice,$output);
 }
 
