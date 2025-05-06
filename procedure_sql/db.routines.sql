@@ -52,6 +52,22 @@ USE `{{BLOTTO_MAKE_DB}}`
 
 
 DELIMITER $$
+DROP PROCEDURE IF EXISTS `activityAll`$$
+CREATE PROCEDURE `activityAll` (
+)
+BEGIN
+  SELECT 'Bank';
+  CALL activityBank();
+  SELECT 'Email';
+  CALL activityEmail();
+  SELECT 'House';
+  CALL activityHouse();
+  SELECT 'Mobile';
+  CALL activityMobile();
+END$$
+
+
+DELIMITER $$
 DROP PROCEDURE IF EXISTS `activityEmail`$$
 CREATE PROCEDURE `activityEmail` (
 )
