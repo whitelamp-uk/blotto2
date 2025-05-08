@@ -340,6 +340,7 @@ BEGIN
           SET @q = REGEXP_REPLACE(@q, '(?i)JOIN ', CONCAT('JOIN ',db,'.'));
           SET @q = REGEXP_REPLACE(@q, '(?i)UPDATE ', CONCAT('UPDATE ',db,'.'));
           SET @q = REGEXP_REPLACE(@q, '(?i)INSERT INTO ', CONCAT('INSERT INTO ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)CALL ', CONCAT('CALL ',db,'.'));
           PREPARE stmt FROM @q;
           EXECUTE stmt;
           DEALLOCATE PREPARE stmt;
@@ -368,6 +369,7 @@ BEGIN
           SET @q = REGEXP_REPLACE(@q, '(?i)JOIN ', CONCAT('JOIN ',db,'.'));
           SET @q = REGEXP_REPLACE(@q, '(?i)UPDATE ', CONCAT('UPDATE ',db,'.'));
           SET @q = REGEXP_REPLACE(@q, '(?i)INSERT INTO ', CONCAT('INSERT INTO ',db,'.'));
+          SET @q = REGEXP_REPLACE(@q, '(?i)CALL ', CONCAT('CALL ',db,'.'));
           PREPARE stmt FROM @q;
           EXECUTE stmt;
           DEALLOCATE PREPARE stmt;
