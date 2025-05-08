@@ -1741,6 +1741,9 @@ BEGIN
      ,`s`.`p7`
      ,`s`.`p8`
      ,`s`.`p9`
+     ,`s`.`self_excluded`
+     ,`s`.`death_reported`
+     ,`s`.`death_by_suicide`
      ,IFNULL(`d`.`Provider`,'') AS `Provider`
      ,IFNULL(`d`.`RefNo`,'') AS `RefNo`
      ,IFNULL(`d`.`Name`,'') AS `Name`
@@ -1766,6 +1769,9 @@ BEGIN
        ,`is`.`canvas_code`
        ,`is`.`canvas_agent_ref`
        ,`is`.`canvas_ref`
+       ,`is`.`self_excluded`
+       ,`is`.`death_reported`
+       ,`is`.`death_by_suicide`
        ,`ip`.`client_ref` AS `current_client_ref`
        ,`ip`.`first_draw_close`
        ,`ip`.`opening_balance`
@@ -1846,14 +1852,14 @@ BEGIN
        ,dp(@CostPerPlay/100,2) AS `per_play`
        ,dp(IFNULL(`cl`.`AmountCollected`,0)-(@CostPerPlay/100*IFNULL(`e`.`draw_entries`,0)),2) AS `balance`
        ,IF(
-          `m`.`Status`=''
-         ,''
+          `m`.`Freq`='SINGLE'
+         ,'SINGLE'
          ,IF(
-            `m`.`Status` IN ('DELETED','CANCELLED','FAILED','Inactive')
+            `m`.`Status`='' OR `m`.`Status` IS NULL
            ,'DEAD'
            ,IF(
-              `m`.`Freq`='SINGLE'
-             ,'SINGLE'
+              `m`.`Status` IN ('DELETED','CANCELLED','FAILED','Inactive')
+             ,'DEAD'
              ,'ACTIVE'
             )
           )
@@ -1944,10 +1950,10 @@ BEGIN
        ,dp(@CostPerPlay/100,2) AS `per_play`
        ,dp(IFNULL(`cl`.`AmountCollected`,0)-(@CostPerPlay/100*IFNULL(`e`.`draw_entries`,0)),2) AS `balance`
        ,IF(
-          `m`.`Status`=''
-         ,''
+          `m`.`Status`='' OR `m`.`Status` IS NULL
+         ,'DEAD'
          ,IF(
-            `m`.`Status` IN ('DELETED','CANCELLED','FAILED')
+            `m`.`Status` IN ('DELETED','CANCELLED','FAILED','Inactive')
            ,'DEAD'
            ,IF(
               `m`.`Freq`='SINGLE'
@@ -2078,6 +2084,9 @@ BEGIN
      ,`s`.`AmountCollected` AS `latest_player_amount`
      ,`s`.`plays` AS `latest_player_plays`
      ,`s`.`balance` AS `latest_player_balance`
+     ,IFNULL(`s`.`self_excluded`,'') AS `self_excluded`
+     ,IFNULL(`s`.`death_reported`,'') AS `death_reported`
+     ,IF(`s`.`death_by_suicide`>0,'Y','') AS `death_by_suicide`
     FROM (
       SELECT
         `supporter_id`
@@ -2345,7 +2354,7 @@ BEGIN
     SELECT
       CURDATE()
      ,'self_excluded'
-     ,CURDATE() AS `milestone_date`
+     ,`s`.`self_excluded`
      ,`s`.`id`
      ,MAX(`p`.`id`)
      ,MAX(`c`.`id`)
@@ -2357,7 +2366,7 @@ BEGIN
     LEFT JOIN `blotto_update` AS `u`
            ON `u`.`supporter_id`=`s`.`id`
           AND `u`.`milestone`='self_excluded'
-    WHERE `s`.`self_excluded`>0
+    WHERE `s`.`self_excluded` IS NOT NULL
       AND `u`.`id` IS NULL -- not already recorded
     GROUP BY `s`.`id`
   ;
@@ -2521,6 +2530,7 @@ BEGIN
      ,`s`.`latest_payment_collected` AS `last_collected`
      ,`player1`.`first_draw_close` AS `first_draw`
      ,'' AS `mandate_status`
+     ,`s`.`death_by_suicide`
     FROM `blotto_update` AS `u`
     JOIN (
       SELECT
