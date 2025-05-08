@@ -77,6 +77,8 @@ foreach ($close_dates as $date) {
        ,COUNT(DISTINCT(`tk`.`number`))<=`i`.`tickets_insured` AS `is_insured`
 
       FROM `blotto_player` AS `p`
+      JOIN `blotto_supporter` AS `s`
+        ON `s`.`id`=`p`.`supporter_id`
       LEFT JOIN (
         SELECT
           ROUND($price*COUNT(`id`)/100,2) AS `paid_out`
@@ -121,6 +123,8 @@ foreach ($close_dates as $date) {
              ON `i`.`client_ref`=`tk`.`client_ref`
 
       WHERE `p`.`first_draw_close`<='$date'
+        AND `s`.`self_excluded` IS NULL
+        AND `s`.`death_reported` IS NULL
       GROUP BY `p`.`id`
     ";
     echo rtrim($q)."\n";
