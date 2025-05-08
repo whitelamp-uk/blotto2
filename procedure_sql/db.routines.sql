@@ -2321,6 +2321,54 @@ BEGIN
 --     AND DATE(`c`.`created`)<=`e`.`draw_closed`
 --    GROUP BY `w`.`id`
 --  ;
+  -- `milestone`='self_excluded'
+  -- self-exclusion cannot be reversed; in that situation
+  -- the person should be created as a brand new supporter
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      CURDATE()
+     ,'self_excluded'
+     ,CURDATE() AS `milestone_date`
+     ,`s`.`id`
+     ,MAX(`p`.`id`)
+     ,MAX(`c`.`id`)
+    FROM `blotto_supporter` AS `s`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`supporter_id`=`s`.`id`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+    LEFT JOIN `blotto_update` AS `u`
+           ON `u`.`supporter_id`=`s`.`id`
+          AND `u`.`milestone`='self_excluded'
+    WHERE `s`.`self_excluded`>0
+      AND `u`.`id` IS NULL -- not already recorded
+    GROUP BY `s`.`id`
+  ;
+  -- `milestone`='death_reported'
+  -- in case of false reporting, this cannot be reversed;
+  -- instead the person should be created as a brand new supporter
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      CURDATE()
+     ,'death_reported'
+     ,`s`.`death_reported`
+     ,`s`.`id`
+     ,MAX(`p`.`id`)
+     ,MAX(`c`.`id`)
+    FROM `blotto_supporter` AS `s`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`supporter_id`=`s`.`id`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+    LEFT JOIN `blotto_update` AS `u`
+           ON `u`.`supporter_id`=`s`.`id`
+          AND `u`.`milestone`='death_reported'
+    WHERE `s`.`death_reported` IS NOT NULL
+      AND `u`.`id` IS NULL -- not already recorded
+    GROUP BY `s`.`id`
+  ;
   -- `milestone`='cancellation'
   -- cancelled_date changes with BLOTTO_CANCEL_RULE but the primary partial key
   -- milestone_date always gets repaired above so this insert-ignore does not
