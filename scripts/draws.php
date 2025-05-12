@@ -11,6 +11,11 @@ require $argv[1];
 
 tee ("    Draw result engine\n");
 
+if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
+    tee ("    First draw close date is not yet configured so no draws can be run\n");
+    exit (0);
+}
+
 $rdb            = BLOTTO_RESULTS_DB;
 $quiet          = get_argument('q',$Sw) !== false;
 $placeholder    = str_pad ('',strlen(BLOTTO_TICKET_MAX),'-');
