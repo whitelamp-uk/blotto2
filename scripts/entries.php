@@ -6,6 +6,11 @@ require $argv[1];
 
 tee ("    Draw entry engine\n");
 
+if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
+    tee ("    First draw close date is not yet configured so no entries can be made\n");
+    exit (0);
+}
+
 $ticket_db  = BLOTTO_TICKET_DB;
 $price      = BLOTTO_TICKET_PRICE;
 $org_ref    = strtoupper (BLOTTO_ORG_USER);

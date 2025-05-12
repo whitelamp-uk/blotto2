@@ -969,6 +969,10 @@ function draw ($draw_closed) {
 }
 
 function draw_first_asap ($first_collection_date,$delay=null) {
+    if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
+        throw new \Exception ("BLOTTO_DRAW_CLOSE_1 has not been set");
+        return false;
+    }
     if (!function_exists('draw_upcoming')) {
         throw new \Exception ("Function draw_upcoming() was not found");
         return false;
@@ -1007,6 +1011,10 @@ function draw_first_asap ($first_collection_date,$delay=null) {
 }
 
 function draw_first_zaffo_model ($first_collection_date,$dow=5) {
+    if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
+        throw new \Exception ("BLOTTO_DRAW_CLOSE_1 has not been set");
+        return false;
+    }
     /*
         OLD: Do it on a Friday
             1. Take first_collection_date
@@ -1328,6 +1336,10 @@ function draws ($from,$to) {
 }
 
 function draws_outstanding ( ) {
+    if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
+        throw new \Exception ("BLOTTO_DRAW_CLOSE_1 has not been set");
+        return false;
+    }
     if (!function_exists('draw_upcoming')) {
         throw new \Exception ("Function draw_upcoming() was not found");
         return false;
@@ -6631,7 +6643,7 @@ function www_signup_dates ($org,&$e) {
             $draw_closed = $d->format ('Y-m-d');
         }
 
-        if ($draw_closed>=BLOTTO_DRAW_CLOSE_1) {
+        if (BLOTTO_DRAW_CLOSE_1 && $draw_closed>=BLOTTO_DRAW_CLOSE_1) {
             try {
 /*
                 $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
@@ -6667,12 +6679,16 @@ function www_signup_dates ($org,&$e) {
             }
         }
     }
+    if (!BLOTTO_DRAW_CLOSE_1) {
+        // game not ready
+        $e = "Sorry, the lottery game has not yet launched";
+        return false;
+    }
     if (!count($outdates)) {
-        // At least one date passed but no dates are in scope
+        // at least one date passed but no dates are in scope
         $e = "Sorry, that draw is now closed to new entries";
         return false;
     }
-    
     return $outdates;
 }
 

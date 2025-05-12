@@ -19,7 +19,7 @@ if (array_key_exists(3,$argv) && $argv[3]=='-z') {
     $pfz = true;
 }
 $pfzc = defined('BLOTTO_DEV_PAY_FREEZE') && BLOTTO_DEV_PAY_FREEZE;
-
+$dc1 = strlen(BLOTTO_DRAW_CLOSE_1) > 0;
 
 $headers = null;
 if (defined('BLOTTO_EMAIL_FROM')) {
@@ -27,7 +27,7 @@ if (defined('BLOTTO_EMAIL_FROM')) {
 }
 
 $warning = '';
-if ($pfz || $pfzc) {
+if ($pfz || $pfzc || !$dc1) {
     $warning = " with warning(s)";
 }
 
@@ -35,23 +35,36 @@ $body = "Message$warning at ".date('Y-m-d H:i:s')."\n".$argv[2]."\n";
 
 if ($pfz || $pfzc) {
     $body .= "
-Warning: pay freeze was used on this build; all the following were prevented:
- * processing of new DDI instructions
- * fetching of payment collection data
- * recording of draw entries
- * uncompleted draws
- * recalculation of cancellations
- * recording of CRM milestones
+Warning: pay freeze is set so the following prevented:
+ * DDI instructions
+ * DDI collections
+ * draw entries
+ * draws
+ * cancellations
+ * CRM milestones
 This happened because";
     if ($pfzc) {
         $body .= " - the constant BLOTTO_DEV_PAY_FREEZE is true";
     }
     if ($pfzc && $pfz) {
-        $body .= "And also";
+        $body .= " and also";
     }
     if ($pfz) {
         $body .= " - the build CLI option -z was used";
     }
+}
+if (!$dc1) {
+    $body .= "
+Warning: first draw close is not set so the following prevented:
+ * player dates for first draw close
+ * ANLs";
+    if ($pfzc && $pfz) {
+        $body .= "
+ * draw entries
+ * draws";
+    }
+    $body .= "
+This happened because constant BLOTTO_DRAW_CLOSE_1 is empty";
 }
 
 

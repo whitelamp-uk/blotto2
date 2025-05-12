@@ -17,6 +17,11 @@ if (!function_exists('draw_first')) {
     exit (102);
 }
 
+if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
+    tee ("    First draw close date is not yet configured so player dates (and their ANLs) cannot be completed\n");
+    exit (0);
+}
+
 
 // Set player start date and supporter projected first draw
 $starts = [];
