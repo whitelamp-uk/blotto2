@@ -18,7 +18,7 @@ if (!function_exists('draw_first')) {
 }
 
 if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
-    tee ("    First draw close date is not yet configured so player dates (and their ANLs) cannot be completed\n");
+    fwrite (STDERR,"-- Warning: first draw close date is not yet configured so player dates cannot be set\n");
     exit (0);
 }
 
