@@ -174,18 +174,21 @@ catch (\Exception $e) {
 
         </div>
 
+<?php //todo fix this - only *display* if needed ?>
+<?php   if(count($org['signup_draw_options'])>0): ?>
         <div class="field radioset">
 
           <label class="requirements">Number of weekly draws</label>
 
-<?php   foreach ($org['signup_draw_options'] as $i=>$label): ?>
+  <?php   foreach ($org['signup_draw_options'] as $i=>$label): ?>
           <div>
             <input type="radio" name="draws" id="draws-<?php echo 1*$i; ?>" value="<?php echo 1*$i; ?>" <?php if($i==$v['draws']): ?>checked<?php endif;?> />
             <label for="draws-<?php echo 1*$i; ?>"><?php echo htmlspecialchars ($label); ?></label>
           </div>
-<?php   endforeach; ?>
+  <?php   endforeach; ?>
 
         </div>
+<?php   endif; ?>
 
         <div id="signup-cost" class="signup-cost"> <?php //someone wanted whole pounds only - could go in config in due course ?>
           &pound;<output data-decsepchar="-"><?php echo number_format ($v['quantity']*$v['draws']*BLOTTO_TICKET_PRICE/100,0,'-',','); ?></output>
