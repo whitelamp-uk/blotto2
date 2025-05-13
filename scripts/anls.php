@@ -9,6 +9,11 @@ if (!$zo) {
     exit (101);
 }
 
+if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
+    fwrite (STDERR,"-- Warning: first draw close date is not yet configured so ANLs cannot be generated\n");
+    exit (0);
+}
+
 $org = org ();
 $earliest = BLOTTO_ANL_EMAIL_FROM;
 $email = false;
