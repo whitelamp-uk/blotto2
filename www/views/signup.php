@@ -175,7 +175,7 @@ catch (\Exception $e) {
         </div>
 
 <?php //todo fix this - only *display* if needed ?>
-<?php   if(count($org['signup_draw_options'])>0): ?>
+<?php   if(count($org['signup_draw_options'])>1): ?>
         <div class="field radioset">
 
           <label class="requirements">Number of weekly draws</label>
