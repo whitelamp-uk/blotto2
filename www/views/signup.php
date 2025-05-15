@@ -174,8 +174,8 @@ catch (\Exception $e) {
 
         </div>
 
-<?php //todo fix this - only *display* if needed ?>
-<?php   if(count($org['signup_draw_options'])>0): ?>
+<?php // only *display* if needed ?>
+<?php   if(count($org['signup_draw_options'])>1): ?>
         <div class="field radioset">
 
           <label class="requirements">Number of weekly draws</label>
@@ -191,7 +191,7 @@ catch (\Exception $e) {
 
 <?php   else: ?>
         <div>
-          <input type="hidden" name="draws" id="draws-1" value="">
+          <input type="hidden" name="draws" id="draws-1" value="1">
         </div>
 <?php   endif; ?>
 
