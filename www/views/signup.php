@@ -188,6 +188,11 @@ catch (\Exception $e) {
   <?php   endforeach; ?>
 
         </div>
+
+<?php   else: ?>
+        <div>
+          <input type="hidden" name="draws" id="draws-1" value="">
+        </div>
 <?php   endif; ?>
 
         <div id="signup-cost" class="signup-cost"> <?php //someone wanted whole pounds only - could go in config in due course ?>
