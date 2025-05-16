@@ -23,8 +23,6 @@ CREATE TABLE IF NOT EXISTS `blotto_build_collection` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
-DROP TABLE IF EXISTS `blotto_build_mandate`;
-
 CREATE TABLE IF NOT EXISTS `blotto_build_mandate` (
   `Provider` char(4) CHARACTER SET ascii DEFAULT NULL,
   `RefNo` bigint(20) unsigned DEFAULT NULL,
