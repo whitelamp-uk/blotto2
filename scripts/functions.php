@@ -615,11 +615,8 @@ function days_working_date ($start_date,$working_days,$reverse=false) {
         if (is_readable($file) && time() - filemtime($file) < 604800) { //cache for a week (more?)  7*24*60*60 = 604800
             // Almost always just include the file
             $BacsHolidays = include ($file);
-            $age = time() - filemtime($file); // not going to be "clever" and assign this inside the conditional
-            error_log ("include bank holiday cache ".$file." age: ".$age); // for now
         }
         else {
-            error_log ("recreate bank holiday cache"); // for now
             // Rewrite the include file
             $json = file_get_contents ('https://www.gov.uk/bank-holidays.json'); // if fails returns false 
             if ($json) {
