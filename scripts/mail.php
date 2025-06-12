@@ -20,6 +20,7 @@ if (array_key_exists(3,$argv) && $argv[3]=='-z') {
 }
 $pfzc = defined('BLOTTO_DEV_PAY_FREEZE') && BLOTTO_DEV_PAY_FREEZE;
 $dc1 = strlen(BLOTTO_DRAW_CLOSE_1) > 0;
+$anl = defined('BLOTTO_ANL_EMAIL') && BLOTTO_ANL_EMAIL;
 
 $headers = null;
 if (defined('BLOTTO_EMAIL_FROM')) {
@@ -27,7 +28,7 @@ if (defined('BLOTTO_EMAIL_FROM')) {
 }
 
 $warning = '';
-if ($pfz || $pfzc || !$dc1) {
+if ($pfz || $pfzc || !$dc1 || !$anl) {
     $warning = " with warning(s)";
 }
 
@@ -65,6 +66,10 @@ Warning: first draw close is not set so the following prevented:
     }
     $body .= "
 This happened because constant BLOTTO_DRAW_CLOSE_1 is empty";
+}
+if (!$anl) {
+    $body .= "
+Warning: BLOTTO_ANL_EMAIL is not true so ANL emails are not activated";
 }
 
 
