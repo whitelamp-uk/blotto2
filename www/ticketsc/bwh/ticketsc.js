@@ -1332,6 +1332,7 @@ const TicketWidget = {
                     type: 'resize',
                     height: stepIndex === 0 ? 600 : this.getHeight() + 30,
                     scroll: true,
+                    step: stepIndex,
                 }, '*');
             } else {
                 window.parent.postMessage({
@@ -1552,25 +1553,37 @@ const TicketWidget = {
 
 
         // ——— build week-options ———
+        const weekCard = document.getElementById('week-card');
         const weekContainer = document.getElementById('weekRadios');
         weekContainer.innerHTML = '';
-        Object.entries(weekOptions).forEach(([draws, label], i) => {
-            const id = `draws-${draws}`;
-            const div = document.createElement('div');
-            div.className = 'form-check form-check-inline';
-            div.innerHTML = `
-  <input 
-    class="form-check-input week-radio" 
-    type="radio" name="draws" id="${id}" 
-    value="${draws}" ${i === 0 ? 'checked' : ''}
-  >
-  <label class="form-check-label" for="${id}">
-    ${label}
-  </label>
-`;
-            weekContainer.appendChild(div);
-        });
 
+        const weekEntries = Object.entries(weekOptions);
+
+        if (weekEntries.length === 1) {
+            // Only one option: hide the card, inject hidden input
+            weekCard.style.display = 'none';
+            const [draws] = weekEntries[0];
+            weekContainer.innerHTML = `<input type="hidden" name="draws" value="${draws}">`;
+        } else {
+            // Multiple options: show the card and build radios as normal
+            weekCard.style.display = '';
+            weekEntries.forEach(([draws, label], i) => {
+                const id = `draws-${draws}`;
+                const div = document.createElement('div');
+                div.className = 'form-check form-check-inline';
+                div.innerHTML = `
+        <input 
+            class="form-check-input week-radio" 
+            type="radio" name="draws" id="${id}" 
+            value="${draws}" ${i === 0 ? 'checked' : ''}
+        >
+        <label class="form-check-label" for="${id}">
+            ${label}
+        </label>
+        `;
+                weekContainer.appendChild(div);
+            });
+        }
 
         // ——— cost calculator & disabling ———
         const costEl = document.getElementById('total-cost');
@@ -1580,39 +1593,41 @@ const TicketWidget = {
 
         function updateTotalCost() {
             const q = +document.querySelector('input[name=quantity]:checked').value;
-            const d = +document.querySelector('input[name=draws]:checked').value;
+            // If weekRadios is empty (single week), get from hidden input
+            const drawsInput = document.querySelector('input[name=draws]:checked') || document.querySelector('input[name=draws]');
+            const d = +drawsInput.value;
             const total = q * pricePerDraw * d;
             costEl.textContent = total.toFixed(2);
             costEl2.textContent = total.toFixed(2);
         }
 
         function enforceMax() {
-            // read current selections
             const selQty = +document.querySelector('input[name=quantity]:checked').value;
-            const selDraws = +document.querySelector('input[name=draws]:checked').value;
+            // If weekRadios is empty, get from hidden input
+            const drawsInput = document.querySelector('input[name=draws]:checked') || document.querySelector('input[name=draws]');
+            const selDraws = +drawsInput.value;
 
-            // disable any qty that with current weeks would exceed cap
             qtyRadios.forEach(input => {
                 const q = +input.value;
                 input.disabled = q * selDraws * pricePerDraw > maxPurchase;
-                // if the currently checked got disabled, fallback to first valid
-                if (input.checked && input.disabled) {
-                    input.checked = false;
-                }
+                if (input.checked && input.disabled) input.checked = false;
             });
 
-            // disable any week that with current quantity would exceed cap
-            weekRadios.forEach(input => {
-                const d = +input.value;
-                input.disabled = selQty * d * pricePerDraw > maxPurchase;
-                if (input.checked && input.disabled) {
-                    input.checked = false;
-                }
-            });
+            // Only try to enforce week radios if there is more than one
+            if (weekRadios.length > 0) {
+                weekRadios.forEach(input => {
+                    const d = +input.value;
+                    input.disabled = selQty * d * pricePerDraw > maxPurchase;
+                    if (input.checked && input.disabled) input.checked = false;
+                });
 
-            // ensure at least one in each group is selected
-            if (![...qtyRadios].some(i => i.checked)) qtyRadios[0].checked = true;
-            if (![...weekRadios].some(i => i.checked)) weekRadios[0].checked = true;
+                // ensure at least one in each group is selected
+                if (![...qtyRadios].some(i => i.checked)) qtyRadios[0].checked = true;
+                if (![...weekRadios].some(i => i.checked)) weekRadios[0].checked = true;
+            } else {
+                // Only qty radios to check
+                if (![...qtyRadios].some(i => i.checked)) qtyRadios[0].checked = true;
+            }
         }
 
         // wire up listeners
