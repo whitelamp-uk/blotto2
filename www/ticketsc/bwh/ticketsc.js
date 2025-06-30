@@ -494,7 +494,7 @@ const TicketWidget = {
 
         // 4) Re-apply every piece of widget behavior in order:
         this.applyStyles(); // host styling & sizing
-        this.renderTicketStep(); // rebuild qty/week/cost UI
+        this.renderTicketStep(true); // rebuild qty/week/cost UI - reversed Sian email requirement.
         this.setupStepper(); // re-hook next/prev & validation
         this.setupFindAddress(); // re-hook postcode lookup
         this.setupPaymentToggle(); // wire up your Pay button
@@ -1483,7 +1483,7 @@ const TicketWidget = {
         };
     },
 
-    renderTicketStep() {
+    renderTicketStep(reverse = false) {
         const {
             ticketPrice: pricePerDraw,
             maxPurchase,
@@ -1497,13 +1497,15 @@ const TicketWidget = {
         document.getElementById('price-per-draw').textContent = parseFloat(pricePerDraw).toFixed(2);
         document.getElementById('max-purchase').textContent = maxPurchase;
 
+        const displayQuantities = reverse ? [...quantities].reverse() : quantities;
+
         // ——— build quantities in two rows ———
         const qtyContainer = document.getElementById('quantityRadios');
         qtyContainer.innerHTML = '';
 
-        const half = Math.ceil(quantities.length / 2);
-        const firstRowQuantities = quantities.slice(0, half);
-        const secondRowQuantities = quantities.slice(half);
+        const half = Math.ceil(displayQuantities.length / 2);
+        const firstRowQuantities = displayQuantities.slice(0, half);
+        const secondRowQuantities = displayQuantities.slice(half);
 
         // Create first row container
         const firstRowDiv = document.createElement('div');
