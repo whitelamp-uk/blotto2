@@ -27,6 +27,7 @@ define ( 'BLOTTO_EMAIL_WINS_ON',    true                );
 define ( 'BLOTTO_EMAIL_BOUNCE_DELAY', 180               ); // Seconds to sleep before checking ANL email bounces, mostly OK in 3 minutes
 define ( 'BLOTTO_POSTCODE_PREG',    '^[A-Z][A-Z]?[0-9][A-Z0-9]?[0-9][A-Z][A-Z]$' );
 define ( 'BLOTTO_LOG_DAYS',         30                  );
+define ( 'BLOTTO_DIGEST',           '/var/log/blotto/digest.log'                );
 define ( 'BLOTTO_TMP_DIR',          '/tmp'              );
 
 // Postcodes are processed on the assumption they are UK - so territory options
@@ -69,6 +70,10 @@ define ( 'BLOTTO_BANK_ACNR',        '12345678'              );
 define ( 'BLOTTO_CURRENCY',         '£'             ); // GBP, £, USD, etc
 define ( 'BLOTTO_TAX',              0.20            ); // Sales tax as a decimal
 define ( 'BLOTTO_TAX_REF',          'VAT reg nr 389 2652 49' ); // Eg VAT nr
+
+
+// Email providers
+define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CODE',   'CM'    );
 
 
 // Campaign Monitor
@@ -152,11 +157,6 @@ define ( 'DATA8_EMAIL_LEVEL',       'MX'        );
 define ( 'VOODOOSMS_DEFAULT_COUNTRY_CODE', 44   );
 define ( 'VOODOOSMS_FAIL_STRING',   'Sending SMS failed'        );
 define ( 'VOODOOSMS_JSON',          __DIR__.'/voodoosms.cfg.json' );
-
-
-// Email providers
-define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CODE',   'CM'                                            );
-define ( 'BLOTTO_EMAIL_API_CAMPAIGNMONITOR_CLASS',  '\Whitelamp\CampaignMonitor'                    );
 
 
 // Other
