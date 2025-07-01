@@ -25,9 +25,9 @@ $api = false;
 $api = email_api ();
 if ($api) {
     if (defined('BLOTTO_ANL_EMAIL') && BLOTTO_ANL_EMAIL) {
-        if ($org['signup_cm_key'] && $org['anl_cm_id']) {
+        if ($org['anl_cm_id'] && $key=email_api_key()) {
             $email = true;
-            $api->keySet ($org['signup_cm_key']);
+            $api->keySet ($key);
         }
         else {
             tee ("    No email API configuration for ANLs - see `blotto_org`.`signup_cm_key` and `blotto_org`.`anl_cm_id`\n");

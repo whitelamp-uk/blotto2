@@ -1415,6 +1415,18 @@ function email_api ($code=null) {
     return null;
 }
 
+function email_api_key ( ) {
+    // If no key, fall back to BLOTTO_CM_KEY
+    $key = org() ['signup_cm_key'];
+    if (strlen($key)<8) {
+        if (strlen($key)>0) {
+            error_log ('Email API key looks wrong - falling back to BLOTTO_CM_KEY');
+        }
+        $key = BLOTTO_CM_KEY;
+    }
+    return $key;
+}
+
 function email_apis ( ) {
     // If no code, return the first found
     $constants = get_defined_constants (true);
@@ -6329,7 +6341,7 @@ function www_auth_reset_save ($mode,&$errMsg=null) {
                         $zo->query ($qu);
                         // PASSWORD NOW CHANGED
                         if ($api=email_api()) {
-                            $api->keySet (BLOTTO_CM_KEY);
+                            $api->keySet (email_api_key());
                             $ref = $api->send (
                                 BLOTTO_WWW_PWDRST_NTY_CM_ID,
                                 $_SESSION['reset']['em'],
@@ -6404,7 +6416,7 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
         // User will enter enter an email code - we must email it
         if ($api=email_api()) {
             $code = rand (1000,9999);
-            $api->keySet (BLOTTO_CM_KEY);
+            $api->keySet (email_api_key());
             $ref = $api->send (
                 BLOTTO_WWW_PWDRST_VFY_CM_ID,
                 $_SESSION['reset']['em'],
