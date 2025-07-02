@@ -2501,8 +2501,8 @@ BEGIN
      ,`s`.`canvas_ref`
      ,`s`.`original_client_ref` AS `client_ref_orig`
      ,`p`.`client_ref`
-     ,COUNT(DISTINCT `t`.`number`) AS `tickets`
-     ,GROUP_CONCAT(DISTINCT `t`.`number` SEPARATOR ', ') AS `ticket_numbers`
+     ,IFNULL(COUNT(DISTINCT `t`.`number`),'') AS `tickets`
+     ,IFNULL(GROUP_CONCAT(DISTINCT `t`.`number` SEPARATOR ', '),'') AS `ticket_numbers`
      ,`c`.`title`
      ,`c`.`name_first`
      ,`c`.`name_last`
@@ -2526,9 +2526,9 @@ BEGIN
      ,`c`.`p7`
      ,`c`.`p8`
      ,`c`.`p9`
-     ,`s`.`supporter_first_payment` AS `first_collected`
-     ,`s`.`latest_payment_collected` AS `last_collected`
-     ,`player1`.`first_draw_close` AS `first_draw`
+     ,IFNULL(`s`.`supporter_first_payment`,'') AS `first_collected`
+     ,IFNULL(`s`.`latest_payment_collected`,'') AS `last_collected`
+     ,IFNULL(`player1`.`first_draw_close`,'') AS `first_draw`
      ,'' AS `mandate_status`
      ,`s`.`death_by_suicide`
     FROM `blotto_update` AS `u`
