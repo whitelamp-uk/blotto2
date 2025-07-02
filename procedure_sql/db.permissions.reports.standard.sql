@@ -49,3 +49,7 @@ GRANT SELECT ON `{{BLOTTO_DB}}`.`Updates`
 TO '{{BLOTTO_ORG_USER}}'
 ;
 
+GRANT SELECT ON `{{BLOTTO_DB}}`.`UpdatesLatest`
+TO '{{BLOTTO_ORG_USER}}'
+;
+
