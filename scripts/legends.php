@@ -89,14 +89,18 @@ echo "
 
 
 echo "\n-- Create `UpdatesLatest` --\n";
-$view = "
+$pref_str = "";
+foreach ($prefs as $i=>$legend) {
+    $pref_str .= "   ,GROUP_CONCAT(`u`.`$legend` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `$legend`\n";
+}
+echo "
   CREATE OR REPLACE VIEW `UpdatesLatest` AS
   SELECT
     MAX(`u`.`updated`) AS `updated`
    ,`u`.`supporter_id`
-   ,'' AS `updater`
-   ,'' AS `milestone`
-   ,'' AS `milestone_date`
+   ,'' AS `unused_1`
+   ,'' AS `unused_2`
+   ,'' AS `unused_3`
     -- group_concat() trick to get the data from the latest row
     -- usually one milestone per updated value but when more, use milestone_date as a tie-breaker
    ,GROUP_CONCAT(`u`.`signed` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `signed`
@@ -121,23 +125,16 @@ $view = "
    ,GROUP_CONCAT(`u`.`county` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `county`
    ,GROUP_CONCAT(`u`.`postcode` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `postcode`
    ,GROUP_CONCAT(`u`.`dob` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `dob`
-{{prefs}}
+$pref_str
    ,GROUP_CONCAT(`u`.`first_collected` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `first_collected`
    ,GROUP_CONCAT(`u`.`last_collected` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `last_collected`
    ,GROUP_CONCAT(`u`.`first_draw` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `first_draw`
-   ,GROUP_CONCAT(`u`.`mandate_status` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `mandate_status`
    ,GROUP_CONCAT(`u`.`death_by_suicide` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `death_by_suicide`
-   ,IFNULL(`m`.`Freq`,'None') AS `collection_frequency`
+   ,GROUP_CONCAT(`u`.`mandate_status` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `mandate_status`
+   ,GROUP_CONCAT(`u`.`collection_frequency` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `collection_frequency`
   FROM `Updates` AS `u`
-  LEFT JOIN `blotto_build_mandate` AS `m`
-         ON `m`.`ClientRef`=`u`.`client_ref_orig`
   GROUP BY `supporter_id`
   ORDER BY `signed`,`supporter_id`
   ;
 ";
-$pref_str = "";
-foreach ($prefs as $i=>$legend) {
-    $pref_str .= "   ,GROUP_CONCAT(`u`.`$legend` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `$legend`\n";
-}
-echo str_replace ("{{prefs}}\n",$pref_str,$view);
 

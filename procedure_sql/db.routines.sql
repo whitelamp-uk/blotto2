@@ -2529,8 +2529,9 @@ BEGIN
      ,IFNULL(`s`.`supporter_first_payment`,'') AS `first_collected`
      ,IFNULL(`s`.`latest_payment_collected`,'') AS `last_collected`
      ,IFNULL(`player1`.`first_draw_close`,'') AS `first_draw`
-     ,'' AS `mandate_status`
      ,`s`.`death_by_suicide`
+     ,IFNULL(`m`.`Status`,'') AS `mandate_status`
+     ,IFNULL(`m`.`Freq`,'') AS `collection_frequency`
     FROM `blotto_update` AS `u`
     JOIN (
       SELECT
@@ -2546,9 +2547,11 @@ BEGIN
       ON `p`.`id`=`u`.`player_id`
     JOIN `blotto_contact` as `c`
       ON `c`.`id`=`u`.`contact_id`
-    JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
+    LEFT JOIN `blotto_build_mandate` as `m`
+      ON `m`.`ClientRef`=`p`.`client_ref`
+    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
       ON `t`.`org_id`={{BLOTTO_ORG_ID}}
-      -- EXT ticket supporters get milestones too because mandates are not joined
+      -- EXT ticket supporters get milestones too because mandates are left joined
      AND `t`.`client_ref`=`p`.`client_ref`
     GROUP BY `u`.`id`
     ORDER BY `updated`,`client_ref_orig`,`client_ref`
