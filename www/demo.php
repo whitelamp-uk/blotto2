@@ -110,7 +110,7 @@ $org_code = array_shift ($org_code);
           * #lottery-winners-latest gives winning tickets
             Shows: number drawn, prize name
       -->
-      <div id="lottery-winners-latest" data-dateformat="jS M Y"></div>
+      <div id="lottery-winners-latest" data-dateformat="jS M Y" data-matchnumtitle="Custom prize name"></div>
 
 <!-- 1 ENDS -->
 
