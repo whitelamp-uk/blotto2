@@ -770,7 +770,7 @@ function download_csv ( ) {
     if ($gp) {
         $file  .= '_by_member';
     }
-    elseif (!in_array(strtolower($t),['anls','updates','wins'])) {
+    elseif (!in_array(strtolower($t),['anls','supportersview','updates','updateslatest','wins'])) {
         $file  .= '_by_ticket';
     }
     if ($elz) {
