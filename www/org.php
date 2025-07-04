@@ -52,6 +52,7 @@ $list          = [
     'Supporters',
     'SupportersView',
     'Updates',
+    'UpdatesLatest',
     'Wins'
 ];
 $session       = null;

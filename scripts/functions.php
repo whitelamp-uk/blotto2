@@ -762,7 +762,7 @@ function download_csv ( ) {
     $d1         = esc ($_GET['from']);
     $d2         = esc ($_GET['to']);
     $cond       = strtolower($t)=='wins' && defined('BLOTTO_WIN_FIRST') && BLOTTO_WIN_FIRST;
-    $usepri     = strtolower($t)!='moniesweekly' && strtolower($t)!='supportersview';
+    $usepri     = strtolower($t)!='moniesweekly' && strtolower($t)!='supportersview' && strtolower($t)!='updateslatest';
     $gp         = array_key_exists('grp',$_GET) && $_GET['grp']>0 && in_array(strtolower($t),['cancellations','draws','supporters']);
     $elz        = array_key_exists('elz',$_GET) && $_GET['elz']>0;
     $file       = $_GET['table'];
@@ -2008,6 +2008,11 @@ function gratis_report ( ) {
         return "connection failure";
     }
     $oid = BLOTTO_ORG_ID;
+
+        // quick hack to avoid error_log() noise about $format
+        // while I remember the intended purpose of said variable
+        $format = ['',''];
+
     $qs = "
       SELECT
         `ts`.`status`
@@ -2435,6 +2440,7 @@ function link_query ($target,$table,$date,$interval=null) {
         'Supporters'       => 'created',
         'SupportersView'   => 'created',
         'Updates'          => 'updated',
+        'UpdatesLatest'    => 'sort1_signed',
         'Wins'             => 'draw_closed'
     ];
     $datefield = $datefields[$table];

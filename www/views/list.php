@@ -10,6 +10,7 @@ $tables         = [
     'Supporters'       => 'Supporters by create date (1 row / ticket)',
     'SupportersView'   => 'Supporters by create date (1 row / member)',
     'Updates'          => 'CRM data by date updated',
+    'UpdatesLatest'    => 'CRM supporter snapshot by date signed/supporter ID',
     'Wins'             => 'Winners by draw close date'
 ];
 
@@ -71,10 +72,6 @@ if ($table=='Changes') {
 
 if ($day1) {
     $day1 = $day1->format ('Y-m-d');
-    if ($table=='ANLs' || $table=='Wins') {
-// Stop doing this because it is horrendously slow and Crucible in any event is a daily reporting system
-//        www_letter_status_refresh ();
-    }
     if ($table=='Insurance') {
         $day2   = new DateTime ();
         $day2->add (new DateInterval('P7D'));
