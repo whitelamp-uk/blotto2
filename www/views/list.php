@@ -10,7 +10,7 @@ $tables         = [
     'Supporters'       => 'Supporters by create date (1 row / ticket)',
     'SupportersView'   => 'Supporters by create date (1 row / member)',
     'Updates'          => 'CRM data by date updated',
-    'UpdatesLatest'    => 'CRM supporter snapshot by date signed/supporter ID',
+    'UpdatesLatest'    => 'CRM supporter snapshot by date signed',
     'Wins'             => 'Winners by draw close date'
 ];
 
