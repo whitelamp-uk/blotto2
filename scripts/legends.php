@@ -97,13 +97,13 @@ echo "
   CREATE OR REPLACE VIEW `UpdatesLatest` AS
   SELECT
     MAX(`u`.`updated`) AS `updated`
-   ,`u`.`supporter_id`
+   ,`u`.`supporter_id` AS `sort2_supporter_id
    ,'' AS `unused_1`
    ,'' AS `unused_2`
    ,'' AS `unused_3`
     -- group_concat() trick to get the data from the latest row
     -- usually one milestone per updated value but when more, use milestone_date as a tie-breaker
-   ,GROUP_CONCAT(`u`.`signed` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `signed`
+   ,GROUP_CONCAT(`u`.`signed` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `sort1_signed`
    ,GROUP_CONCAT(`u`.`created` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `created`
    ,GROUP_CONCAT(`u`.`cancelled` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `cancelled`
    ,GROUP_CONCAT(`u`.`ccc` ORDER BY `u`.`updated` DESC, `u`.`milestone_date` DESC LIMIT 1) AS `ccc`
