@@ -5362,6 +5362,10 @@ function update ( ) {
                 return "{ \"error\" : 110, \"errorMessage\" : \"No changes have been requested!\" }"; // NB 110 as below suppresses the "email your admin"
             }
 
+            if ($fields['Provider'] == 'RSM' && substr($fields['StartDate'],-2)!= '01') {
+                return "{ \"error\" : 110, \"errorMessage\" : \"For RSM Start date must be 1st of month\" }"; // NB 110 as below suppresses the "email your admin"
+            }
+
             // Use the bespoke function chances()
             try {
                 $ch  = intval (chances($fields['Freq'],$fields['Amount']));
