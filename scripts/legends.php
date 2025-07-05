@@ -97,7 +97,7 @@ echo "
   CREATE OR REPLACE VIEW `UpdatesLatest` AS
   SELECT
     MAX(`u`.`updated`) AS `updated`
-   ,`u`.`supporter_id` AS `sort2_supporter_id
+   ,`u`.`supporter_id` AS `sort2_supporter_id`
    ,'' AS `unused_1`
    ,'' AS `unused_2`
    ,'' AS `unused_3`
