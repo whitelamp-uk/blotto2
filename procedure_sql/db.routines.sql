@@ -2529,6 +2529,7 @@ BEGIN
      ,IFNULL(`s`.`supporter_first_payment`,'') AS `first_collected`
      ,IFNULL(`s`.`latest_payment_collected`,'') AS `last_collected`
      ,IFNULL(`player1`.`first_draw_close`,'') AS `first_draw`
+     ,IFNULL(`s`.`death_reported`,'') AS `death_reported`
      ,`s`.`death_by_suicide`
      ,IFNULL(`m`.`Status`,'') AS `mandate_status`
      ,IFNULL(`m`.`Freq`,'') AS `collection_frequency`
