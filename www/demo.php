@@ -40,7 +40,7 @@ $org_code = array_shift ($org_code);
       // if you are using Termly this script is necessary for Safari users
       // this code is harmless if you not using Termly
       window.TERMLY_CUSTOM_BLOCKING_MAP = {
-          "???.thefundraisingfoundry.com": "essential"
+          "<?php echo $org_code; ?>.thefundraisingfoundry.com": "essential"
       };
       </script>
       <script defer src="https://<?php echo $_SERVER['HTTP_HOST']; ?><?php echo str_replace('//','/',dirname($_SERVER['REQUEST_URI']).'/media/winners.js'); ?>"></script>
