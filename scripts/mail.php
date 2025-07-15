@@ -15,12 +15,21 @@ if (!array_key_exists(2,$argv) || !trim($argv[2])) {
 }
 
 $pfz = false;
-if (array_key_exists(3,$argv) && $argv[3]=='-z') {
-    $pfz = true;
+$dgo = false;
+if (array_key_exists(3,$argv) && strpos($argv[3],'-')===0) {
+    if (strpos($argv[3],'z')) {
+        $pfz = true;
+    }
+    if (strpos($argv[3],'d')) {
+        // digest only
+        $dgo = true;
+    }
 }
 $pfzc = defined('BLOTTO_DEV_PAY_FREEZE') && BLOTTO_DEV_PAY_FREEZE;
 $dc1 = strlen(BLOTTO_DRAW_CLOSE_1) > 0;
 $anl = defined('BLOTTO_ANL_EMAIL') && BLOTTO_ANL_EMAIL;
+$pzc = count(prizes(draw_upcoming())) && true;
+
 
 $headers = null;
 if (defined('BLOTTO_EMAIL_FROM')) {
@@ -28,12 +37,43 @@ if (defined('BLOTTO_EMAIL_FROM')) {
 }
 
 $warning = '';
-if ($pfz || $pfzc || !$dc1 || !$anl) {
+if ($pfz || $pfzc || !$dc1 || !$anl || !$pzc) {
     $warning = " with warning(s)";
 }
 
-$body = "Message$warning at ".date('Y-m-d H:i:s')."\n".$argv[2]."\n";
+$dt = date ('Y-m-d H:i:s');
+$brd = BLOTTO_BRAND;
+$org = BLOTTO_ORG_NAME;
+$mc = BLOTTO_MC_NAME;
 
+
+
+
+// digest
+$fp = fopen (BLOTTO_DIGEST,'a');
+if ($dgo) {
+    if ($warning) {
+        $line = "$dt $org OK $warning\n";
+    }
+    else {
+        $line = "$dt $org OK\n";
+    }
+}
+else {
+    $line = "$dt $org FAIL\n";
+}
+fwrite ($fp,$line);
+fclose ($fp);
+
+
+
+
+// mail
+if ($dgo) {
+    // digest only
+    exit (0);
+}
+$body = "Message$warning at $dt\n".$argv[2]."\n";
 if ($pfz || $pfzc) {
     $body .= "
 Warning: pay freeze is set so the following prevented:
@@ -71,13 +111,14 @@ if (!$anl) {
     $body .= "
 Warning: BLOTTO_ANL_EMAIL is not true so ANL emails are not activated";
 }
-
-
+if (!$pzc) {
+    $body .= "
+Warning: no prizes are defined for next draw";
+}
 mail (
     BLOTTO_EMAIL_WARN_TO,
-    BLOTTO_BRAND." - Status report for ".BLOTTO_ORG_NAME." from ".BLOTTO_MC_NAME,
+    "$brd - Status report for $org from $mc",
     $body,
     $headers
 );
-
 
