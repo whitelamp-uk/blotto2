@@ -51,18 +51,19 @@ try {
     foreach ($draws as $draw) {
         // Write draw report
         $file   = BLOTTO_DIR_DRAW.'/';
-        $file  .= BLOTTO_ORG_USER.'_'.$draw['draw_closed'].'_draw_report.html';
+        $file  .= BLOTTO_ORG_USER.'_'.$draw['draw_closed'].'_draw_report';
+        $pdf    = $file.'.pdf';
+        $file  .= '.html';
         if (!file_exists($file)) {
             if ($dr=draw_report_render($draw['draw_closed'],false)) {
-                $fp = fopen ($file,'w');
-                fwrite ($fp,$dr);
-                fclose ($fp);
+                file_put_contents($file,$dr);
+                html_file_to_pdf_file($file,$pdf,'a3');
                 if (defined('BLOTTO_DRAW_EMAIL') && BLOTTO_DRAW_EMAIL) {
                     mail_attachments (
                         BLOTTO_DRAW_EMAIL,
                         BLOTTO_BRAND." draw report",
                         "Draw report for draw closed {$draw['draw_closed']}",
-                        [$file]
+                        [$pdf]
                     );
                 }
             }
