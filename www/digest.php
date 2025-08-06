@@ -1,6 +1,54 @@
 <?php
 
-require '../config.digest.php';
+// replace functions in bridge.php (Adminer login linking not required here)
+
+function cookie2end ($cookie_key) {
+    if (!array_key_exists($cookie_key,$_COOKIE)) {
+        return true;
+    }
+    if (!strlen($_COOKIE[$cookie_key])) {
+        return true;
+    }
+    if ($_COOKIE[$cookie_key]<time()) {
+        return true;
+    }
+    return false;
+}
+
+function cookie2pwd ($cookie_key) {
+    return '';
+}
+
+function cookie2value ($cookie_key) {
+    return '';
+}
+
+function pwd2cookie ($password) {
+    return '';
+}
+
+
+
+
+require __DIR__.'/digest.config.php';
+
+// force login by default
+$login = true;
+$err = false;
+
+// if a request, authenticate
+if (array_key_exists('auth',$_POST)) {
+    www_auth (BLOTTO_DB,$timestamp,$err,$msg);
+    if (!$err) {
+        $login = false;
+    }
+}
+
+// else check session
+elseif (www_session($timestamp)) {
+    $login = false;
+}
+
 
 ?><!doctype html>
 <html class="no-js" lang="">
@@ -10,14 +58,7 @@ require '../config.digest.php';
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="description" content="" />
-    <title>
-<?php 
-        if (strpos ($_SERVER['SERVER_NAME'],'dev.')===0) {
-            echo "dev:";
-        }
-        'Build digest @ '.htmlspecialchars (BLOTTO_BRAND); ?> <?php version(__DIR__); 
-?>
-    </title>
+    <title><?php echo gethostname (); ?> digest</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 
   </head>
@@ -25,43 +66,50 @@ require '../config.digest.php';
   <body>
     <script>0</script>
 
-    <h2 style="color:red">
-      Lottery build digest -
+
+    <h2>
+      Lottery build digest for <?php echo htmlspecialchars (ucfirst(BLOTTO_BRAND)); ?> <?php echo version (__DIR__); ?>
 <?php if (strpos($_SERVER['SERVER_NAME'],'dev.')===0): ?>
-      <?php echo htmlspecialchars ($_SERVER['SERVER_NAME']); ?>
+      @ <strong style="color:red"><?php echo gethostname (); ?></strong>
 <?php else: ?>
-      <strong style="color:red"><?php echo htmlspecialchars ($_SERVER['SERVER_NAME']); ?></strong>
+      @ <?php echo gethostname (); ?>
 <?php endif; ?>
     </h2>
 
-    <section id="login" class="<?php if (!is_https()): ?>in<?php endif; ?>secure">
 
-      <form action="" method="post">
-
-        <section class="form-content">
-
-<?php if($err): ?>
-          <p class="error"><?php echo htmlspecialchars ($err); ?></p>
+<?php if ($err): ?>
+      <p class="error"><?php echo htmlspecialchars ($msg); ?></p>
 
 <?php else: ?>
-          <p>&nbsp;</p>
+      <p>&nbsp;</p>
 
 <?php endif; ?>
-          <div class="usr">
-            <input type="text" class="text" name="un" value="<?php echo htmlspecialchars ($run); ?>" placeholder="Username" />
-          </div>
-          <div class="pwd">
-            <span class="component"><input <?php if($run): ?> type="text" <?php else: ?> type="password" <?php endif; ?> class="text squeezed" name="pw" placeholder="Password" /><input type="submit" class="image" name="auth" title="Login now" value="Login now" /></span>
-          </div>
-          <div id="reset-option">
-            <input id="reset-start" type="submit" class="link" name="reset" title="Reset password" value="Reset password" />
-          </div>
 
-        </section>
 
-      </form>
+<?php if ($login): ?>
+    <form action="" method="post">
+      <div class="usr">
+        <input type="text" class="text" name="un" value="" placeholder="Username" />
+      </div>
+      <div class="pwd">
+        <input type="password" name="pw" placeholder="Password" />
+      </div>
+      <div class="submit">
+        <input type="submit" name="auth" title="Login" value="Login" /></span>
+      </div>
+    </form>
 
-    </section>
+<?php else: ?>
+
+
+
+    <h3>Welcome, user <?php echo htmlspecialchars ($_SESSION['blotto']); ?></h3>
+
+
+
+
+
+<?php endif; ?>
 
   </body>
 
