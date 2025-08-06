@@ -1046,6 +1046,20 @@ function draw_first_zaffo_model ($first_collection_date,$dow=5) {
     return $dc;
 }
 
+function draw_previous ($day) {
+    $dt = new \DateTime ($day);
+    $dc_curr = draw_upcoming ($day);
+    if ($dc_curr==BLOTTO_DRAW_CLOSE_1) {
+        return null;
+    }
+    $dc_prev = $dc_curr;
+    while ($dc_prev==$dc_curr && $dc_prev>BLOTTO_DRAW_CLOSE_1) {
+        $dt->sub (new \DateInterval ('P1D'));
+        $dc_prev = draw_upcoming ($dt->format('Y-m-d'));
+    }
+    return $dc_prev;
+}
+
 function draw_report ($draw,$output=true) {
     if ($output) {
         require __DIR__.'/draw.php';
