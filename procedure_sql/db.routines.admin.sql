@@ -416,10 +416,9 @@ BEGIN
 END$$
 
 
+DELIMITER ;
 USE `{{BLOTTO_MAKE_DB}}`
 ;
-
-
 
 
 DELIMITER $$
