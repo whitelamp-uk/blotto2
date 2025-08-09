@@ -93,13 +93,15 @@ try {
                 fwrite (STDERR, $qs."\n".$zo->error."\n");
                 exit (104);
             }
-            $api->insert_mandates ($mandates);
+            $api->insert_mandates ($mandates,$bad,$good,$tooearly,$toolate);
             $mandate_count += count ($mandates);
             $apis++;
         }
-        echo "    Exported $mandate_count mandates using $class\n";
+        echo "    Processed $mandate_count mandates using $class\n";
+        echo "        $good good, $bad bad, $tooearly too early,$toolate too late\n";
         echo "    Only one mandate-creation API is allowed currently\n";
-        break;
+        // TODO consider using a second API to try processing $tooearly and $toolate rows
+        break; // just the one API for now
     }
     if ($apis) {
         echo "    Imported payments using $apis APIs\n";
