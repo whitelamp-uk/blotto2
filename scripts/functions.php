@@ -965,7 +965,7 @@ function draw ($draw_closed) {
     return $draw;
 }
 
-function draw_first_asap ($first_collection_date,$delay=null) {
+function draw_first_asap ($first_collection_date,$delay=null,$opening_balance=0,$chances=1) {
     if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
         throw new \Exception ("BLOTTO_DRAW_CLOSE_1 has not been set");
         return false;
@@ -974,6 +974,7 @@ function draw_first_asap ($first_collection_date,$delay=null) {
         throw new \Exception ("Function draw_upcoming() was not found");
         return false;
     }
+    // TODO exploit $opening_balance, $chances and BLOTTO_TICKET_PRICE to speed things up
     // If a delay period is required (eg direct debit)
     if ($delay) {
         $dt = new \DateTime ($first_collection_date);
@@ -1007,11 +1008,12 @@ function draw_first_asap ($first_collection_date,$delay=null) {
     return draw_upcoming ($d2->format('Y-m-d'));
 }
 
-function draw_first_zaffo_model ($first_collection_date,$dow=5) {
+function draw_first_zaffo_model ($first_collection_date,$dow=5,$opening_balance=0,$chances=1) {
     if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
         throw new \Exception ("BLOTTO_DRAW_CLOSE_1 has not been set");
         return false;
     }
+    // TODO exploit $opening_balance, $chances and BLOTTO_TICKET_PRICE to speed things up
     /*
         OLD: Do it on a Friday
             1. Take first_collection_date

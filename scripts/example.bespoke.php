@@ -24,20 +24,20 @@ function chances ($frequency,$amount) {
     return intval((100*$amount)/round($ratio*BLOTTO_TICKET_PRICE));
 }
 
-function draw_first ($first_collection_date,$ccc) {
-    // Calculate player first draw date based on
-    // first collection and canvassing company
+function draw_first ($first_collection_date,$ccc,$opening_balance=0,$chances=1) {
+    // calculate player first draw date based on first collection and canvassing company code
+
     if (in_array($ccc,['STRP','CDNT','GRTS'])) {
-        // Debit cards and gratis-api tickets require no balance accumulation
-        return draw_first_asap ($first_collection_date);
+        // debit cards and gratis-api tickets require no balance accumulation
+        return draw_first_asap ($first_collection_date,null,$opening_balance,$chances);
     }
 
     // if five draws a month no need to "buffer" the money to deal with months with five Fridays 
     // but still need to deal with BACS jitter (and maybe a bit more)
-    return draw_first_asap ($first_collection_date, BLOTTO_PAY_DELAY);
+    return draw_first_asap ($first_collection_date, BLOTTO_PAY_DELAY,$opening_balance,$chances);
 
-    // Library function for the balance accumulation model
-    return draw_first_zaffo_model ($first_collection_date,5);
+    // library function for the balance accumulation model
+    return draw_first_zaffo_model ($first_collection_date,5,$opening_balance,$chances);
 }
 
 function draw_insuring ($today=null) {

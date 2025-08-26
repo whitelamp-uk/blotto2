@@ -34,6 +34,8 @@ $qs = "
    ,`p`.`id` AS `player_id`
    ,`p`.`supporter_id`
    ,`p`.`started`
+   ,`p`.`opening_balance`
+   ,`p`.`chances`
    ,`s`.`projected_first_draw_close`
    ,`s`.`canvas_code`
    ,IF(`s`.`client_ref`=`p`.`client_ref`,1,0) AS `is_original_player`
@@ -58,16 +60,17 @@ try {
             $starts[$m['Created']][] = $m['player_id'];
         }
         if (!$m['projected_first_draw_close']) {
-            // Build-up some player balance before entering the game
-
+            // projection of first draw based on mandate start date
             if ($m['is_original_player']) {
-                // Original player needs to build up some balance
-                // Use the bespoke function
-                $close = draw_first ($m['StartDate'],$m['canvas_code']);
+                // original player needs to build up some balance
+                // use the bespoke function
+                // older bespoke functions only use the first two arguments
+                $close = draw_first ($m['StartDate'],$m['canvas_code'],$m['opening_balance'],$m['chances']);
             }
             else {
-                // For now, use the bespoke function
-                $close = draw_first ($m['StartDate'],$m['canvas_code']);
+                // for now, use the bespoke function
+                // older bespoke functions only use the first two arguments
+                $close = draw_first ($m['StartDate'],$m['canvas_code'],$m['opening_balance'],$m['chances']);
 /*
 TODO:
 If you have either no change or a reduction in chances from old player
@@ -98,14 +101,14 @@ blotto_player(supporter_id,started) is unique so `started` identifies and orders
 the players that make the history of any given supporter. It has no more subtle
 meaning than that - it has no implications around money, draw entries etc
 */
-echo "-- Update player started date\n";
+echo "-- update player started date\n";
 foreach ($starts as $date=>$ids) {
     if (!count($ids)) {
         continue;
     }
     echo "UPDATE `blotto_player` SET `started`='$date' WHERE `id` IN (".implode(',',$ids).");\n";
 }
-echo "-- Update projected first draw close\n";
+echo "-- update projected first draw close (based on start date)\n";
 foreach ($firsts as $close=>$ids) {
     if (!count($ids)) {
         continue;
@@ -115,11 +118,13 @@ foreach ($firsts as $close=>$ids) {
 
 
 
-// Set the player first draw close
+// update actual first draw close (based on collection date)
 $firsts                     = [];
 $qs = "
   SELECT
     `p`.`id`
+   ,`p`.`opening_balance`
+   ,`p`.`chances`
    ,`s`.`canvas_code`
    ,MIN(`c`.`DateDue`) AS `first_collected`
   FROM `blotto_player` AS `p`
@@ -135,8 +140,10 @@ try {
     $ps                     = $zo->query ($qs);
     fwrite (STDERR,"{$ps->num_rows} players where first draw close not set\n");
     while ($p=$ps->fetch_assoc()) {
-        // Use the bespoke function
-        $date               = draw_first ($p['first_collected'],$p['canvas_code']);
+        // definitive first draw based on first collection date
+        // use the bespoke function
+        // older bespoke functions only use the first two arguments
+        $date               = draw_first ($p['first_collected'],$p['canvas_code'],$p['opening_balance'],$p['chances']);
         if (!array_key_exists($date,$firsts)) {
             $firsts[$date]  = [];
         }
@@ -147,7 +154,7 @@ catch (\mysqli_sql_exception $e) {
     fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
     exit (104);
 }
-echo "-- Update player actual first draw close\n";
+echo "-- update player actual first draw close\n";
 foreach ($firsts as $date=>$ids) {
     if (!count($ids)) {
         continue;
