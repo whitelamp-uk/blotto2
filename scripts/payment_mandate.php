@@ -5,7 +5,6 @@ cfg ();
 require $argv[1];
 
 $interval = BLOTTO_DD_TRY_INTERVAL;
-$errors = [];
 $api = false;
 
 echo "    Generating/posting mandate data\n";
@@ -19,6 +18,7 @@ try {
     $constants      = get_defined_constants (true);
     $apis           = 0;
     $mandate_count  = 0;
+    $bad = $good = $tooearly = $toolate = 0;
     foreach ($constants['user'] as $name => $classfile) {
         if (!preg_match('<^BLOTTO_PAY_API_[A-Z]+$>',$name)) {
             continue;
@@ -70,6 +70,7 @@ try {
               )
             ";
             try {
+                $errors = [];
                 $ms = $zo->query ($qs);
                 while ($m=$ms->fetch_assoc()) {
                     if (territory_permitted($m['Postcode'])) {
@@ -81,12 +82,13 @@ try {
                         $errors[] = $e;
                     }
                 }
-                if ($bad=count($errors)) {
-                    $message = "The following $bad mandates have been rejected:\n";
+                if ($count=count($errors)) {
+                    $message = "The following $count mandates have been rejected:\n";
                     foreach ($errors as $e) {
                         $message .= $e;
                     }
-                    notify (BLOTTO_EMAIL_WARN_TO,"$bad rejected mandates",$message);
+                    notify (BLOTTO_EMAIL_WARN_TO,"$count rejected mandates",$message);
+                    $bad += $count;
                 }
             }
             catch (\mysqli_sql_exception $e) {
@@ -97,9 +99,14 @@ try {
             $mandate_count += count ($mandates);
             $apis++;
         }
-        echo "    Processed $mandate_count mandates using $class\n";
-        echo "        $good good, $bad bad, $tooearly too early,$toolate too late\n";
-        echo "    Only one mandate-creation API is allowed currently\n";
+        echo "    Processed $mandate_count mandates using $class\n        $good good, $bad bad";
+        if ($tooearly>0) {
+            echo ", $tooearly too early";
+        }
+        if ($toolate>0) {
+            echo ", $toolate too late";
+        }
+        echo "\n    Only one mandate-creation API is allowed currently\n";
         // TODO consider using a second API to try processing $tooearly and $toolate rows
         break; // just the one API for now
     }
