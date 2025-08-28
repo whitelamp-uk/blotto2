@@ -731,6 +731,7 @@ then
     abort_on_error 34d $?
 fi
 
+# TODO replace this and 35 
 if [ "$rehearse" ]
 then
     echo "    Rehearsal only - skipping"
@@ -741,12 +742,13 @@ else
     echo "    Completed in $(($SECONDS-$start)) seconds"
 fi
 
+# todo replace with dbcopy - keep .inhibit file
 stage "35. Recreate organisation database"
 if [ "$rehearse" ]
 then
     echo "    Rehearsal only - skipping"
 else
-    touch $cfg.inhibit
+    touch $cfg.inhibit 
     start=$SECONDS
     echo "    DROP DATABASE IF EXISTS $dbo;"
     mariadb                                           <<< "DROP DATABASE IF EXISTS $dbo;"
