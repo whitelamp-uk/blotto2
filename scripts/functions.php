@@ -2131,7 +2131,7 @@ function html_file_to_pdf_file_openapi ($html_file,$pdf_file) {
       //  CURLOPT_POSTFIELDS => '{"html":"'.$html.'"}',
       CURLOPT_VERBOSE => true,
       CURLOPT_HTTPHEADER => [
-        "Authorization: Bearer 688bd15525bd19ae15017fe4",
+        "Authorization: Bearer ".OPENAPI_PDF_AUTH,
         "content-type: application/json"
       ],
     ]);
