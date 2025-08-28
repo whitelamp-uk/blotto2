@@ -52,12 +52,12 @@ try {
         // Write draw report
         $file   = BLOTTO_DIR_DRAW.'/';
         $file  .= BLOTTO_ORG_USER.'_'.$draw['draw_closed'].'_draw_report';
-        //--- $pdf    = $file.'.pdf';
+        $pdf    = $file.'.pdf';
         $file  .= '.html';
         if (!file_exists($file)) {
             if ($dr=draw_report_render($draw['draw_closed'],false)) {
                 file_put_contents($file,$dr);
-                //--- html_file_to_pdf_file($file,$pdf,'a3');
+                html_file_to_pdf_file_openapi($file,$pdf);
                 if (defined('BLOTTO_DRAW_EMAIL') && BLOTTO_DRAW_EMAIL) {
                     mail_attachments (
                         BLOTTO_DRAW_EMAIL,
@@ -65,6 +65,21 @@ try {
                         "Draw report for draw closed {$draw['draw_closed']}",
                         [$file]
                     );
+                }
+                if (file_exists($pdf)) {
+                    mail_attachments (
+                        'kevin.donnelly@thefundraisingfoundry.com',
+                        BLOTTO_BRAND." draw report",
+                        "PDF Draw report for draw closed {$draw['draw_closed']}",
+                        [$pdf]
+                    );
+                    mail_attachments (
+                        'dom.latter@thefundraisingfoundry.com',
+                        BLOTTO_BRAND." draw report",
+                        "PDF Draw report for draw closed {$draw['draw_closed']}",
+                        [$pdf]
+                    );
+
                 }
             }
         }
