@@ -415,6 +415,35 @@ BEGIN
     END IF;
 END$$
 
+-- NB deactivated, prints out what *would* happen
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `setAllGrants`$$
+CREATE PROCEDURE `setAllGrants`(
+)
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE db VARCHAR(255);
+    DECLARE tbl VARCHAR(255);
+    DECLARE crxDBs CURSOR FOR SELECT table_schema, table_name FROM information_schema.TABLES WHERE table_schema LIKE 'crucible2\____' ORDER BY table_schema, table_name;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;  -- in case query fails because db doesn't contain e.g. rsm_mandate
+
+    OPEN crxDBs;
+    REPEAT
+        FETCH crxDBs INTO db, tbl;
+        IF NOT done THEN
+            IF(BINARY UCASE(LEFT(tbl,1)) = LEFT(tbl,1)) THEN
+                SET @org=RIGHT(db,3);
+                SET @q = CONCAT('GRANT SELECT ON ',db,'.',tbl,' FOR ',@org);
+                SELECT @q;
+                PREPARE stmt FROM @q;
+                -- EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+        END IF;
+    UNTIL done END REPEAT;
+    CLOSE crxDBs;
+END$$
 
 DELIMITER ;
 USE `{{BLOTTO_MAKE_DB}}`
