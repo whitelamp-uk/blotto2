@@ -3,7 +3,7 @@
 
   <section id="draw-header">
 
-    <?php require (__DIR__.'/../www/views/logo-invoice.php'); ?>
+    <?php require (__DIR__.'/../www/views/logo-invoice-jpeg.php'); ?>
 
     <address><?php require __DIR__.'/../www/views/address.php'; ?></address>
   </section>
