@@ -2112,7 +2112,7 @@ function html_file_to_pdf_file ($html_file,$pdf_file,$paper_size='a4',$orientati
 function html_file_to_pdf_file_openapi ($html_file,$pdf_file) {
     $temp_file = md5(rand()).'.html';
     $temp_path = '/var/www/html/h2p/'.$temp_file;
-    $temp_url = 'https://openapi:opensesame@castle.thefundraisingfoundry.com/h2p/'.$temp_file;
+    $temp_url = 'https://'.OPENAPI_WEB_AUTH.'@castle.thefundraisingfoundry.com/h2p/'.$temp_file;
     exec ('cp '.$html_file.' '.$temp_path);
 
     $curl = curl_init();
