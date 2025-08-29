@@ -2112,12 +2112,10 @@ function html_file_to_pdf_file ($html_file,$pdf_file,$paper_size='a4',$orientati
 function html_file_to_pdf_file_openapi ($html_file,$pdf_file) {
     $temp_file = md5(rand()).'.html';
     $temp_path = '/var/www/html/h2p/'.$temp_file;
-
-    $temp_url = 'https://openapi:opensesame@dev.thefundraisingfoundry.com/h2p/'.$temp_file;
+    $temp_url = 'https://openapi:opensesame@castle.thefundraisingfoundry.com/h2p/'.$temp_file;
     exec ('cp '.$html_file.' '.$temp_path);
 
     $curl = curl_init();
-
     curl_setopt_array($curl, [
       CURLOPT_URL => "https://pdf.openapi.it/base",
       CURLOPT_RETURNTRANSFER => true,
@@ -2135,14 +2133,11 @@ function html_file_to_pdf_file_openapi ($html_file,$pdf_file) {
         "content-type: application/json"
       ],
     ]);
-
     $response = curl_exec($curl);
     $err = curl_error($curl);
-
     curl_close($curl);
 
     exec ('rm '.$temp_path);
-
     if ($err) {
       error_log("html_file_to_pdf_file_openapi cURL Error #:" . $err);
     } else {
