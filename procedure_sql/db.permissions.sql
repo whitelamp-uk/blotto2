@@ -26,9 +26,9 @@ ON `mysql`.`user`
 TO `{{BLOTTO_ADMIN_USER}}`
 ;
 
-GRANT UPDATE (`value`)
-ON `{{BLOTTO_CONFIG_DB}}`.`{{BLOTTO_BRAND}}_onboarding_{{BLOTTO_ORG_USER}}`
-TO `{{BLOTTO_ADMIN_USER}}`
+GRANT SELECT, EXECUTE
+ON `blotto_root`.*
+TO `admin`
 ;
 
 GRANT SELECT,EXECUTE
@@ -40,23 +40,13 @@ GRANT INSERT,UPDATE ON `{{BLOTTO_CONFIG_DB}}`.`blotto_claim`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
 
-GRANT INSERT ON `{{BLOTTO_CONFIG_DB}}`.`blotto_invoice`
+GRANT INSERT,UPDATE ON `{{BLOTTO_CONFIG_DB}}`.`blotto_invoice`
 TO '{{BLOTTO_ADMIN_USER}}'
 ;
 
-GRANT UPDATE(
-  `org_code`
- ,`type`
- ,`raised`
- ,`terms`
- ,`description`
- ,`item_text`
- ,`item_quantity`
- ,`item_unit_price`
- ,`item_tax_percent`
-)
-ON `{{BLOTTO_CONFIG_DB}}`.`blotto_invoice`
-TO '{{BLOTTO_ADMIN_USER}}'
+GRANT UPDATE (`value`)
+ON `{{BLOTTO_CONFIG_DB}}`.`{{BLOTTO_BRAND}}_onboarding_{{BLOTTO_ORG_USER}}`
+TO `{{BLOTTO_ADMIN_USER}}`
 ;
 
 GRANT INSERT,UPDATE(
