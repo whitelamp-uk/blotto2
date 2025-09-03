@@ -1007,6 +1007,36 @@ function draw_first_asap ($first_collection_date,$delay=null) {
     return draw_upcoming ($d2->format('Y-m-d'));
 }
 
+function draw_first_with_balance ($draw_first_without_balance,$opening_balance,$chances) {
+    $draw_cost = BLOTTO_TICKET_PRICE * intval($chances);
+    $remaining = 100 * $opening_balance;
+    if ($draw_cost<1 || $remaining<1) {
+        return $draw_first_without_balance;
+    }
+    $sanity = 1000;
+    $dc = $draw_first_without_balance;
+    while (true) {
+        // sanity
+        $sanity--;
+        if ($sanity<1) {
+            throw new \Exception ('Looping insanely - now aborted');
+            return false;
+        }
+        // earliest draw in game
+        if ($dc<=BLOTTO_DRAW_CLOSE_1) {
+            return BLOTTO_DRAW_CLOSE_1;
+        }
+        //  insufficient funds
+        if ($remaining<$draw_cost) {
+            return $dc;
+        }
+        // charge for the previous draw
+        $remaining -= $draw_cost;
+        // go back to that draw
+        $dc = draw_previous ($dc);
+    }
+}
+
 function draw_first_zaffo_model ($first_collection_date,$dow=5) {
     if (!strlen(BLOTTO_DRAW_CLOSE_1)) {
         throw new \Exception ("BLOTTO_DRAW_CLOSE_1 has not been set");
