@@ -111,13 +111,12 @@ $org_code = array_shift ($org_code);
           30th Apr 2022
         * This code generates two tables:
           * #lottery-results-latest gives number-match results
-            Use CSS displaywhich should be hidden if your game only has raffle
-            prizes
+            Use CSS display:hidden if your game only has raffle prizes
             Shows: prize name, number drawn
           * #lottery-winners-latest gives winning tickets
             Shows: number drawn, prize name
       -->
-      <div id="lottery-winners-latest" data-dateformat="jS M Y" data-matchnumtitle="Custom prize name"></div>
+      <div id="lottery-winners-latest" data-dateformat="jS M Y" data-matchnumtitle="Winning numbers"></div>
 
 <!-- 1 ENDS -->
 
