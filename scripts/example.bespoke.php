@@ -27,17 +27,24 @@ function chances ($frequency,$amount) {
 function draw_first ($first_collection_date,$ccc,$opening_balance=0,$chances=1) {
     // calculate player first draw date based on first collection and canvassing company code
 
+    // debit cards and gratis-api tickets require no balance accumulation
     if (in_array($ccc,['STRP','CDNT','GRTS'])) {
-        // debit cards and gratis-api tickets require no balance accumulation
         return draw_first_asap ($first_collection_date,null,$opening_balance,$chances);
     }
 
-    // if five draws a month no need to "buffer" the money to deal with months with five Fridays 
-    // but still need to deal with BACS jitter (and maybe a bit more)
-    return draw_first_asap ($first_collection_date, BLOTTO_PAY_DELAY,$opening_balance,$chances);
+    // five draws a month - just deal with BACS jitter (and maybe a bit more)
+    return draw_first_with_balance (
+        draw_first_asap ($first_collection_date,BLOTTO_PAY_DELAY),
+        $opening_balance,
+        $chances
+    );
 
-    // library function for the balance accumulation model
-    return draw_first_zaffo_model ($first_collection_date,5,$opening_balance,$chances);
+    // 1 draw per week balance accumulation (for 5xFri pcm vs £4.34 pcm problem)
+    return draw_first_with_balance (
+        draw_first_zaffo_model ($first_collection_date,5),
+        $opening_balance,
+        $chances
+    );
 }
 
 function draw_insuring ($today=null) {
