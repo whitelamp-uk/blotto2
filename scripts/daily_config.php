@@ -19,8 +19,19 @@ $d2 = new DateTime($end_date);
 $interval = $d1->diff($d2);
 $num = $interval->format("%d");
 
+$reverse = true;
+$end_date_reverse = days_working_date ($today, BLOTTO_WORKING_DAYS_DELAY,$reverse);
+
+$d1 = new DateTime($today);
+$d2 = new DateTime($end_date_reverse);
+$interval = $d2->diff($d1);
+$num_reverse = $interval->format("%d");
+
+
+
 $output  = "<?php\n";
 $output .= "define ( 'BLOTTO_PAY_DELAY', 'P".$num."D' );\n";
-$output .= "define ( 'PST_PAY_INTERVAL',        '".$num." DAY' );\n";  // TODO same for RSM?
+$output .= "define ( 'BLOTTO_PAY_DELAY_REVERSE', 'P".$num_reverse."D' );\n";
+$output .= "define ( 'PST_PAY_INTERVAL',        '".$num_reverse." DAY' );\n";  // TODO same for RSM?
 file_put_contents($file, $output);
 
