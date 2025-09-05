@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `blotto_bacs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+
 CREATE TABLE IF NOT EXISTS `blotto_help` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `comments` text NOT NULL,
@@ -252,7 +253,8 @@ CREATE TABLE IF NOT EXISTS `blotto_schedule` (
   `statement_heading` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Use {{d}} to denote report end date',
   `ccr_ccc` char(16) CHARACTER SET ascii DEFAULT NULL,
   `notes` text COLLATE utf8_unicode_ci,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_start_interval_type_ccc` (`org_code`,`start_value`,`interval`,`type`,`ccr_ccc`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT IGNORE INTO `blotto_schedule` (`id`, `org_code`, `filename`, `format`, `start_value`, `interval`, `type`, `email`, `statement_overwrite`, `statement_heading`, `ccr_ccc`, `notes`) VALUES
@@ -265,7 +267,6 @@ INSERT IGNORE INTO `blotto_schedule` (`id`, `org_code`, `filename`, `format`, `s
 (7, '', '{{o}}_{{d}}_statement_tax_period.html',  'm-d',  '04-06',  'P12M', 'statement',  NULL, 0,  '{{on}} - taxation period y/e {{d}}', NULL, NULL),
 (8, 'ylh',  'ylh_{{d}}_statement_accounting_period.html ',  'm-d',  '??-??',  'P12M', 'statement',  NULL, 0,  '{{on}} - accounting period y/e {{d}}', NULL, NULL),
 (9, 'ylh',  '{{o}}_w-e_{{d}}_canvassing_company_return.{{c}}.csv',  'D',  'Mon',  'P7D',  'ccr',  'ylh-ccr@myorg',  NULL, NULL, 'BB', NULL);
-
 
 
 
