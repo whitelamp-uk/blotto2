@@ -2533,6 +2533,11 @@ BEGIN
      ,`s`.`death_by_suicide`
      ,IFNULL(`m`.`Status`,'') AS `mandate_status`
      ,IFNULL(`m`.`Freq`,'') AS `collection_frequency`
+      -- view UpdatesLatest (legends.php) lines up with Updates column-wise hence we must reserve four columns here
+     ,'' AS `unused_1`
+     ,'' AS `unused_2`
+     ,'' AS `unused_3`
+     ,'' AS `unused_4`
     FROM `blotto_update` AS `u`
     JOIN (
       SELECT
@@ -2568,6 +2573,64 @@ BEGIN
   ;
   ALTER TABLE `Updates`
   ADD KEY `updater` (`updater`)
+  ;
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `updatesEmpty`$$
+CREATE PROCEDURE `updatesEmpty` (
+)
+BEGIN
+  -- guarantee there is an Updates table on a first build (BLOTTO_PAY_FREEZE prevents updates() from running)
+  CREATE TABLE IF NOT EXISTS `Updates` (
+    `updated` date NOT NULL,
+    `supporter_id` int(11) unsigned NOT NULL,
+    `updater` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `milestone` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `milestone_date` date DEFAULT NULL,
+    `signed` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `created` date NOT NULL,
+    `cancelled` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `ccc` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `canvas_ref` int(11) unsigned DEFAULT NULL,
+    `client_ref_orig` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `client_ref` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `tickets` varbinary(21) NOT NULL,
+    `ticket_numbers` mediumtext CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `title` varchar(255) DEFAULT NULL,
+    `name_first` varchar(255) DEFAULT NULL,
+    `name_last` varchar(255) DEFAULT NULL,
+    `email` varchar(255) DEFAULT NULL,
+    `mobile` varchar(255) DEFAULT NULL,
+    `telephone` varchar(255) DEFAULT NULL,
+    `address_1` varchar(255) DEFAULT NULL,
+    `address_2` varchar(255) DEFAULT NULL,
+    `address_3` varchar(255) DEFAULT NULL,
+    `town` varchar(255) DEFAULT NULL,
+    `county` varchar(255) DEFAULT NULL,
+    `postcode` varchar(255) DEFAULT NULL,
+    `dob` date DEFAULT NULL,
+    `bnk_pos` varchar(255) DEFAULT NULL,
+    `prom` varchar(255) DEFAULT NULL,
+    `eml` varchar(255) DEFAULT NULL,
+    `post` varchar(255) DEFAULT NULL,
+    `sms` varchar(255) DEFAULT NULL,
+    `tel` varchar(255) DEFAULT NULL,
+    `is_nhs` varchar(255) DEFAULT NULL,
+    `wr_sgd` varchar(255) DEFAULT NULL,
+    `first_collected` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `last_collected` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `first_draw` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `death_reported` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `death_by_suicide` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `mandate_status` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `collection_frequency` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    PRIMARY KEY (`updated`,`client_ref_orig`,`milestone`,`client_ref`),
+    KEY `client_ref` (`client_ref`),
+    KEY `milestone_date` (`milestone_date`),
+    KEY `updater` (`updater`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
   ;
 END$$
 
