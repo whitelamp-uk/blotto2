@@ -195,7 +195,7 @@ ofl="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_OUTFILE         )"
 bpf="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_FNC )"
 bpu="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_UPD )"
 bpp="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_BESPOKE_SQL_PRM )"
-mda="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_MYSQLDUMP_AUTH  )"
+#mda="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_MYSQLDUMP_AUTH  )" # was username/passwd for mysqldump, now obsolete
 pfz="$( /usr/bin/php  "$drp/define.php"  "$cfg"  BLOTTO_DEV_PAY_FREEZE  )"
 nxi="$( /usr/bin/php  "$drp/exec.php"    "$cfg"  draw_insuring          )"
 tmp="$ldr/blotto.$$.tmp"
@@ -735,15 +735,15 @@ then
 fi
 
 # TODO replace this and 35 
-if [ "$rehearse" ]
-then
-    echo "    Rehearsal only - skipping"
-else
-    echo mysqldump --defaults-extra-file=$mda --routines $dbm '>' $dfl
-    mysqldump --defaults-extra-file=$mda --routines $dbm    > $dfl
-    abort_on_error 34e $?
-    echo "    Completed in $(($SECONDS-$start)) seconds"
-fi
+#if [ "$rehearse" ]
+#then
+#    echo "    Rehearsal only - skipping"
+#else
+#    echo mysqldump --defaults-extra-file=$mda --routines $dbm '>' $dfl
+#    mysqldump --defaults-extra-file=$mda --routines $dbm    > $dfl
+#    abort_on_error 34e $?
+#    echo "    Completed in $(($SECONDS-$start)) seconds"
+#fi
 
 # todo replace with dbcopy - keep .inhibit file
 stage "35. Recreate organisation database"
@@ -753,14 +753,8 @@ then
 else
     touch $cfg.inhibit 
     start=$SECONDS
-    echo "    DROP DATABASE IF EXISTS $dbo;"
-    mariadb                                           <<< "DROP DATABASE IF EXISTS $dbo;"
-    abort_on_error 35a $?
-    echo "    CREATE DATABASE $dbo COLLATE 'utf8_general_ci';"
-    mariadb                                           <<< "CREATE DATABASE $dbo COLLATE 'utf8_general_ci';"
-    abort_on_error 35b $?
-    echo "    Importing from $dfl ..."
-    mariadb $dbo                                        < $dfl
+    /bin/bash scripts/dbcopy.sh $dbm $dbo $dfl
+
     abort_on_error 35c $?
     if [ ! "$no_tidy" ]
     then
