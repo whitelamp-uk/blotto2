@@ -611,6 +611,9 @@ then
 else
     # if collections data not current, leave CRM well alone as well
     echo "Pay freeze - skipping routine updates() (ie preserving Updates table)"
+    # guarantee there is an Updates table on the first build
+    echo "    CALL updatesEmpty();"
+    mariadb $dbm                                  <<< "CALL updatesEmpty();"
 fi
 echo "    CALL winners();"
 mariadb $dbm                                      <<< "CALL winners();"
