@@ -2772,7 +2772,7 @@ function notarisation ($file) {
     $cmd       .= '2>&1';
     exec ($cmd,$out,$rtn);
     if ($rtn) {
-        error_log (print_r($out,true));
+        error_log (__FILE__.' '.__LINE__.' '.print_r($out,true));
         throw new \Exception ("Could not create TSA query file '$tsq'");
         return false;
     }
@@ -2783,7 +2783,6 @@ function notarisation ($file) {
     $cmd       .= escapeshellarg(BLOTTO_TSA_URL)." > ".$tsr;
     exec ($cmd, $out, $rtn);
     if ($rtn) {
-        // error_log (print_r($out,true));
         throw new \Exception ("Could not create TSA response file '$tsr'");
         return false;
     }
@@ -5535,7 +5534,6 @@ function update ( ) {
                 } else {
                     $message .= print_r($response, true)."\n";
                 }
-                //error_log(print_r($response, true));
             } else {
                 $message .= "Cancellation requested, must be done manually\n";
             }
@@ -5654,7 +5652,7 @@ function update ( ) {
                             } else {
                                 $message .= print_r($response, true)."\n";
                             }
-                            error_log(print_r($response, true));
+                            error_log(__FILE__.' '.__LINE__.' '.print_r($response, true));
                         } else {
                             $message .= "Old mandate must be cancelled manually\n";
                         }
@@ -6564,7 +6562,7 @@ function www_auth_reset_prep ($mode,&$errMsg=null) {
             }
             if ($u) $errMsg = "Sorry failed to send SMS - please try again";
             else $errMsg = "Sorry SMS failed - could not find username {$_SESSION['reset']['un']} and / or email {$_SESSION['reset']['em']} and / or org code $org_code";
-            if ($u) error_log ($u['mobile'].' '.$code.' '.print_r($response,true));
+            if ($u) error_log (__FILE__.' '.__LINE__.' '.$u['mobile'].' '.$code.' '.print_r($response,true));
             else error_log($qs);
             return false;
         }
@@ -6929,7 +6927,7 @@ function www_validate_phone ($number,$type,&$e) {
             $e[] = "Error trying to validate phone number: ".$result->Status->ErrorMessage;
         } else {
             $e[] = "A technical problem occurred during phone number validation. Please contact us.";
-            error_log(print_r($result,true));
+            error_log(__FILE__.' '.__LINE__.' '.print_r($result,true));
         }
         return false;
     }

@@ -54,7 +54,7 @@ if (1) {
                     );
                     $ok = $result->http_status_code == 202;
                     if (!$ok) {
-                        error_log (print_r($result,true));
+                        error_log (__FILE__.' '.__LINE__.' '.print_r($result,true));
                         $response->e    = $e_default;
                         $response->eCode = 102;
                     }
@@ -167,7 +167,7 @@ if (array_key_exists('gdpr',$_POST)) {
     }
     if (!$api_found) {
         error_log ('Payment API could not be identified');
-        error_log (print_r($_POST, true));
+        error_log (__FILE__.' '.__LINE__.' '.print_r($_POST, true));
         $error[] = $e_default;
     }
 }
@@ -274,7 +274,7 @@ window.location.href = '#<?php echo $go; ?>';
     </section>
 
 <?php if (count($error)): 
-    error_log(print_r($error, true));
+    error_log(__FILE__.' '.__LINE__.' '.print_r($error, true));
     ?>
       <script defer>
 <?php     foreach($error as $e): ?>

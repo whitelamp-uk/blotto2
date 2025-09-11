@@ -49,8 +49,8 @@ catch (\Exception $e) {
         http_response_code (500);
     }
     echo "Something went wrong\n";
-    error_log ('GET '.print_r($_GET,true));
-    error_log ('POST '.print_r($_POST,true));
+    error_log (__FILE__.' '.__LINE__.' '.'GET '.print_r($_GET,true));
+    error_log (__FILE__.' '.__LINE__.' '.'POST '.print_r($_POST,true));
     error_log ($e->getMessage());
     $subj = "Callback error";
     if ($class) {
