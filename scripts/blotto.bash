@@ -716,17 +716,21 @@ abort_on_error 33 $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 
-stage "34. Generating dump file of make database at $dfl ..."
+stage "34. Clean up make database "
 start=$SECONDS
 if [ ! "$no_tidy" ]
 then
-    echo "    Dropping construction stored procedures, functions and temporary tables from make database"
+    echo "    Dropping construction stored procedures"
     /usr/bin/php $prg $sw "$cfg" sql db.routines.drop.sql > $tmp
     abort_on_error 34a $? $tmp
     maybe_cat $tmp
+
+    echo "    Dropping functions"
     /usr/bin/php $prg $sw "$cfg" sql db.functions.drop.sql > $tmp
     abort_on_error 34b $? $tmp
     maybe_cat $tmp
+
+    echo "    Dropping temporary tables"
     /usr/bin/php $prg $sw "$cfg" sql db.tables.drop.sql > $tmp
     abort_on_error 34c $? $tmp
     maybe_cat $tmp

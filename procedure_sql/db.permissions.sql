@@ -163,10 +163,6 @@ TO '{{BLOTTO_ADMIN_USER}}'
 
 -- ORGANISATION ROLE AND TEST USER
 
-CREATE USER IF NOT EXISTS
-  '{{BLOTTO_ORG_USER}}'@'localhost'
-;
-
 CREATE ROLE IF NOT EXISTS
   '{{BLOTTO_ORG_USER}}'
 ;
@@ -176,13 +172,17 @@ ON `mysql`.`proc`
 TO '{{BLOTTO_ORG_USER}}'
 ;
 
-GRANT '{{BLOTTO_ORG_USER}}'
-TO '{{BLOTTO_ORG_USER}}'@'localhost'
-;
-
-SET DEFAULT ROLE '{{BLOTTO_ORG_USER}}'
-FOR '{{BLOTTO_ORG_USER}}'@'localhost'
-;
+-- CREATE USER IF NOT EXISTS
+--   '{{BLOTTO_ORG_USER}}'@'localhost'
+-- ;
+-- 
+-- GRANT '{{BLOTTO_ORG_USER}}'
+-- TO '{{BLOTTO_ORG_USER}}'@'localhost'
+-- ;
+-- 
+-- SET DEFAULT ROLE '{{BLOTTO_ORG_USER}}'
+-- FOR '{{BLOTTO_ORG_USER}}'@'localhost'
+-- ;
 
 
 
