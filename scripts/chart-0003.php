@@ -1,7 +1,6 @@
 <?php
 
 // Recent recruitment and cancellation
-error_log (__FILE__.' '.__LINE__.' '.print_r($p,true));
 
 $t0    = time ();
 $me    = null;
