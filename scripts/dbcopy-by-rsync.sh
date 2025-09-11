@@ -30,7 +30,8 @@ blotto_tables+=("blotto_supporter" "blotto_update" "blotto_verification" "blotto
 out_tables=("ANLs" "BenchmarkNoShows" "Cancellations" "Changes" "Draws" "Draws_Summary" "Draws_Supersummary" "Insurance" "Insurance_Summary")
 out_tables+=("Journeys" "JourneysDormancy" "JourneysMonthly" "Monies" "MoniesMonthly" "MoniesWeekly")
 out_tables+=("Supporters" "SupportersView" "Updates" "UpdatesLatest" "Wins" "WinsAdmin" "WinsForWise")
-
+# if we get more than two bespoke tables we can think about configuration 
+out_tables+=("Updates_SHC")
 
 
 # end config
