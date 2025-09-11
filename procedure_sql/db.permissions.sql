@@ -161,7 +161,7 @@ TO '{{BLOTTO_ADMIN_USER}}'
 
 
 
--- ORGANISATION ROLE AND TEST USER
+-- ORGANISATION ROLE AND TEST USER (xyztff) (if needed)
 
 CREATE ROLE IF NOT EXISTS
   '{{BLOTTO_ORG_USER}}'
@@ -173,15 +173,15 @@ TO '{{BLOTTO_ORG_USER}}'
 ;
 
 -- CREATE USER IF NOT EXISTS
---   '{{BLOTTO_ORG_USER}}'@'localhost'
+--   '{{BLOTTO_ORG_USER}}tff'@'localhost'
 -- ;
 -- 
 -- GRANT '{{BLOTTO_ORG_USER}}'
--- TO '{{BLOTTO_ORG_USER}}'@'localhost'
+-- TO '{{BLOTTO_ORG_USER}}tff'@'localhost'
 -- ;
 -- 
 -- SET DEFAULT ROLE '{{BLOTTO_ORG_USER}}'
--- FOR '{{BLOTTO_ORG_USER}}'@'localhost'
+-- FOR '{{BLOTTO_ORG_USER}}tff'@'localhost'
 -- ;
 
 
