@@ -59,7 +59,7 @@ div.invoice,
 div.report,
 div.statement {
     margin: 2em;
-    width: 50em;
+    width: 48em; /* was 50 */
     font-family: 'arial','sans';
 }
 div.statement {
