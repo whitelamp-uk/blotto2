@@ -104,8 +104,10 @@ foreach ($close_dates as $date) {
 -- Freq='Single' was one idea but eventually we will support online players with repeat payments
 -- TDOD change to use `Provider` and define list of debit card processors (CDNT etc) in config
 
-          WHERE (`ClientRef` LIKE 'CDNT%' AND `DateDue`<='$date')
-             OR (`ClientRef` NOT LIKE 'CDNT%' AND `DateDue`<='$date_dd')
+          WHERE (  (`ClientRef` LIKE 'CDNT%' AND `DateDue`<='$date')
+                OR (`ClientRef` NOT LIKE 'CDNT%' AND `DateDue`<='$date_dd')
+                ) 
+                AND `Status`=`Paid`
 
           GROUP BY `ClientRef`
       ) AS `c_sum`
