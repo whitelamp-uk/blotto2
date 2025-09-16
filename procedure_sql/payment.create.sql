@@ -13,6 +13,7 @@ CREATE TABLE `blotto_build_collection` (
   `RefOrig` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   `ClientRef` varchar(255) CHARACTER SET ascii DEFAULT NULL,
   `PaidAmount` decimal (10,2) DEFAULT NULL,
+  `Status` char (8) DEFAULT 'Paid',
   UNIQUE KEY `DateDue_Provider_RefOrig` (`DateDue`,`Provider`,`RefOrig`),
   UNIQUE KEY `DateDue_ClientRef` (`DateDue`,`ClientRef`),
   KEY `DateDue` (`DateDue`),
