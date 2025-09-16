@@ -64,6 +64,7 @@ get_args () {
     no_tidy=""
     rehearse=""
     payfreeze=""
+    quickbuild=""
     while [ 1 ]
     do
         if [ $# -lt 2 ]
@@ -109,8 +110,15 @@ get_args () {
             if [[ "$sws" == *"z"* ]]
             then
                 payfreeze="1"
-                sw="$sw -R"
+                sw="$sw -z"
             fi
+            if [[ "$sws" == *"q"* ]]
+            then
+                echo  "Option: quickbuild (skip fetching collection data)"
+                quickbuild="1"
+                sw="$sw -q"
+            fi
+
         fi
     done
 }
@@ -143,7 +151,9 @@ then
     echo "    -R                     rehearsal only (do not recreate front-end BLOTTO_DB)"
     echo "    -s                     single draw only (do next required draw and exit)"
     echo "    -v                     verbose (echo full log to STDOUT)"
-    echo "    -z                     Pay freeze - don't interact with payment API"
+    echo "    -z                     Pay freeze - don't fetch or create mandates, do entries, draws, CCRs etc"
+    echo "    -q                     Quick build - don't fetch mandate / collection data"
+
     exit 102
 fi
 if [ ! -f "$cfg" ]
@@ -333,7 +343,7 @@ echo "    Completed in $(($SECONDS-$start)) seconds"
 if [ "$rbe" = "" ]
 then
 
-    if [ "$pfz" = "" ]
+    if [ "$pfz" = "" ] && [ "$quickbuild" = "" ]
     then
 
         stage " 4. Generate mandate / collection table create SQL in $ddc"
@@ -371,7 +381,7 @@ then
 
     else
 
-        echo "Pay freeze - so not touching mandate or collection tables"
+        echo "Pay freeze or quick build- so not touching mandate or collection tables"
 
     fi
 

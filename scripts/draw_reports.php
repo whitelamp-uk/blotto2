@@ -68,18 +68,11 @@ try {
                 }
                 if (file_exists($pdf)) {
                     mail_attachments (
-                        'kevin.donnelly@thefundraisingfoundry.com',
+                        BLOTTO_EMAIL_DRAW_PDF_TO,
                         BLOTTO_BRAND." draw report",
                         "PDF Draw report for draw closed {$draw['draw_closed']}",
                         [$pdf]
                     );
-                    mail_attachments (
-                        'dom.latter@thefundraisingfoundry.com',
-                        BLOTTO_BRAND." draw report",
-                        "PDF Draw report for draw closed {$draw['draw_closed']}",
-                        [$pdf]
-                    );
-
                 }
             }
         }
