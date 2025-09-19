@@ -107,7 +107,7 @@ foreach ($close_dates as $date) {
           WHERE (  (`ClientRef` LIKE 'CDNT%' AND `DateDue`<='$date')
                 OR (`ClientRef` NOT LIKE 'CDNT%' AND `DateDue`<='$date_dd')
                 ) 
-                AND `Status`=`Paid`
+                AND `Status`='Paid'
 
           GROUP BY `ClientRef`
       ) AS `c_sum`

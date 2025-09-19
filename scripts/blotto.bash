@@ -585,59 +585,60 @@ stage "26. Build results tables in make database"
 start=$SECONDS
 if [ "$rbe" = "" ]
 then
-    echo "    CALL anls();"
+    stage "26a  CALL anls();"
     mariadb $dbm                                  <<< "CALL anls();"
     abort_on_error 26a $?
 fi
 if [ "$pfz" = "" ]
 then
-    echo "    CALL cancellationsByRule();"
+    stage "26b  CALL cancellationsByRule();"
     mariadb $dbm                                  <<< "CALL cancellationsByRule();"
     abort_on_error 26b $?
 else
     # if we know not about collections then we know not about the latest cancellation situation
     echo "Pay freeze - skipping cancellationsByRule() (ie preserving Cancellations table)"
 fi
-echo "    CALL draws();"
+stage "26c  CALL draws();"
 mariadb $dbm                                      <<< "CALL draws();"
 abort_on_error 26c $?
-echo "    CALL drawsSummarise();"
+stage "26d  CALL drawsSummarise();"
 mariadb $dbm                                      <<< "CALL drawsSummarise();"
 abort_on_error 26d $?
 if [ "$nxi" ]
 then
-    echo "    CALL insure('$nxi');"
+    stage "26e  CALL insure('$nxi');"
     mariadb $dbm                                  <<< "CALL insure('$nxi');"
     abort_on_error 26e $?
 fi
-echo "    CALL supporters();"
+stage "26f  CALL supporters();"
 mariadb $dbm                                      <<< "CALL supporters();"
 abort_on_error 26f $?
 if [ "$pfz" = "" ]
 then
-    echo "    CALL updates();"
+    stage "26g  CALL updates();"
     mariadb $dbm                                  <<< "CALL updates();"
     abort_on_error 26g $?
 else
     # if collections data not current, leave CRM well alone as well
     echo "Pay freeze - skipping routine updates() (ie preserving Updates table)"
     # guarantee there is an Updates table on the first build
-    echo "    CALL updatesEmpty();"
+    stage "26g  CALL updatesEmpty();"
     mariadb $dbm                                  <<< "CALL updatesEmpty();"
 fi
-echo "    CALL winners();"
+stage "26h  CALL winners();"
 mariadb $dbm                                      <<< "CALL winners();"
 abort_on_error 26h $?
-echo "    CALL journeys();"
+stage "26i  CALL journeys();"
 mariadb $dbm                                      <<< "CALL journeys();"
 abort_on_error 26i $?
-echo "    CALL monies();"
+stage "26j  CALL monies();"
 mariadb $dbm                                      <<< "CALL monies();"
 abort_on_error 26j $?
-echo "    CALL noshows();"
+stage "26k  CALL noshows();"
 mariadb $dbm                                      <<< "CALL noshows();"
 abort_on_error 26k $?
 
+echo "    Completed in $(($SECONDS-$start)) seconds"
 
 stage "27. Do bespoke SQL"
 start=$SECONDS
