@@ -33,37 +33,41 @@ $org = org();
 header('Access-Control-Allow-Origin: *'); // Allow cross-origin requests
 header('Content-Security-Policy: frame-ancestors ' . BLOTTO_WWW_IFRAME_SOURCES); // Specify allowed iframe sources
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'postcode_lookup' && isset($_GET['postcode'])) {
+if (
+    $_SERVER['REQUEST_METHOD'] === 'GET' &&
+    isset($_GET['action']) && $_GET['action'] === 'postcode_lookup' &&
+    isset($_GET['postcode'])
+) {
+    header('Content-Type: application/json; charset=utf-8');
+
     $postcode = trim($_GET['postcode']);
-    $doFind = isset($_GET['find']) && $_GET['find'] == '1'; // Only true if find=1 for just check postcode exists not get full address
-    $building = ''; // Optional: Pass building if needed or leave empty
+    $doFind   = isset($_GET['find']) && $_GET['find'] == '1'; // True = existence check only
+    $building = ''; // Optional: pass building if needed
 
     function GetFullAddress($postcode, $building, $doFind, $licence = 'SmallUserFull')
     {
-        // Setting options
+        // Options for Data8
         $options = array(
             "Option" => array(
                 array("Name" => "ReturnResultCount", "Value" => "true"),
-                array("Name" => "IncludeAliases", "Value" => "false")
-            )
+                array("Name" => "IncludeAliases", "Value" => "false"),
+            ),
         );
 
-        // Parameters for the SOAP request
+        // SOAP params
         $params = array(
             "username" => DATA8_USERNAME,
             "password" => DATA8_PASSWORD,
-            "licence" => $licence,
+            "licence"  => $licence,
             "postcode" => $postcode,
             "building" => $building,
-            "options" => $options
+            "options"  => $options,
         );
 
-        // Initialize the SOAP client
         try {
             $client = new SoapClient("https://webservices.data-8.co.uk/addresscapture.asmx?WSDL");
             $result = $client->GetFullAddress($params);
         } catch (Exception $e) {
-            // Handle SOAP error
             echo json_encode([
                 'success' => false,
                 'message' => 'request failed: ' . $e->getMessage(),
@@ -71,117 +75,166 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
             exit;
         }
 
-        // Check if the request was successful
-        if ($result->GetFullAddressResult->Status->Success == 0) {
-            // Error case: return the error message
+        $gfr = $result->GetFullAddressResult ?? null;
+        if (!$gfr || (isset($gfr->Status->Success) && (int)$gfr->Status->Success === 0)) {
+            $err = isset($gfr->Status->ErrorMessage) ? $gfr->Status->ErrorMessage : 'Unknown error';
             echo json_encode([
                 'success' => false,
-                'message' => "Error: " . $result->GetFullAddressResult->Status->ErrorMessage,
+                'message' => "Error: " . $err,
             ]);
             exit;
-        } else {
-            if ($doFind == true) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => "Postcode exists ok",
-                ]);
-                exit;
-            }
-            // Extract the result count
-            $resultCount = $result->GetFullAddressResult->ResultCount;
-
-            // Check if results exist
-            if ($resultCount > 0) {
-                // Process the results
-                $addresses = [];
-                foreach (($result->GetFullAddressResult->Results) as $items) {
-                    foreach ($items as $item) {
-                        $address = $item->RawAddress;
-
-                        // Construct street name fully
-                        $street = trim($address->ThoroughfareName . ' ' . $address->ThoroughfareDesc);
-
-                        // Determine address_line_1 clearly
-                        if (!empty($address->Organisation)) {
-                            $address_line_1 = $address->Organisation;
-                            $address_line_2 = !empty($address->BuildingName) ? $address->BuildingName : $street;
-                        } elseif (!empty($address->BuildingNumber) && $address->BuildingNumber != 0) {
-                            $address_line_1 = trim($address->BuildingNumber . ' ' . $street);
-                            $address_line_2 = !empty($address->BuildingName) ? $address->BuildingName : '';
-                        } elseif (!empty($address->BuildingName)) {
-                            $address_line_1 = $address->BuildingName;
-                            $address_line_2 = $street;
-                        } else {
-                            $address_line_1 = $street;
-                            $address_line_2 = '';
-                        }
-
-                        // Determine address_line_3
-                        if (!empty($address->SubBuildingName)) {
-                            $address_line_3 = $address->SubBuildingName;
-                        } elseif (!empty($address->DoubleDependentLocality)) {
-                            $address_line_3 = $address->DoubleDependentLocality;
-                        } elseif (!empty($address->DependentLocality)) {
-                            $address_line_3 = $address->DependentLocality;
-                        } elseif (!empty($address->Department)) {
-                            $address_line_3 = $address->Department;
-                        } else {
-                            $address_line_3 = '';
-                        }
-
-                        // County selection
-                        $county = $address->PostalCounty ?: $address->TraditionalCounty ?: $address->AdministrativeCounty ?: '';
-
-                        // PO Box handling
-                        $poBox = !empty($address->PoBox) ? "PO Box " . $address->PoBox : '';
-
-                        // Combine all address components without duplicates or empties
-                        $full_address_parts = array_filter(array_unique([
-                            $address_line_1,
-                            $address_line_2,
-                            $address_line_3,
-                            $poBox,
-                            $address->Locality,
-                            $county,
-                            $address->Postcode,
-                        ]));
-
-                        $full_address = implode(' ', $full_address_parts);
-
-                        // Final structured address
-                        $addresses[] = [
-                            'address_line_1' => ucwords(strtolower($address_line_1)),
-                            'address_line_2' => ucwords(strtolower($address_line_2)),
-                            'address_line_3' => ucwords(strtolower($address_line_3)),
-                            'po_box'         => $poBox,
-                            'town'           => ucwords(strtolower($address->Locality)),
-                            'county'         => ucwords(strtolower($county)),
-                            'postcode'       => strtoupper($address->Postcode),
-                            'address'        => ucwords(strtolower($full_address)),
-                            // 'items'          => json_encode($item),
-                        ];
-                    }
-                }
-
-                return $addresses;
-            } else {
-                // No results found
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'No addresses found for the given postcode.',
-                ]);
-                exit;
-            }
         }
+
+        // Early exit for simple existence check
+        if ($doFind === true) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Postcode exists ok',
+            ]);
+            exit;
+        }
+
+        $resultCount = (int) ($gfr->ResultCount ?? 0);
+        if ($resultCount <= 0) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No addresses found for the given postcode.',
+            ]);
+            exit;
+        }
+
+        // ---- Normalize Results to a list of FormattedAddress objects ----
+        $toList = function ($x) {
+            return is_array($x) ? $x : [$x];
+        };
+
+        $resultsNode   = $gfr->Results ?? null;
+        $formattedList = [];
+
+        if (isset($resultsNode->FormattedAddress)) {
+            // FormattedAddress could be a single object or an array
+            $formattedList = $toList($resultsNode->FormattedAddress);
+        } elseif (is_array($resultsNode)) {
+            // Results is an array; entries may or may not wrap FormattedAddress
+            foreach ($resultsNode as $entry) {
+                if (isset($entry->FormattedAddress)) {
+                    $formattedList = array_merge($formattedList, $toList($entry->FormattedAddress));
+                } else {
+                    $formattedList[] = $entry; // assume it's already a FormattedAddress
+                }
+            }
+        } elseif ($resultsNode) {
+            // Single object case
+            $formattedList[] = isset($resultsNode->FormattedAddress) ? $resultsNode->FormattedAddress : $resultsNode;
+        }
+
+        // Safety: if still empty, treat as no results
+        if (empty($formattedList)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No addresses found for the given postcode.',
+            ]);
+            exit;
+        }
+
+        // ---- Build structured addresses ----
+        $addresses = [];
+
+        foreach ($formattedList as $fa) {
+            if (!isset($fa->RawAddress)) {
+                // Skip anything without RawAddress (e.g., a plain "Address" object)
+                continue;
+            }
+
+            $address = $fa->RawAddress;
+
+            // Build street name (handle missing parts)
+            $thoroughfareName = isset($address->ThoroughfareName) ? trim($address->ThoroughfareName) : '';
+            $thoroughfareDesc = isset($address->ThoroughfareDesc) ? trim($address->ThoroughfareDesc) : '';
+            $street = trim(trim($thoroughfareName . ' ' . $thoroughfareDesc));
+
+            // Normalize building number (0 means none)
+            $buildingNumber = (!empty($address->BuildingNumber) && (int)$address->BuildingNumber !== 0)
+                ? (string)$address->BuildingNumber
+                : '';
+
+            // address_line_1 / 2 rules
+            if (!empty($address->Organisation)) {
+                $address_line_1 = $address->Organisation;
+                $address_line_2 = !empty($address->BuildingName) ? $address->BuildingName : $street;
+            } elseif ($buildingNumber !== '') {
+                $address_line_1 = trim($buildingNumber . ' ' . $street);
+                $address_line_2 = !empty($address->BuildingName) ? $address->BuildingName : '';
+            } elseif (!empty($address->BuildingName)) {
+                $address_line_1 = $address->BuildingName;
+                $address_line_2 = $street;
+            } else {
+                $address_line_1 = $street;
+                $address_line_2 = '';
+            }
+
+            // address_line_3 preference chain
+            if (!empty($address->SubBuildingName)) {
+                $address_line_3 = $address->SubBuildingName;
+            } elseif (!empty($address->DoubleDependentLocality)) {
+                $address_line_3 = $address->DoubleDependentLocality;
+            } elseif (!empty($address->DependentLocality)) {
+                $address_line_3 = $address->DependentLocality;
+            } elseif (!empty($address->Department)) {
+                $address_line_3 = $address->Department;
+            } else {
+                $address_line_3 = '';
+            }
+
+            // County selection
+            $county = !empty($address->PostalCounty) ? $address->PostalCounty
+                : (!empty($address->TraditionalCounty) ? $address->TraditionalCounty
+                : (!empty($address->AdministrativeCounty) ? $address->AdministrativeCounty : ''));
+
+            // PO Box handling
+            $poBox = !empty($address->PoBox) ? ('PO Box ' . $address->PoBox) : '';
+
+            // Compose full address (dedupe empties)
+            $full_address_parts = array_filter(array_unique([
+                $address_line_1,
+                $address_line_2,
+                $address_line_3,
+                $poBox,
+                isset($address->Locality) ? $address->Locality : '',
+                $county,
+                isset($address->Postcode) ? $address->Postcode : '',
+            ]));
+
+            $addresses[] = [
+                'address_line_1' => ucwords(strtolower($address_line_1)),
+                'address_line_2' => ucwords(strtolower($address_line_2)),
+                'address_line_3' => ucwords(strtolower($address_line_3)),
+                'po_box'         => $poBox,
+                'town'           => isset($address->Locality) ? ucwords(strtolower($address->Locality)) : '',
+                'county'         => ucwords(strtolower($county)),
+                'postcode'       => isset($address->Postcode) ? strtoupper($address->Postcode) : '',
+                'address'        => ucwords(strtolower(implode(' ', $full_address_parts))),
+            ];
+        }
+
+        // If everything got filtered out, treat as no results
+        if (empty($addresses)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No addresses found for the given postcode.',
+            ]);
+            exit;
+        }
+
+        return $addresses;
     }
 
     $addressData = GetFullAddress($postcode, $building, $doFind);
 
-    // Call GetFullAddress function
     echo json_encode([
-        'success' => true, // Success flag
-        'message' => 'Find successful', // Success message
-        'data' => $addressData, // Return the reference ID for the successful submission
+        'success' => true,
+        'message' => 'Find successful',
+        'data'    => $addressData,
     ]);
     exit;
 }
