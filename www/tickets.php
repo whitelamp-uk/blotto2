@@ -210,7 +210,7 @@ if (!count($error) && $api_code) {
       <script src="https://js.stripe.com/v3/"></script>
     <?php } ?>
     <link rel="author" href="http://www.whitelamp.com/" />
-    <title title="Buy lottery tickets now">Buy lottery tickets now</title>
+    <title title="Buy tickets now">Buy tickets now</title>
 
 <?php if ($step!=2): ?>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
