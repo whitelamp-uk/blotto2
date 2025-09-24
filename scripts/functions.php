@@ -2499,7 +2499,7 @@ function is_https ( ) {
     if (php_sapi_name()=='cli') {
         return false;
     }
-    if (empty($_SERVER['HTTPS'])) {
+    if (!isset($_SERVER['HTTPS']) || empty($_SERVER['HTTPS'])) {
         return false;
     }
     if (strtolower($_SERVER['REQUEST_SCHEME'])!='https') {
@@ -4383,6 +4383,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
     }
 
     $qry = $qs.$qt.$qw.$qg.$qo.$ql;
+    //error_log($qry);
     try {
         $result = $zo->query ($qry);
         $rows = $result->fetch_all(MYSQLI_ASSOC);
@@ -5504,7 +5505,10 @@ function update ( ) {
                     if (is_readable($a->file)) {
                         require_once $a->file;
                         // Instantiate if possible and the class has either method
-                        if (class_exists($a->class) && (method_exists($a->class,'player_new') || method_exists($a->class,'cancel_mandate'))) {
+                        if (class_exists($a->class) && 
+                              (method_exists($a->class,'player_new') 
+                            || method_exists($a->class,'player_modify_placeholder') 
+                            || method_exists($a->class,'cancel_mandate'))) {
                             $api = new $a->class ($zom); // use the make database
                             $api_code = $a->code;
                             $api_name = $a->name;
@@ -5518,9 +5522,12 @@ function update ( ) {
 
         if ($api) {
             $message .= "Found API for ".$api_name."\n";
+        } else {
+            $message .= "No API found for ".$fields['Provider']."\n";
         }
         $cancel_mandate_success = $cancel_mandate_api_call= false;
         $player_new_success = $player_new_api_call = false;
+        $player_modify_placeholder_success = $player_modify_placeholder_api_call = false;
         if ($cancellation) {
             if (method_exists($api, 'cancel_mandate')) {
                 $cancel_mandate_api_call = true;
@@ -5624,7 +5631,7 @@ function update ( ) {
                     }
                     else {
                         $created = "true";
-                        // update client_ref
+                        // update client_ref TODO really?
                         $qu = "
                             UPDATE `blotto_build_collection`
                             SET `ClientRef`='$ncr'
@@ -5660,9 +5667,19 @@ function update ( ) {
                 }
             }
         }
+        // TODO check fields not empty if left as ** they get wiped earlier
+        elseif ($fields['Name']!=$m['Name'] || $fields['Sortcode']!=$m['Sortcode'] || $fields['Account']!=$m['Account']) {
+            // call player_new
+            if (method_exists($api,'player_modify_placeholder')) {
+                // NB FIELDS MAY BE EMPTY
+                $result=$api->player_modify_placeholder($crf,$fields['Name'],$fields['Sortcode'],$fields['Account']);
+                // TODO if result not OK then add to message
+                $message .= "player_modify_placeholder result: ".$result."\n";
+            }
+        }
 
         if ($send) {
-            if (!$cancellation) {
+            if (!$cancellation) {  // todopm
                 if ($fields['StartDate']) {
                     $message .= "A start date (".$fields['StartDate'].") has been specified.\n";
                 }
@@ -5683,7 +5700,7 @@ function update ( ) {
             }
             if ($cancel_mandate_success) {
                 $subj = " mandate cancelled for ";
-            } else if ($player_new_success) {
+            } else if ($player_new_success) { // todopm
                 $subj = " new mandate for ";
             } else {
                 $subj = " BACS change request for ";
@@ -6678,15 +6695,15 @@ function www_session (&$time) {
 }
 
 function www_session_start ( ) {
-    // This application is HTTPS only
-    if (!$_SERVER['HTTPS']) {
+    // This application is HTTPS only 
+    // originally compared to 'on' but php.net just says it's non-empty.
+    // NB this could break if you are behind a proxy!
+    if (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS'])) { // TODO replace with is_https() ?
+        session_set_cookie_params (0,BLOTTO_WWW_COOKIE_PATH,$_SERVER['HTTP_HOST'],true);
+        session_start ();
+    } else {
         return false;
     }
-    if (strcasecmp($_SERVER['HTTPS'],'on')!=0) {
-        return false;
-    }
-    session_set_cookie_params (0,BLOTTO_WWW_COOKIE_PATH,$_SERVER['HTTP_HOST'],true);
-    session_start ();
 }
 
 function www_signup_dates ($org,&$e) {
@@ -6742,7 +6759,7 @@ function www_signup_dates ($org,&$e) {
             $draw_closed = $d->format ('Y-m-d');
         }
 
-        if (BLOTTO_DRAW_CLOSE_1 && $draw_closed>=BLOTTO_DRAW_CLOSE_1) {
+        if (BLOTTO_DRAW_CLOSE_1 && $draw_closed && $draw_closed>=BLOTTO_DRAW_CLOSE_1) {
             try {
 /*
                 $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
