@@ -837,82 +837,134 @@ const TicketWidget = {
     },
 
     setupFindAddress() {
-
-        const shadow = document; // Work in the widget’s shadow DOM
-        const findButton = shadow.querySelector("#findAddressBtn");
-        if (!findButton) {
-            return;
-        }
+        const findButton = document.querySelector("#findAddressBtn");
+        if (!findButton) return;
 
         findButton.addEventListener("click", async () => {
-            const postcode = document.getElementById('postcode').value.trim();
+            const postcodeInput = document.getElementById('postcode');
+            const postcode = (postcodeInput?.value || '').trim();
+
             const notice = document.getElementById('noticePostcode');
             const dropdown = document.getElementById('addressDropdown');
             const selectionRow = document.getElementById('addressSelection');
 
+            console.log('[FindAddress] Clicked. Postcode:', postcode);
             if (!postcode) {
+                notice && (notice.textContent = 'Please enter a postcode.');
                 return;
             }
+            if (!dropdown) console.warn('[FindAddress] #addressDropdown not found');
+            if (!selectionRow) console.warn('[FindAddress] #addressSelection not found');
 
-            notice.innerText = 'Looking up...';
-            dropdown.innerHTML = '';
-            selectionRow.style.display = 'none';
+            // Reset UI
+            if (notice) notice.textContent = 'Looking up...';
+            if (dropdown) dropdown.innerHTML = '';
+            if (selectionRow) selectionRow.style.display = 'none';
 
             try {
-                const response = await axios.get(`ticketsc.php?action=postcode_lookup&postcode=${encodeURIComponent(postcode)}&find=0&o=${encodeURIComponent(this.clientCode)}&p=LT`);
-                const addresses = response?.data?.data;
-                if (addresses?.length) {
-                    // API returns an array in addresses
-                    if (Array.isArray(addresses) && addresses.length > 0) {
-                        // Populate the dropdown options
-                        addresses.forEach((addressObj, index) => {
-                            const option = document.createElement("option");
-                            // Use addressObj.address as the display text; adjust accordingly.
-                            option.value = index; // Set the value as the index (or an ID if available)
-                            option.text = addressObj.address;
-                            addressDropdown.appendChild(option);
-                        });
+                const url = `ticketsc.php?action=postcode_lookup&postcode=${encodeURIComponent(postcode)}&find=0&o=${encodeURIComponent(this.clientCode)}&p=LT`;
+                console.log('[FindAddress] GET:', url);
 
-                        // Show the dropdown now that there are addresses available.
-                        addressSelection.style.display = "block";
+                const resp = await axios.get(url);
+                console.log('[FindAddress] Raw response:', resp);
 
-                        // Resize after we add the address selector
-                        requestAnimationFrame(() => {
-                            notice.innerText = '';
-                            window.parent.postMessage({
-                                type: 'resize',
-                                height: this.getHeight() + 30,
-                            }, '*');
-                        });
-                        // Listen for a change on the address dropdown.
-                        addressDropdown.addEventListener("change", () => {
-                            // When the user selects an address, get the corresponding address object.
-                            const selectedIndex = addressDropdown.value;
-                            const selectedAddress = addresses[selectedIndex];
-                            if (selectedAddress) {
-                                // Populate fields — adjust property names to match your API response.
-                                const addressLine1 = shadow.querySelector("#address_1");
-                                const addressLine2 = shadow.querySelector("#address_2");
-                                const townInput = shadow.querySelector("#town");
-                                const countyInput = shadow.querySelector("#county");
+                const addresses = resp?.data?.data;
+                console.log('[FindAddress] Parsed addresses:', addresses);
 
-                                if (addressLine1) addressLine1.value = selectedAddress.address_line_1 || "";
-                                if (addressLine2) addressLine2.value = selectedAddress.address_line_2 || "";
-                                if (townInput) townInput.value = selectedAddress.town || "";
-                                if (countyInput) countyInput.value = selectedAddress.county || "";
-                            }
-                        });
-                    } else {
-                        noticePostcode.innerHTML =
-                            '<p class="error-message">No addresses found for that postcode.</p>';
-                    }
-                } else {
-                    notice.innerText = 'No addresses found.';
+                if (!Array.isArray(addresses) || addresses.length === 0) {
+                    console.warn('[FindAddress] No addresses found for:', postcode);
+                    if (notice) notice.textContent = 'No addresses found.';
+                    return;
                 }
-            } catch (error) {
-                console.error("Error fetching addresses:", error);
-                noticePostcode.innerHTML =
-                    '<p class="error-message">Error retrieving addresses. Please try again later.</p>';
+
+                // Build dropdown options
+                dropdown.innerHTML = '';
+                if (addresses.length > 1) {
+                    const ph = document.createElement('option');
+                    ph.value = '';
+                    ph.text = 'Select address…';
+                    ph.disabled = true;
+                    ph.selected = true;
+                    dropdown.appendChild(ph);
+                }
+                addresses.forEach((addr, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = String(i);
+                    opt.text = addr.address || `${addr.address_line_1} ${addr.town} ${addr.postcode}`.trim();
+                    dropdown.appendChild(opt);
+                });
+
+                // Show selection UI
+                selectionRow && (selectionRow.style.display = 'block');
+                notice && (notice.textContent = '');
+
+                // Fill helper (scope to the same visible step panel to avoid cloned IDs)
+                const scope = selectionRow?.closest('.step-content') || document;
+                const fillFromIndex = (idx) => {
+                    console.log('[FindAddress] fillFromIndex idx:', idx);
+                    const a = addresses[idx];
+                    if (!a) return;
+
+                    // Detect duplicate IDs (diagnostic only)
+                    ['#address_1', '#address_2', '#address_3', '#town', '#county', '#postcode'].forEach(sel => {
+                        const n = document.querySelectorAll(sel).length;
+                        if (n > 1) console.warn('[FindAddress] duplicate ID detected:', sel, 'count=', n);
+                    });
+
+                    const q = (sel) => scope.querySelector(sel);
+                    const f1 = q('#address_1');
+                    const f2 = q('#address_2');
+                    const f3 = q('#address_3');
+                    const ft = q('#town');
+                    const fc = q('#county');
+                    const fp = q('#postcode');
+
+                    console.log('[FindAddress] targets:', { f1, f2, f3, ft, fc, fp });
+
+                    if (f1) f1.value = a.address_line_1 || '';
+                    if (f2) f2.value = a.address_line_2 || '';
+                    if (f3) f3.value = a.address_line_3 || '';
+                    if (ft) ft.value = a.town || '';
+                    if (fc) fc.value = a.county || '';
+                    if (fp) fp.value = a.postcode || postcode;
+
+                    console.log('[FindAddress] after fill ->', {
+                        address_1: f1?.value, address_2: f2?.value, address_3: f3?.value,
+                        town: ft?.value, county: fc?.value, postcode: fp?.value
+                    });
+                };
+
+                // Bind change (overwrite previous)
+                dropdown.onchange = () => {
+                    const v = dropdown.value;
+                    if (v === '' || Number.isNaN(Number(v))) return; // ignore placeholder
+                    fillFromIndex(Number(v));
+                };
+
+                // ✅ Auto-fill ONLY when exactly one address
+                if (addresses.length === 1) {
+                    dropdown.selectedIndex = 0; // only option
+                    fillFromIndex(0);
+                } else {
+                    // Optional: clear fields on load to force explicit choice
+                    const q = (sel) => scope.querySelector(sel);
+                    ['#address_1', '#address_2', '#address_3', '#town', '#county'].forEach(sel => {
+                        const el = q(sel); if (el) el.value = '';
+                    });
+                    // keep postcode as typed
+                }
+
+                // Resize after UI change
+                requestAnimationFrame(() => {
+                    const h = this.getHeight() + 30;
+                    console.log('[FindAddress] Requesting resize height:', h);
+                    window.parent.postMessage({ type: 'resize', height: h }, '*');
+                });
+
+            } catch (err) {
+                console.error('[FindAddress] Error:', err);
+                notice && (notice.innerHTML =
+                    '<p class="error-message">Error retrieving addresses. Please try again later.</p>');
             }
         });
     },
