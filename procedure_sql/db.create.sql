@@ -465,6 +465,7 @@ CREATE TABLE IF NOT EXISTS `blotto_supporter` (
   `redacted` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `mandate_blocked` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `self_excluded` date NULL,
+  `excluded` date NULL,
   `death_reported` date NULL,
   `death_by_suicide` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `projected_first_draw_close` date DEFAULT NULL,
