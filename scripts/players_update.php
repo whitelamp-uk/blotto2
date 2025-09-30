@@ -83,6 +83,14 @@ Then a new build process should:
  * increment `opening_balance` of latest player by that value
  * Modify all existing logic to substract `balance_transferred` in balance calculations.
 BTW the last bit of this script (updating chances line 151) might want to happen before this bit.
+
+RESPONSE:
+Agreed that this is the required approach to achieve the proposed effect.
+You only end up with non-zero balances with a weekly draw model; unless current fashion changes, using 5 draws pcm prevents unused balances.
+Current function is covered by terms and conditions and all closing balances go to the org; everyone is pretty happy.
+Only a small number of supporters experience a change of player.
+The change would create some work elsewhere because all arithmetic that calculates a balance will need to allow for the new parameter.
+The business currently views this as a non-problem.
 */
             }
             if (!array_key_exists($close,$firsts)) {
