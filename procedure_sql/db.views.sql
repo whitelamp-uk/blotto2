@@ -9,37 +9,17 @@ CREATE OR REPLACE VIEW `AgeVerify` (
  ,`Month`
 ) AS
   SELECT
-    `s`.`original_client_ref`
-   ,`s`.`name`
-   ,`s`.`email`
-   ,`s`.`address_1`
-   ,`s`.`address_2`
-   ,`s`.`postcode`
-   ,SUBSTR(`s`.`created`,1,7) as `month`
-  FROM (
-    SELECT
-      `original_client_ref`
-     ,`ccc`
-     ,CONCAT(`name_first`,' ',`name_last`) AS `name`
-     ,`email`
-     ,`address_1`
-     ,`address_2`
-     ,`postcode`
-     ,`created`
-    FROM `Supporters`
-    GROUP BY `original_client_ref`
-  ) AS `s`
-  LEFT JOIN (
-    SELECT
-      `client_ref`
-    FROM `Cancellations`
-    GROUP BY `client_ref`
-  ) AS `c`
-  ON `c`.`client_ref`=`s`.`original_client_ref`
-  WHERE (`s`.`ccc`='PBB' OR `s`.`ccc`='CDNT' OR `s`.`ccc`='STRP')
+    `client_ref_orig` AS `original_client_ref`
+   ,CONCAT(`name_first`,' ',`name_last`) AS `name`
+   ,`email`
+   ,`address_1`
+   ,`address_2`
+   ,`postcode`
+   ,SUBSTR(`created`,1,7) as `month`
+  FROM `UpdatesLatest`
+  WHERE `ccc` IN ('PBB','CDNT','STRP')
   ORDER BY `month` DESC,`original_client_ref` 
 ;
-
 
 CREATE OR REPLACE VIEW `Hiatus` (
   `cancelled`
@@ -132,11 +112,11 @@ CREATE OR REPLACE VIEW `Workflow_1_Import` (
     CONCAT(YEAR(`created`),'-',LPAD(WEEK(`created`),2,'0')) AS `week`
    ,'created'
    ,`ccc`
-   ,COUNT(DISTINCT `supporter_id`)
-   ,COUNT(`current_ticket_number`)
+   ,COUNT(DISTINCT `sort2_supporter_id`)
+   ,SUM(`tickets`)
    ,MIN(`created`)
    ,MAX(`created`)
-  FROM `Supporters`
+  FROM `UpdatesLatest`
   GROUP BY `week`,`ccc`
   ORDER BY `week` DESC,`ccc`
 ;
@@ -152,18 +132,18 @@ CREATE OR REPLACE VIEW `Workflow_2_DD` (
  ,`last_one_created`
 ) AS
   SELECT
-    CONCAT(YEAR(`supporter_first_payment`),'-',LPAD(WEEK(`supporter_first_payment`),2,'0')) AS `week`
-   ,`supporter_first_payment`
+    CONCAT(YEAR(`first_collected`),'-',LPAD(WEEK(`first_collected`),2,'0')) AS `week`
+   ,`first_collected`
    ,'first_collection'
    ,`ccc`
-   ,COUNT(DISTINCT `supporter_id`)
-   ,COUNT(`current_ticket_number`)
+   ,COUNT(DISTINCT `sort2_supporter_id`)
+   ,SUM(`tickets`)
    ,MIN(`created`)
    ,MAX(`created`)
-  FROM `Supporters`
-  WHERE `supporter_first_payment`!='0000-00-00'
-  GROUP BY `supporter_first_payment`,`ccc`
-  ORDER BY `supporter_first_payment` DESC,`ccc`
+  FROM `UpdatesLatest`
+  WHERE `first_collected`!='0000-00-00'
+  GROUP BY `first_collected`,`ccc`
+  ORDER BY `first_collected` DESC,`ccc`
 ;
 
 CREATE OR REPLACE VIEW `Workflow_3_DD` (
