@@ -93,7 +93,7 @@ echo "
 echo "\n-- Create `UpdatesLatest` --\n";
 $pref_str = "";
 foreach ($prefs as $i=>$legend) {
-    $pref_str .= "   ,GROUP_CONCAT(`c`.`$legend` ORDER BY `c`.`created` DESC LIMIT 1) AS `$legend`\n";
+    $pref_str .= "   ,GROUP_CONCAT(`c`.`p$i` ORDER BY `c`.`created` DESC LIMIT 1) AS `$legend`\n";
 }
 echo "
   CREATE OR REPLACE VIEW `UpdatesLatest` AS
