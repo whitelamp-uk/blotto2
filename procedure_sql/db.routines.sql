@@ -2255,7 +2255,7 @@ BEGIN
      ,`cln`.`DateDue`
      ,`s`.`id`
      ,MIN(`p`.`id`)
-     ,MIN(`c`.`id`)
+     ,MAX(`c`.`id`)
     FROM (
       SELECT
         `ClientRef`
@@ -2269,8 +2269,10 @@ BEGIN
       ON `p`.`client_ref`=`cln`.`ClientRef`
     JOIN `blotto_supporter` AS `s`
       ON `s`.`id`=`p`.`supporter_id`
+     AND `s`.`client_ref`=`p`.`client_ref` -- original player
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
+     AND DATE(`c`.`created`)<=`cln`.`DateDue`
     GROUP BY `s`.`id`
   ;
   -- `milestone`='bacs_change'
@@ -2347,8 +2349,6 @@ BEGIN
 --    GROUP BY `w`.`id`
 --  ;
   -- `milestone`='self_excluded'
-  -- self-exclusion cannot be reversed; in that situation
-  -- the person should be created as a brand new supporter
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
@@ -2363,6 +2363,7 @@ BEGIN
       ON `p`.`supporter_id`=`s`.`id`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
+     AND DATE(`c`.`created`)<=`s`.`self_excluded`
     LEFT JOIN `blotto_update` AS `u`
            ON `u`.`supporter_id`=`s`.`id`
           AND `u`.`milestone`='self_excluded'
@@ -2370,9 +2371,30 @@ BEGIN
       AND `u`.`id` IS NULL -- not already recorded
     GROUP BY `s`.`id`
   ;
+  -- `milestone`='excluded'
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      CURDATE()
+     ,'excluded'
+     ,`s`.`excluded`
+     ,`s`.`id`
+     ,MAX(`p`.`id`)
+     ,MAX(`c`.`id`)
+    FROM `blotto_supporter` AS `s`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`supporter_id`=`s`.`id`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+     AND DATE(`c`.`created`)<=`s`.`excluded`
+    LEFT JOIN `blotto_update` AS `u`
+           ON `u`.`supporter_id`=`s`.`id`
+          AND `u`.`milestone`='excluded'
+    WHERE `s`.`excluded` IS NOT NULL
+      AND `u`.`id` IS NULL -- not already recorded
+    GROUP BY `s`.`id`
+  ;
   -- `milestone`='death_reported'
-  -- in case of false reporting, this cannot be reversed;
-  -- instead the person should be created as a brand new supporter
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
     SELECT
@@ -2387,6 +2409,7 @@ BEGIN
       ON `p`.`supporter_id`=`s`.`id`
     JOIN `blotto_contact` AS `c`
       ON `c`.`supporter_id`=`s`.`id`
+     AND DATE(`c`.`created`)<=`s`.`death_reported`
     LEFT JOIN `blotto_update` AS `u`
            ON `u`.`supporter_id`=`s`.`id`
           AND `u`.`milestone`='death_reported'
@@ -2529,8 +2552,13 @@ BEGIN
      ,IFNULL(`s`.`supporter_first_payment`,'') AS `first_collected`
      ,IFNULL(`s`.`latest_payment_collected`,'') AS `last_collected`
      ,IFNULL(`player1`.`first_draw_close`,'') AS `first_draw`
-     ,IFNULL(`s`.`death_reported`,'') AS `death_reported`
-     ,`s`.`death_by_suicide`
+
+-- awaiting replacement of Supporters with blotto_supporter below
+--     ,IFNULL(`s`.`death_reported`,'') AS `death_reported`
+--     ,`s`.`death_by_suicide`
+     ,'' AS `tbc_1`
+     ,'' AS `tbc_2`
+
      ,IFNULL(`m`.`Status`,'') AS `mandate_status`
      ,IFNULL(`m`.`Freq`,'') AS `collection_frequency`
       -- view UpdatesLatest (legends.php) lines up with Updates column-wise hence we must reserve four columns here
@@ -2539,6 +2567,8 @@ BEGIN
      ,'' AS `unused_3`
      ,'' AS `unused_4`
     FROM `blotto_update` AS `u`
+-- can this be blotto_supporter instead?
+-- will need to join collections to avoid using Supporters
     JOIN (
       SELECT
         *
@@ -2546,6 +2576,8 @@ BEGIN
       GROUP BY `supporter_id`
     ) AS `s`
       ON `s`.`supporter_id`=`u`.`supporter_id`
+
+
     JOIN `blotto_player` AS `player1`
       ON `player1`.`supporter_id`=`s`.`supporter_id`
      AND `player1`.`client_ref`=`s`.`original_client_ref`
@@ -2582,7 +2614,7 @@ DROP PROCEDURE IF EXISTS `updatesEmpty`$$
 CREATE PROCEDURE `updatesEmpty` (
 )
 BEGIN
-  -- guarantee there is an Updates table on a first build (BLOTTO_PAY_FREEZE prevents updates() from running)
+  -- guarantee there is an Updates table on a first build (BLOTTO_DEV_PAY_FREEZE prevents updates() from running)
   CREATE TABLE IF NOT EXISTS `Updates` (
     `updated` date NOT NULL,
     `supporter_id` int(11) unsigned NOT NULL,
