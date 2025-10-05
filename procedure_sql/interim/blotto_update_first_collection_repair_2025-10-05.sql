@@ -91,6 +91,7 @@ set
 where u.milestone='first_collection'
 ;
 
+-- the repair is sound if no rows are inserted by the following
 -- the adapted insert-ignore from updates() gets tested here
 -- when you copy in, make sure the table name is
 -- NO LONGER THE REAL TABLE!!!!
@@ -122,7 +123,6 @@ where u.milestone='first_collection'
      AND DATE(`c`.`created`)<=`cln`.`DateDue`
     GROUP BY `s`.`id`
   ;
--- the repair is sound if no rows are inserted
 
 
 /*
@@ -140,6 +140,11 @@ where u.milestone='first_collection'
 -- NEVER run updates() manually after repairing - the build needs to replace it first
 -- NEVER let the next build run until updates() has been pulled live
 */
+
+
+-- reporting corrective milestones for CRM export (can be done later)
+-- simply generate fresh rows in blotto_contact 
+-- which triggers normal behaviour of updates() to create new contact_change milestones
 
 
 /*
