@@ -129,8 +129,13 @@ $pref_str
    ,GROUP_CONCAT(`u`.`first_collected` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `first_collected`
    ,GROUP_CONCAT(`u`.`last_collected` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `last_collected`
    ,GROUP_CONCAT(`u`.`first_draw` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `first_draw`
-   ,GROUP_CONCAT(`u`.`death_reported` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `death_reported`
-   ,GROUP_CONCAT(`u`.`death_by_suicide` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `death_by_suicide`
+
+-- awaiting improvements to updates()
+--   ,GROUP_CONCAT(`u`.`death_reported` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `death_reported`
+--   ,GROUP_CONCAT(`u`.`death_by_suicide` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `death_by_suicide`
+     ,'' AS `tbc_1`
+     ,'' AS `tbc_2`
+
    ,GROUP_CONCAT(`u`.`mandate_status` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `mandate_status`
    ,GROUP_CONCAT(`u`.`collection_frequency` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `collection_frequency`
    ,`ac`.`spent`
