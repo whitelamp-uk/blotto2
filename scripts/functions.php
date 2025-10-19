@@ -126,6 +126,9 @@ function calculate ($start=null,$end=null) {
         error_log ('calculate(): '.$e->getMessage());
         return $results;
     }
+    $amount_org = 0.00;
+    $fees_total = 0.00;
+    $winnings = 0.00;
     while ($r=$c->fetch_assoc()) {
         $item = [
             'units' => $r['units'],
@@ -133,6 +136,12 @@ function calculate ($start=null,$end=null) {
             'notes' => $r['notes']
         ];
         $results[$r['item']] = $item;
+        if ($r['item']=='winnings') {
+            $winnings = $r['amount'];
+        }
+        elseif ($r['item']=='nett') {
+            $amount_org = $r['amount'];
+        }
     }
     $fees = fees ($start,$end);
     $results[]          = [
@@ -145,35 +154,122 @@ function calculate ($start=null,$end=null) {
         'amount' => number_format($fees['loading']['amount'],2,'.',''),
         'notes' => '− loading fees'
     ];
+    $fees_total += $fees['loading']['amount'];
     $results[]          = [
         'units' => 'GBP',
         'amount' => number_format($fees['anl_post']['amount'],2,'.',''),
         'notes' => '− advanced notification letters'
     ];
+    $fees_total += $fees['anl_post']['amount'];
     $results[]          = [
         'units' => 'GBP',
         'amount' => number_format($fees['winner_post']['amount'],2,'.',''),
         'notes' => '− winner letters'
     ];
+    $fees_total += $fees['winner_post']['amount'];
     $results[]          = [
         'units' => 'GBP',
         'amount' => number_format($fees['email']['amount'],2,'.',''),
         'notes' => '− email services'
     ];
+    $fees_total += $fees['email']['amount'];
     $results[]          = [
         'units' => 'GBP',
         'amount' => number_format($fees['admin']['amount'],2,'.',''),
         'notes' => '− administration charges'
     ];
+    $fees_total += $fees['admin']['amount'];
     $results[]          = [
         'units' => 'GBP',
         'amount' => number_format($fees['ticket']['amount'],2,'.',''),
         'notes' => '− ticket management fees'
     ];
+    $fees_total += $fees['ticket']['amount'];
     $results[]          = [
         'units' => 'GBP',
         'amount' => number_format($fees['insure']['amount'],2,'.',''),
         'notes' => '− draw insurance costs'
+    ];
+    $fees_total += $fees['insure']['amount'];
+    $results[]          = [
+        'units' => '',
+        'amount' => '',
+        'notes' => 'GC summary (experimental)'
+    ];
+    $zo  = connect ();
+    $price = number_format (BLOTTO_TICKET_PRICE/100,2,'.','');
+    $rev = $zo->query (
+      "
+        SELECT
+          `s`.`canvas_code` AS `ccc`
+         ,COUNT(`e`.`id`)*$price AS `rev`
+        FROM `blotto_supporter` AS `s`
+        JOIN `blotto_player` AS `p`
+          ON `p`.`supporter_id`=`s`.`id`
+        JOIN `blotto_entry` AS `e`
+          ON `e`.`client_ref`=`p`.`client_ref`
+          AND `e`.`draw_closed`>='2025-06-01'
+          AND `e`.`draw_closed`<='2025-09-30'
+        GROUP BY `ccc`
+        ;
+      "
+    );
+    $rev = $rev->fetch_all ();
+    if (!count($rev)) {
+        $rev = [
+            [ 'ccc' => 'none found', 'rev' => 0.0 ]
+        ];
+    }
+    foreach ($rev as $ccc) {
+        $results[]          = [
+            'units' => 'GBP',
+            'amount' => number_format($ccc['rev'],2,'.',''),
+            'notes' => 'Ticket sales - '.$ccc['ccc']
+        ];
+    }
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($amount_org,2,'.',''),
+        'notes' => 'amount passed to society'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($fees_total,2,'.',''),
+        'notes' => 'ELM fees'
+    ];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($winnings,2,'.',''),
+        'notes' => 'prize winnings allocated'
+    ];
+    $ses = $zo->query ("SELECT COUNT(`id`) AS `ses` FROM `blotto_supporter` WHERE `self_excluded`>='$start' AND `self_excluded`<='$end'");
+    $ses = $ses->fetch_assoc() ['ses'];
+    $results[]          = [
+        'units' => '',
+        'amount' => intval ($ses),
+        'notes' => 'self exclusions logged'
+    ];
+    // TODO amount_rollover_bf
+    // TODO amount_rollover_won
+    $apm = $zo->query ("SELECT MAX(`winnings`) AS `apm` FROM `Wins` WHERE `draw_closed`>='$start' AND `draw_closed`<='$end'");
+    $apm = $apm->fetch_assoc() ['apm'];
+    $results[]          = [
+        'units' => 'GBP',
+        'amount' => number_format($apm,2,'.',''),
+        'notes' => 'most valuable prize won'
+    ];
+    $dt = new \DateTime ($end);
+    $dt->add (new \DateInterval ('P1D'));
+    $dcn = draw_upcoming ($dt->format('Y-m-d'));
+    if ($dcn<BLOTTO_DRAW_CLOSE_1) {
+        $dcn = BLOTTO_DRAW_CLOSE_1;
+    }
+    $ddn = $zo->query ("SELECT DATE(drawOnOrAfter('$dcn')) AS `ddn`");
+    $ddn = $ddn->fetch_assoc() ['ddn'];
+    $results[]          = [
+        'units' => '',
+        'amount' => $ddn,
+        'notes' => 'next period\'s draw pending'
     ];
     return $results;
 }
