@@ -208,8 +208,8 @@ function calculate ($start=null,$end=null) {
           ON `p`.`supporter_id`=`s`.`id`
         JOIN `blotto_entry` AS `e`
           ON `e`.`client_ref`=`p`.`client_ref`
-          AND `e`.`draw_closed`>='2025-06-01'
-          AND `e`.`draw_closed`<='2025-09-30'
+          AND `e`.`draw_closed`>='$start'
+          AND `e`.`draw_closed`<='$end'
         GROUP BY `ccc`
         ;
       "
