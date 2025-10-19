@@ -229,7 +229,7 @@ function calculate ($start=null,$end=null) {
     }
     $results[]          = [
         'units' => 'GBP',
-        'amount' => number_format($amount_org,2,'.',''),
+        'amount' => number_format($amount_org-$fees_total,2,'.',''),
         'notes' => 'amount passed to society'
     ];
     $results[]          = [
