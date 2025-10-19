@@ -137,7 +137,7 @@ function calculate ($start=null,$end=null) {
         ];
         $results[$r['item']] = $item;
         if ($r['item']=='winnings') {
-            $winnings = $r['amount'];
+            $winnings = 0 - $r['amount'];
         }
         elseif ($r['item']=='nett') {
             $amount_org = $r['amount'];
@@ -214,7 +214,7 @@ function calculate ($start=null,$end=null) {
         ;
       "
     );
-    $rev = $rev->fetch_all ();
+    $rev = $rev->fetch_all (MYSQLI_ASSOC);
     if (!count($rev)) {
         $rev = [
             [ 'ccc' => 'none found', 'rev' => 0.0 ]
