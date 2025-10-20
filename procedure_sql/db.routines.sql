@@ -2833,10 +2833,10 @@ BEGIN
     JOIN (
       SELECT
         `ps`.`supporter_id`
-       ,FORMAT(SUM(`ps`.`entries`)*$price/100,2) AS `spent`
+       ,FORMAT(SUM(`ps`.`entries`)*{{BLOTTO_TICKET_PRICE}}/100,2) AS `spent`
        ,FORMAT(SUM(`ps`.`opening_balance`),2) AS `opening_balance`
        ,FORMAT(SUM(`ps`.`collected`),2) AS `collected`
-       ,FORMAT(SUM(`ps`.`opening_balance`+`ps`.`collected`-(`ps`.`entries`*$price/100)),2) AS `balance`
+       ,FORMAT(SUM(`ps`.`opening_balance`+`ps`.`collected`-(`ps`.`entries`*{{BLOTTO_TICKET_PRICE}}/100)),2) AS `balance`
       FROM (
         SELECT
           `p`.`supporter_id`
