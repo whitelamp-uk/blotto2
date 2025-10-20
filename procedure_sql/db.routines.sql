@@ -2539,7 +2539,7 @@ BEGIN
     `milestone_date` date DEFAULT NULL,
     `signed` date DEFAULT NULL,
     `created` date DEFAULT NULL,
-    `overdue_since` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `cancelled` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
     `ccc` char(16) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
     `canvas_ref` int(11) unsigned DEFAULT NULL,
     `client_ref_orig` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
@@ -2591,7 +2591,7 @@ BEGIN
     `unused_3` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
     `sort1_signed` date NOT NULL,
     `created` date DEFAULT NULL,
-    `overdue_since` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `cancelled` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
     `ccc` char(16) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
     `canvas_ref` int(11) unsigned DEFAULT NULL,
     `client_ref_orig` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
@@ -2633,7 +2633,7 @@ BEGIN
     KEY `ccc` (`ccc`),
     KEY `client_ref_orig` (`client_ref_orig`),
     KEY `client_ref` (`client_ref`),
-    KEY `overdue_since` (`overdue_since`)
+    KEY `cancelled` (`cancelled`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
   ;
 
@@ -2658,7 +2658,7 @@ BEGIN
      ,`u`.`milestone_date`
      ,`s`.`signed`
      ,`s`.`created`
-     ,'0000-00-00' AS `overdue_since`
+     ,'0000-00-00' AS `cancelled`
      ,`s`.`canvas_code` AS `ccc`
      ,`s`.`canvas_ref`
      ,`s`.`client_ref` AS `client_ref_orig`
@@ -2746,18 +2746,18 @@ BEGIN
   ALTER TABLE `Updates`
   ADD KEY `updater` (`updater`)
   ;
-  -- Add supporter notional cancellation date "overdue_since"
+  -- Add supporter notional cancellation date "cancelled"
   UPDATE `Updates` AS `u`
   JOIN `blotto_player` AS `p`
     ON `p`.`supporter_id`=`u`.`supporter_id`
   JOIN `Cancellations` AS `c`
     ON `c`.`client_ref`=`p`.`client_ref`
   SET
-    `u`.`overdue_since`=`c`.`cancelled_date`
+    `u`.`cancelled`=`c`.`cancelled_date`
   ;
   UPDATE `Updates` SET
-    `overdue_since`=''
-  WHERE `overdue_since`='0000-00-00'
+    `cancelled`=''
+  WHERE `cancelled`='0000-00-00'
   ;
 END$$
 
@@ -2783,7 +2783,7 @@ BEGIN
       -- non-ephemeral things
      ,`u`.`signed` AS `sort1_signed`
      ,`u`.`created`
-     ,`u`.`overdue_since`
+     ,`u`.`cancelled`
      ,`u`.`ccc`
      ,`u`.`canvas_ref`
      ,`u`.`client_ref_orig`
@@ -2877,7 +2877,7 @@ BEGIN
   ADD KEY `client_ref` (`client_ref`)
   ;
   ALTER TABLE `UpdatesLatest`
-  ADD KEY `overdue_since` (`overdue_since`)
+  ADD KEY `cancelled` (`cancelled`)
   ;
 END$$
 
