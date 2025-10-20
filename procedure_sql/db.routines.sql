@@ -2321,33 +2321,46 @@ BEGIN
      AND `p`.`started`<=DATE(`c`.`created`)
     GROUP BY `c`.`id`
   ;
+/*
   -- `milestone`='win'
---  INSERT IGNORE INTO `blotto_update`
---    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
---    SELECT
---      CURDATE()
---     ,'win'
---     ,`e`.`draw_closed`
---     ,`s`.`id`
---     ,MAX(`p`.`id`)
---     ,`c`.`id`
---    FROM `blotto_winner` AS `w`
---    JOIN `blotto_entry` AS `e`
---      ON `e`.`id`=`w`.`entry_id`
---    JOIN `blotto_player` AS `p`
---      ON `p`.`client_ref`=`e`.`client_ref`
---     AND `p`.`started`<=DATE(`e`.`draw_closed`)
---    JOIN `blotto_supporter` AS `s`
---      ON `s`.`id`=`p`.`supporter_id`
---    JOIN (
---      SELECT
---        *
---      FROM `blotto_contact`
---    ) AS `c`
---      ON `c`.`supporter_id`=`s`.`id`
---     AND DATE(`c`.`created`)<=`e`.`draw_closed`
---    GROUP BY `w`.`id`
---  ;
+  INSERT IGNORE INTO `blotto_update`
+    (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
+    SELECT
+      CURDATE()
+     ,'win'
+     ,MIN(`wins`.`draw_closed`)
+     ,`s`.`id`
+     ,MAX(`p`.`id`)
+     ,`c`.`id`
+    FROM (
+      SELECT
+        `e`.`client_ref`
+       ,MIN(`e`.`draw_closed`) AS `draw_closed`
+      FROM `blotto_winner` AS `w`
+      JOIN `blotto_entry` AS `e`
+        ON `e`.`id`=`w`.`entry_id`
+      -- update unique keys enforce milestones to be
+      -- no more frequent than one per day per type
+      -- so insert only one win for any given supporter
+      -- otherwise CURDATE() above causes primary key collision
+      -- when a supporter has won in more than one draw
+      GROUP BY `client_ref`
+    ) AS `win`
+    JOIN `blotto_player` AS `p`
+      ON `p`.`client_ref`=`win`.`client_ref`
+     AND `p`.`started`<=DATE(`win`.`draw_closed`)
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`p`.`supporter_id`
+    JOIN (
+      SELECT
+        *
+      FROM `blotto_contact`
+    ) AS `c`
+      ON `c`.`supporter_id`=`s`.`id`
+     AND DATE(`c`.`created`)<=`e`.`draw_closed`
+    GROUP BY `s`.`id`
+  ;
+*/
   -- `milestone`='self_excluded'
   INSERT IGNORE INTO `blotto_update`
     (`updated`,`milestone`,`milestone_date`,`supporter_id`,`player_id`,`contact_id`)
@@ -2507,7 +2520,132 @@ BEGIN
   ;
   DROP TABLE `blotto_update_tmp`
   ;
-  -- Output table
+  CALL updatesTableUpdates();
+  CALL updatesTableUpdatesLatest();
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `updatesEmpty`$$
+CREATE PROCEDURE `updatesEmpty` (
+)
+BEGIN
+  -- guarantee there is are updates output tables on a first build (BLOTTO_DEV_PAY_FREEZE prevents updates() from running)
+  CREATE TABLE IF NOT EXISTS `Updates` (
+    `updated` date NOT NULL,
+    `supporter_id` int(11) unsigned NOT NULL,
+    `updater` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `milestone` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `milestone_date` date DEFAULT NULL,
+    `signed` date DEFAULT NULL,
+    `created` date DEFAULT NULL,
+    `overdue_since` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `ccc` char(16) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+    `canvas_ref` int(11) unsigned DEFAULT NULL,
+    `client_ref_orig` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `client_ref` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `tickets` bigint(21) NOT NULL,
+    `ticket_numbers` mediumtext CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `title` varchar(255) DEFAULT NULL,
+    `name_first` varchar(255) DEFAULT NULL,
+    `name_last` varchar(255) DEFAULT NULL,
+    `email` varchar(255) DEFAULT NULL,
+    `mobile` varchar(255) DEFAULT NULL,
+    `telephone` varchar(255) DEFAULT NULL,
+    `address_1` varchar(255) DEFAULT NULL,
+    `address_2` varchar(255) DEFAULT NULL,
+    `address_3` varchar(255) DEFAULT NULL,
+    `town` varchar(255) DEFAULT NULL,
+    `county` varchar(255) DEFAULT NULL,
+    `postcode` varchar(255) DEFAULT NULL,
+    `dob` date DEFAULT NULL,
+    `no_post` varchar(255) DEFAULT NULL,
+    `no_prom` varchar(255) DEFAULT NULL,
+    `post` varchar(255) DEFAULT NULL,
+    `eml` varchar(255) DEFAULT NULL,
+    `tel` varchar(255) DEFAULT NULL,
+    `prom` varchar(255) DEFAULT NULL,
+    `bnk_pos` varchar(255) DEFAULT NULL,
+    `first_collected` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '',
+    `last_collected` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '',
+    `first_draw` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `death_reported` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `death_by_suicide` tinyint(1) unsigned NOT NULL DEFAULT 0,
+    `mandate_status` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `collection_frequency` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `unused_1` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `unused_2` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `unused_3` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `unused_4` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    PRIMARY KEY (`updated`,`client_ref_orig`,`milestone`,`client_ref`),
+    KEY `client_ref` (`client_ref`),
+    KEY `milestone_date` (`milestone_date`),
+    KEY `updater` (`updater`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
+  ;
+  CREATE TABLE `UpdatesLatest` (
+    `updated` date,
+    `sort2_supporter_id` int(11) unsigned NOT NULL,
+    `unused_1` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `unused_2` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `unused_3` char(0) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `sort1_signed` date NOT NULL,
+    `created` date DEFAULT NULL,
+    `overdue_since` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `ccc` char(16) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+    `canvas_ref` int(11) unsigned DEFAULT NULL,
+    `client_ref_orig` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    `client_ref` mediumtext CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+    `tickets` mediumtext CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+    `ticket_numbers` mediumtext CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+    `title` mediumtext DEFAULT NULL,
+    `name_first` mediumtext DEFAULT NULL,
+    `name_last` mediumtext DEFAULT NULL,
+    `email` mediumtext DEFAULT NULL,
+    `mobile` mediumtext DEFAULT NULL,
+    `telephone` mediumtext DEFAULT NULL,
+    `address_1` mediumtext DEFAULT NULL,
+    `address_2` mediumtext DEFAULT NULL,
+    `address_3` mediumtext DEFAULT NULL,
+    `town` mediumtext DEFAULT NULL,
+    `county` mediumtext DEFAULT NULL,
+    `postcode` mediumtext DEFAULT NULL,
+    `dob` mediumtext CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+    `no_post` varchar(255) DEFAULT NULL,
+    `no_prom` varchar(255) DEFAULT NULL,
+    `post` varchar(255) DEFAULT NULL,
+    `eml` varchar(255) DEFAULT NULL,
+    `tel` varchar(255) DEFAULT NULL,
+    `prom` varchar(255) DEFAULT NULL,
+    `bnk_pos` varchar(255) DEFAULT NULL,
+    `first_collected` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '',
+    `last_collected` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '',
+    `first_draw` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `death_reported` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    `death_by_suicide` tinyint(1) unsigned NOT NULL DEFAULT 0,
+    `mandate_status` mediumtext CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+    `collection_frequency` mediumtext CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+    `spent` varchar(65) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+    `opening_balance` varchar(44) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+    `collected` varchar(73) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+    `balance` varchar(77) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+    PRIMARY KEY (`sort1_signed`,`sort2_supporter_id`),
+    KEY `ccc` (`ccc`),
+    KEY `client_ref_orig` (`client_ref_orig`),
+    KEY `client_ref` (`client_ref`),
+    KEY `overdue_since` (`overdue_since`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
+  ;
+
+END$$
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `updatesTableUpdates`$$
+CREATE PROCEDURE `updatesTableUpdates` (
+)
+BEGIN
+  -- Output CRM milestone table
   DROP TABLE IF EXISTS `Updates`
   ;
   CREATE TABLE `Updates` AS
@@ -2515,17 +2653,20 @@ BEGIN
       `u`.`updated`
      ,`u`.`supporter_id`
      ,IF(`milestone`='contact_change',`c`.`updater`,'SYSTEM') AS `updater`
+      -- non-ephemeral things (the model does not store if/when they are changed)
      ,`u`.`milestone`
      ,`u`.`milestone_date`
      ,`s`.`signed`
      ,`s`.`created`
-     ,`s`.`cancelled`
-     ,`s`.`ccc`
+     ,'0000-00-00' AS `overdue_since`
+     ,`s`.`canvas_code` AS `ccc`
      ,`s`.`canvas_ref`
-     ,`s`.`original_client_ref` AS `client_ref_orig`
+     ,`s`.`client_ref` AS `client_ref_orig`
+      -- ephemeral player/tickets (the player ID at the time of the milestone)
      ,`p`.`client_ref`
-     ,IFNULL(COUNT(DISTINCT `t`.`number`),'') AS `tickets`
+     ,IFNULL(COUNT(DISTINCT `t`.`number`),0) AS `tickets`
      ,IFNULL(GROUP_CONCAT(DISTINCT `t`.`number` SEPARATOR ', '),'') AS `ticket_numbers`
+      -- ephemeral contact details (the contact ID at the time of the milestone)
      ,`c`.`title`
      ,`c`.`name_first`
      ,`c`.`name_last`
@@ -2549,16 +2690,13 @@ BEGIN
      ,`c`.`p7`
      ,`c`.`p8`
      ,`c`.`p9`
-     ,IFNULL(`s`.`supporter_first_payment`,'') AS `first_collected`
-     ,IFNULL(`s`.`latest_payment_collected`,'') AS `last_collected`
+     ,`m`.`first_collected`
+     ,`m`.`last_collected`
+      -- more non-ephemeral things
      ,IFNULL(`player1`.`first_draw_close`,'') AS `first_draw`
-
--- awaiting replacement of Supporters with blotto_supporter below
---     ,IFNULL(`s`.`death_reported`,'') AS `death_reported`
---     ,`s`.`death_by_suicide`
-     ,'' AS `tbc_1`
-     ,'' AS `tbc_2`
-
+     ,IFNULL(`s`.`death_reported`,'') AS `death_reported`
+     ,`s`.`death_by_suicide`
+      -- player/mandate properties are ephemeral
      ,IFNULL(`m`.`Status`,'') AS `mandate_status`
      ,IFNULL(`m`.`Freq`,'') AS `collection_frequency`
       -- view UpdatesLatest (legends.php) lines up with Updates column-wise hence we must reserve four columns here
@@ -2567,30 +2705,32 @@ BEGIN
      ,'' AS `unused_3`
      ,'' AS `unused_4`
     FROM `blotto_update` AS `u`
--- can this be blotto_supporter instead?
--- will need to join collections to avoid using Supporters
-    JOIN (
-      SELECT
-        *
-      FROM `Supporters` AS `s`
-      GROUP BY `supporter_id`
-    ) AS `s`
-      ON `s`.`supporter_id`=`u`.`supporter_id`
-
-
+    JOIN `blotto_supporter` AS `s`
+      ON `s`.`id`=`u`.`supporter_id`
     JOIN `blotto_player` AS `player1`
-      ON `player1`.`supporter_id`=`s`.`supporter_id`
-     AND `player1`.`client_ref`=`s`.`original_client_ref`
+      ON `player1`.`supporter_id`=`s`.`id`
+     AND `player1`.`client_ref`=`s`.`client_ref`
     JOIN `blotto_player` as `p`
       ON `p`.`id`=`u`.`player_id`
+    LEFT JOIN (
+      SELECT
+        `mandate`.`ClientRef`
+       ,`mandate`.`Status`
+       ,`mandate`.`Freq`
+       ,IFNULL(MIN(`DateDue`),'') AS `first_collected`
+       ,IFNULL(MAX(`DateDue`),'') AS `last_collected`
+      FROM `blotto_build_mandate` AS `mandate`
+      LEFT JOIN `blotto_build_collection` AS `collection`
+        ON `collection`.`ClientRef`=`mandate`.`ClientRef`
+      GROUP BY `mandate`.`RefNo`
+    )      AS `m`
+           ON `m`.`ClientRef`=`p`.`client_ref`
+    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
+           ON `t`.`org_id`={{BLOTTO_ORG_ID}}
+    -- EXT ticket supporters get milestones too because mandates are left joined
+          AND `t`.`client_ref`=`p`.`client_ref`
     JOIN `blotto_contact` as `c`
       ON `c`.`id`=`u`.`contact_id`
-    LEFT JOIN `blotto_build_mandate` as `m`
-      ON `m`.`ClientRef`=`p`.`client_ref`
-    LEFT JOIN `{{BLOTTO_TICKET_DB}}`.`blotto_ticket` AS `t`
-      ON `t`.`org_id`={{BLOTTO_ORG_ID}}
-      -- EXT ticket supporters get milestones too because mandates are left joined
-     AND `t`.`client_ref`=`p`.`client_ref`
     GROUP BY `u`.`id`
     ORDER BY `updated`,`client_ref_orig`,`client_ref`
   ;
@@ -2606,63 +2746,138 @@ BEGIN
   ALTER TABLE `Updates`
   ADD KEY `updater` (`updater`)
   ;
+  -- Add supporter notional cancellation date "overdue_since"
+  UPDATE `Updates` AS `u`
+  JOIN `blotto_player` AS `p`
+    ON `p`.`supporter_id`=`u`.`supporter_id`
+  JOIN `Cancellations` AS `c`
+    ON `c`.`client_ref`=`p`.`client_ref`
+  SET
+    `u`.`overdue_since`=`c`.`cancelled_date`
+  ;
+  UPDATE `Updates` SET
+    `overdue_since`=''
+  WHERE `overdue_since`='0000-00-00'
+  ;
 END$$
 
 
 DELIMITER $$
-DROP PROCEDURE IF EXISTS `updatesEmpty`$$
-CREATE PROCEDURE `updatesEmpty` (
+DROP PROCEDURE IF EXISTS `updatesTableUpdatesLatest`$$
+CREATE PROCEDURE `updatesTableUpdatesLatest` (
 )
 BEGIN
-  -- guarantee there is an Updates table on a first build (BLOTTO_DEV_PAY_FREEZE prevents updates() from running)
-  CREATE TABLE IF NOT EXISTS `Updates` (
-    `updated` date NOT NULL,
-    `supporter_id` int(11) unsigned NOT NULL,
-    `updater` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `milestone` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `milestone_date` date DEFAULT NULL,
-    `signed` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `created` date NOT NULL,
-    `cancelled` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `ccc` char(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `canvas_ref` int(11) unsigned DEFAULT NULL,
-    `client_ref_orig` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `client_ref` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `tickets` varbinary(21) NOT NULL,
-    `ticket_numbers` mediumtext CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `title` varchar(255) DEFAULT NULL,
-    `name_first` varchar(255) DEFAULT NULL,
-    `name_last` varchar(255) DEFAULT NULL,
-    `email` varchar(255) DEFAULT NULL,
-    `mobile` varchar(255) DEFAULT NULL,
-    `telephone` varchar(255) DEFAULT NULL,
-    `address_1` varchar(255) DEFAULT NULL,
-    `address_2` varchar(255) DEFAULT NULL,
-    `address_3` varchar(255) DEFAULT NULL,
-    `town` varchar(255) DEFAULT NULL,
-    `county` varchar(255) DEFAULT NULL,
-    `postcode` varchar(255) DEFAULT NULL,
-    `dob` date DEFAULT NULL,
-    `bnk_pos` varchar(255) DEFAULT NULL,
-    `prom` varchar(255) DEFAULT NULL,
-    `eml` varchar(255) DEFAULT NULL,
-    `post` varchar(255) DEFAULT NULL,
-    `sms` varchar(255) DEFAULT NULL,
-    `tel` varchar(255) DEFAULT NULL,
-    `is_nhs` varchar(255) DEFAULT NULL,
-    `wr_sgd` varchar(255) DEFAULT NULL,
-    `first_collected` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `last_collected` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `first_draw` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `death_reported` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `death_by_suicide` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-    `mandate_status` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    `collection_frequency` varchar(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-    PRIMARY KEY (`updated`,`client_ref_orig`,`milestone`,`client_ref`),
-    KEY `client_ref` (`client_ref`),
-    KEY `milestone_date` (`milestone_date`),
-    KEY `updater` (`updater`)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
+  -- output CRM contemporary snapshot
+  -- this is the main for-all-time list of supporters
+  DROP VIEW IF EXISTS `UpdatesLatest`
+  ;
+  DROP TABLE IF EXISTS `UpdatesLatest`
+  ;
+  CREATE TABLE `UpdatesLatest` AS
+    SELECT
+      MAX(`u`.`updated`) AS `updated`
+     ,`u`.`supporter_id` AS `sort2_supporter_id`
+     ,'' AS `unused_1`
+     ,'' AS `unused_2`
+     ,'' AS `unused_3`
+      -- non-ephemeral things
+     ,`u`.`signed` AS `sort1_signed`
+     ,`u`.`created`
+     ,`u`.`overdue_since`
+     ,`u`.`ccc`
+     ,`u`.`canvas_ref`
+     ,`u`.`client_ref_orig`
+      -- latest player
+     ,GROUP_CONCAT(`u`.`client_ref` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `client_ref`
+     ,GROUP_CONCAT(`u`.`tickets` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `tickets`
+     ,GROUP_CONCAT(`u`.`ticket_numbers` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `ticket_numbers`
+      -- bleeding edge contact details
+     ,GROUP_CONCAT(`c`.`title` ORDER BY `c`.`created` DESC LIMIT 1) AS `title`
+     ,GROUP_CONCAT(`c`.`name_first` ORDER BY `c`.`created` DESC LIMIT 1) AS `name_first`
+     ,GROUP_CONCAT(`c`.`name_last` ORDER BY `c`.`created` DESC LIMIT 1) AS `name_last`
+     ,GROUP_CONCAT(`c`.`email` ORDER BY `c`.`created` DESC LIMIT 1) AS `email`
+     ,GROUP_CONCAT(`c`.`mobile` ORDER BY `c`.`created` DESC LIMIT 1) AS `mobile`
+     ,GROUP_CONCAT(`c`.`telephone` ORDER BY `c`.`created` DESC LIMIT 1) AS `telephone`
+     ,GROUP_CONCAT(`c`.`address_1` ORDER BY `c`.`created` DESC LIMIT 1) AS `address_1`
+     ,GROUP_CONCAT(`c`.`address_2` ORDER BY `c`.`created` DESC LIMIT 1) AS `address_2`
+     ,GROUP_CONCAT(`c`.`address_3` ORDER BY `c`.`created` DESC LIMIT 1) AS `address_3`
+     ,GROUP_CONCAT(`c`.`town` ORDER BY `c`.`created` DESC LIMIT 1) AS `town`
+     ,GROUP_CONCAT(`c`.`county` ORDER BY `c`.`created` DESC LIMIT 1) AS `county`
+     ,GROUP_CONCAT(`c`.`postcode` ORDER BY `c`.`created` DESC LIMIT 1) AS `postcode`
+     ,GROUP_CONCAT(`c`.`dob` ORDER BY `c`.`created` DESC LIMIT 1) AS `dob`
+     ,GROUP_CONCAT(`c`.`p0` ORDER BY `c`.`created` DESC LIMIT 1) AS `p0`
+     ,GROUP_CONCAT(`c`.`p1` ORDER BY `c`.`created` DESC LIMIT 1) AS `p1`
+     ,GROUP_CONCAT(`c`.`p2` ORDER BY `c`.`created` DESC LIMIT 1) AS `p2`
+     ,GROUP_CONCAT(`c`.`p3` ORDER BY `c`.`created` DESC LIMIT 1) AS `p3`
+     ,GROUP_CONCAT(`c`.`p4` ORDER BY `c`.`created` DESC LIMIT 1) AS `p4`
+     ,GROUP_CONCAT(`c`.`p5` ORDER BY `c`.`created` DESC LIMIT 1) AS `p5`
+     ,GROUP_CONCAT(`c`.`p6` ORDER BY `c`.`created` DESC LIMIT 1) AS `p6`
+     ,GROUP_CONCAT(`c`.`p7` ORDER BY `c`.`created` DESC LIMIT 1) AS `p7`
+     ,GROUP_CONCAT(`c`.`p8` ORDER BY `c`.`created` DESC LIMIT 1) AS `p8`
+     ,GROUP_CONCAT(`c`.`p9` ORDER BY `c`.`created` DESC LIMIT 1) AS `p9`
+      -- non-ephemeral things
+     ,`u`.`first_collected`
+     ,`u`.`last_collected`
+     ,`u`.`first_draw`
+     ,`u`.`death_reported`
+     ,`u`.`death_by_suicide`
+      -- latest player
+     ,GROUP_CONCAT(`u`.`mandate_status` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `mandate_status`
+     ,GROUP_CONCAT(`u`.`collection_frequency` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `collection_frequency`
+      -- bleeding edge account details
+     ,`ac`.`spent`
+     ,`ac`.`opening_balance`
+     ,`ac`.`collected`
+     ,`ac`.`balance`
+    FROM `Updates` AS `u`
+    JOIN (
+      SELECT
+        `ps`.`supporter_id`
+       ,FORMAT(SUM(`ps`.`entries`)*$price/100,2) AS `spent`
+       ,FORMAT(SUM(`ps`.`opening_balance`),2) AS `opening_balance`
+       ,FORMAT(SUM(`ps`.`collected`),2) AS `collected`
+       ,FORMAT(SUM(`ps`.`opening_balance`+`ps`.`collected`-(`ps`.`entries`*$price/100)),2) AS `balance`
+      FROM (
+        SELECT
+          `p`.`supporter_id`
+         ,`p`.`opening_balance`
+         ,IFNULL(SUM(`c`.`PaidAmount`),0.00) AS `collected`
+         ,IFNULL(`es`.`entries`,0.00) AS `entries`
+        FROM `blotto_player` AS `p`
+        LEFT JOIN `blotto_build_collection` AS `c`
+               ON `c`.`ClientRef`=`p`.`client_ref`
+        LEFT JOIN (
+          SELECT
+            `client_ref`
+           ,COUNT(`id`) AS `entries`
+          FROM `blotto_entry`
+          GROUP BY `client_ref`
+        )      AS `es`
+               ON `es`.`client_ref`=`p`.`client_ref`
+      GROUP BY `p`.`id` -- one row per player
+      ) AS `ps`
+      GROUP BY `ps`.`supporter_id` -- one row per supporter
+    ) AS `ac`
+      ON `ac`.`supporter_id`=`u`.`supporter_id`
+    JOIN `blotto_contact` AS `c`
+      ON `c`.`supporter_id`=`u`.`supporter_id`
+    GROUP BY `u`.`supporter_id`
+    ORDER BY `u`.`signed`,`u`.`supporter_id`
+  ;
+  ALTER TABLE `UpdatesLatest`
+  ADD PRIMARY KEY (`sort1_signed`,`sort2_supporter_id`)
+  ;
+  ALTER TABLE `UpdatesLatest`
+  ADD KEY `ccc` (`ccc`)
+  ;
+  ALTER TABLE `UpdatesLatest`
+  ADD KEY `client_ref_orig` (`client_ref_orig`)
+  ;
+  ALTER TABLE `UpdatesLatest`
+  ADD KEY `client_ref` (`client_ref`)
+  ;
+  ALTER TABLE `UpdatesLatest`
+  ADD KEY `overdue_since` (`overdue_since`)
   ;
 END$$
 
