@@ -2788,33 +2788,33 @@ BEGIN
      ,`u`.`canvas_ref`
      ,`u`.`client_ref_orig`
       -- latest player
-     ,GROUP_CONCAT(`u`.`client_ref` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `client_ref`
-     ,GROUP_CONCAT(`u`.`tickets` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `tickets`
-     ,GROUP_CONCAT(`u`.`ticket_numbers` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `ticket_numbers`
+     ,CAST(GROUP_CONCAT(`u`.`client_ref` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS char(64) character set ascii) AS `client_ref`
+     ,CAST(GROUP_CONCAT(`u`.`tickets` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS int) AS `tickets`
+     ,CAST(GROUP_CONCAT(`u`.`ticket_numbers` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS char(255) character set ascii) AS `ticket_numbers`
       -- bleeding edge contact details
-     ,GROUP_CONCAT(`c`.`title` ORDER BY `c`.`created` DESC LIMIT 1) AS `title`
-     ,GROUP_CONCAT(`c`.`name_first` ORDER BY `c`.`created` DESC LIMIT 1) AS `name_first`
-     ,GROUP_CONCAT(`c`.`name_last` ORDER BY `c`.`created` DESC LIMIT 1) AS `name_last`
-     ,GROUP_CONCAT(`c`.`email` ORDER BY `c`.`created` DESC LIMIT 1) AS `email`
-     ,GROUP_CONCAT(`c`.`mobile` ORDER BY `c`.`created` DESC LIMIT 1) AS `mobile`
-     ,GROUP_CONCAT(`c`.`telephone` ORDER BY `c`.`created` DESC LIMIT 1) AS `telephone`
-     ,GROUP_CONCAT(`c`.`address_1` ORDER BY `c`.`created` DESC LIMIT 1) AS `address_1`
-     ,GROUP_CONCAT(`c`.`address_2` ORDER BY `c`.`created` DESC LIMIT 1) AS `address_2`
-     ,GROUP_CONCAT(`c`.`address_3` ORDER BY `c`.`created` DESC LIMIT 1) AS `address_3`
-     ,GROUP_CONCAT(`c`.`town` ORDER BY `c`.`created` DESC LIMIT 1) AS `town`
-     ,GROUP_CONCAT(`c`.`county` ORDER BY `c`.`created` DESC LIMIT 1) AS `county`
-     ,GROUP_CONCAT(`c`.`postcode` ORDER BY `c`.`created` DESC LIMIT 1) AS `postcode`
-     ,GROUP_CONCAT(`c`.`dob` ORDER BY `c`.`created` DESC LIMIT 1) AS `dob`
-     ,GROUP_CONCAT(`c`.`p0` ORDER BY `c`.`created` DESC LIMIT 1) AS `p0`
-     ,GROUP_CONCAT(`c`.`p1` ORDER BY `c`.`created` DESC LIMIT 1) AS `p1`
-     ,GROUP_CONCAT(`c`.`p2` ORDER BY `c`.`created` DESC LIMIT 1) AS `p2`
-     ,GROUP_CONCAT(`c`.`p3` ORDER BY `c`.`created` DESC LIMIT 1) AS `p3`
-     ,GROUP_CONCAT(`c`.`p4` ORDER BY `c`.`created` DESC LIMIT 1) AS `p4`
-     ,GROUP_CONCAT(`c`.`p5` ORDER BY `c`.`created` DESC LIMIT 1) AS `p5`
-     ,GROUP_CONCAT(`c`.`p6` ORDER BY `c`.`created` DESC LIMIT 1) AS `p6`
-     ,GROUP_CONCAT(`c`.`p7` ORDER BY `c`.`created` DESC LIMIT 1) AS `p7`
-     ,GROUP_CONCAT(`c`.`p8` ORDER BY `c`.`created` DESC LIMIT 1) AS `p8`
-     ,GROUP_CONCAT(`c`.`p9` ORDER BY `c`.`created` DESC LIMIT 1) AS `p9`
+     ,CAST(GROUP_CONCAT(`c`.`title` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `title`
+     ,CAST(GROUP_CONCAT(`c`.`name_first` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `name_first`
+     ,CAST(GROUP_CONCAT(`c`.`name_last` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `name_last`
+     ,CAST(GROUP_CONCAT(`c`.`email` ORDER BY `c`.`created` DESC LIMIT 1) AS char(254) character set ascii) AS `email`
+     ,CAST(GROUP_CONCAT(`c`.`mobile` ORDER BY `c`.`created` DESC LIMIT 1) AS char(64) character set ascii) AS `mobile`
+     ,CAST(GROUP_CONCAT(`c`.`telephone` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set ascii) AS `telephone`
+     ,CAST(GROUP_CONCAT(`c`.`address_1` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `address_1`
+     ,CAST(GROUP_CONCAT(`c`.`address_2` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `address_2`
+     ,CAST(GROUP_CONCAT(`c`.`address_3` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `address_3`
+     ,CAST(GROUP_CONCAT(`c`.`town` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `town`
+     ,CAST(GROUP_CONCAT(`c`.`county` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `county`
+     ,CAST(GROUP_CONCAT(`c`.`postcode` ORDER BY `c`.`created` DESC LIMIT 1) AS char(64) character set ascii) AS `postcode`
+     ,CAST(GROUP_CONCAT(`c`.`dob` ORDER BY `c`.`created` DESC LIMIT 1) AS date) AS `dob`
+     ,CAST(GROUP_CONCAT(`c`.`p0` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p0`
+     ,CAST(GROUP_CONCAT(`c`.`p1` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p1`
+     ,CAST(GROUP_CONCAT(`c`.`p2` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p2`
+     ,CAST(GROUP_CONCAT(`c`.`p3` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p3`
+     ,CAST(GROUP_CONCAT(`c`.`p4` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p4`
+     ,CAST(GROUP_CONCAT(`c`.`p5` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p5`
+     ,CAST(GROUP_CONCAT(`c`.`p6` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p6`
+     ,CAST(GROUP_CONCAT(`c`.`p7` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p7`
+     ,CAST(GROUP_CONCAT(`c`.`p8` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p8`
+     ,CAST(GROUP_CONCAT(`c`.`p9` ORDER BY `c`.`created` DESC LIMIT 1) AS char(255) character set utf8) AS `p9`
       -- non-ephemeral things
      ,`u`.`first_collected`
      ,`u`.`last_collected`
@@ -2822,8 +2822,8 @@ BEGIN
      ,`u`.`death_reported`
      ,`u`.`death_by_suicide`
       -- latest player
-     ,GROUP_CONCAT(`u`.`mandate_status` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `mandate_status`
-     ,GROUP_CONCAT(`u`.`collection_frequency` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS `collection_frequency`
+     ,CAST(GROUP_CONCAT(`u`.`mandate_status` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS char(64) character set ascii) AS `mandate_status`
+     ,CAST(GROUP_CONCAT(`u`.`collection_frequency` ORDER BY `u`.`milestone_date` DESC LIMIT 1) AS char(64) character set ascii) AS `collection_frequency`
       -- bleeding edge account details
      ,`ac`.`spent`
      ,`ac`.`opening_balance`
