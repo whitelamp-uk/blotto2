@@ -120,6 +120,8 @@ try {
                 $fp = fopen ($file,'w');
                 fwrite ($fp,$html);
                 fclose ($fp);
+/*
+// task #509 - stop emailing statements
                 if (!$w['statement_overwrite']) {
                     // Email the one-off statement
                     mail_attachments (
@@ -129,6 +131,7 @@ try {
                         [$file]
                     );
                 }
+*/
             }
             else {
                 fwrite (STDERR,"No statement HTML was generated: ({$w['from']},{$w['to']},{$w['statement_heading']})\n");
