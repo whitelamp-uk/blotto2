@@ -1134,10 +1134,15 @@ BEGIN
        `p`.`first_draw_close` IS NULL
        ,IF(
          `u`.`id` IS NULL
+          -- no first collection yet
          ,IF(
             `p`.`letter_status` IS NULL
            ,'importing' -- there is a player but nothing much has happened
-           ,'collecting' -- mandate/ANL/first collection is underway
+           ,IF(
+              LENGTH(`ul`.`cancelled`)>0
+             ,'failed' -- no collection and probably never will be
+             ,'collecting' -- mandate/ANL/first collection is underway
+            )
           )
          ,'entering' -- has first collection
         )
@@ -1152,9 +1157,13 @@ BEGIN
     ) AS `dormancy_date`
    ,1 AS `supporters`
    ,IFNULL(`p`.`chances`,`s`.`projected_chances`) AS `tickets`
+   ,`ul`.`cancelled`
   FROM `blotto_player` AS `p`
   JOIN `blotto_supporter` AS `s`
     ON `s`.`id`=`p`.`supporter_id`
+   AND `s`.`canvas_ref` NOT IN ('CDNT','EX','STRP')
+  JOIN `UpdatesLatest` AS `ul`
+    ON `ul`.`sort2_supporter_id`=`s`.`id`
   LEFT JOIN `blotto_update` AS `u`
          ON `u`.`player_id`=`p`.`id`
         AND `u`.`milestone`='first_collection'
