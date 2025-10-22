@@ -63,12 +63,13 @@ $today      = gmdate ('j M Y');
         <input type="submit" value="Recalculate" />
       </form>
 
+<!--
       <section id="chart7" class="chart left">
-        <?php echo links_report ('sales_funnel',5,'Journeys',3); ?>
+        <?php // echo links_report ('sales_funnel',5,'Journeys',3); ?>
         <canvas id="workflow"></canvas>
       </section>
       <script>
-var data7 = <?php echo chart (5,'graph','sales_funnel'); ?>;
+var data7 = null<?php // echo chart (5,'graph','sales_funnel'); ?>;
 if (data7) {
     chartRender (
         'workflow',
@@ -84,6 +85,7 @@ if (data7) {
     console.log ('Rendered data7');
 }
       </script>
+-->
 
       <section id="chart5" class="chart left">
         <?php echo links_report ('new_player_first_draws_'.gmdate('Y-m-d'),7,"New player first draws $ma calculated @ $today",$to); ?>
