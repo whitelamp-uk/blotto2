@@ -812,10 +812,10 @@ function supporterSearchResults (responseText) {
         return;
     }
     for (i=0;results[i];i++) {
-        // RSM: CANCELLED, DELETED, FAILED, LIVE
+        // RSM: CANCELLED, DELETED, FAILED, LIVE, PENDING
         // Paysuite: Active, Inactive
         // Cardnet: FAILED, LIVE
-        // or maybe just null, no mandate yet
+        // or maybe just null, no mandate yet -> status = 'new'
         status = 'inactive';
         if (results[i]['Status'] !== null) {
             lcstatus = results[i]['Status'].toLowerCase(); 
@@ -824,6 +824,9 @@ function supporterSearchResults (responseText) {
             }
             else if (lcstatus == 'inactive') { // if lcstatus is "inactive" then this is definitely paysuite
                 status = 'new';                // and we treat it as "new" because it might be
+            }
+            else if (lcstatus == 'pending') { // if lcstatus is "inactive" then this is definitely RSM
+                status = 'new';                // and we treat it as "new" because it is
             }
         } else {
             status = 'new';
@@ -988,7 +991,7 @@ function supporterSelectResult (responseText,status) {
     label = form.querySelector ('label:first-of-type');
 
     if ((1*response.data[0].mandate_blocked) || status=='inactive') { // NB cast string to integer
-        console.log("wtf "+ 1*response.data[0].mandate_blocked);
+        console.log("mandate_blocked "+ 1*response.data[0].mandate_blocked);
         closebutton = form.querySelector ('.form-close');
         for (field of fields) {
             if (field != closebutton) {
