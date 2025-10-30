@@ -132,6 +132,7 @@ foreach ($close_dates as $date) {
       WHERE `p`.`first_draw_close`<='$date'
         AND `s`.`self_excluded` IS NULL
         AND `s`.`death_reported` IS NULL
+        AND `s`.`mandate_blocked` = 0
       GROUP BY `p`.`id`
     ";
     echo rtrim($q)."\n";
