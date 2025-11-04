@@ -26,7 +26,7 @@ function drawsHandle (evt) {
     cost2   = document.querySelector ('form.signup #signup-cost-confirm > output');
     ppt     = document.querySelector ('form.signup [data-ppt]');
     ppt     = 1 * ppt.dataset.ppt;
-    cost.textContent = (tickets*evt.target.value*ppt).toFixed(2).replace ('.',cost.dataset.decsepchar);
+    cost.textContent = (tickets*evt.target.value*ppt); //.toFixed(2).replace ('.',cost.dataset.decsepchar);
     cost2.textContent = cost.textContent;
 }
 
