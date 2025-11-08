@@ -2251,7 +2251,7 @@ function html_file_to_pdf_file_openapi ($html_file,$pdf_file) {
       //  CURLOPT_POSTFIELDS => "{\"html\":\"string\",\"url\":\"string\",\"margin\":0}",
       CURLOPT_POSTFIELDS => '{"url":"'.$temp_url.'"}',
       //  CURLOPT_POSTFIELDS => '{"html":"'.$html.'"}',
-      CURLOPT_VERBOSE => true,
+      CURLOPT_VERBOSE => false,
       CURLOPT_HTTPHEADER => [
         "Authorization: Bearer ".OPENAPI_PDF_AUTH,
         "content-type: application/json"
@@ -4356,8 +4356,8 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         `s`.`current_client_ref` AS `CurrentClientRef`
     ";
     // Statuses: Paysuite can be Active or Inactive, which includes pending mandates, so they need to be blockable and showns as such.
-    // RSM is one of CANCELLED DELETED FAILED LIVE  (for DBH). SHC has no FAILED but has two (recent) CANCEL.
-    // PENDING mandates don't make it out of the rsm_mandate table. Note this bit is just for display of the mandate info.
+    // RSM is one of CANCELLED DELETED FAILED LIVE PENDING (for DBH). SHC has no FAILED but has two (recent) CANCEL.
+    // Note this bit is just for display of the mandate info. (Old comment here said that pending never made it out of rsm_mandate)
     $qs = "
       SELECT
         `bacs`.`BCR` 
@@ -6855,7 +6855,7 @@ function www_signup_dates ($org,&$e) {
             $draw_closed = $d->format ('Y-m-d');
         }
 
-        if (BLOTTO_DRAW_CLOSE_1 && $draw_closed && $draw_closed>=BLOTTO_DRAW_CLOSE_1) {
+        if (BLOTTO_DRAW_CLOSE_1 && isset($draw_closed) && $draw_closed>=BLOTTO_DRAW_CLOSE_1) {
             try {
 /*
                 $rs = $c->query ("SELECT DATE(drawOnOrAfter('$draw_closed')) AS `draw_date`;");
