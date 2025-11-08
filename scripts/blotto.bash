@@ -706,7 +706,7 @@ abort_on_error 31a $?
 /usr/bin/php $prg $sw "$cfg" exec invoices.php
 abort_on_error 31b $?
 /usr/bin/php $prg $sw "$cfg" exec statements.php
-abort_on_error 31b $?
+abort_on_error 31c $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
 if [ "$rbe" = "" ]
