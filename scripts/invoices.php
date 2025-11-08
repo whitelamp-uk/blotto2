@@ -85,7 +85,8 @@ try {
         if (!file_exists($file)) {
             if ($inv=invoice_game($draw['draw_closed'],false)) {
                 file_put_contents($file,$inv);
-                html_file_to_pdf_file($file,$pdf,'a3');
+                //html_file_to_pdf_file($file,$pdf,'a3');
+                html_file_to_pdf_file_openapi($file,$pdf);
                 if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
                     mail_attachments (
                         BLOTTO_FEE_EMAIL,
@@ -110,7 +111,8 @@ try {
                 }
                 if ($inv=invoice_insurance($draw['draw_closed'],false)) {
                     file_put_contents($file,$inv);
-                    html_file_to_pdf_file($file,$pdf,'a3');
+                    //html_file_to_pdf_file($file,$pdf,'a3');
+                    html_file_to_pdf_file_openapi($file,$pdf);
                     if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
                         mail_attachments (
                             BLOTTO_FEE_EMAIL,
@@ -131,7 +133,8 @@ try {
             if (!file_exists($file)) {
                 if ($inv=invoice_payout($draw['draw_closed'],false)) {
                     file_put_contents($file,$inv);
-                    html_file_to_pdf_file($file,$pdf,'a3');
+                    //html_file_to_pdf_file($file,$pdf,'a3');
+                    html_file_to_pdf_file_openapi($file,$pdf);
                     if (defined('BLOTTO_FEE_EMAIL') && BLOTTO_FEE_EMAIL) {
                         mail_attachments (
                             BLOTTO_FEE_EMAIL,
@@ -194,7 +197,8 @@ try {
         if (!file_exists($file)) {
             if ($inv=invoice_custom($custom,false)) {
                 file_put_contents($file,$inv);
-                html_file_to_pdf_file($file,$pdf,'a3');
+                //html_file_to_pdf_file($file,$pdf,'a3');
+                html_file_to_pdf_file_openapi($file,$pdf);
                 mail_attachments (
                     BLOTTO_FEE_EMAIL,
                     BLOTTO_BRAND." invoice (custom)",
