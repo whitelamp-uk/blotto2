@@ -310,7 +310,7 @@ if ($report['Data']['Latest completed draw'] && count($report['Data']['Latest co
 }
 
 // label the right org code for remote monitors
-$report->o = BLOTTO_ORG_USER;
+$report['o'] = BLOTTO_ORG_USER;
 
 echo json_encode ($report,JSON_NUMERIC_CHECK | JSON_PRETTY_PRINT);
 
