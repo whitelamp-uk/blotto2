@@ -309,5 +309,8 @@ if ($report['Data']['Latest completed draw'] && count($report['Data']['Latest co
     $report['Warnings']['No prizes for next draw'] = "No prizes for next draw\nCloses on {$report['Data']['Latest completed draw']->closed}";
 }
 
-echo json_encode ($report,JSON_NUMERIC_CHECK,JSON_PRETTY_PRINT);
+// label the right org code for remote monitors
+$report->o = BLOTTO_ORG_USER;
+
+echo json_encode ($report,JSON_NUMERIC_CHECK | JSON_PRETTY_PRINT);
 
