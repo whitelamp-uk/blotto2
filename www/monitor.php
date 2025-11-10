@@ -110,11 +110,10 @@ try {
 catch (\mysqli_sql_exception $e) {
     // not an error condition - rsm-api orgs will not have paysuite-api tables
     try {
-        $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `paysuite_mandate` WHERE `CustomerGuid` IS NOT NULL AND DATE(`MandateCreated`)='$today'");
+        $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `rsm_mandate` WHERE `Created`='$today'");
     }
     catch (\mysqli_sql_exception $e) {
         // not an error condition - for example bwc and whc have tables for neither paysuite-api nor rsm-api
-        $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `rsm_mandate` WHERE `Created`='$today'");
     }
     $m = $m->fetch_assoc () ['m'];
     $report['Activity']['Mandates created today'] = $m;
@@ -128,11 +127,10 @@ try {
 catch (\mysqli_sql_exception $e) {
     // not an error condition - rsm-api orgs will not have paysuite-api tables
     try {
-        $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `paysuite_collection` WHERE `DateDue`='$today'");
+        $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `rsm_collection` WHERE `PaidAmount`>0 AND `DateDue`='$today'");
     }
     catch (\mysqli_sql_exception $e) {
         // not an error condition - for example bwc and whc have tables for neither paysuite-api nor rsm-api
-        $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `rsm_collection` WHERE `PaidAmount`>0 AND `DateDue`='$today'");
     }
     $c = $c->fetch_assoc () ['c'];
     $report['Activity']['Collections pending today'] = $c;
