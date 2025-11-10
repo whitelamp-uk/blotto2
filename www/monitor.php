@@ -115,8 +115,10 @@ catch (\mysqli_sql_exception $e) {
     catch (\mysqli_sql_exception $e) {
         // not an error condition - for example bwc and whc have tables for neither paysuite-api nor rsm-api
     }
-    $m = $m->fetch_assoc () ['m'];
-    $report['Activity']['Mandates created today'] = $m;
+    if ($m) {
+        $m = $m->fetch_assoc () ['m'];
+        $report['Activity']['Mandates created today'] = $m;
+    }
 }
 
 // collections (pending)
@@ -132,8 +134,10 @@ catch (\mysqli_sql_exception $e) {
     catch (\mysqli_sql_exception $e) {
         // not an error condition - for example bwc and whc have tables for neither paysuite-api nor rsm-api
     }
-    $c = $c->fetch_assoc () ['c'];
-    $report['Activity']['Collections pending today'] = $c;
+    if ($c) {
+        $c = $c->fetch_assoc () ['c'];
+        $report['Activity']['Collections pending today'] = $c;
+    }
 }
 
 // collections (confirmed)
