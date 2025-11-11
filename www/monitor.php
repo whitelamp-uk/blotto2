@@ -319,7 +319,7 @@ if ($report['Data']['Latest completed draw'] && count($report['Data']['Latest co
 $report['o'] = BLOTTO_ORG_USER;
 
 foreach ($report as $section=>$r) {
-    if (!count($r)) {
+    if (is_array($r) && !count($r)) {
         // json_encode assumes an empty array is numeric so force "associative"
         $report[$section] = new \stdClass ();
     }
