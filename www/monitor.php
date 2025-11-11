@@ -160,7 +160,7 @@ $report['Data']['Latest draw results'] = null;
 $report['Data']['Latest draw tickets'] = null;
 $report['Data']['Previous draw tickets'] = null;
 $report['Data']['Next draw to complete'] = null;
-$report['Data']['Next draw predicted tickets'] = null;
+//$report['Data']['Next draw predicted tickets'] = null; // TODO
 if (!array_key_exists('No first draw',$report['Warnings']) && $today>$report['Data']['First draw close']) {
     $d = draw_previous ($today);
     $d = draw ($d);
@@ -227,10 +227,16 @@ if (!array_key_exists('No first draw',$report['Warnings']) && $today>$report['Da
 if (($c=$report['Data']['Latest completed draw']->closed)<($s=$report['Data']['Latest scheduled draw']->closed)) {
     $report['Alerts']['Draw overdue'] = "Draw results are overdue\nLatest scheduled: $s\natest results found: $c";
 }
+else {
+    $report['Alerts']['Draw overdue'] = null;
+}
 
 // build error
 if ($report['Build Summary']['Exit status']>0) {
     $report['Alerts']['Build error'] = "Abort step={$report['Build Summary']['Build abort step']} status={$report['Build Summary']['Exit status']}";
+}
+else {
+    $report['Alerts']['Build error'] = null;
 }
 
 /*
