@@ -57,7 +57,7 @@ $report['Build Summary']['Run time'] = null;
 $report['Build Summary']['Ended at'] = null;
 exec ('grep '.escapeshellarg('Script run time').' '.escapeshellarg($report['Build Summary']['Cumulative log']).' | tail -1',$rtn);
 if (array_key_exists(0,$rtn)) {
-    $report['Build Summary']['Still running'] = false;
+    $report['Build Summary']['Still running'] = null;
     $dt = new \DateTime ($report['Build Summary']['Started at']);
     unset ($ms);
     preg_match ('<([0-9]+)\s+seconds\s*$>',$rtn[0],$ms);
