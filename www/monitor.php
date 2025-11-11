@@ -318,5 +318,12 @@ if ($report['Data']['Latest completed draw'] && count($report['Data']['Latest co
 // label the right org code for remote monitors
 $report['o'] = BLOTTO_ORG_USER;
 
+foreach ($report as $section=>$r) {
+    if (!count($r)) {
+        // json_encode assumes an empty array is numeric so force "associative"
+        $report[$section] = new \stdClass ();
+    }
+}
+
 echo json_encode ($report,JSON_NUMERIC_CHECK | JSON_PRETTY_PRINT);
 
