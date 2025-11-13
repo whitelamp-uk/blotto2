@@ -825,7 +825,7 @@ function supporterSearchResults (responseText) {
             else if (lcstatus == 'inactive') { // if lcstatus is "inactive" then this is definitely paysuite
                 status = 'new';                // and we treat it as "new" because it might be
             }
-            else if (lcstatus == 'pending') { // if lcstatus is "inactive" then this is definitely RSM
+            else if (lcstatus == 'pending') { // if lcstatus is "pending" then this is definitely RSM
                 status = 'new';                // and we treat it as "new" because it is
             }
         } else {
