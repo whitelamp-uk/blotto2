@@ -5426,8 +5426,10 @@ function update ( ) {
               $curc     = 0;
               $q        = "INSERT INTO `blotto_contact` SET ";
             }
+            if (isset($fields['dob'])) {
+                $fields['yob'] = intval (substr($fields['dob'],0,4));
+            }
             foreach ($fields as $f=>$val) {
-            // TODO: blotto_contact.dob is date null
                 $q     .= "`$f`='".escm($val)."',";
             }
             $q        .= "`updater`='".escm($usr)."'";
