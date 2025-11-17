@@ -217,6 +217,7 @@ if (!array_key_exists('No first draw',$report['Warnings']) && $today>$report['Da
         $report['Data']['Next draw to complete'] = $d;
     }
 }
+$report['Data']['Draw DoW summary'] = [];
 $ds = $zo->query ("
   SELECT
     DAYNAME(`draw_closed`) AS `dow_closed`
@@ -226,9 +227,10 @@ $ds = $zo->query ("
   GROUP BY `dow_closed`
   ORDER BY `since`
 ");
-$report['Data']['Draw DoW summary'] = $ds->fetch_all (MYSQLI_ASSOC);
-
-
+$ds = $ds->fetch_all (MYSQLI_ASSOC);
+foreach ($ds as $d) {
+    $report['Data']['Draw DoW summary'][$d['dow_closed']] = $d;
+}
 
 /* alerts */
 
