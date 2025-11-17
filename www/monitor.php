@@ -217,7 +217,16 @@ if (!array_key_exists('No first draw',$report['Warnings']) && $today>$report['Da
         $report['Data']['Next draw to complete'] = $d;
     }
 }
-
+$ds = $zo->query ("
+  SELECT
+    DAYNAME(`draw_closed`) AS `dow_closed`
+   ,MIN(`draw_closed`) AS `since`
+   ,COUNT(DISTINCT `draw_closed`) AS `draws`
+  FROM `blotto_result`
+  GROUP BY `dow_closed`
+  ORDER BY `since`
+");
+$report['Data']['Draw DoW summary'] = $ds->fetch_all (MYSQLI_FETCH_ASSOC);
 
 
 
@@ -225,7 +234,7 @@ if (!array_key_exists('No first draw',$report['Warnings']) && $today>$report['Da
 
 // draw overdue
 if (($c=$report['Data']['Latest completed draw']->closed)<($s=$report['Data']['Latest scheduled draw']->closed)) {
-    $report['Alerts']['Draw overdue'] = "Draw results are overdue\nLatest scheduled: $s\natest results found: $c";
+    $report['Alerts']['Draw overdue'] = "Draw results are overdue\nLatest scheduled: $s\nLatest results found: $c";
 }
 else {
     $report['Alerts']['Draw overdue'] = null;
