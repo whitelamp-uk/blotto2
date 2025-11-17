@@ -5426,8 +5426,10 @@ function update ( ) {
               $curc     = 0;
               $q        = "INSERT INTO `blotto_contact` SET ";
             }
+            if (isset($fields['dob'])) {
+                $fields['yob'] = intval (substr($fields['dob'],0,4));
+            }
             foreach ($fields as $f=>$val) {
-            // TODO: blotto_contact.dob is date null
                 $q     .= "`$f`='".escm($val)."',";
             }
             $q        .= "`updater`='".escm($usr)."'";
@@ -6369,6 +6371,7 @@ function www_auth_password_strength ($password) {
 // 26 ^ 14 = 6.5x10^19
 
 function www_auth_reset (&$currentUser,&$err=null) {
+
     // See $modes in www/view/login.php
     $errs = [
         0 => null,
@@ -6404,10 +6407,18 @@ function www_auth_reset (&$currentUser,&$err=null) {
             $ra_stub = explode ('.', $_SERVER['REMOTE_ADDR'], -2);
             $rs_stub = explode ('.', $_SESSION['reset']['remote_addr'], -2);
             if ($ra_stub!==$rs_stub) {
-                // This should not happen
-                unset($_SESSION['reset']); $err=$errs[2];
-                sleep (5);
-                return 0;
+                error_log(__FILE__.' line '.__LINE__);
+                error_log(print_r($_POST,true));
+                error_log(print_r($_SESSION,true));
+                // some orgs seem to use "variable" IP addresses
+                if (defined('BLOTTO_PW_RESET_SKIP_IP_CHECK') && BLOTTO_PW_RESET_SKIP_IP_CHECK) { 
+                    error_log("Skipping IP check");
+                } else {
+                    // But in general this should not happen
+                    unset($_SESSION['reset']); $err=$errs[2];
+                    sleep (5);
+                    return 0;
+                }
             }
             // Make sure the session is populated one parameter at a time -
             // thus multi *stage* verification
