@@ -226,7 +226,7 @@ $ds = $zo->query ("
   GROUP BY `dow_closed`
   ORDER BY `since`
 ");
-$report['Data']['Draw DoW summary'] = $ds->fetch_all (MYSQLI_FETCH_ASSOC);
+$report['Data']['Draw DoW summary'] = $ds->fetch_all (MYSQLI_ASSOC);
 
 
 
