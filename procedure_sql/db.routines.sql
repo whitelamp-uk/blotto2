@@ -404,24 +404,26 @@ BEGIN
   SET @reconcile    = ( @balOpen + @collections ) - ( @playedPeriodFunded + @balClose )
   ;
   INSERT INTO `blotto_calculation` ( `item`, `units`, `amount`, `notes` )  VALUES
-    ( 'head_summary',       '',     '',                                     'Summary'                       ),
-    ( 'amount_per_play',    'GBP',  dp(@perplay/100,2),                     'charge per play'               ),
-    ( 'draw_first',         '',     DATE_FORMAT(@first,'%Y %b %d'),         'first draw'                    ),
-    ( 'draw_last',          '',     DATE_FORMAT(@last,'%Y %b %d'),          'last draw'                     ),
-    ( 'draws',              '',     dp(@weeks,0),                           'draws completed'               ),
-    ( 'plays_funded',       '',     @playsPeriod - @playsPeriodExternal,    'purchased plays'               ),
-    ( 'plays_external',     '',     @playsPeriodExternal,                   'external plays to reconcile'   ),
-    ( 'head_balance',       '',     '',                                     'Balance'                       ),
-    ( 'balances_opening',   'GBP',  dp(@balOpen,2),                         '+ player opening balances'     ),
-    ( 'collected',          'GBP',  dp(@collections,2),                     '+ collected this period'       ),
-    ( 'play_value',         'GBP',  dp(0-@playedPeriodFunded,2),            '− plays purchased'             ),
-    ( 'balances_closing',   'GBP',  dp(0-@balClose,2),                      '− player closing balances'     ),
-    ( 'reconciliation',     'GBP',  dp(@reconcile,2),                       '≡ GBP to reconcile'            ),
-    ( 'head_return',        '',     '',                                     'Revenue'                       ),
-    ( 'revenue',            'GBP',  dp(@playedPeriodFunded,2),              '+ revenue from plays'          ),
-    ( 'winnings',           'GBP',  dp(0-@payout,2),                        '− winnings paid out'           ),
-    ( 'claims',             'GBP',  dp(@claims,2),                          '+ insurance claimed'           ),
-    ( 'nett',               'GBP',  dp(@nett,2),                            '≡ nett return before fees'     )
+    ( 'head_summary',       '',     '',                                     'Summary'                           ),
+    ( 'amount_per_play',    'GBP',  dp(@perplay/100,2),                     'charge per play'                   ),
+    ( 'draw_first',         '',     DATE_FORMAT(@first,'%Y %b %d'),         'first draw'                        ),
+    ( 'draw_last',          '',     DATE_FORMAT(@last,'%Y %b %d'),          'last draw'                         ),
+    ( 'draws',              '',     dp(@weeks,0),                           'draws completed'                   ),
+    ( 'plays_funded',       '',     @playsPeriod - @playsPeriodExternal,    'purchased plays'                   ),
+    ( 'plays_external',     '',     @playsPeriodExternal,                   'external plays to reconcile'       ),
+    ( 'head_balance',       '',     '',                                     'Balance'                           ),
+    ( 'balances_opening',   'GBP',  dp(@balOpen,2),                         '+ player opening balances'         ),
+    ( 'payments_opening',   'GBP',  '0.00',                                 '+ opening queued card payments'    ),
+    ( 'collected',          'GBP',  dp(@collections,2),                     '+ collected this period'           ),
+    ( 'play_value',         'GBP',  dp(0-@playedPeriodFunded,2),            '− plays purchased'                 ),
+    ( 'balances_closing',   'GBP',  dp(0-@balClose,2),                      '− player closing balances'         ),
+    ( 'payments_closing',   'GBP',  '0.00',                                 '− closing queued card payments'    ),
+    ( 'reconciliation',     'GBP',  dp(@reconcile,2),                       '≡ GBP to reconcile'                ),
+    ( 'head_return',        '',     '',                                     'Revenue'                           ),
+    ( 'revenue',            'GBP',  dp(@playedPeriodFunded,2),              '+ revenue from plays'              ),
+    ( 'winnings',           'GBP',  dp(0-@payout,2),                        '− winnings paid out'               ),
+    ( 'claims',             'GBP',  dp(@claims,2),                          '+ insurance claimed'               ),
+    ( 'nett',               'GBP',  dp(@nett,2),                            '≡ nett return before fees'         )
   ;
   SELECT
     *
@@ -579,6 +581,11 @@ BEGIN
     -- One-off payments are not applicable
     WHERE `m`.`Freq`!='Single' OR `m`.`Freq` IS NULL
       AND `t`.`mandate_provider`!='EXT' -- ignore external tickets (which are notionally single)
+-- TODO
+--    -- mandates may be missing or periodic
+--    WHERE ( `m`.`Freq` IS NULL OR `m`.`Freq`!='Single' )
+--    -- supporters must be internal
+--      AND `s`.`ccc`!='EX'
     GROUP BY `client_ref`,`ticket_number`
     -- cancelled_date is in the past
     HAVING `cancelled_date`<CURDATE()

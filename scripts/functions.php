@@ -271,6 +271,41 @@ function calculate ($start=null,$end=null) {
         'amount' => $ddn,
         'notes' => 'next period\'s draw pending'
     ];
+    // include queued card payments in balances
+    $up_opening = 0.00;
+    $up_closing = 0.00;
+    foreach (www_pay_apis() as $meta) {
+        try {
+            require $meta->file;
+            $class = $meta->class;
+            $api = new $class (connect(BLOTTO_MAKE_DB),BLOTTO_ORG_USER);
+        }
+        catch (Exception $e) {
+            error_log ($e->getMessage());
+            continue;
+        }
+        if (method_exists($api,'queued')) {
+            $up_opening = $api->queued ($start) ['amount'];
+            $up_closing = $api->queued ($end) ['amount'];
+            foreach ($results as $i=>$r) {
+                if ($i=='payments_opening') {
+                    $results[$i]['amount'] = number_format ($up_opening,2,'.','');
+                }
+                elseif ($i=='balances_opening') {
+                    $results[$i]['amount'] = number_format ($results[$i]['amount']+$up_opening,2,'.','');
+                }
+                elseif ($i=='payments_closing') {
+                    $results[$i]['amount'] = number_format (0-$up_closing,2,'.','');
+                }
+                elseif ($i=='balances_closing') {
+                    $results[$i]['amount'] = number_format ($results[$i]['amount']-$up_closing,2,'.','');
+                }
+                elseif ($i=='reconcile') {
+                    $results[$i]['amount'] = number_format ($results[$i]['amount']+$up_opening-$up_closing,2,'.','');
+                }
+            }
+        }
+    }
     return $results;
 }
 
