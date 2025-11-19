@@ -291,14 +291,8 @@ function calculate ($start=null,$end=null) {
                 if ($i=='payments_opening') {
                     $results[$i]['amount'] = number_format ($up_opening,2,'.','');
                 }
-                elseif ($i=='balances_opening') {
-                    $results[$i]['amount'] = number_format ($results[$i]['amount']+$up_opening,2,'.','');
-                }
                 elseif ($i=='payments_closing') {
                     $results[$i]['amount'] = number_format (0-$up_closing,2,'.','');
-                }
-                elseif ($i=='balances_closing') {
-                    $results[$i]['amount'] = number_format ($results[$i]['amount']-$up_closing,2,'.','');
                 }
                 elseif ($i=='reconcile') {
                     $results[$i]['amount'] = number_format ($results[$i]['amount']+$up_opening-$up_closing,2,'.','');
