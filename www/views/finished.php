@@ -33,7 +33,7 @@
 
           <p>Reported message: <?php echo htmlspecialchars ($api->errorMessage()); ?></p>
 
-          <p>You can try again <a href="<?php echo  ($_GET['d'] ? './tickets.php?d='.$_GET['d'] : './tickets.php'); ?>">here</a>.</p>
+          <p>You can try again <a href="<?php echo  (!empty($_GET['d']) ? './tickets.php?d='.$_GET['d'] : './tickets.php'); ?>">here</a>.</p>
 
         </div>
 
