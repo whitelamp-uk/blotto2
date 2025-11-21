@@ -102,6 +102,7 @@ $s = $zo->query ("SELECT COUNT(*) AS `s` FROM `blotto_supporter` WHERE DATE(`ins
 $s = $s->fetch_assoc () ['s'];
 $report['Activity']['Supporters inserted today'] = $s;
 
+/*
 // mandates
 $m = 0;
 if ($zo->query("SHOW TABLES LIKE 'paysuite_mandate'")->num_rows) {
@@ -128,8 +129,11 @@ if ($c) {
     $c = $c->fetch_assoc () ['c'];
 }
 $report['Activity']['Collections pending today'] = $c;
-
+*/
 /***** preserved on this commit in case we want to revert for some reason
+ */
+// mandates
+$report['Activity']['Mandates created today'] = 0;
 try {
     $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `paysuite_mandate` WHERE `CustomerGuid` IS NOT NULL AND DATE(`MandateCreated`)='$today'");
 }
@@ -165,7 +169,7 @@ catch (\mysqli_sql_exception $e) {
         $report['Activity']['Collections pending today'] = $c;
     }
 }
-*/
+
 
 // collections (confirmed)
 $earlier = new \DateTime ($today);
