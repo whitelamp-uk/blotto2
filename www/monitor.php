@@ -235,6 +235,70 @@ if (count($ds)) {
     }
 }
 
+
+// TTL 3 performance 3 months prior to current month
+$report['Data']['TTL quarterly mean'] = null;
+$report['Data']['TTL monthly means'] = null;
+$ds = $zo->query ("
+  SELECT
+    `s`.`year`
+   ,`s`.`month`
+   ,`s`.`days_signed_import`
+   ,`s`.`days_import_collection`
+   ,`s`.`days_collection_draw`
+   ,ROUND(`days_signed_import`+`days_import_collection`+`days_collection_draw`,1) AS `days_total`
+   ,`s`.`supporters`
+   ,`s`.`eg`
+  FROM (
+    SELECT
+      LPAD(YEAR(`s1`.`signed`),4,'0') AS `year`
+     ,LPAD(MONTH(`s1`.`signed`),2,'0') AS `month`
+     ,ROUND(AVG(DATEDIFF(DATE(`s1`.`inserted`),`s1`.`signed`)),1) AS `days_signed_import`
+     ,ROUND(AVG(DATEDIFF(`s2`.`first_collected`,DATE(`s1`.`inserted`))),1) AS `days_import_collection`
+     ,ROUND(AVG(DATEDIFF(`s2`.`first_draw`,`s2`.`first_collected`)),1) AS `days_collection_draw`
+     ,COUNT(`s1`.`id`) AS `supporters`
+     ,MIN(`s1`.`client_ref`) AS `eg`
+    FROM `blotto_supporter` AS `s1`
+    JOIN `UpdatesLatest` AS `s2`
+      ON `s2`.`sort2_supporter_id`=`s1`.`id`
+     AND `s2`.`first_draw` IS NOT NULL
+     AND `s2`.`first_draw`!=''
+     AND `s2`.`collection_frequency`!='Single'
+     AND `s2`.`collection_frequency`!='0'
+     AND `s2`.`collection_frequency`!=''
+    GROUP BY `year`,`month`
+  ) AS `s`
+  ORDER BY `year` DESC,`month` DESC
+  LIMIT 0,3
+;
+");
+$ds = $ds->fetch_all (MYSQLI_ASSOC);
+if (count($ds)) {
+    $report['Data']['TTL monthly means'] = [];
+    $count = 0;
+    $report['Data']['TTL quarterly mean'] = 0;
+    foreach ($ds as $d) {
+        $report['Data']['TTL monthly means'][$d['year'].'-'.$d['month']] = $d;
+        $count += $d['supporters'];
+        $report['Data']['TTL quarterly mean'] += $d['supporters'] * $d['days_total'];
+    }
+    if ($count>0) {
+        $report['Data']['TTL quarterly mean'] /= $count;
+    }
+    $report['Data']['TTL quarterly mean'] = number_format ($report['Data']['TTL quarterly mean'],1,'.','');
+}
+
+
+// balance health
+// assume timely collections and no cancellations
+// balance falls each draw
+// balance rises on days_working_date ($collection_date_next,BLOTTO_WORKING_DAYS_DELAY,true);
+// look for percentage tickets by draw with an inadequate balance for that draw
+// look 3 months ahead
+
+
+
+
 /* alerts */
 
 // draw overdue
