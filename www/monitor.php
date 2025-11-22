@@ -398,25 +398,6 @@ if (!defined('BLOTTO_ANL_EMAIL') ||!BLOTTO_ANL_EMAIL) {
     $report['Warnings']['ANL emails not activated'] = "ANL emails not activated\nBLOTTO_ANL_EMAIL is configured off";
 }
 
-
-// small draw size (historic)
-if ($report['Data']['Previous draw tickets']) {
-    if (($report['Data']['Latest draw tickets']/$report['Data']['Previous draw tickets'])<0.95) {
-        $from = $report['Data']['Previous draw tickets'].' @ '.$dprevious;
-        $to   = $report['Data']['Latest draw tickets'].' @ '.$dlatest;
-        $report['Warnings']['Small draw size'] = "Draw entries down from $from to $to";
-    }
-}
-
-/*
-// small draw size (predicted)
-if (($report['Data']['Next draw tickets']/$report['Data']['Latest draw tickets'])<0.95) {
-    $from = $report['Data']['Latest draw tickets'].' @ '.$dlatest;
-    $to   = $report['Data']['Next draw tickets'].' @ '.$dnext;
-    $report['Warnings']['Small predicted draw size'] = "Draw entries predicted down from $from to $to";
-}
-*/
-
 // no prizes for next draw
 if ($report['Data']['Latest completed draw'] && count($report['Data']['Latest completed draw']->prizes)==0) {
     $report['Warnings']['No prizes for next draw'] = "No prizes for next draw\nCloses on {$report['Data']['Latest completed draw']->closed}";
