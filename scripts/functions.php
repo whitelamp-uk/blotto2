@@ -4385,7 +4385,7 @@ function search_result ($type,$crefterms,$fulltextsearch,$limit) {
         `s`.`current_client_ref` AS `CurrentClientRef`
     ";
     // Statuses: Paysuite can be Active or Inactive, which includes pending mandates, so they need to be blockable and showns as such.
-    // RSM is one of CANCELLED DELETED FAILED LIVE PENDING (for DBH). SHC has no FAILED but has two (recent) CANCEL.
+    // RSM is one of CANCEL CANCELLED DELETED FAILED LIVE PENDING (for DBH). CANCEL seems to be the step before CANCELLED
     // Note this bit is just for display of the mandate info. (Old comment here said that pending never made it out of rsm_mandate)
     $qs = "
       SELECT
