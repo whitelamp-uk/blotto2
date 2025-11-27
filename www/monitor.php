@@ -92,9 +92,6 @@ if (!$report['Build Summary']['Still running']) {
 
 
 
-
-
-
 /* activity */
 
 // supporters
@@ -102,73 +99,25 @@ $s = $zo->query ("SELECT COUNT(*) AS `s` FROM `blotto_supporter` WHERE DATE(`ins
 $s = $s->fetch_assoc () ['s'];
 $report['Activity']['Supporters inserted today'] = $s;
 
-
+// NB in this section check paysuite first as some paysuite users have legacy RSM tables
 // mandates
-$m = 0;
+$m = $c =0;
 if ($zo->query("SHOW TABLES LIKE 'paysuite_mandate'")->num_rows) {
     $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `paysuite_mandate` WHERE `CustomerGuid` IS NOT NULL AND DATE(`MandateCreated`)='$today'");
+    $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `paysuite_collection` WHERE `DateDue`='$today'");
 } 
 elseif ($zo->query("SHOW TABLES LIKE 'rsm_mandate'")->num_rows) {
     $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `rsm_mandate` WHERE `Created`='$today'");
+    $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `rsm_collection` WHERE `PaidAmount`>0 AND `DateDue`='$today'");
 }
 if ($m) {
     $m = $m->fetch_assoc () ['m'];
 }
-$report['Activity']['Mandates created today'] = $m;
-
-// collections (pending)
-$c = 0;
-if ($zo->query("SHOW TABLES LIKE 'paysuite_collection'")->num_rows) {
-    $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `paysuite_collection` WHERE `DateDue`='$today'");
-}
-elseif ($zo->query("SHOW TABLES LIKE 'rsm_collection'")->num_rows) {
-    $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `rsm_collection` WHERE `PaidAmount`>0 AND `DateDue`='$today'");
- 
-}
 if ($c) {
     $c = $c->fetch_assoc () ['c'];
 }
+$report['Activity']['Mandates created today'] = $m;
 $report['Activity']['Collections pending today'] = $c;
-
-/***** preserved on this commit in case we want to revert for some reason
- // mandates
-$report['Activity']['Mandates created today'] = 0;
-try {
-    $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `paysuite_mandate` WHERE `CustomerGuid` IS NOT NULL AND DATE(`MandateCreated`)='$today'");
-}
-catch (\mysqli_sql_exception $e) {
-    // not an error condition - rsm-api orgs will not have paysuite-api tables
-    try {
-        $m = $zo->query ("SELECT COUNT(*) AS `m` FROM `rsm_mandate` WHERE `Created`='$today'");
-    }
-    catch (\mysqli_sql_exception $e) {
-        // not an error condition - for example bwc and whc have tables for neither paysuite-api nor rsm-api
-    }
-    if (gettype($m)=='object') {
-        $m = $m->fetch_assoc () ['m'];
-        $report['Activity']['Mandates created today'] = $m;
-    }
-}
-
-// collections (pending)
-$report['Activity']['Collections pending today'] = 0;
-try {
-    $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `paysuite_collection` WHERE `DateDue`='$today'");
-}
-catch (\mysqli_sql_exception $e) {
-    // not an error condition - rsm-api orgs will not have paysuite-api tables
-    try {
-        $c = $zo->query ("SELECT COUNT(*) AS `c` FROM `rsm_collection` WHERE `PaidAmount`>0 AND `DateDue`='$today'");
-    }
-    catch (\mysqli_sql_exception $e) {
-        // not an error condition - for example bwc and whc have tables for neither paysuite-api nor rsm-api
-    }
-    if (gettype($c)=='object') {
-        $c = $c->fetch_assoc () ['c'];
-        $report['Activity']['Collections pending today'] = $c;
-    }
-}
-*/
 
 // collections (confirmed)
 $earlier = new \DateTime ($today);
@@ -323,8 +272,6 @@ if (count($ds)) {
 // balance rises on days_working_date ($collection_date_next,BLOTTO_WORKING_DAYS_DELAY,true);
 // look for percentage tickets by draw with an inadequate balance for that draw
 // look 3 months ahead
-
-
 
 
 /* alerts */
