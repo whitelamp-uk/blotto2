@@ -277,11 +277,14 @@ if (count($ds)) {
 /* alerts */
 
 // draw overdue
-if (($c=$report['Data']['Latest completed draw']->closed)<($s=$report['Data']['Latest scheduled draw']->closed)) {
-    $report['Alerts']['Draw overdue'] = "Draw results are overdue\nLatest scheduled: $s\nLatest results found: $c";
+$report['Alerts']['Draw overdue'] = null;
+$c=$report['Data']['Latest completed draw']->closed ?? null;
+$s=$report['Data']['Latest scheduled draw']->closed ?? null;
+if (!$c || !$s) {
+    error_log(var_dump($report['Data'], true));
 }
-else {
-    $report['Alerts']['Draw overdue'] = null;
+else if ($c<$s) {
+    $report['Alerts']['Draw overdue'] = "Draw results are overdue\nLatest scheduled: $s\nLatest results found: $c";
 }
 
 // build error
