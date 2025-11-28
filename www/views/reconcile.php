@@ -173,7 +173,7 @@ window.document.addEventListener (
         <input type="hidden" name="reconcile" />
         <input type="date" pattern="\d{4}-\d{2}-\d{2}" name="from" min="<?php echo htmlspecialchars($day1); ?>" max="<?php echo htmlspecialchars($daye); ?>" value="<?php echo htmlspecialchars($from); ?>" />
         <input type="date" pattern="\d{4}-\d{2}-\d{2}" name="to" min="<?php echo htmlspecialchars($day1); ?>" max="<?php echo htmlspecialchars($daye); ?>" value="<?php echo htmlspecialchars($to); ?>" />
-        <input type="submit" value="Recalculate" />
+        <input type="submit" value="Recalculate" /> (Slow)
       </form>
 
       <section class="reconcile" id="reconcile-table-reconcile">

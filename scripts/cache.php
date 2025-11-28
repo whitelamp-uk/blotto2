@@ -32,7 +32,9 @@ profits ();
 
 // but it might help to run reconcile.php functions - which are pretty hardcore.
 
-echo "    Caching SQL by running profits() ... ";
+// caching now done inside functions by writing a file to /tmp
+
+echo "    Caching default data by running profits() ... ";
 $t0 = time (); profits (true); // argument=true puts timing diagnostic in the error log
 echo "    done in ".(time()-$t0)." seconds\n";
 
@@ -40,21 +42,29 @@ echo "    done in ".(time()-$t0)." seconds\n";
 $to     = day_yesterday()->format ('Y-m-d');
 $from   = substr($to,0,4).'-01-01';
 
-echo "    Caching SQL by running calculate('$from','$to') ... ";
+echo "    Caching default data by running calculate('$from','$to') ... ";
 $t0 = time (); calculate ($from,$to);
 echo "    done in ".(time()-$t0)." seconds\n";
 
-echo "    Caching SQL by running revenue('$from','$to') ... ";
+echo "    Caching default data by running revenue('$from','$to') ... ";
 $t0 = time (); revenue ($from,$to);
 echo "    done in ".(time()-$t0)." seconds\n";
 
-echo "    Caching SQL by running draws('$from','$to') ... ";
-$t0 = time (); draws ($from,$to);
-echo "    done in ".(time()-$t0)." seconds\n";
+$md = substr($to,5,5);
+if (in_array($md, ['03-31', '06-30', '09-30', '12-31', '11-28'])) { // end of quarter.
+    $mto = substr($to,5,2);
+    $mfrom= str_pad($mto-2, 2, '0', STR_PAD_LEFT);
+    $from = substr($to,0,4).'-'.$mfrom.'-01';
+    echo "    Caching quarterly data by running calculate and revenue('$from','$to') ... ";
+    $t0 = time (); calculate ($from,$to); revenue ($from,$to);
+    echo "    done in ".(time()-$t0)." seconds\n";
+}
 
 /*
 user date selections will still be slow but at least
 the first page load of the day should be quicker
+
+draws() is fast so no need to cache.
 
 NB reconcile.php logs subsequent execution times to the browser console
 */
