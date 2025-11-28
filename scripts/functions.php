@@ -114,6 +114,13 @@ function calculate ($start=null,$end=null) {
         $dt         = new \DateTime ();
         $end        = $dt->format ('Y-m-d');
     }
+
+    $org = BLOTTO_ORG_USER;
+    $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-calculate-'.$start.'-'.$end.'.json';
+    if (file_exists($cache_file)) {
+        return json_decode(file_get_contents($cache_file));
+    }    
+
     $results        = [];
     $zo         = connect (BLOTTO_DB,BLOTTO_UN,BLOTTO_PW,true);
     if (!$zo) {
@@ -300,6 +307,8 @@ function calculate ($start=null,$end=null) {
             }
         }
     }
+    error_log("que?");
+    file_put_contents($cache_file, json_encode($results));
     return $results;
 }
 
@@ -3309,6 +3318,10 @@ function prizes ($draw_closed) {
 
 function profits ($diagnostic=false) {
     $org = BLOTTO_ORG_USER;
+    $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-profits-'.date('Y-m-d').'.json';
+    if (file_exists($cache_file)) {
+        return file_get_contents($cache_file);
+    }
     $db = BLOTTO_DB; // TODO - live DB
     $cdb = BLOTTO_CONFIG_DB;
     $data = [];
@@ -3954,7 +3967,9 @@ function profits ($diagnostic=false) {
             }
         }
     }
-    return json_encode ([ 'history'=>$history, "projection"=>$projection ],JSON_PRETTY_PRINT);
+    $data = json_encode ([ 'history'=>$history, "projection"=>$projection ],JSON_PRETTY_PRINT);
+    file_put_contents($cache_file, $data);
+    return $data;
 }
 
 function profits_averages ($months) {
@@ -4250,6 +4265,11 @@ function result_spiel66 ($prize,$draw_closed) {
 
 // NB use to straight_join to force query to use e->p->s; live db was using p->s->e and being very slow.
 function revenue ($from,$to) {
+    $org = BLOTTO_ORG_USER;
+    $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-revenue-'.$from.'-'.$to.'.json';
+    if (file_exists($cache_file)) {
+        return json_decode(file_get_contents($cache_file));
+    }    
     $price = BLOTTO_TICKET_PRICE;
     $rows       = [];
     $q      = "
@@ -4275,6 +4295,7 @@ function revenue ($from,$to) {
         while ($r=$c->fetch_assoc()) {
             $rows[] = $r;
         }
+        file_put_contents($cache_file, json_encode($rows));
         return $rows;
     }
     catch (\mysqli_sql_exception $e) {

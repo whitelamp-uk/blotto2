@@ -812,7 +812,7 @@ function supporterSearchResults (responseText) {
         return;
     }
     for (i=0;results[i];i++) {
-        // RSM: CANCELLED, DELETED, FAILED, LIVE, PENDING
+        // RSM: CANCEL, CANCELLED, DELETED, FAILED, LIVE, PENDING
         // Paysuite: Active, Inactive
         // Cardnet: FAILED, LIVE
         // or maybe just null, no mandate yet -> status = 'new'
