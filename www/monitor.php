@@ -281,7 +281,8 @@ $report['Alerts']['Draw overdue'] = null;
 $c=$report['Data']['Latest completed draw']->closed ?? null;
 $s=$report['Data']['Latest scheduled draw']->closed ?? null;
 if (!$c || !$s) {
-    error_log(var_dump($report['Data'], true));
+    error_log("PHP Latest completed or latest scheduled draw not set in 'monitor', see error log"); // "PHP " should trigger the error log scanner
+    error_log(var_export($report['Data'], true));
 }
 else if ($c<$s) {
     $report['Alerts']['Draw overdue'] = "Draw results are overdue\nLatest scheduled: $s\nLatest results found: $c";
