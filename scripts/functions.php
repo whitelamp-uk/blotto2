@@ -284,7 +284,7 @@ function calculate ($start=null,$end=null) {
     $up_closing = 0.00;
     foreach (www_pay_apis() as $meta) {
         try {
-            require $meta->file;
+            require_once $meta->file;
             $class = $meta->class;
             $api = new $class (connect(BLOTTO_MAKE_DB),BLOTTO_ORG_USER);
         }
