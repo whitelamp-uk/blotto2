@@ -118,6 +118,7 @@ function calculate ($start=null,$end=null) {
     $org = BLOTTO_ORG_USER;
     $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-calculate-'.$start.'-'.$end.'.json';
     if (file_exists($cache_file)) {
+        echo("reading from calculate() cache");
         return json_decode(file_get_contents($cache_file));
     }    
 
@@ -307,7 +308,7 @@ function calculate ($start=null,$end=null) {
             }
         }
     }
-    error_log("que?");
+    echo("writing out calculate() cache");
     file_put_contents($cache_file, json_encode($results));
     return $results;
 }
@@ -3321,6 +3322,7 @@ function profits ($diagnostic=false) {
     $yesterday = new DateTime('yesterday'); // make consistent with revenue() and calculate() cache files
     $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-profits-'.$yesterday->format('Y-m-d').'.json';
     if (file_exists($cache_file)) {
+        echo("reading from profits() cache");
         return file_get_contents($cache_file);
     }
 
@@ -3970,6 +3972,7 @@ function profits ($diagnostic=false) {
         }
     }
     $data = json_encode ([ 'history'=>$history, "projection"=>$projection ],JSON_PRETTY_PRINT);
+    echo("writing out profits() cache");
     file_put_contents($cache_file, $data);
     return $data;
 }
@@ -4270,6 +4273,7 @@ function revenue ($from,$to) {
     $org = BLOTTO_ORG_USER;
     $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-revenue-'.$from.'-'.$to.'.json';
     if (file_exists($cache_file)) {
+        echo("reading from revenue() cache");
         return json_decode(file_get_contents($cache_file));
     }    
     $price = BLOTTO_TICKET_PRICE;
@@ -4297,6 +4301,7 @@ function revenue ($from,$to) {
         while ($r=$c->fetch_assoc()) {
             $rows[] = $r;
         }
+        echo("writing out revenue() cache");
         file_put_contents($cache_file, json_encode($rows));
         return $rows;
     }
