@@ -3318,10 +3318,12 @@ function prizes ($draw_closed) {
 
 function profits ($diagnostic=false) {
     $org = BLOTTO_ORG_USER;
-    $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-profits-'.date('Y-m-d').'.json';
+    $yesterday = new DateTime('yesterday'); // make consistent with revenue() and calculate() cache files
+    $cache_file = BLOTTO_TMP_DIR.'/'.$org.'-profits-'.$yesterday->format('Y-m-d').'.json';
     if (file_exists($cache_file)) {
         return file_get_contents($cache_file);
     }
+
     $db = BLOTTO_DB; // TODO - live DB
     $cdb = BLOTTO_CONFIG_DB;
     $data = [];
