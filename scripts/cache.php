@@ -1,4 +1,5 @@
 <?php
+//
 
 require __DIR__.'/functions.php';
 cfg ();
@@ -55,8 +56,11 @@ if (in_array($md, ['03-31', '06-30', '09-30', '12-31', '11-28'])) { // end of qu
     $mto = substr($to,5,2);
     $mfrom= str_pad($mto-2, 2, '0', STR_PAD_LEFT);
     $from = substr($to,0,4).'-'.$mfrom.'-01';
-    echo "    Caching quarterly data by running calculate and revenue('$from','$to') ... ";
-    $t0 = time (); calculate ($from,$to); revenue ($from,$to);
+    echo "    Caching quarterly data by running calculate('$from','$to') ... ";
+    $t0 = time (); calculate ($from,$to);
+    echo "    done in ".(time()-$t0)." seconds\n";
+    echo "    Caching quarterly data by running revenue('$from','$to') ... ";
+    $t0 = time (); revenue ($from,$to);
     echo "    done in ".(time()-$t0)." seconds\n";
 }
 
