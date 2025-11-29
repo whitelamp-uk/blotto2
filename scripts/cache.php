@@ -51,8 +51,8 @@ echo "    Caching default data by running revenue('$from','$to') ... ";
 $t0 = time (); revenue ($from,$to);
 echo "    done in ".(time()-$t0)." seconds\n";
 
-$md = substr($to,5,5);
-if (in_array($md, ['03-31', '06-30', '09-30', '12-31', '11-28'])) { // end of quarter.
+$md = substr($to,5,5); // month-day
+if (in_array($md, ['03-31', '06-30', '09-30', '12-31', '11-29'])) { // end of quarter. '11-29' test, to be removed
     $mto = substr($to,5,2);
     $mfrom= str_pad($mto-2, 2, '0', STR_PAD_LEFT);
     $from = substr($to,0,4).'-'.$mfrom.'-01';
