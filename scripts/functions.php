@@ -6884,7 +6884,7 @@ function www_signup_dates ($org,&$e) {
     $c = connect ();
     foreach (explode(',',$indates) AS $d) {
         $d = trim ($d);
-        if ($d == 'next_superdraw') {  // expires is generally sunday 
+        if ($d == 'next_superdraw' || $d < $today) {  // expires is generally sunday 
             $sdsql = "SELECT `starts` FROM `blotto_prize` AS `p` WHERE `p`.`level` = 1 AND `p`.`expires` > '".$now->format ('Y-m-d')."' ORDER BY `p`.`expires` LIMIT 0,2";
             $sdrows = $c->query($sdsql);
             $row1 = $sdrows->fetch_assoc();
