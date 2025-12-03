@@ -454,11 +454,21 @@ $weekOptions = org()['signup_draw_options']; // e.g. '1 1 week'
 $max_purchase = org()['signup_amount_cap'];    // 20;
 
 // Accept nextDrawDate as a query parameter if passed
-$nextDrawDateParam = isset($_GET['d']) ? $_GET['d'] : null;
-$nextDrawDateRaw = $nextDrawDateParam ?: '2025-07-05';  // TODO use passed in value
+//$nextDrawDateParam = isset($_GET['d']) ? $_GET['d'] : null;
+
+$now = new \DateTime ();
+$today = $now->format ('Y-m-d');
+if (empty($_GET['d']) || $_GET['d'] == 'next_superdraw' || $_GET['d'] < $today) {
+    $nextDrawDateRaw = www_signup_next_superdraw($today);
+} else {
+    $nextDrawDateRaw = $_GET['d'];
+}
 
 // Convert to formatted string (e.g., "Saturday 5th July 2025")
-$nextDrawDateFormatted = date("l jS F Y", strtotime($nextDrawDateRaw));
+$nextdd = new \DateTime ($nextDrawDateRaw);
+$nextDrawDateFormatted = $nextdd->format ('l jS F Y');
+
+//$nextDrawDateFormatted = date("l jS F Y", strtotime($nextDrawDateRaw));
 
 // custom terms message
 $custom_terms_message = '';
