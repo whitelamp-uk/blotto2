@@ -41,12 +41,11 @@ if (
     header('Content-Type: application/json; charset=utf-8');
 
     $postcode = trim($_GET['postcode']);
-    $doFind   = isset($_GET['find']) && $_GET['find'] == '1'; // True = existence check only
-    $building = ''; // Optional: pass building if needed
+    $doFind   = isset($_GET['find']) && $_GET['find'] == '1';
+    $building = '';
 
     function GetFullAddress($postcode, $building, $doFind, $licence = 'SmallUserFull')
     {
-        // Options for Data8
         $options = array(
             "Option" => array(
                 array("Name" => "ReturnResultCount", "Value" => "true"),
@@ -54,7 +53,6 @@ if (
             ),
         );
 
-        // SOAP params
         $params = array(
             "username" => DATA8_USERNAME,
             "password" => DATA8_PASSWORD,
@@ -68,72 +66,49 @@ if (
             $client = new SoapClient("https://webservices.data-8.co.uk/addresscapture.asmx?WSDL");
             $result = $client->GetFullAddress($params);
         } catch (Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'request failed: ' . $e->getMessage(),
-            ]);
+            echo json_encode(['success' => false, 'message' => 'request failed: ' . $e->getMessage()]);
             exit;
         }
 
         $gfr = $result->GetFullAddressResult ?? null;
         if (!$gfr || (isset($gfr->Status->Success) && (int)$gfr->Status->Success === 0)) {
             $err = isset($gfr->Status->ErrorMessage) ? $gfr->Status->ErrorMessage : 'Unknown error';
-            echo json_encode([
-                'success' => false,
-                'message' => "Error: " . $err,
-            ]);
+            echo json_encode(['success' => false, 'message' => "Error: " . $err]);
             exit;
         }
 
-        // Early exit for simple existence check
         if ($doFind === true) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Postcode exists ok',
-            ]);
+            echo json_encode(['success' => true, 'message' => 'Postcode exists ok']);
             exit;
         }
 
         $resultCount = (int) ($gfr->ResultCount ?? 0);
         if ($resultCount <= 0) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'No addresses found for the given postcode.',
-            ]);
+            echo json_encode(['success' => false, 'message' => 'No addresses found for the given postcode.']);
             exit;
         }
 
         // ---- Normalize Results to a list of FormattedAddress objects ----
-        $toList = function ($x) {
-            return is_array($x) ? $x : [$x];
-        };
+        $toList = function ($x) { return is_array($x) ? $x : [$x]; };
 
         $resultsNode   = $gfr->Results ?? null;
         $formattedList = [];
 
         if (isset($resultsNode->FormattedAddress)) {
-            // FormattedAddress could be a single object or an array
             $formattedList = $toList($resultsNode->FormattedAddress);
         } elseif (is_array($resultsNode)) {
-            // Results is an array; entries may or may not wrap FormattedAddress
             foreach ($resultsNode as $entry) {
-                if (isset($entry->FormattedAddress)) {
-                    $formattedList = array_merge($formattedList, $toList($entry->FormattedAddress));
-                } else {
-                    $formattedList[] = $entry; // assume it's already a FormattedAddress
-                }
+                $formattedList = array_merge(
+                    $formattedList,
+                    isset($entry->FormattedAddress) ? $toList($entry->FormattedAddress) : [$entry]
+                );
             }
         } elseif ($resultsNode) {
-            // Single object case
             $formattedList[] = isset($resultsNode->FormattedAddress) ? $resultsNode->FormattedAddress : $resultsNode;
         }
 
-        // Safety: if still empty, treat as no results
         if (empty($formattedList)) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'No addresses found for the given postcode.',
-            ]);
+            echo json_encode(['success' => false, 'message' => 'No addresses found for the given postcode.']);
             exit;
         }
 
@@ -141,22 +116,23 @@ if (
         $addresses = [];
 
         foreach ($formattedList as $fa) {
-            if (!isset($fa->RawAddress)) {
-                // Skip anything without RawAddress (e.g., a plain "Address" object)
-                continue;
-            }
+            if (!isset($fa->RawAddress)) continue;
 
             $address = $fa->RawAddress;
 
-            // Build street name (handle missing parts)
-            $thoroughfareName = isset($address->ThoroughfareName) ? trim($address->ThoroughfareName) : '';
-            $thoroughfareDesc = isset($address->ThoroughfareDesc) ? trim($address->ThoroughfareDesc) : '';
-            $street = trim(trim($thoroughfareName . ' ' . $thoroughfareDesc));
+            // ----- Street: include dependent thoroughfare ("Oswald Terrace") + main ("Sturton Street")
+            $depName = isset($address->DependentThoroughfareName) ? trim($address->DependentThoroughfareName) : '';
+            $depDesc = isset($address->DependentThoroughfareDesc) ? trim($address->DependentThoroughfareDesc) : '';
+            $mainName = isset($address->ThoroughfareName) ? trim($address->ThoroughfareName) : '';
+            $mainDesc = isset($address->ThoroughfareDesc) ? trim($address->ThoroughfareDesc) : '';
 
-            // Normalize building number (0 means none)
+            $dep = trim(($depName . ' ' . $depDesc));
+            $main = trim(($mainName . ' ' . $mainDesc));
+            $street = trim(($dep ? $dep . ' ' : '') . $main);
+
+            // Building number: 0 means none
             $buildingNumber = (!empty($address->BuildingNumber) && (int)$address->BuildingNumber !== 0)
-                ? (string)$address->BuildingNumber
-                : '';
+                ? (string)$address->BuildingNumber : '';
 
             // address_line_1 / 2 rules
             if (!empty($address->Organisation)) {
@@ -186,15 +162,15 @@ if (
                 $address_line_3 = '';
             }
 
-            // County selection
+            // County
             $county = !empty($address->PostalCounty) ? $address->PostalCounty
                 : (!empty($address->TraditionalCounty) ? $address->TraditionalCounty
                 : (!empty($address->AdministrativeCounty) ? $address->AdministrativeCounty : ''));
 
-            // PO Box handling
+            // PO Box
             $poBox = !empty($address->PoBox) ? ('PO Box ' . $address->PoBox) : '';
 
-            // Compose full address (dedupe empties)
+            // Compose full address (incl. postcode) — legacy field kept for compatibility
             $full_address_parts = array_filter(array_unique([
                 $address_line_1,
                 $address_line_2,
@@ -205,6 +181,22 @@ if (
                 isset($address->Postcode) ? $address->Postcode : '',
             ]));
 
+            // Compose display address (EXCLUDES postcode, for dropdown label)
+            $display_parts = array_filter(array_unique([
+                $address_line_1,
+                $address_line_2,
+                $address_line_3,
+                isset($address->Locality) ? $address->Locality : '',
+                $county,
+            ]));
+
+            // Title-case lines (keep postcode uppercase separately)
+            $pc = isset($address->Postcode) ? strtoupper($address->Postcode) : '';
+            $displayAddress = ucwords(strtolower(implode(' ', $display_parts)));
+            $fullAddress    = ucwords(strtolower(implode(' ', $full_address_parts)));
+            // Re-append uppercase PC to legacy fullAddress (last token)
+            if ($pc !== '') $fullAddress = trim(preg_replace('/\s+' . preg_quote($pc, '/') . '$/i', '', $fullAddress) . ' ' . $pc);
+
             $addresses[] = [
                 'address_line_1' => ucwords(strtolower($address_line_1)),
                 'address_line_2' => ucwords(strtolower($address_line_2)),
@@ -212,17 +204,14 @@ if (
                 'po_box'         => $poBox,
                 'town'           => isset($address->Locality) ? ucwords(strtolower($address->Locality)) : '',
                 'county'         => ucwords(strtolower($county)),
-                'postcode'       => isset($address->Postcode) ? strtoupper($address->Postcode) : '',
-                'address'        => ucwords(strtolower(implode(' ', $full_address_parts))),
+                'postcode'       => $pc,
+                'address'        => $fullAddress,      // legacy: includes postcode
+                'display_address'=> $displayAddress,   // NEW: excludes postcode (use for dropdown)
             ];
         }
 
-        // If everything got filtered out, treat as no results
         if (empty($addresses)) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'No addresses found for the given postcode.',
-            ]);
+            echo json_encode(['success' => false, 'message' => 'No addresses found for the given postcode.']);
             exit;
         }
 
@@ -238,6 +227,7 @@ if (
     ]);
     exit;
 }
+
 // Verification by JS fetch
 if (array_key_exists('verify', $_GET)) {
     $code                               = rand(1000, 9999);
@@ -454,11 +444,22 @@ $weekOptions = org()['signup_draw_options']; // e.g. '1 1 week'
 $max_purchase = org()['signup_amount_cap'];    // 20;
 
 // Accept nextDrawDate as a query parameter if passed
-$nextDrawDateParam = isset($_GET['d']) ? $_GET['d'] : null;
-$nextDrawDateRaw = $nextDrawDateParam ?: '2025-07-05';  // TODO use passed in value
+//$nextDrawDateParam = isset($_GET['d']) ? $_GET['d'] : null;
+//$nextDrawDateRaw = $nextDrawDateParam ?: '2025-07-05';  // TODO use passed in value
+// Convert to formatted string (e.g., "Saturday 5th July 2025")
+//$nextDrawDateFormatted = date("l jS F Y", strtotime($nextDrawDateRaw));
+
+$now = new \DateTime ();
+$today = $now->format ('Y-m-d');
+if (empty($_GET['d']) || $_GET['d'] == 'next_superdraw' || $_GET['d'] < $today) {
+    $nextDrawDateRaw = www_signup_next_superdraw($today);
+} else {
+    $nextDrawDateRaw = $_GET['d'];
+}
 
 // Convert to formatted string (e.g., "Saturday 5th July 2025")
-$nextDrawDateFormatted = date("l jS F Y", strtotime($nextDrawDateRaw));
+$nextdd = new \DateTime ($nextDrawDateRaw);
+$nextDrawDateFormatted = $nextdd->format ('l jS F Y');
 
 // custom terms message
 $custom_terms_message = '';

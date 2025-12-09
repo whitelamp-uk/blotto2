@@ -604,3 +604,69 @@ body, #payment-form, #payment-form fieldset {
     overflow-x: hidden;
 }
 
+/* labels stay multi-line */
+#quantityRadios .form-check-label,
+#weekRadios .form-check-label {
+  white-space: normal !important;
+  line-height: 1.25;
+  display: inline-block;
+}
+
+/* Base container: no scroll by default */
+.scroll-radios {
+  display: block;
+  overflow-x: hidden;         /* default: off */
+  padding-bottom: 0.5rem;
+  touch-action: pan-x;
+}
+
+/* Single inner row used in both qty + week */
+.scroll-radios .radios-row {
+  gap: .5rem;
+}
+
+/* Items */
+.scroll-radios .form-check {
+  flex: 0 0 auto;
+  min-width: 140px;
+}
+
+/* --- Narrow view (mobile / small containers) --- */
+@media (max-width: 768px) {
+  /* on small screens, we use a single line; JS toggles overflow if needed */
+  .scroll-radios .radios-row {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    min-width: max-content;   /* ensures real overflow if too many items */
+    padding-bottom: .5rem;
+  }
+  .scroll-radios.is-scrollable {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;    /* iOS/Safari momentum */
+  }
+}
+
+/* Mobile: wrap like desktop, never horizontal scroll */
+@media (max-width: 768px) {
+  .scroll-radios {
+    overflow-x: visible !important;   /* kill scrollbar even if JS adds is-scrollable */
+  }
+
+  .scroll-radios .radios-row {
+    display: flex;                    /* not inline-flex */
+    flex-wrap: wrap;                  /* allow wrapping */
+    min-width: 0;                     /* no forced overflow */
+    gap: .75rem;
+  }
+}
+
+/* --- Large view (desktop/tablet) — never scroll, just wrap --- */
+@media (min-width: 769px) {
+  .scroll-radios { overflow-x: visible !important; }
+  .scroll-radios .radios-row {
+    display: flex;
+    flex-wrap: wrap;          /* wrap to multiple rows */
+    min-width: 0;             /* avoid forced overflow */
+    gap: .75rem;
+  }
+}

@@ -493,13 +493,48 @@ const TicketWidget = {
         });
 
         // 4) Re-apply every piece of widget behavior in order:
-        this.applyStyles(); // host styling & sizing
-        this.renderTicketStep(true); // rebuild qty/week/cost UI - reversed Sian email requirement.
-        this.setupStepper(); // re-hook next/prev & validation
-        this.setupFindAddress(); // re-hook postcode lookup
-        this.setupPaymentToggle(); // wire up your Pay button
-        this.setupSubmit(); // wire up form.submit handler
-        this.setupDatepicker();
+        // this.applyStyles(); // host styling & sizing
+        // this.renderTicketStep(true); // rebuild qty/week/cost UI - reversed Sian email requirement.
+        // this.setupStepper(); // re-hook next/prev & validation
+        // this.setupFindAddress(); // re-hook postcode lookup
+        // this.setupPaymentToggle(); // wire up your Pay button
+        // this.setupSubmit(); // wire up form.submit handler
+        // this.setupDatepicker();
+
+        // 4) Re-apply every piece of widget behavior in order — after layout
+        requestAnimationFrame(() => {
+        this.applyStyles();                 // host styling & sizing
+        this.renderTicketStep(true);        // builds qty/week using window.innerWidth
+        this.setupStepper();                // next/prev & validation
+        this.setupFindAddress();            // postcode lookup
+        this.setupPaymentToggle();          // Pay button
+        this.setupSubmit();                 // form.submit
+        this.setupDatepicker();             // DOB
+
+        // Safari: run one more tick after paint so innerWidth/iframe size is final
+        setTimeout(() => {
+            this.renderTicketStep(true);
+            window.parent.postMessage({ type: 'resize', height: this.getHeight() + 30 }, '*');
+        }, 0);
+        });
+
+        // attach a one-time resize handler to keep radios correct on rotation/resize
+        if (!this._boundResize) {
+        this._boundResize = true;
+        this._resizeDebounce = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(this._resizeDebounce);
+            this._resizeDebounce = setTimeout(() => {
+            // only rebuild if step 2 exists and is in the DOM
+            const qtyContainer = document.getElementById('quantityRadios');
+            if (qtyContainer) {
+                this.renderTicketStep(true);
+                window.parent.postMessage({ type: 'resize', height: this.getHeight() + 30 }, '*');
+            }
+            }, 150);
+        });
+        }
+
     },
 
     getHeight() {
@@ -837,136 +872,149 @@ const TicketWidget = {
     },
 
     setupFindAddress() {
-        const findButton = document.querySelector("#findAddressBtn");
-        if (!findButton) return;
+    const findButton = document.querySelector("#findAddressBtn");
+    if (!findButton) return;
 
-        findButton.addEventListener("click", async () => {
-            const postcodeInput = document.getElementById('postcode');
-            const postcode = (postcodeInput?.value || '').trim();
+    findButton.addEventListener("click", async () => {
+        const postcodeInput = document.getElementById('postcode');
+        const postcode = (postcodeInput?.value || '').trim();
 
-            const notice = document.getElementById('noticePostcode');
-            const dropdown = document.getElementById('addressDropdown');
-            const selectionRow = document.getElementById('addressSelection');
+        const notice       = document.getElementById('noticePostcode');
+        const dropdown     = document.getElementById('addressDropdown');
+        const selectionRow = document.getElementById('addressSelection');
 
-            console.log('[FindAddress] Clicked. Postcode:', postcode);
-            if (!postcode) {
-                notice && (notice.textContent = 'Please enter a postcode.');
-                return;
-            }
-            if (!dropdown) console.warn('[FindAddress] #addressDropdown not found');
-            if (!selectionRow) console.warn('[FindAddress] #addressSelection not found');
+        console.log('[FindAddress] Clicked. Postcode:', postcode);
+        if (!postcode) {
+        if (notice) notice.textContent = 'Please enter a postcode.';
+        return;
+        }
+        if (!dropdown)     console.warn('[FindAddress] #addressDropdown not found');
+        if (!selectionRow) console.warn('[FindAddress] #addressSelection not found');
 
-            // Reset UI
-            if (notice) notice.textContent = 'Looking up...';
+        // Reset UI
+        if (notice)       notice.textContent = 'Looking up...';
+        if (dropdown)     dropdown.innerHTML = '';
+        if (selectionRow) selectionRow.style.display = 'none';
+
+        // Helper: clear current address fields
+        const scope = selectionRow?.closest('.step-content') || document;
+        const clearFields = () => {
+        const q = (sel) => scope.querySelector(sel);
+        ['#address_1','#address_2','#address_3','#town','#county'].forEach(sel => {
+            const el = q(sel); if (el) el.value = '';
+        });
+        };
+
+        try {
+        const url = `ticketsc.php?action=postcode_lookup&postcode=${encodeURIComponent(postcode)}&find=0&o=${encodeURIComponent(this.clientCode)}&p=LT`;
+        console.log('[FindAddress] GET:', url);
+
+        const resp = await axios.get(url);
+        console.log('[FindAddress] Raw response:', resp);
+
+        const addresses = resp?.data?.data;
+        console.log('[FindAddress] Parsed addresses:', addresses);
+
+        if (!Array.isArray(addresses) || addresses.length === 0) {
+            console.warn('[FindAddress] No addresses found for:', postcode);
+            if (notice) notice.textContent = 'No addresses found.';
             if (dropdown) dropdown.innerHTML = '';
             if (selectionRow) selectionRow.style.display = 'none';
+            clearFields(); // clear previous choice
+            return;
+        }
 
-            try {
-                const url = `ticketsc.php?action=postcode_lookup&postcode=${encodeURIComponent(postcode)}&find=0&o=${encodeURIComponent(this.clientCode)}&p=LT`;
-                console.log('[FindAddress] GET:', url);
+        // Build dropdown options
+        dropdown.innerHTML = '';
+        if (addresses.length > 1) {
+            const ph = document.createElement('option');
+            ph.value = '';
+            ph.text  = 'Select address…';
+            ph.disabled = true;
+            ph.selected = true;
+            dropdown.appendChild(ph);
+        }
 
-                const resp = await axios.get(url);
-                console.log('[FindAddress] Raw response:', resp);
+        const formatDisplay = (a) =>
+            [a.address_line_1, a.address_line_2, a.address_line_3, a.town, a.county]
+            .filter(Boolean)
+            .join(' ');
 
-                const addresses = resp?.data?.data;
-                console.log('[FindAddress] Parsed addresses:', addresses);
-
-                if (!Array.isArray(addresses) || addresses.length === 0) {
-                    console.warn('[FindAddress] No addresses found for:', postcode);
-                    if (notice) notice.textContent = 'No addresses found.';
-                    return;
-                }
-
-                // Build dropdown options
-                dropdown.innerHTML = '';
-                if (addresses.length > 1) {
-                    const ph = document.createElement('option');
-                    ph.value = '';
-                    ph.text = 'Select address…';
-                    ph.disabled = true;
-                    ph.selected = true;
-                    dropdown.appendChild(ph);
-                }
-                addresses.forEach((addr, i) => {
-                    const opt = document.createElement('option');
-                    opt.value = String(i);
-                    opt.text = addr.address || `${addr.address_line_1} ${addr.town} ${addr.postcode}`.trim();
-                    dropdown.appendChild(opt);
-                });
-
-                // Show selection UI
-                selectionRow && (selectionRow.style.display = 'block');
-                notice && (notice.textContent = '');
-
-                // Fill helper (scope to the same visible step panel to avoid cloned IDs)
-                const scope = selectionRow?.closest('.step-content') || document;
-                const fillFromIndex = (idx) => {
-                    console.log('[FindAddress] fillFromIndex idx:', idx);
-                    const a = addresses[idx];
-                    if (!a) return;
-
-                    // Detect duplicate IDs (diagnostic only)
-                    ['#address_1', '#address_2', '#address_3', '#town', '#county', '#postcode'].forEach(sel => {
-                        const n = document.querySelectorAll(sel).length;
-                        if (n > 1) console.warn('[FindAddress] duplicate ID detected:', sel, 'count=', n);
-                    });
-
-                    const q = (sel) => scope.querySelector(sel);
-                    const f1 = q('#address_1');
-                    const f2 = q('#address_2');
-                    const f3 = q('#address_3');
-                    const ft = q('#town');
-                    const fc = q('#county');
-                    const fp = q('#postcode');
-
-                    console.log('[FindAddress] targets:', { f1, f2, f3, ft, fc, fp });
-
-                    if (f1) f1.value = a.address_line_1 || '';
-                    if (f2) f2.value = a.address_line_2 || '';
-                    if (f3) f3.value = a.address_line_3 || '';
-                    if (ft) ft.value = a.town || '';
-                    if (fc) fc.value = a.county || '';
-                    if (fp) fp.value = a.postcode || postcode;
-
-                    console.log('[FindAddress] after fill ->', {
-                        address_1: f1?.value, address_2: f2?.value, address_3: f3?.value,
-                        town: ft?.value, county: fc?.value, postcode: fp?.value
-                    });
-                };
-
-                // Bind change (overwrite previous)
-                dropdown.onchange = () => {
-                    const v = dropdown.value;
-                    if (v === '' || Number.isNaN(Number(v))) return; // ignore placeholder
-                    fillFromIndex(Number(v));
-                };
-
-                // ✅ Auto-fill ONLY when exactly one address
-                if (addresses.length === 1) {
-                    dropdown.selectedIndex = 0; // only option
-                    fillFromIndex(0);
-                } else {
-                    // Optional: clear fields on load to force explicit choice
-                    const q = (sel) => scope.querySelector(sel);
-                    ['#address_1', '#address_2', '#address_3', '#town', '#county'].forEach(sel => {
-                        const el = q(sel); if (el) el.value = '';
-                    });
-                    // keep postcode as typed
-                }
-
-                // Resize after UI change
-                requestAnimationFrame(() => {
-                    const h = this.getHeight() + 30;
-                    console.log('[FindAddress] Requesting resize height:', h);
-                    window.parent.postMessage({ type: 'resize', height: h }, '*');
-                });
-
-            } catch (err) {
-                console.error('[FindAddress] Error:', err);
-                notice && (notice.innerHTML =
-                    '<p class="error-message">Error retrieving addresses. Please try again later.</p>');
-            }
+        addresses.forEach((addr, i) => {
+            const opt = document.createElement('option');
+            opt.value = String(i);
+            // Prefer backend display_address (no postcode); fallback to formatted lines
+            opt.text  = addr.display_address || formatDisplay(addr) || addr.address || '';
+            dropdown.appendChild(opt);
         });
+
+        // Show selection UI
+        if (selectionRow) selectionRow.style.display = 'block';
+        if (notice) notice.textContent = '';
+
+        // Fill helper (scoped to visible step; avoids cloned IDs)
+        const fillFromIndex = (idx) => {
+            console.log('[FindAddress] fillFromIndex idx:', idx);
+            const a = addresses[idx];
+            if (!a) return;
+
+            // Optional diagnostics: duplicate IDs
+            ['#address_1','#address_2','#address_3','#town','#county','#postcode'].forEach(sel => {
+            const n = document.querySelectorAll(sel).length;
+            if (n > 1) console.warn('[FindAddress] duplicate ID detected:', sel, 'count=', n);
+            });
+
+            const q = (sel) => scope.querySelector(sel);
+            const f1 = q('#address_1');
+            const f2 = q('#address_2');
+            const f3 = q('#address_3');
+            const ft = q('#town');
+            const fc = q('#county');
+            const fp = q('#postcode');
+
+            if (f1) f1.value = a.address_line_1 || '';
+            if (f2) f2.value = a.address_line_2 || '';
+            if (f3) f3.value = a.address_line_3 || '';
+            if (ft) ft.value = a.town || '';
+            if (fc) fc.value = a.county || '';
+            if (fp) fp.value = a.postcode || postcode; // keep uppercase from backend
+
+            console.log('[FindAddress] after fill ->', {
+            address_1: f1?.value, address_2: f2?.value, address_3: f3?.value,
+            town: ft?.value, county: fc?.value, postcode: fp?.value
+            });
+        };
+
+        // Change handler: only fill after a real choice
+        dropdown.onchange = () => {
+            const v = dropdown.value;
+            if (v === '' || Number.isNaN(Number(v))) return; // ignore placeholder
+            fillFromIndex(Number(v));
+        };
+
+        // Auto-fill ONLY when exactly one address
+        if (addresses.length === 1) {
+            dropdown.selectedIndex = 0; // only option
+            fillFromIndex(0);
+        } else {
+            clearFields(); // force explicit choice on multi-result lookups
+        }
+
+        // Resize after UI change
+        requestAnimationFrame(() => {
+            const h = this.getHeight() + 30;
+            console.log('[FindAddress] Requesting resize height:', h);
+            window.parent.postMessage({ type: 'resize', height: h }, '*');
+        });
+
+        } catch (err) {
+        console.error('[FindAddress] Error:', err);
+        if (notice) {
+            notice.innerHTML = '<p class="error-message">Error retrieving addresses. Please try again later.</p>';
+        }
+        clearFields(); // clear on error too
+        }
+    });
     },
 
     // setupPaymentToggle() {
@@ -1535,6 +1583,34 @@ const TicketWidget = {
         };
     },
 
+    _applyRadioLayout(container) {
+        const apply = () => {
+            const w = container.getBoundingClientRect().width || 0;
+            const mobile = w <= 600; // breakpoint by container, not window
+
+            // quantity items
+            container.querySelectorAll('[data-role="qty-item"], [data-role="week-item"]').forEach(el => {
+            if (mobile) {
+                el.style.flex = '1 1 calc(50% - 0.5rem)'; // 2-up
+                el.style.minWidth = '0';
+            } else {
+                el.style.flex = '0 0 auto';
+                el.style.minWidth = '';
+            }
+            });
+        };
+
+        // run now + on resize/orientation/content changes
+        apply();
+
+        // stash one observer per container
+        if (!container._ro) {
+            const ro = new ResizeObserver(() => apply());
+            ro.observe(container);
+            container._ro = ro;
+        }
+    },
+
     renderTicketStep(reverse = false) {
         const {
             ticketPrice: pricePerDraw,
@@ -1544,6 +1620,25 @@ const TicketWidget = {
             nextDrawDate,
         } = this.options;
 
+        function toggleScrollableIfNeeded(container) {
+        if (!container) return;
+            // reset first
+            container.classList.remove('is-scrollable');
+            // give the browser a tick to layout
+            requestAnimationFrame(() => {
+                const needScroll = container.scrollWidth > container.clientWidth + 1; // +1 for fractional layout
+                if (needScroll) container.classList.add('is-scrollable');
+            });
+        }
+
+        function wireRecalcOnResize(containers = []) {
+            let t;
+            window.addEventListener('resize', () => {
+                clearTimeout(t);
+                t = setTimeout(() => containers.forEach(toggleScrollableIfNeeded), 100);
+            });
+        }
+
         // ——— static labels ———
         document.getElementById('next-draw-date').textContent = nextDrawDate;
         document.getElementById('price-per-draw').textContent = parseFloat(pricePerDraw).toFixed(2);
@@ -1551,62 +1646,177 @@ const TicketWidget = {
 
         const displayQuantities = reverse ? [...quantities].reverse() : quantities;
 
-        // ——— build quantities in two rows ———
+        // // ——— build quantities in two rows ———
+        // const qtyContainer = document.getElementById('quantityRadios');
+        // qtyContainer.innerHTML = '';
+
+        // const half = Math.ceil(displayQuantities.length / 2);
+        // const firstRowQuantities = displayQuantities.slice(0, half);
+        // const secondRowQuantities = displayQuantities.slice(half);
+
+        // // Create first row container
+        // const firstRowDiv = document.createElement('div');
+        // firstRowDiv.className = 'd-flex flex-wrap gap-3 mb-2';
+
+        // firstRowQuantities.forEach((qty, i) => {
+        //     const id = `quantity-${qty}`;
+        //     const div = document.createElement('div');
+        //     div.className = 'form-check form-check-inline';
+        //     div.innerHTML = `
+        //                     <input 
+        //                         class="form-check-input qty-radio" 
+        //                         type="radio" name="quantity" id="${id}" 
+        //                         value="${qty}" ${i === 0 ? 'checked' : ''}
+        //                     >
+        //                     <label class="form-check-label" for="${id}">
+        //                         ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
+        //                     </label>
+        //                 `;
+        //     firstRowDiv.appendChild(div);
+        // });
+
+        // // Create second row container
+        // const secondRowDiv = document.createElement('div');
+        // secondRowDiv.className = 'd-flex flex-wrap gap-3';
+
+        // secondRowQuantities.forEach((qty) => {
+        //     const id = `quantity-${qty}`;
+        //     const div = document.createElement('div');
+        //     div.className = 'form-check form-check-inline';
+        //     div.innerHTML = `
+        //                     <input 
+        //                         class="form-check-input qty-radio" 
+        //                         type="radio" name="quantity" id="${id}" 
+        //                         value="${qty}"
+        //                     >
+        //                     <label class="form-check-label" for="${id}">
+        //                         ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
+        //                     </label>
+        //                 `;
+        //     secondRowDiv.appendChild(div);
+        // });
+
+        // // Append rows to container
+        // qtyContainer.appendChild(firstRowDiv);
+        // qtyContainer.appendChild(secondRowDiv);
+
+        // ——— build quantities in two rows (three if mobile) ———
+        // const qtyContainer = document.getElementById('quantityRadios');
+        // qtyContainer.innerHTML = '';
+
+        // let chunks;
+        // if (window.innerWidth <= 600) {
+        // // Mobile: split into three roughly equal chunks
+        // const third = Math.ceil(displayQuantities.length / 3);
+        // chunks = [
+        //     displayQuantities.slice(0, third),
+        //     displayQuantities.slice(third, third * 2),
+        //     displayQuantities.slice(third * 2)
+        // ];
+        // } else {
+        // // Desktop: split into two
+        // const half = Math.ceil(displayQuantities.length / 2);
+        // chunks = [
+        //     displayQuantities.slice(0, half),
+        //     displayQuantities.slice(half)
+        // ];
+        // }
+
+        // // Create row containers dynamically
+        // chunks.forEach((group, rowIndex) => {
+        // const rowDiv = document.createElement('div');
+        // rowDiv.className = 'd-flex flex-wrap gap-3' + (rowIndex === 0 ? ' mb-2' : '');
+
+        // group.forEach((qty, i) => {
+        //     const id = `quantity-${qty}`;
+        //     const div = document.createElement('div');
+        //     div.className = 'form-check form-check-inline';
+        //     div.innerHTML = `
+        //     <input 
+        //         class="form-check-input qty-radio" 
+        //         type="radio" name="quantity" id="${id}" 
+        //         value="${qty}" ${(rowIndex === 0 && i === 0) ? 'checked' : ''}
+        //     >
+        //     <label class="form-check-label" for="${id}">
+        //         ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
+        //     </label>
+        //     `;
+        //     rowDiv.appendChild(div);
+        // });
+
+        // qtyContainer.appendChild(rowDiv);
+        // });
+
+        // ——— build quantities as ONE wrapping list (Safari friendly) ———
+        // QUANTITY radios (one list)
         const qtyContainer = document.getElementById('quantityRadios');
         qtyContainer.innerHTML = '';
 
-        const half = Math.ceil(displayQuantities.length / 2);
-        const firstRowQuantities = displayQuantities.slice(0, half);
-        const secondRowQuantities = displayQuantities.slice(half);
+        const row = document.createElement('div');
+        row.className = 'radios-row';
+        qtyContainer.appendChild(row);
 
-        // Create first row container
-        const firstRowDiv = document.createElement('div');
-        firstRowDiv.className = 'd-flex gap-3 mb-2'; // no flex-wrap here for single row
-
-        firstRowQuantities.forEach((qty, i) => {
+        displayQuantities.forEach((qty, i) => {
             const id = `quantity-${qty}`;
             const div = document.createElement('div');
-            div.className = 'form-check form-check-inline';
+            div.className = 'form-check';
             div.innerHTML = `
-                            <input 
-                                class="form-check-input qty-radio" 
-                                type="radio" name="quantity" id="${id}" 
-                                value="${qty}" ${i === 0 ? 'checked' : ''}
-                            >
-                            <label class="form-check-label" for="${id}">
-                                ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
-                            </label>
-                        `;
-            firstRowDiv.appendChild(div);
+                <input class="form-check-input qty-radio" type="radio" name="quantity" id="${id}"
+                    value="${qty}" ${i === 0 ? 'checked' : ''}>
+                <label class="form-check-label" for="${id}">
+                ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
+                </label>
+            `;
+            row.appendChild(div);
         });
 
-        // Create second row container
-        const secondRowDiv = document.createElement('div');
-        secondRowDiv.className = 'd-flex gap-3'; // no flex-wrap here for single row
-
-        secondRowQuantities.forEach((qty) => {
-            const id = `quantity-${qty}`;
-            const div = document.createElement('div');
-            div.className = 'form-check form-check-inline';
-            div.innerHTML = `
-                            <input 
-                                class="form-check-input qty-radio" 
-                                type="radio" name="quantity" id="${id}" 
-                                value="${qty}"
-                            >
-                            <label class="form-check-label" for="${id}">
-                                ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
-                            </label>
-                        `;
-            secondRowDiv.appendChild(div);
+        // no _applyRadioLayout() and no qw-grid here
+        requestAnimationFrame(() => {
+        window.parent.postMessage({ type: 'resize', height: this.getHeight() + 30 }, '*');
         });
 
-        // Append rows to container
-        qtyContainer.appendChild(firstRowDiv);
-        qtyContainer.appendChild(secondRowDiv);
+        // after render, make layout responsive to actual container width (Safari-safe)
+        // this._applyRadioLayout(qtyContainer);
 
+        // recalc iframe height
+        requestAnimationFrame(() => {
+        window.parent.postMessage({ type: 'resize', height: this.getHeight() + 30 }, '*');
+        });
 
-        // ——— build week-options ———
+        // // ——— build week-options ———
+        // const weekCard = document.getElementById('week-card');
+        // const weekContainer = document.getElementById('weekRadios');
+        // weekContainer.innerHTML = '';
+
+        // const weekEntries = Object.entries(weekOptions);
+
+        // if (weekEntries.length === 1) {
+        //     // Only one option: hide the card, inject hidden input
+        //     weekCard.style.display = 'none';
+        //     const [draws] = weekEntries[0];
+        //     weekContainer.innerHTML = `<input type="hidden" name="draws" value="${draws}">`;
+        // } else {
+        //     // Multiple options: show the card and build radios as normal
+        //     weekCard.style.display = '';
+        //     weekEntries.forEach(([draws, label], i) => {
+        //         const id = `draws-${draws}`;
+        //         const div = document.createElement('div');
+        //         div.className = 'form-check form-check-inline';
+        //         div.innerHTML = `
+        // <input 
+        //     class="form-check-input week-radio" 
+        //     type="radio" name="draws" id="${id}" 
+        //     value="${draws}" ${i === 0 ? 'checked' : ''}
+        // >
+        // <label class="form-check-label" for="${id}">
+        //     ${label}
+        // </label>
+        // `;
+        //         weekContainer.appendChild(div);
+        //     });
+        // }
+
+        // WEEK radios
         const weekCard = document.getElementById('week-card');
         const weekContainer = document.getElementById('weekRadios');
         weekContainer.innerHTML = '';
@@ -1614,29 +1824,36 @@ const TicketWidget = {
         const weekEntries = Object.entries(weekOptions);
 
         if (weekEntries.length === 1) {
-            // Only one option: hide the card, inject hidden input
-            weekCard.style.display = 'none';
-            const [draws] = weekEntries[0];
-            weekContainer.innerHTML = `<input type="hidden" name="draws" value="${draws}">`;
+        weekCard.style.display = 'none';
+        const [draws] = weekEntries[0];
+        weekContainer.innerHTML = `<input type="hidden" name="draws" value="${draws}">`;
         } else {
-            // Multiple options: show the card and build radios as normal
-            weekCard.style.display = '';
-            weekEntries.forEach(([draws, label], i) => {
+        weekCard.style.display = '';
+        const weekRow = document.createElement('div');
+        weekRow.className = 'radios-row';         // <- single inner row
+        weekContainer.appendChild(weekRow);
+
+        weekEntries.forEach(([draws, label], i) => {
                 const id = `draws-${draws}`;
                 const div = document.createElement('div');
-                div.className = 'form-check form-check-inline';
+                div.className = 'form-check';
                 div.innerHTML = `
-        <input 
-            class="form-check-input week-radio" 
-            type="radio" name="draws" id="${id}" 
-            value="${draws}" ${i === 0 ? 'checked' : ''}
-        >
-        <label class="form-check-label" for="${id}">
-            ${label}
-        </label>
-        `;
-                weekContainer.appendChild(div);
+                <input class="form-check-input week-radio" type="radio" name="draws" id="${id}"
+                        value="${draws}" ${i === 0 ? 'checked' : ''}>
+                <label class="form-check-label" for="${id}">${label}</label>
+                `;
+                weekRow.appendChild(div);
             });
+        }
+
+        toggleScrollableIfNeeded(qtyContainer);
+
+        toggleScrollableIfNeeded(weekContainer);
+
+        // once per render call, ensure resize listener is set
+        if (!this._scrollRecalcBound) {
+        wireRecalcOnResize([qtyContainer, weekContainer]);
+        this._scrollRecalcBound = true;
         }
 
         // ——— cost calculator & disabling ———
