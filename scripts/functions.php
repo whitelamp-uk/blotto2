@@ -6974,7 +6974,7 @@ function www_signup_dates ($org,&$e) {
 
 function www_signup_next_superdraw ($on_or_after) { // take and return Y-m-d
     $c = connect ();
-    $sdsql = "SELECT `expires` FROM `blotto_prize` AS `p` WHERE `p`.`level` = 1 AND `p`.`expires` >= '".$today."' ORDER BY `p`.`expires` LIMIT 0,1";
+    $sdsql = "SELECT `expires` FROM `blotto_prize` AS `p` WHERE `p`.`level` = 1 AND `p`.`expires` >= '".$on_or_after."' ORDER BY `p`.`expires` LIMIT 0,1";
     $sdrow = $c->query($sdsql);
     return ($sdrow->fetch_column());
 }
