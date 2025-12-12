@@ -40,11 +40,9 @@ profits ();
     only unlink org-profits-Y-m-d (etc) except for quarterly calculations.
 */
 
-
 $files = glob(BLOTTO_TMP_DIR.'/'.BLOTTO_ORG_USER.'-*.json');
 foreach ($files as $file) {
   $fileparts = explode('-',$file,3);
-  // if paranoid then check 
   if (DateTime::createFromFormat('Y-m-d',substr($fileparts[2],0,10))) { // check first part of expected date(s) is a date
     switch ($fileparts[1]) {
       case 'calculate':
@@ -58,16 +56,14 @@ foreach ($files as $file) {
              ($from == '07-01' && $to == '09-30') ||
              ($from == '10-01' && $to == '12-31')
              ) {
-          echo "skip $file\n";
+          //echo "skip $file\n";
           break;
         }
-      case 'profits':
-        echo 'unlink '.$file."\n";
+      case 'profits': // NB drop through from above
+        unlink ($file);
     }
   }
 }
-
-exit; // temporary
 
 echo "    Caching default data by running profits() ... ";
 $t0 = time (); profits (true); // argument=true puts timing diagnostic in the error log
