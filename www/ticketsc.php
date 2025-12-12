@@ -530,7 +530,7 @@ $contact_phone = org()['admin_phone'];
                                                 'contactPhone'    => $contact_phone,
                                             ]); ?>;
         </script>
-        <script defer src="./ticketsc/ticketsc.js"></script>
+        <script defer src="./ticketsc/ticketsc.js?v=20251212"></script>
     <?php elseif ($step == 2): ?>
         <!-- payment form ONLY -->
         <?php

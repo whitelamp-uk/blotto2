@@ -1620,13 +1620,35 @@ const TicketWidget = {
             nextDrawDate,
         } = this.options;
 
+        // Scope for DOM writes (avoid duplicate IDs across cloned panels)
+        const scope = document.querySelector('.step-content.active') || document;
+
+        // Save previous selections (prefer active step, fallback to whole form)
+        const form = document.getElementById('embedForm') || document;
+
+        const prevQty =
+            (scope.querySelector('input[name="quantity"]:checked') ||
+                form.querySelector('input[name="quantity"]:checked'))?.value ?? null;
+
+        const prevDraws =
+            (scope.querySelector('input[name="draws"]:checked') ||
+                scope.querySelector('input[name="draws"]') ||
+                form.querySelector('input[name="draws"]:checked') ||
+                form.querySelector('input[name="draws"]'))?.value ?? null;
+
+        // Containers (these IDs exist in the ticket panel that includes the radios)
+        const qtyContainer = scope.querySelector('#quantityRadios');
+        const weekCard = scope.querySelector('#week-card');
+        const weekContainer = scope.querySelector('#weekRadios');
+
+
+        if (!qtyContainer || !weekContainer) return;
+
         function toggleScrollableIfNeeded(container) {
-        if (!container) return;
-            // reset first
+            if (!container) return;
             container.classList.remove('is-scrollable');
-            // give the browser a tick to layout
             requestAnimationFrame(() => {
-                const needScroll = container.scrollWidth > container.clientWidth + 1; // +1 for fractional layout
+                const needScroll = container.scrollWidth > container.clientWidth + 1;
                 if (needScroll) container.classList.add('is-scrollable');
             });
         }
@@ -1639,279 +1661,194 @@ const TicketWidget = {
             });
         }
 
-        // ——— static labels ———
-        document.getElementById('next-draw-date').textContent = nextDrawDate;
-        document.getElementById('price-per-draw').textContent = parseFloat(pricePerDraw).toFixed(2);
-        document.getElementById('max-purchase').textContent = maxPurchase;
+        // Static labels
+        const nd = scope.querySelector('#next-draw-date');
+        const ppd = scope.querySelector('#price-per-draw');
+        const mp = scope.querySelector('#max-purchase');
+
+        if (nd) nd.textContent = nextDrawDate;
+        if (ppd) ppd.textContent = parseFloat(pricePerDraw).toFixed(2);
+        if (mp) mp.textContent = maxPurchase;
 
         const displayQuantities = reverse ? [...quantities].reverse() : quantities;
 
-        // // ——— build quantities in two rows ———
-        // const qtyContainer = document.getElementById('quantityRadios');
-        // qtyContainer.innerHTML = '';
-
-        // const half = Math.ceil(displayQuantities.length / 2);
-        // const firstRowQuantities = displayQuantities.slice(0, half);
-        // const secondRowQuantities = displayQuantities.slice(half);
-
-        // // Create first row container
-        // const firstRowDiv = document.createElement('div');
-        // firstRowDiv.className = 'd-flex flex-wrap gap-3 mb-2';
-
-        // firstRowQuantities.forEach((qty, i) => {
-        //     const id = `quantity-${qty}`;
-        //     const div = document.createElement('div');
-        //     div.className = 'form-check form-check-inline';
-        //     div.innerHTML = `
-        //                     <input 
-        //                         class="form-check-input qty-radio" 
-        //                         type="radio" name="quantity" id="${id}" 
-        //                         value="${qty}" ${i === 0 ? 'checked' : ''}
-        //                     >
-        //                     <label class="form-check-label" for="${id}">
-        //                         ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
-        //                     </label>
-        //                 `;
-        //     firstRowDiv.appendChild(div);
-        // });
-
-        // // Create second row container
-        // const secondRowDiv = document.createElement('div');
-        // secondRowDiv.className = 'd-flex flex-wrap gap-3';
-
-        // secondRowQuantities.forEach((qty) => {
-        //     const id = `quantity-${qty}`;
-        //     const div = document.createElement('div');
-        //     div.className = 'form-check form-check-inline';
-        //     div.innerHTML = `
-        //                     <input 
-        //                         class="form-check-input qty-radio" 
-        //                         type="radio" name="quantity" id="${id}" 
-        //                         value="${qty}"
-        //                     >
-        //                     <label class="form-check-label" for="${id}">
-        //                         ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
-        //                     </label>
-        //                 `;
-        //     secondRowDiv.appendChild(div);
-        // });
-
-        // // Append rows to container
-        // qtyContainer.appendChild(firstRowDiv);
-        // qtyContainer.appendChild(secondRowDiv);
-
-        // ——— build quantities in two rows (three if mobile) ———
-        // const qtyContainer = document.getElementById('quantityRadios');
-        // qtyContainer.innerHTML = '';
-
-        // let chunks;
-        // if (window.innerWidth <= 600) {
-        // // Mobile: split into three roughly equal chunks
-        // const third = Math.ceil(displayQuantities.length / 3);
-        // chunks = [
-        //     displayQuantities.slice(0, third),
-        //     displayQuantities.slice(third, third * 2),
-        //     displayQuantities.slice(third * 2)
-        // ];
-        // } else {
-        // // Desktop: split into two
-        // const half = Math.ceil(displayQuantities.length / 2);
-        // chunks = [
-        //     displayQuantities.slice(0, half),
-        //     displayQuantities.slice(half)
-        // ];
-        // }
-
-        // // Create row containers dynamically
-        // chunks.forEach((group, rowIndex) => {
-        // const rowDiv = document.createElement('div');
-        // rowDiv.className = 'd-flex flex-wrap gap-3' + (rowIndex === 0 ? ' mb-2' : '');
-
-        // group.forEach((qty, i) => {
-        //     const id = `quantity-${qty}`;
-        //     const div = document.createElement('div');
-        //     div.className = 'form-check form-check-inline';
-        //     div.innerHTML = `
-        //     <input 
-        //         class="form-check-input qty-radio" 
-        //         type="radio" name="quantity" id="${id}" 
-        //         value="${qty}" ${(rowIndex === 0 && i === 0) ? 'checked' : ''}
-        //     >
-        //     <label class="form-check-label" for="${id}">
-        //         ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
-        //     </label>
-        //     `;
-        //     rowDiv.appendChild(div);
-        // });
-
-        // qtyContainer.appendChild(rowDiv);
-        // });
-
-        // ——— build quantities as ONE wrapping list (Safari friendly) ———
-        // QUANTITY radios (one list)
-        const qtyContainer = document.getElementById('quantityRadios');
+        // Build QUANTITY radios (single wrapping row)
         qtyContainer.innerHTML = '';
-
-        const row = document.createElement('div');
-        row.className = 'radios-row';
-        qtyContainer.appendChild(row);
+        const qtyRow = document.createElement('div');
+        qtyRow.className = 'radios-row';
+        qtyContainer.appendChild(qtyRow);
 
         displayQuantities.forEach((qty, i) => {
             const id = `quantity-${qty}`;
             const div = document.createElement('div');
             div.className = 'form-check';
+            div.setAttribute('data-role', 'qty-item');
             div.innerHTML = `
-                <input class="form-check-input qty-radio" type="radio" name="quantity" id="${id}"
-                    value="${qty}" ${i === 0 ? 'checked' : ''}>
-                <label class="form-check-label" for="${id}">
-                ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
-                </label>
-            `;
-            row.appendChild(div);
+      <input class="form-check-input qty-radio" type="radio" name="quantity" id="${id}"
+             value="${qty}" ${i === 0 ? 'checked' : ''}>
+      <label class="form-check-label" for="${id}">
+        ${qty} ${qty === 1 ? 'ticket' : 'tickets'}
+      </label>
+    `;
+            qtyRow.appendChild(div);
         });
 
-        // no _applyRadioLayout() and no qw-grid here
-        requestAnimationFrame(() => {
-        window.parent.postMessage({ type: 'resize', height: this.getHeight() + 30 }, '*');
-        });
-
-        // after render, make layout responsive to actual container width (Safari-safe)
-        // this._applyRadioLayout(qtyContainer);
-
-        // recalc iframe height
-        requestAnimationFrame(() => {
-        window.parent.postMessage({ type: 'resize', height: this.getHeight() + 30 }, '*');
-        });
-
-        // // ——— build week-options ———
-        // const weekCard = document.getElementById('week-card');
-        // const weekContainer = document.getElementById('weekRadios');
-        // weekContainer.innerHTML = '';
-
-        // const weekEntries = Object.entries(weekOptions);
-
-        // if (weekEntries.length === 1) {
-        //     // Only one option: hide the card, inject hidden input
-        //     weekCard.style.display = 'none';
-        //     const [draws] = weekEntries[0];
-        //     weekContainer.innerHTML = `<input type="hidden" name="draws" value="${draws}">`;
-        // } else {
-        //     // Multiple options: show the card and build radios as normal
-        //     weekCard.style.display = '';
-        //     weekEntries.forEach(([draws, label], i) => {
-        //         const id = `draws-${draws}`;
-        //         const div = document.createElement('div');
-        //         div.className = 'form-check form-check-inline';
-        //         div.innerHTML = `
-        // <input 
-        //     class="form-check-input week-radio" 
-        //     type="radio" name="draws" id="${id}" 
-        //     value="${draws}" ${i === 0 ? 'checked' : ''}
-        // >
-        // <label class="form-check-label" for="${id}">
-        //     ${label}
-        // </label>
-        // `;
-        //         weekContainer.appendChild(div);
-        //     });
-        // }
-
-        // WEEK radios
-        const weekCard = document.getElementById('week-card');
-        const weekContainer = document.getElementById('weekRadios');
+        // Build WEEK radios (or hidden input if only one option)
         weekContainer.innerHTML = '';
-
         const weekEntries = Object.entries(weekOptions);
 
         if (weekEntries.length === 1) {
-        weekCard.style.display = 'none';
-        const [draws] = weekEntries[0];
-        weekContainer.innerHTML = `<input type="hidden" name="draws" value="${draws}">`;
+            if (weekCard) weekCard.style.display = 'none';
+            const [draws] = weekEntries[0];
+            weekContainer.innerHTML = `<input type="hidden" name="draws" value="${draws}">`;
         } else {
-        weekCard.style.display = '';
-        const weekRow = document.createElement('div');
-        weekRow.className = 'radios-row';         // <- single inner row
-        weekContainer.appendChild(weekRow);
+            if (weekCard) weekCard.style.display = '';
+            const weekRow = document.createElement('div');
+            weekRow.className = 'radios-row';
+            weekContainer.appendChild(weekRow);
 
-        weekEntries.forEach(([draws, label], i) => {
+            weekEntries.forEach(([draws, label], i) => {
                 const id = `draws-${draws}`;
                 const div = document.createElement('div');
                 div.className = 'form-check';
+                div.setAttribute('data-role', 'week-item');
                 div.innerHTML = `
-                <input class="form-check-input week-radio" type="radio" name="draws" id="${id}"
-                        value="${draws}" ${i === 0 ? 'checked' : ''}>
-                <label class="form-check-label" for="${id}">${label}</label>
-                `;
+        <input class="form-check-input week-radio" type="radio" name="draws" id="${id}"
+               value="${draws}" ${i === 0 ? 'checked' : ''}>
+        <label class="form-check-label" for="${id}">${label}</label>
+      `;
                 weekRow.appendChild(div);
             });
         }
 
-        toggleScrollableIfNeeded(qtyContainer);
-
-        toggleScrollableIfNeeded(weekContainer);
-
-        // once per render call, ensure resize listener is set
-        if (!this._scrollRecalcBound) {
-        wireRecalcOnResize([qtyContainer, weekContainer]);
-        this._scrollRecalcBound = true;
+        // Restore previous selections (if any)
+        if (prevQty) {
+            const el =
+                scope.querySelector(`input[name="quantity"][value="${CSS.escape(prevQty)}"]`) ||
+                form.querySelector(`input[name="quantity"][value="${CSS.escape(prevQty)}"]`);
+            if (el) el.checked = true;
         }
 
-        // ——— cost calculator & disabling ———
-        const costEl = document.getElementById('total-cost');
-        const costEl2 = document.getElementById('total-cost2');
-        const qtyRadios = document.querySelectorAll('.qty-radio');
-        const weekRadios = document.querySelectorAll('.week-radio');
-
-        function updateTotalCost() {
-            const q = +document.querySelector('input[name=quantity]:checked').value;
-            // If weekRadios is empty (single week), get from hidden input
-            const drawsInput = document.querySelector('input[name=draws]:checked') || document.querySelector('input[name=draws]');
-            const d = +drawsInput.value;
-            const total = q * pricePerDraw * d;
-            costEl.textContent = total.toFixed(2);
-            costEl2.textContent = total.toFixed(2);
-        }
-
-        function enforceMax() {
-            const selQty = +document.querySelector('input[name=quantity]:checked').value;
-            // If weekRadios is empty, get from hidden input
-            const drawsInput = document.querySelector('input[name=draws]:checked') || document.querySelector('input[name=draws]');
-            const selDraws = +drawsInput.value;
-
-            qtyRadios.forEach(input => {
-                const q = +input.value;
-                input.disabled = q * selDraws * pricePerDraw > maxPurchase;
-                if (input.checked && input.disabled) input.checked = false;
-            });
-
-            // Only try to enforce week radios if there is more than one
-            if (weekRadios.length > 0) {
-                weekRadios.forEach(input => {
-                    const d = +input.value;
-                    input.disabled = selQty * d * pricePerDraw > maxPurchase;
-                    if (input.checked && input.disabled) input.checked = false;
-                });
-
-                // ensure at least one in each group is selected
-                if (![...qtyRadios].some(i => i.checked)) qtyRadios[0].checked = true;
-                if (![...weekRadios].some(i => i.checked)) weekRadios[0].checked = true;
-            } else {
-                // Only qty radios to check
-                if (![...qtyRadios].some(i => i.checked)) qtyRadios[0].checked = true;
+        if (prevDraws) {
+            const drawsEl =
+                scope.querySelector(`input[name="draws"][value="${CSS.escape(prevDraws)}"]`) ||
+                scope.querySelector('input[name="draws"]') ||
+                form.querySelector(`input[name="draws"][value="${CSS.escape(prevDraws)}"]`) ||
+                form.querySelector('input[name="draws"]');
+            if (drawsEl) {
+                if (drawsEl.type === 'radio') drawsEl.checked = true;
+                else drawsEl.value = prevDraws;
             }
         }
 
-        // wire up listeners
-        [...qtyRadios, ...weekRadios].forEach(el => {
+        toggleScrollableIfNeeded(qtyContainer);
+        toggleScrollableIfNeeded(weekContainer);
+
+        if (!this._scrollRecalcBound) {
+            wireRecalcOnResize([qtyContainer, weekContainer]);
+            this._scrollRecalcBound = true;
+        }
+
+        // Total elements (may appear in multiple panels; update all that exist)
+        // Total elements (may appear in multiple panels; update all that exist)
+        const costEls = form.querySelectorAll('#total-cost, #total-cost2');
+
+        // Ensure numeric
+        const price = parseFloat(pricePerDraw) || 0;
+
+        function updateTotalCost() {
+            const q = getSelectedQty();
+            const d = getSelectedDraws();
+            const total = q * price * d;
+            costEls.forEach((el) => (el.textContent = total.toFixed(2)));
+        }
+
+        // Always compute selection from the whole form (so “Complete” step still shows correct total)
+        function getSelectedQty() {
+            return +(
+                (scope.querySelector('input[name="quantity"]:checked') ||
+                    form.querySelector('input[name="quantity"]:checked'))?.value || 0
+            );
+        }
+
+        function getSelectedDraws() {
+            const drawsEl =
+                scope.querySelector('input[name="draws"]:checked') ||
+                scope.querySelector('input[name="draws"]') ||
+                form.querySelector('input[name="draws"]:checked') ||
+                form.querySelector('input[name="draws"]');
+            return +(drawsEl?.value || 0);
+        }
+
+        function updateTotalCost() {
+            const q = getSelectedQty();
+            const d = getSelectedDraws();
+            const total = q * pricePerDraw * d;
+            costEls.forEach((el) => (el.textContent = total.toFixed(2)));
+        }
+
+        // Bind to current rendered radios (these live in the ticket step)
+        const qtyRadios = scope.querySelectorAll('.qty-radio');
+        const weekRadios = scope.querySelectorAll('.week-radio');
+
+        function enforceMax() {
+            const selQty = getSelectedQty();
+            const selDraws = getSelectedDraws();
+
+            // Ensure numeric price for comparisons
+            const price = parseFloat(pricePerDraw) || 0;
+
+            // Disable qty radios that would exceed max (given current draws)
+            qtyRadios.forEach((input) => {
+                const q = +input.value;
+                input.disabled = (q * selDraws * price) > maxPurchase;
+                if (input.checked && input.disabled) input.checked = false;
+            });
+
+            if (weekRadios.length > 0) {
+                // Disable week radios that would exceed max (given current qty)
+                weekRadios.forEach((input) => {
+                    const d = +input.value;
+                    input.disabled = (selQty * d * price) > maxPurchase;
+                    if (input.checked && input.disabled) input.checked = false;
+                });
+
+                // If nothing checked (because we disabled the chosen one), pick first enabled
+                if (![...qtyRadios].some((i) => i.checked)) {
+                    const firstEnabledQty = [...qtyRadios].find((i) => !i.disabled);
+                    if (firstEnabledQty) firstEnabledQty.checked = true;
+                }
+
+                if (![...weekRadios].some((i) => i.checked)) {
+                    const firstEnabledWeek = [...weekRadios].find((i) => !i.disabled);
+                    if (firstEnabledWeek) firstEnabledWeek.checked = true;
+                }
+            } else {
+                // Hidden draws input case: just ensure we have some qty selected
+                if (![...qtyRadios].some((i) => i.checked)) {
+                    const firstEnabledQty = [...qtyRadios].find((i) => !i.disabled);
+                    if (firstEnabledQty) firstEnabledQty.checked = true;
+                }
+            }
+        }
+
+        [...qtyRadios, ...weekRadios].forEach((el) => {
             el.addEventListener('change', () => {
                 enforceMax();
                 updateTotalCost();
             });
         });
 
-        // initial pass
         enforceMax();
         updateTotalCost();
+
+        // Resize after render
+        requestAnimationFrame(() => {
+            window.parent.postMessage(
+                { type: 'resize', height: this.getHeight() + 30 },
+                '*'
+            );
+        });
     },
 
 };
@@ -2093,4 +2030,4 @@ document.addEventListener('DOMContentLoaded', async function () {
         TicketWidget.init(config);
 
     });
-}, 200);
+});

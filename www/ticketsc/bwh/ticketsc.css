@@ -604,6 +604,7 @@ body, #payment-form, #payment-form fieldset {
     overflow-x: hidden;
 }
 
+
 /* labels stay multi-line */
 #quantityRadios .form-check-label,
 #weekRadios .form-check-label {
