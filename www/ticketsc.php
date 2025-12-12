@@ -461,6 +461,8 @@ if (empty($_GET['d']) || $_GET['d'] == 'next_superdraw' || $_GET['d'] < $today) 
 $nextdd = new \DateTime ($nextDrawDateRaw);
 $nextDrawDateFormatted = $nextdd->format ('l jS F Y');
 
+//$nextDrawDateFormatted = date("l jS F Y", strtotime($nextDrawDateRaw));
+
 // custom terms message
 $custom_terms_message = '';
 if ($clientCode === 'bwh') {
