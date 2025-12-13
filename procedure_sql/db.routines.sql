@@ -3043,17 +3043,17 @@ BEGIN
   ;
 END$$
 
-SELECT m.`MandateCreated`, m.`Name`, m.`Status`, m.`Updated`, m.`ClientRef`, m.`MandateId`
-, GROUP_CONCAT(c.title, ' ',c.name_first,' ',c.name_last ORDER by c.id desc limit 1) as contact
-, DATEDIFF(m.`Updated`, m.`MandateCreated`) as dd
-FROM `paysuite_mandate` m
-LEFT JOIN blotto_supporter s on s.client_ref = m.ClientRef
-LEFT JOIN blotto_contact c on c.supporter_id = s.id
-WHERE m.`MandateCreated` < '2025-12-01' AND m.`Status` = 'Active'
-group by m.ClientRef
-having dd > 14
-ORDER BY `Updated` DESC
-LIMIT 100
+-- SELECT m.`MandateCreated`, m.`Name`, m.`Status`, m.`Updated`, m.`ClientRef`, m.`MandateId`
+-- , GROUP_CONCAT(c.title, ' ',c.name_first,' ',c.name_last ORDER by c.id desc limit 1) as contact
+-- , DATEDIFF(m.`Updated`, m.`MandateCreated`) as dd
+-- FROM `paysuite_mandate` m
+-- LEFT JOIN blotto_supporter s on s.client_ref = m.ClientRef
+-- LEFT JOIN blotto_contact c on c.supporter_id = s.id
+-- WHERE m.`MandateCreated` < '2025-12-01' AND m.`Status` = 'Active'
+-- group by m.ClientRef
+-- having dd > 14
+-- ORDER BY `Updated` DESC
+-- LIMIT 100
 
 
 -- draft winnersThisWeek.
