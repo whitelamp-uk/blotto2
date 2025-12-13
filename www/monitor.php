@@ -55,7 +55,9 @@ $report['Build Summary']['Started at'] = $ms[1][0].'-'.$ms[1][1].'-'.$ms[1][2].'
 $report['Build Summary']['Still running'] = true;
 $report['Build Summary']['Run time'] = null;
 $report['Build Summary']['Ended at'] = null;
-exec ('grep '.escapeshellarg('Script run time').' '.escapeshellarg($report['Build Summary']['Cumulative log']).' | tail -1',$rtn);
+$cmd = "awk -v RS='----\n' 'END{printf \"%s\", \$0}'  ".escapeshellarg($report['Build Summary']['Cumulative log'])." | grep 'Script run time'";
+//error_log ($cmd);
+exec ($cmd,$rtn);
 if (array_key_exists(0,$rtn)) {
     $report['Build Summary']['Still running'] = null;
     $dt = new \DateTime ($report['Build Summary']['Started at']);
