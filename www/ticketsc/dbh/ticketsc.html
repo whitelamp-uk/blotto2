@@ -1,0 +1,463 @@
+<div class="ticket-widget-wrapper">
+    <!-- Generic Top Step Containers -->
+    <div class="stepper" id="stepper"></div>
+
+    <section class="signup">
+    </section>
+
+    <!-- Multi-step Form -->
+    <form class="signup" id="embedForm" method="POST">
+        <input type="hidden" id="collection_date" name="collection_date" value="">
+        <input type="hidden" name="api_code" value="CDNT">
+        <input type="hidden" name="useTicketsc" value="true">
+        <input type="hidden" name="CDNT" value="1">
+
+
+        <!-- <input type="hidden" id="nonce_mobile" name="nonce_mobile" value="<?php echo nonce('mobile'); ?>">
+        <input type="hidden" id="nonce_email" name="nonce_email" value="<?php echo nonce('email'); ?>">
+        <input type="hidden" id="nonce_signup" name="nonce_signup" value="<php echo htmlspecialchars(nonce_get('signup')); ?>"> -->
+
+        <div id="steps-container">
+
+            <!-- Step 0: About You -->
+            <div class="step-content" data-step-content="0">
+                <div class="card">
+                    <div class="card-header">About You</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="title" class="form-label">Title<span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" name="title" required>
+                                        <option value="">Title:</option>
+                                        <option value="Mrs">Mrs</option>
+                                        <option value="Mr">Mr</option>
+                                        <option value="Miss">Miss</option>
+                                        <option value="Ms">Ms</option>
+                                        <option value="Mx">Mx</option>
+                                        <option value="Dr">Dr</option>
+                                        <option value="Prof">Prof</option>
+                                        <option value="Rev">Rev</option>
+                                        <option value="Sir">Sir</option>
+                                        <option value="Dame">Dame</option>
+                                        <option value="Lady">Lady</option>
+                                    </select>
+
+
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="name_first" class="form-label">First Name<span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name_first" name="name_first"
+                                        placeholder="First name" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="name_last" class="form-label">Last Name<span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name_last" name="name_last"
+                                        placeholder="Last name" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="dob" class="form-label">
+                                        Date of Birth <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="dob" name="dob" placeholder="DD-MM-YYYY"
+                                        required autocomplete="off">
+                                    <div id="dob-error" class="text-danger mt-1 small" style="display: none;"></div>
+                                </div>
+                            </div>
+
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="step-nav">
+                    <button type="button" class="btn" id="nextBtn0">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 1: Contact & Address -->
+            <div class="step-content" data-step-content="1">
+                <div class="card">
+                    <div class="card-header">Contact Details</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <div class="row">
+                                <!-- Email -->
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email<span
+                                            class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                        placeholder="Email address" required>
+                                </div>
+
+                                <!-- Landline -->
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="telephone" class="form-label">Landline Number</label>
+                                    <input type="tel" class="form-control" id="telephone" name="telephone"
+                                        autocomplete="tel‐local" placeholder="Landline number"
+                                        pattern="^(\+?(\d{2}|\d{3}))?[\d\s]{7,12}$">
+                                    <div id="noticeLandline" class="error-message text-danger"></div>
+                                </div>
+
+                                <!-- Mobile -->
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="mobile" class="form-label">Mobile Number<span
+                                            class="text-danger">*</span></label>
+                                    <input maxlength="15" class="form-control" id="mobile" name="mobile"
+                                        autocomplete="tel" placeholder="Mobile number" required>
+                                    <div id="noticeMobile" class="error-message text-danger"></div>
+                                </div>
+
+                                <!-- SMS Code -->
+                                <div class="col-12 col-md-6 mb-3">
+                                    <label for="smsCode" class="form-label">Verify Mobile</label>
+                                    <div class="input-group flex-nowrap">
+                                        <button class="btn btn-outline-secondary btn-sm" name="verify_button_mobile"
+                                            data-verifytype="mobile" type="button" id="verify_button_mobile">
+                                            Send SMS
+                                        </button>
+                                        <input type="text" id="mobile_verify" name="mobile_verify"
+                                            placeholder="Verify code" title="Mobile verification code" required
+                                            class="eager" />
+                                    </div>
+                                </div>
+                                <div id="noticeMobileVerify" class="error-message text-danger mt-1"
+                                    style="display:none;"></div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Address</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label for="postcode" class="form-label">
+                                        Postcode <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="postcode" name="postcode"
+                                            placeholder="Postcode" required>
+                                        <button type="button" class="btn btn-outline-primary" id="findAddressBtn">
+                                            Find
+                                        </button>
+                                    </div>
+
+                                </div>
+                                <div class="col-12">
+                                    <div id="noticePostcode" class="form-text text-danger"></div>
+                                </div>
+                            </div>
+
+                            <div class="row" id="addressSelection" style="display: none;">
+                                <div class="col-md-12 mb-3">
+                                    <label for="address_1" class="form-label">Select Address<span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" id="addressDropdown"></select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="address_1" class="form-label">Address Line 1<span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="address_1" name="address_1"
+                                        placeholder="Address line 1" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="address_2" class="form-label">Address Line 2</label>
+                                    <input type="text" class="form-control" id="address_2" name="address_2"
+                                        placeholder="Address line 2">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="address_3" class="form-label">Address Line 3</label>
+                                        <input type="text" class="form-control" id="address_3" name="address_3"
+                                            placeholder="Address line 3">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="town" class="form-label">Town/City<span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="town" name="town"
+                                        placeholder="Town/City" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="county" class="form-label">County</label>
+                                    <input type="text" class="form-control" id="county" name="county"
+                                        placeholder="County">
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="step-nav">
+                    <button type="button" class="btn" id="prevBtn1">Previous</button>
+                    <button type="button" class="btn" id="nextBtn1">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Ticket & Requirements -->
+            <div class="step-content" data-step-content="2">
+                <div class="card mb-3">
+                    <div class="card-header">Ticket requirements</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <legend class="fw-bold">
+                                Purchase tickets to start playing in the draw on
+                                <span id="next-draw-date"></span>
+                            </legend>
+
+                            <p class="mb-3">
+                                Tickets cost <strong>£<span id="price-per-draw"></span></strong> per draw,
+                                maximum allowed purchase is <strong>£<span id="max-purchase"></span></strong>
+                            </p>
+
+                            <!-- empty container for quantities -->
+                            <div class="mb-3">
+                                <label class="form-label">How many tickets?</label>
+                                <div id="quantityRadios" class="scroll-radios"></div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <div class="card mb-3" id="week-card">
+                    <div class="card-header">Number of weekly draws</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <!-- empty container for week-length radios -->
+                            <div id="weekRadios" class="scroll-radios"></div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <div class="d-grid mb-4">
+                    <button type="button" class="btn btn-outline-primary" id="signup-cost">
+                        £<span id="total-cost2">0.00</span>
+                    </button>
+                </div>
+
+                <div class="step-nav">
+                    <button type="button" class="btn btn-secondary" id="prevBtn2">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn2">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 3 content: Contact prefs, GDPR statement, confirmations -->
+            <div class="step-content" data-step-content="3">
+                <!-- Contact (optional) preferences -->
+                <div class="card mb-3">
+                    <div class="card-header">Contact preferences</div>
+                    <div class="card-body">
+                        <p>We will keep in touch by post or phone so that we can tell you about the great things that
+                            supporters like you are doing for our hospitals, and to update you on our campaigns, latest
+                            news and fundraising activities. You can change the way you hear from us at any time.</p>
+                        <fieldset>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="pref-email" name="pref_email">
+                                <label class="form-check-label" for="pref-email">Please keep me up to date by
+                                    email</label>
+                            </div>
+                            <!-- <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="pref-sms" name="pref_sms">
+                                        <label class="form-check-label" for="pref-sms">SMS</label>
+                                    </div> -->
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="pref-post" name="pref_post">
+                                <label class="form-check-label" for="pref-post">Please do not keep me up to date by
+                                    post</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="pref-telephone"
+                                    name="pref_phone"">
+                                <label class="form-check-label" for="pref-telephone">Please do not keep me up to date by
+                                    phone</label>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="card mb-3">
+                    <div class="card-header">Status</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="status-nhs" name="pref_1">
+                                <label class="form-check-label" for="status-nhs">Are you an NHS employee?</label>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- GDPR Statement -->
+                <div class="card mb-3">
+                    <div class="card-header">Protecting your data</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <h3 class="h3-title">GDPR Statement</h3>
+                            <div id="gdprStatementContainer">
+                                <p>
+                                    placeholder...
+                                </p>
+
+                                <p>We will never sell your details on to anyone else.</p>
+                            </div>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="gdpr" name="gdpr" required>
+                                <label class="form-check-label" for="gdpr">
+                                    I have read and understood the above.<span class="text-danger">*</span>
+                                </label>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- Final confirmations -->
+                <div class="card mb-3">
+                    <div class="card-header">Please confirm</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                                <!-- <label class="form-check-label" for="terms">
+                                            I accept the <a href="#" target="_blank">terms &amp; conditions</a> and <a href="#" :target="_blank">privacy policy</a>.<span class="text-danger">*</span>
+                                        </label> -->
+                                <label class="form-check-label" for="terms" id="terms-label">
+                                    I accept the <a href="#" target="_blank">terms &amp; conditions</a> and
+                                    <a href="#" target="_blank">privacy policy</a>.<span class="text-danger">*</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="age" name="age" required>
+                                <label class="form-check-label" for="age">
+                                    I confirm that I am aged 18 or over.<span class="text-danger">*</span>
+                                </label>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- navigation buttons -->
+                <div class="step-nav">
+                    <button type="button" class="btn btn-secondary" id="prevBtn3">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn3">Next</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Payment & Complete -->
+            <div class="step-content" data-step-content="4">
+
+                <!-- Problems with Gambling -->
+                <div class="card mb-3">
+                    <div class="card-header">Problems with gambling?</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <div class="row mb-3 text-center">
+                                <div
+                                    class="col d-flex justify-content-around align-items-center flex-wrap gap-3 logo-row">
+                                    <a target="_top" href="https://www.gamcare.org.uk/">
+                                        <img src="https://flame.thefundraisingfoundry.com/storage/gam_care.webp"
+                                            alt="GamCare" height="70">
+                                    </a>
+                                    <a target="_top" href="https://www.begambleaware.org/">
+                                        <img src="https://flame.thefundraisingfoundry.com/storage/GambleAware-opt.svg"
+                                            alt="Be Gamble Aware" height="32">
+                                    </a>
+                                    <a target="_top" href="https://www.gamblingcommission.gov.uk/">
+                                        <img src="https://flame.thefundraisingfoundry.com/storage/gambling_commission.svg"
+                                            alt="Gambling Commission" height="32">
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <p>For GamCare telephone <strong>0808 8020 133</strong>.</p>
+                                    <p id="selfExclusionPara">
+                                        To self-exclude, please email:
+                                        <a href="mailto:selfexclusion@thefundraisingfoundry.com">
+                                            SelfExclusionBWH@TheFundraisingFoundry.com
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="card mb-3" id="paymentCard">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span>Select payment method to pay</span>
+                        <strong>£<span id="total-cost">0.00</span></strong>
+                    </div>
+                    <div class="card-body">
+                        <fieldset>
+                            <p class="text-success mb-3">
+                                We are sorry but we cannot accept credit cards due to Gambling Commission rules.
+                            </p>
+                            <div class="d-grid">
+                                <button type="submit" name="CDNT" title="Pay with Cardnet" alt="Cardnet logo" class="btn btn-lg btn-outline-primary" id="payBtn">
+                                    Pay
+                                </button>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- POST-PAYMENT SECTION (hidden until you click “Pay”) -->
+                <div id="postPayment" style="display: none;">
+
+                    <!-- What Happens Next -->
+                    <div class="card mb-3">
+                        <div class="card-header">What Happens Next</div>
+                        <div class="card-body">
+                            <fieldset>
+                                <h3 class="h3-title">Confirmation email</h3>
+                                <p>Check your email for confirmation of your sign-up.…</p>
+                                <p>If you cannot see our confirmation email, please check your spam folder.</p>
+                                <p>Thank you for your amazing support.</p>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <!-- Complete -->
+                    <!-- <div class="card mb-3">
+                                <div class="card-header">Complete</div>
+                                <div class="card-body">
+                                    <fieldset>
+                                        <div class="step-nav">
+                                            <button type="submit" class="btn btn-primary">Sign Up Now</button>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div> -->
+
+                </div>
+            </div>
+
+            <div class="step-content" data-step-content="5">
+                <div class="card">
+                    <div class="card-header">Thank You</div>
+                    <div class="card-body">
+                        <fieldset>
+                            <h3>Sign-up received successfully</h3>
+                            <p>Thank you for your support!</p>
+                            <p>Your reference number is: <strong class="reference-number"></strong></p>
+                            <p>A confirmation email has been sent to the address you provided: <strong
+                                    class="email-address"></strong></p>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
