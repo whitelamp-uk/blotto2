@@ -3030,13 +3030,10 @@ BEGIN
    ,`w`.`Sortcode` AS `sortCode`
    ,`w`.`Account` AS `accountNumber`
    ,`w`.`draw_closed` AS `draw_closed` 
-   ,GROUP_CONCAT(c.title, ' ',c.name_first,' ',c.name_last ORDER by c.id desc limit 1) as contact
+   ,CONCAT(`w`.`title`, ' ',`w`.`name_first`,' ',`w`.`name_last`) as contact
   FROM `WinsAdmin` AS `w` 
   LEFT JOIN `blotto_build_mandate` AS `m` 
   ON `m`.`ClientRef`=`w`.`client_ref`
-  LEFT JOIN `blotto_supporter` AS `s` ON `s`.`client_ref` = `m`.`ClientRef`
-  LEFT JOIN `blotto_contact` AS `c` ON `c`.`supporter_id` = `s`.`id`
-  GROUP BY `m`.`ClientRef`
   ORDER BY 
   `w`.`draw_closed` DESC,
   `w`.`name_last`
