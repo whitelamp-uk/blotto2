@@ -17,18 +17,16 @@ $cdo->datasets[1]->data = [];
 $cdo->labels[0] = 'Imported';
 $cdo->labels[1] = 'DDI requested';
 $cdo->labels[2] = 'Draw 1 selected';
-$cdo->labels[3] = 'Playing';
+$cdo->labels[3] = 'Last draw';
 
 try {
 
-    // Get players
+    // get players
     $q = "
       SELECT  
         SUM(`status`='importing') AS `importing`
        ,SUM(`status`='collecting') AS `collecting`
        ,SUM(`status`='entering' OR `status`='loading') AS `loading`
-       ,SUM(`status`='entered') AS `entered`
-       ,SUM(`status`='entered' AND `dormancy_date` IS NOT NULL) AS `dormant`
       FROM `Journeys`
       ;
     ";
@@ -37,16 +35,13 @@ try {
     $cdo->datasets[0]->data[0] = $params['importing'];
     $cdo->datasets[0]->data[1] = $params['collecting'];
     $cdo->datasets[0]->data[2] = $params['loading'];
-    $cdo->datasets[0]->data[3] = $params['entered'] - $params['dormant'];
 
-    // Get chances
+    // get chances
     $q = "
       SELECT  
         SUM(IF (`status`='importing',`tickets`,0)) as `importing`
        ,SUM(IF (`status`='collecting',`tickets`,0)) as `collecting`
        ,SUM(IF (`status`='entering' OR `status`='loading',`tickets`,0)) as `loading`
-       ,SUM(IF (`status`='entered',`tickets`,0)) as `entered`
-       ,SUM(IF (`status`='entered' AND `dormancy_date` IS NOT NULL,`tickets`,0)) as `dormant`
       FROM `Journeys`
       ;
     ";
@@ -55,7 +50,25 @@ try {
     $cdo->datasets[1]->data[0] = $params['importing'];
     $cdo->datasets[1]->data[1] = $params['collecting'];
     $cdo->datasets[1]->data[2] = $params['loading'];
-    $cdo->datasets[1]->data[3] = $params['entered'] - $params['dormant'];
+
+    // get last draw
+    $q = "
+      SELECT
+        COUNT(DISTINCT `client_ref`) AS `supporters`
+       ,COUNT(`id`) AS `tickets`
+      FROM (
+        SELECT  
+          MAX(`draw_closed`) AS `draw_closed`
+        FROM `blotto_entry`
+      ) AS `last`
+      JOIN `blotto_entry` AS `e`
+        ON `e`.`draw_closed`=`last`.`draw_closed`
+      ;
+    ";
+    $rows = $zo->query ($q);
+    $params = $rows->fetch_assoc ();
+    $cdo->datasets[0]->data[3] = $params['supporters'];
+    $cdo->datasets[1]->data[3] = $params['tickets'];
 
     $cdo->seconds_to_execute = time() - $t0;
 }
