@@ -87,6 +87,7 @@ $file = [
        ,'supporters.php'
        ,'ticket_discrepancy.php'
        ,'tickets.php'
+       ,'tickets_insert.php'
        ,'wins.php'
 // INTERIM:
        ,'superdraw_export.php'

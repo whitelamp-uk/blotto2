@@ -506,17 +506,25 @@ else
 
 fi
 
-stage "18. Generate ticket pool update SQL in $tks"
+
+stage "18. Insert new tickets (there is no stage 19)"
 start=$SECONDS
-/usr/bin/php $prg $sw "$cfg" exec tickets.php           > $tks
+/usr/bin/php $prg $sw "$cfg" exec tickets_insert.php
 abort_on_error 18 $?
 echo "    Completed in $(($SECONDS-$start)) seconds"
 
-stage "19. Update ticket pool from $tks"
-start=$SECONDS
-mariadb                                                 < $tks
-abort_on_error 19 $?
-echo "    Completed in $(($SECONDS-$start)) seconds"
+
+#stage "18. Generate ticket pool update SQL in $tks"
+#start=$SECONDS
+#/usr/bin/php $prg $sw "$cfg" exec tickets.php           > $tks
+#abort_on_error 18 $?
+#echo "    Completed in $(($SECONDS-$start)) seconds"
+#
+#stage "19. Update ticket pool from $tks"
+#start=$SECONDS
+#mariadb                                                 < $tks
+#abort_on_error 19 $?
+#echo "    Completed in $(($SECONDS-$start)) seconds"
 
 stage "20. Check for ticket discrepancies"
 start=$SECONDS
