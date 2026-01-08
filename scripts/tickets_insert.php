@@ -5,7 +5,7 @@ cfg ();
 require $argv[1];
 
 if (!BLOTTO_TICKETS_AUTO) {
-    tee ("-- Auto-assignment of tickets is switched off - skipping\n");
+    fwrite (STDERR,"-- Auto-assignment of tickets is switched off - skipping\n");
     exit (0);
 }
 
@@ -18,13 +18,13 @@ try {
     $dbs                = dbs (); // in practice, only one
 
     $pad_length         = strlen (BLOTTO_TICKET_MAX);
-
+    $total = $duplicates = 0;
     foreach ($dbs as $org_id=>$db) {
         $tickets            = [];
         $players            = [];
         $qty                = 0;
         players_new ($players,$qty,$org_id,$db);
-        //tee ("-- $qty tickets required for org #$org_id `{$db['make']}`\n");
+        fwrite (STDERR,"$qty tickets required for org #$org_id `{$db['make']}`\n");
         if ($qty==0) {
             continue;
         }
@@ -55,6 +55,9 @@ try {
                     $zo->query ($qi);
                     if ($zo->affected_rows > 0) {  // if new number inserted
                         $inserted++;
+                        $total++;
+                    } else {
+                        $duplicates++;
                     }
                 }
                 catch (\mysqli_sql_exception $e) {
@@ -64,6 +67,7 @@ try {
             }
         }
     }
+    fwrite (STDERR,"$total new tickets, $duplicates numbers skipped as already in use\n");
 }
 catch (\Exception $e) {
     fwrite (STDERR,$e->getMessage()."\n");
