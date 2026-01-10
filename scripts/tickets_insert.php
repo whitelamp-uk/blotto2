@@ -41,7 +41,7 @@ try {
                 $new = str_pad ($new,$pad_length,'0',STR_PAD_LEFT);
 
                 $qi = "
-                  INSERT INTO `BLOTTO_TICKET_DB`.`blotto_ticket` SET
+                  INSERT INTO `".BLOTTO_TICKET_DB."`.`blotto_ticket` SET
                     `number`='$new'
                    ,`issue_date`=CURDATE()
                    ,`org_id`='$org_id'
@@ -61,7 +61,7 @@ try {
                     }
                 }
                 catch (\mysqli_sql_exception $e) {
-                    fwrite (STDERR,$qs."\n".$e->getMessage()."\n");
+                    fwrite (STDERR,$qi."\n".$e->getMessage()."\n");
                     exit (102);
                 }
             }
