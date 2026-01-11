@@ -491,6 +491,7 @@ CREATE TABLE IF NOT EXISTS `blotto_verification` (
   `type` char(16) CHARACTER SET ascii NOT NULL,
   `verify_value` varchar(255) CHARACTER SET ascii NOT NULL,
   `code` char(16) CHARACTER SET ascii NOT NULL,
+  `ip_addr_stub` varchar(48) CHARACTER SET ascii NOT NULL,
   PRIMARY KEY (`id`),
   KEY `created` (`created`),
   KEY `type` (`type`),

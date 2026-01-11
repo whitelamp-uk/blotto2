@@ -7039,6 +7039,9 @@ function www_signup_verify_check ($type,$value,$code) {
 
 function www_signup_verify_store ($type,$value,$code) {
     $interval = BLOTTO_VERIFY_INTERVAL;
+    $ip = $_SERVER["REMOTE_ADDR"]; // todo - perhaps have a generic remote_ip() function that tests for proxies etc.
+    // get first three bytes, and yes, if we had ten million to check we'd use ip2long($ip) >> 8
+    $ipstub = substr($ip, 0, strrpos($ip, '.'));
     if (!($c=connect())) {
         return false;
     }
@@ -7050,6 +7053,17 @@ function www_signup_verify_store ($type,$value,$code) {
                  OR ( `type`='$type' AND `verify_value`='$value' )
             "
         );
+        $res = $c->query (
+            "
+              SELECT COUNT(*) FROM `blotto_verification`
+              WHERE `ip_addr_stub`='$ipstub'
+            "
+        );
+        $current = $res->fetch_column();
+        if ($current > BLOTTO_VERIFY_MAX_ATTEMPTS) {
+            error_log("www_signup_verify_store spam detected from ".$ip);
+            return false;
+        }
         $c->query (
             "
               INSERT INTO `blotto_verification`
@@ -7057,6 +7071,7 @@ function www_signup_verify_store ($type,$value,$code) {
                 `type`='$type'
                ,`verify_value`='$value'
                ,`code`='$code'
+               ,`ip_addr_stub`='$ipstub'
             "
         );
         return true;
